@@ -1,0 +1,36 @@
+[Unit]
+Description=CloudCLI UI (self-hosted, bind Tailscale-only)
+Documentation=https://github.com/siteboon/claudecodeui
+Requires=tailscaled.service
+After=tailscaled.service tailscale-online.target network-online.target
+Wants=network-online.target
+# La IP 100.77.186.53 solo existe cuando tailscale0 esta arriba: si el bind
+# falla al bootear, reintentamos para siempre en vez de rendirnos.
+# Mismo motivo que las unidades de ttyd y cabina.
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+User=leantejado
+Group=leantejado
+WorkingDirectory=/home/leantejado/workspace/claudecodeui
+
+# EL BIND VIVE EN EL .env DEL REPO (HOST=100.77.186.53). Fuente unica de
+# verdad: no repetir HOST/SERVER_PORT aca o vuelven a divergir.
+EnvironmentFile=/home/leantejado/workspace/claudecodeui/.env
+Environment=NODE_ENV=production
+Environment=PATH=/home/leantejado/.local/node22/bin:/home/leantejado/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+# tailscaled puede estar activo pero todavia sin IP asignada. Esperar aca
+# evita un ciclo de reinicios ruidoso durante el boot.
+ExecStartPre=/bin/bash -c 'for i in $(seq 1 60); do ip -4 addr show tailscale0 2>/dev/null | grep -q "100.77.186.53" && exit 0; sleep 2; done; echo "IP de Tailscale no disponible tras 120s"; exit 1'
+
+ExecStart=/home/leantejado/.local/node22/bin/node dist-server/server/index.js
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=cloudcli
+
+[Install]
+WantedBy=multi-user.target
