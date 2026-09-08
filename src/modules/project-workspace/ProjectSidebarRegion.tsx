@@ -6,7 +6,7 @@ import type {
 import { useTranslation } from 'react-i18next';
 
 import { useProjectSidebarState } from '@/modules/project-workspace/context/ProjectsStateContext';
-import { Sidebar } from '@/modules/sidebar';
+import { SkinSidebar as Sidebar } from '@/modules/skin';
 import type { ProjectWorkspaceShellProps } from '@/shared/types';
 
 /** Rendered by ProjectWorkspaceShell to host the sidebar module, docked on desktop and as a drawer on mobile. */
