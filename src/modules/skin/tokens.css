@@ -1,0 +1,105 @@
+/*
+ * Skin propio — tokens.
+ *
+ * Todo el rediseño vive en `src/modules/skin/`, una carpeta que no existe en
+ * upstream: nunca produce conflictos al mergear. Este archivo es la única pieza
+ * que interviene sobre estilos de upstream, y lo hace sin pelear.
+ *
+ * POR QUE NO LLEVA @layer
+ * Los tokens de upstream se declaran dentro de `@layer base` en `src/index.css`.
+ * En la cascada, una declaracion que NO pertenece a ninguna capa le gana a
+ * cualquiera que si pertenezca, sin importar especificidad ni orden de
+ * aparicion. Al quedar fuera de toda capa, estos valores mandan aunque el
+ * `@import` este arriba del archivo (que es donde el CSS exige que este).
+ * Es el motivo por el que aca no hace falta `!important` ni `:root:root`.
+ *
+ * QUE CAMBIA Y QUE NO
+ * La paleta se mueve poco: el boceto se dibujo tomando los colores de la app
+ * real, asi que el fondo y el azul de accion ya eran practicamente estos. Lo
+ * que cambia de verdad es la DENSIDAD —radios mas chicos, filas mas juntas,
+ * cuerpo de 15px— y la estructura, que se resuelve en los componentes.
+ */
+
+:root {
+  /* --- Paleta: mismos nombres que upstream, valores afinados --- */
+
+  /* Fondo general y superficies. Un punto menos de saturacion que upstream:
+     el beige quedaba levemente verdoso contra el blanco de las tarjetas. */
+  --background: 42 30% 95%;
+  --card: 40 40% 99%;
+  --popover: 40 40% 99%;
+
+  /* Tinta. Mas calida y mas oscura que el gris azulado de upstream. */
+  --foreground: 30 8% 9%;
+  --card-foreground: 30 8% 9%;
+  --popover-foreground: 30 8% 9%;
+
+  /* Grises intermedios: el texto secundario de las filas del sidebar. */
+  --muted: 40 16% 92%;
+  --muted-foreground: 36 8% 45%;
+  --secondary: 40 16% 92%;
+  --secondary-foreground: 32 10% 20%;
+
+  /* `accent` en shadcn es la superficie de hover, no un color de marca.
+     Se mantiene como gris calido: NO es el naranja de Claude. */
+  --accent: 40 18% 90%;
+  --accent-foreground: 32 10% 20%;
+
+  /* Azul de accion: sesion activa, boton de enviar, foco. */
+  --primary: 221 84% 55%;
+  --primary-foreground: 0 0% 100%;
+  --ring: 221 84% 55%;
+
+  /* Bordes: mas calidos y con menos contraste, para que las lineas de
+     separacion no compitan con el contenido en una lista densa. */
+  --border: 38 20% 87%;
+  --input: 38 20% 87%;
+
+  /* Radio: 7px contra los 8px de upstream. En una interfaz compacta un radio
+     grande come el poco aire que queda entre filas. */
+  --radius: 0.4375rem;
+
+  /* --- Tokens propios del skin: densidad --- */
+  /* Existen porque el rediseño es sobre todo una decision de escala, y esa
+     decision tiene que estar en un solo lugar y no repartida por componente. */
+
+  --skin-text: 15px;          /* cuerpo */
+  --skin-text-sm: 13.5px;     /* filas de sesion, metadatos */
+  --skin-text-xs: 11.5px;     /* edades, contadores */
+
+  --skin-row-y: 5px;          /* alto interno de una fila de proyecto */
+  --skin-row-x: 7px;
+  --skin-gap: 7px;            /* separacion entre icono y texto */
+
+  --skin-sidebar-w: 272px;    /* ancho por defecto; el arrastre lo pisa */
+  --skin-sidebar-min: 200px;
+  --skin-sidebar-max: 520px;
+}
+
+/* Modo oscuro. Upstream lo activa por clase (`darkMode: ["class"]`), asi que
+   se redefine sobre `.dark`. Sin esto, el tema oscuro se quedaria con la
+   paleta vieja y el rediseño solo existiria de dia. */
+.dark {
+  --background: 30 6% 9%;
+  --card: 30 6% 13%;
+  --popover: 30 6% 13%;
+
+  --foreground: 40 10% 92%;
+  --card-foreground: 40 10% 92%;
+  --popover-foreground: 40 10% 92%;
+
+  --muted: 30 5% 18%;
+  --muted-foreground: 36 6% 62%;
+  --secondary: 30 5% 18%;
+  --secondary-foreground: 40 10% 92%;
+
+  --accent: 30 5% 20%;
+  --accent-foreground: 40 10% 92%;
+
+  --primary: 217 90% 61%;
+  --primary-foreground: 30 6% 9%;
+  --ring: 217 90% 61%;
+
+  --border: 30 5% 20%;
+  --input: 30 5% 25%;
+}
