@@ -8,6 +8,10 @@ import { userDb, appConfigDb } from '../database/index.js';
 // Use env var if set, otherwise auto-generate a unique secret per installation
 const JWT_SECRET = process.env.JWT_SECRET || appConfigDb.getOrCreateJwtSecret();
 
+// Session lifetime. Configurable because a self-hosted instance reachable only
+// from a private network can afford a longer session than the shared default.
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
+
 // Optional API key middleware
 const validateApiKey = (req, res, next) => {
   // Skip API key validation if not configured
@@ -48,20 +52,40 @@ const authenticateToken = async (req, res, next) => {
     token = req.query.token;
   }
 
+  // No `X-Auth-Error` here on purpose: a request that carries no token at all
+  // says nothing about the stored session. A request fired before the client
+  // hydrates its token would otherwise wipe a perfectly valid session.
   if (!token) {
-    res.setHeader('X-Auth-Error', 'invalid-token');
+    console.warn(`AUTH_TOKEN_MISSING on ${req.method} ${req.path}`);
     return res.status(401).json({
       error: 'Access denied. No token provided.',
-      code: 'AUTH_TOKEN_INVALID',
+      code: 'AUTH_TOKEN_MISSING',
     });
   }
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
 
-    // Verify user still exists and is active
-    const user = userDb.getUserById(decoded.userId);
+    // Verify user still exists and is active. The lookup gets its own catch so
+    // a transient storage failure cannot reach the outer handler below, which
+    // would report it as an invalid token and make the client discard a session
+    // that was never wrong.
+    let user;
+    try {
+      user = userDb.getUserById(decoded.userId);
+    } catch (lookupError) {
+      console.error(
+        `AUTH_BACKEND_UNAVAILABLE on ${req.method} ${req.path}:`,
+        lookupError instanceof Error ? lookupError.message : String(lookupError),
+      );
+      return res.status(503).json({
+        error: 'Authentication backend unavailable. Please retry.',
+        code: 'AUTH_BACKEND_UNAVAILABLE',
+      });
+    }
+
     if (!user) {
+      console.warn(`AUTH_TOKEN_INVALID (user not found) on ${req.method} ${req.path}`);
       res.setHeader('X-Auth-Error', 'invalid-token');
       return res.status(401).json({
         error: 'Invalid token. User not found.',
@@ -83,6 +107,7 @@ const authenticateToken = async (req, res, next) => {
     next();
   } catch (error) {
     if (error instanceof jwt.TokenExpiredError) {
+      console.warn(`AUTH_TOKEN_EXPIRED on ${req.method} ${req.path}`);
       res.setHeader('X-Auth-Error', 'session-expired');
       return res.status(401).json({
         error: 'Session expired. Please log in again.',
@@ -91,7 +116,7 @@ const authenticateToken = async (req, res, next) => {
     }
 
     console.warn(
-      'Token verification failed:',
+      `AUTH_TOKEN_INVALID on ${req.method} ${req.path} — token verification failed:`,
       error instanceof Error ? error.message : String(error),
     );
     res.setHeader('X-Auth-Error', 'invalid-token');
@@ -110,7 +135,7 @@ const generateToken = (user) => {
       username: user.username
     },
     JWT_SECRET,
-    { expiresIn: '7d' }
+    { expiresIn: JWT_EXPIRES_IN }
   );
 };
 
