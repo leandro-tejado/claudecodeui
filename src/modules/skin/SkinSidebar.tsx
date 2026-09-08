@@ -1,16 +1,20 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
 import type { CSSProperties, MouseEvent as ReactMouseEvent } from 'react';
 import {
+  Check,
   ChevronDown,
   ChevronRight,
+  Pencil,
   Plus,
   RefreshCw,
   Search,
   Settings,
   Star,
   Trash2,
+  X,
 } from 'lucide-react';
 
+import { useSkinUi } from '@/modules/skin/skinUiStore';
 import { api } from '@/shared/api';
 import type { Project, ProjectSession } from '@/shared/types';
 
@@ -117,9 +121,40 @@ export function SkinSidebar({
   isMobile,
 }: SkinSidebarProps) {
   const [query, setQuery] = useState('');
+  const [searchOpen, setSearchOpen] = useState(false);
   const [width, setWidth] = useState(readStoredWidth);
   const [starOverride, setStarOverride] = useState<Map<string, boolean>>(new Map());
   const dragStateRef = useRef<{ startX: number; startWidth: number } | null>(null);
+  const { sidebarCollapsed } = useSkinUi();
+
+  /* Renombrar una sesión, en el lugar. `titleOverride` evita esperar a que el
+     backend reindexe para ver el nombre nuevo en la fila. */
+  const [renamingId, setRenamingId] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState('');
+  const [titleOverride, setTitleOverride] = useState<Map<string, string>>(new Map());
+
+  const commitRename = useCallback(
+    async (sessionId: string) => {
+      const trimmed = renameValue.trim();
+      setRenamingId(null);
+      if (!trimmed) return;
+
+      setTitleOverride((previous) => new Map(previous).set(sessionId, trimmed));
+      try {
+        const response = await api.renameSession(sessionId, trimmed);
+        if (!response.ok) throw new Error('rename failed');
+      } catch {
+        // Se revierte el nombre optimista: mostrar uno que el servidor no
+        // guardó es peor que no haber cambiado nada.
+        setTitleOverride((previous) => {
+          const next = new Map(previous);
+          next.delete(sessionId);
+          return next;
+        });
+      }
+    },
+    [renameValue],
+  );
 
   /* Apertura de proyectos.
    *
@@ -239,21 +274,31 @@ export function SkinSidebar({
     fontSize: 'var(--skin-text-sm)',
   };
 
+  const isCollapsed = !isMobile && sidebarCollapsed;
+
   return (
+    /* Dos capas a propósito: la de afuera anima el ancho (y lo lleva a 0 al
+       colapsar), la de adentro conserva el ancho real. Sin esa separación el
+       contenido se comprimiría durante la animación en vez de deslizarse. */
     <div
-      className="relative flex h-full flex-col bg-card"
-      style={{ width: isMobile ? '100%' : width, fontSize: 'var(--skin-text)' }}
+      className="relative h-full flex-none overflow-hidden bg-card transition-[width] duration-200 ease-out"
+      style={{ width: isMobile ? '100%' : isCollapsed ? 0 : width, fontSize: 'var(--skin-text)' }}
     >
+      <div
+        className="flex h-full flex-col"
+        style={{ width: isMobile ? '100%' : width }}
+        aria-hidden={isCollapsed}
+      >
       {/* Manija de ancho. En mobile el sidebar es un cajón: no aplica. */}
-      {!isMobile && (
+      {!isMobile && !isCollapsed && (
         <div
           onMouseDown={handleDragStart}
-          className="group absolute -right-1 top-0 z-20 h-full w-2 cursor-col-resize"
+          className="group absolute right-0 top-0 z-20 h-full w-1.5 cursor-col-resize"
           role="separator"
           aria-orientation="vertical"
           aria-label="Ajustar el ancho del panel"
         >
-          <div className="mx-auto h-full w-px bg-transparent transition-colors group-hover:bg-primary" />
+          <div className="ml-auto h-full w-px bg-transparent transition-colors group-hover:bg-primary" />
         </div>
       )}
 
@@ -265,6 +310,19 @@ export function SkinSidebar({
         <span className="truncate font-semibold tracking-tight">Consola</span>
 
         <div className="ml-auto flex items-center gap-0.5">
+          <button
+            type="button"
+            onClick={() => {
+              setSearchOpen((open) => !open);
+              if (searchOpen) setQuery('');
+            }}
+            title="Buscar"
+            className={`grid h-7 w-7 place-items-center rounded-md transition-colors hover:bg-accent hover:text-foreground ${
+              searchOpen ? 'bg-accent text-foreground' : 'text-muted-foreground'
+            }`}
+          >
+            <Search className="h-4 w-4" />
+          </button>
           <button
             type="button"
             onClick={onRefresh}
@@ -284,17 +342,24 @@ export function SkinSidebar({
         </div>
       </div>
 
-      {/* --- Búsqueda --- */}
-      <div className="relative px-3 pb-2 pt-2.5">
-        <Search className="pointer-events-none absolute left-5 top-[15px] h-3.5 w-3.5 text-muted-foreground" />
-        <input
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-          placeholder="Buscar proyecto o sesión"
-          className="w-full rounded-md border border-border bg-background py-1.5 pl-7 pr-2 text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary"
-          style={{ fontSize: 'var(--skin-text-sm)' }}
-        />
-      </div>
+      {/* --- Búsqueda: aparece sólo al pedirla desde la lupa --- */}
+      {searchOpen && (
+        <div className="relative px-3 pb-2 pt-2.5">
+          <input
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key !== 'Escape') return;
+              setQuery('');
+              setSearchOpen(false);
+            }}
+            placeholder="Buscar proyecto o sesión"
+            autoFocus
+            className="w-full rounded-md border border-border bg-background px-2 py-1.5 text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary"
+            style={{ fontSize: 'var(--skin-text-sm)' }}
+          />
+        </div>
+      )}
 
       {/* --- Lista --- */}
       <div className="flex-1 overflow-y-auto px-2 pb-2">
@@ -374,6 +439,8 @@ export function SkinSidebar({
 
                   {sessions.map((session) => {
                     const isActive = selectedSession?.id === session.id;
+                    const isRenaming = renamingId === session.id;
+                    const title = titleOverride.get(session.id) ?? sessionTitle(session);
                     return (
                       <div
                         key={session.id}
@@ -392,25 +459,84 @@ export function SkinSidebar({
                                 : 'bg-muted-foreground/60'
                           }`}
                         />
-                        <span className="min-w-0 flex-1 truncate">{sessionTitle(session)}</span>
-                        <span
-                          className="flex-none text-muted-foreground opacity-100 transition-opacity group-hover:opacity-0"
-                          style={{ fontSize: 'var(--skin-text-xs)' }}
-                        >
-                          {formatAge(session)}
-                        </span>
-                        {onSessionDelete && (
-                          <button
-                            type="button"
-                            title="Borrar sesión"
-                            onClick={(event) => {
-                              event.stopPropagation();
-                              onSessionDelete(session.id);
-                            }}
-                            className="absolute right-2 hidden text-muted-foreground hover:text-destructive group-hover:block"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </button>
+                        {isRenaming ? (
+                          <>
+                            <input
+                              value={renameValue}
+                              autoFocus
+                              onClick={(event) => event.stopPropagation()}
+                              onChange={(event) => setRenameValue(event.target.value)}
+                              onKeyDown={(event) => {
+                                if (event.key === 'Enter') void commitRename(session.id);
+                                if (event.key === 'Escape') setRenamingId(null);
+                              }}
+                              onBlur={() => void commitRename(session.id)}
+                              className="min-w-0 flex-1 rounded border border-primary bg-background px-1 py-0 text-foreground outline-none"
+                              style={{ fontSize: 'var(--skin-text-sm)' }}
+                            />
+                            <button
+                              type="button"
+                              title="Guardar"
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                void commitRename(session.id);
+                              }}
+                              className="flex-none text-muted-foreground hover:text-foreground"
+                            >
+                              <Check className="h-3.5 w-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              title="Cancelar"
+                              onMouseDown={(event) => {
+                                // mousedown y no click: el onBlur del input se
+                                // dispara antes y guardaría igual.
+                                event.preventDefault();
+                                event.stopPropagation();
+                                setRenamingId(null);
+                              }}
+                              className="flex-none text-muted-foreground hover:text-foreground"
+                            >
+                              <X className="h-3.5 w-3.5" />
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <span className="min-w-0 flex-1 truncate">{title}</span>
+                            <span
+                              className="flex-none text-muted-foreground transition-opacity group-hover:opacity-0"
+                              style={{ fontSize: 'var(--skin-text-xs)' }}
+                            >
+                              {formatAge(session)}
+                            </span>
+                            <div className="absolute right-2 hidden items-center gap-1.5 group-hover:flex">
+                              <button
+                                type="button"
+                                title="Renombrar sesión"
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                  setRenameValue(title);
+                                  setRenamingId(session.id);
+                                }}
+                                className="text-muted-foreground hover:text-foreground"
+                              >
+                                <Pencil className="h-3.5 w-3.5" />
+                              </button>
+                              {onSessionDelete && (
+                                <button
+                                  type="button"
+                                  title="Borrar sesión"
+                                  onClick={(event) => {
+                                    event.stopPropagation();
+                                    onSessionDelete(session.id);
+                                  }}
+                                  className="text-muted-foreground hover:text-destructive"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </button>
+                              )}
+                            </div>
+                          </>
                         )}
                       </div>
                     );
@@ -444,6 +570,7 @@ export function SkinSidebar({
           <Settings className="h-3.5 w-3.5" />
           Ajustes
         </button>
+      </div>
       </div>
     </div>
   );

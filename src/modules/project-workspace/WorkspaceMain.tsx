@@ -12,7 +12,7 @@ import type { AppTab, Project, ProjectSession, SessionEstablishedContext, Sessio
 import { useUiPreferences } from '@/shared/context/UiPreferencesContext';
 import { useFileOpenResolver } from '@/modules/project-workspace/hooks/useFileOpenResolver';
 import { EditorSidebar, useEditorSidebar } from '@/modules/code-editor';
-import WorkspaceHeader from '@/modules/project-workspace/WorkspaceHeader';
+import { SkinHeader as WorkspaceHeader } from '@/modules/skin';
 import WorkspaceStateView from '@/modules/project-workspace/WorkspaceStateView';
 import WorkspaceErrorBoundary from '@/modules/project-workspace/WorkspaceErrorBoundary';
 
