@@ -1,5 +1,6 @@
 import { Loader2, MessageSquare } from 'lucide-react';
 import type { MouseEvent } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { TFunction } from 'i18next';
 
 import { Button, LLMProviderLogo, Tooltip } from '@/shared/ui';
@@ -7,6 +8,25 @@ import { cn } from '@/shared/utils';
 import type { ProjectSession, RecentConversationListItem, SessionRowActions } from '@/shared/types';
 import { formatCompactAge } from '@/modules/sidebar/utils/sidebarProjectFormatting';
 import SessionOptions from '@/modules/sidebar/SessionOptions';
+import { ReorderList } from '@/modules/sidebar/ReorderList';
+
+const CLAVE_ORDEN = 'cloudcli-orden-recientes';
+
+/** El orden guardado a mano manda; una conversación nueva (no registrada) entra al tope. */
+function aplicarOrdenManual(
+  conversations: RecentConversationListItem[],
+  orden: string[],
+): RecentConversationListItem[] {
+  const posicion = new Map(orden.map((id, i) => [id, i]));
+  return [...conversations].sort((a, b) => {
+    const pa = posicion.get(a.sessionId);
+    const pb = posicion.get(b.sessionId);
+    if (pa === undefined && pb === undefined) return 0;
+    if (pa === undefined) return -1;
+    if (pb === undefined) return 1;
+    return pa - pb;
+  });
+}
 
 type SidebarRecentConversationsProps = {
   conversations: RecentConversationListItem[];
@@ -64,6 +84,32 @@ export default function SidebarRecentConversations({
   onRetry,
   t,
 }: SidebarRecentConversationsProps) {
+  const [orden, setOrden] = useState<string[]>([]);
+
+  useEffect(() => {
+    try {
+      const guardado = localStorage.getItem(CLAVE_ORDEN);
+      if (guardado) setOrden(JSON.parse(guardado));
+    } catch {
+      // sin storage, o JSON corrupto: arranca sin orden manual
+    }
+  }, []);
+
+  const orderedConversations = useMemo(
+    () => aplicarOrdenManual(conversations, orden),
+    [conversations, orden],
+  );
+
+  const guardarOrden = (siguiente: RecentConversationListItem[]) => {
+    const ids = siguiente.map((c) => c.sessionId);
+    setOrden(ids);
+    try {
+      localStorage.setItem(CLAVE_ORDEN, JSON.stringify(ids));
+    } catch {
+      // sin storage: el orden vive solo en memoria de esta carga
+    }
+  };
+
   if (isLoading && conversations.length === 0) {
     return <RecentConversationSkeleton />;
   }
@@ -105,8 +151,14 @@ export default function SidebarRecentConversations({
         <span className="text-[10px] tabular-nums text-muted-foreground/70">{total}</span>
       </div>
 
-      <div className="space-y-0.5">
-        {conversations.map((conversation) => {
+      <ReorderList
+        items={orderedConversations}
+        getId={(c) => c.sessionId}
+        getLabel={(c) => c.sessionTitle}
+        onReorder={guardarOrden}
+        label={t('recent.title', 'Recent conversations')}
+      >
+        {(conversation) => {
           const isSelected = String(selectedSession?.id ?? '') === conversation.sessionId;
           const age = formatCompactAge(conversation.lastActivity, currentTime);
           const isProcessing = sessionActions.activeSessions.has(conversation.sessionId);
@@ -130,7 +182,7 @@ export default function SidebarRecentConversations({
           };
 
           return (
-            <div key={conversation.sessionId} className="group relative">
+            <div className="group relative">
               {/*
                 * Only the amber "needs attention" dot, and the spinner below. The
                 * Projects row also has a green dot for a session touched recently,
@@ -222,8 +274,8 @@ export default function SidebarRecentConversations({
               />
             </div>
           );
-        })}
-      </div>
+        }}
+      </ReorderList>
 
       {hasMore && (
         <Button

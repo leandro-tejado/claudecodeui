@@ -1,10 +1,29 @@
 import { Plus } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
 import type { TFunction } from 'i18next';
 
 import { Button } from '@/shared/ui';
 import type { LLMProvider, Project, ProjectSession, SessionWithProvider } from '@/shared/types';
 import SidebarSessionItem from '@/modules/sidebar/SidebarSessionItem';
+import { ReorderList } from '@/modules/sidebar/ReorderList';
 import { useCompactSidebar } from '@/modules/sidebar/hooks/useCompactSidebar';
+
+/** Orden manual por proyecto — cada proyecto arrastra sus propias sesiones. */
+function claveOrden(projectId: string): string {
+  return `cloudcli-orden-sesiones-${projectId}`;
+}
+
+function aplicarOrdenManual<T extends { id: string }>(sessions: T[], orden: string[]): T[] {
+  const posicion = new Map(orden.map((id, i) => [id, i]));
+  return [...sessions].sort((a, b) => {
+    const pa = posicion.get(a.id);
+    const pb = posicion.get(b.id);
+    if (pa === undefined && pb === undefined) return 0;
+    if (pa === undefined) return -1;
+    if (pb === undefined) return 1;
+    return pa - pb;
+  });
+}
 
 type SidebarProjectSessionsProps = {
   project: Project;
@@ -78,6 +97,28 @@ export default function SidebarProjectSessions({
   t,
 }: SidebarProjectSessionsProps) {
   const isCompact = useCompactSidebar();
+  const [orden, setOrden] = useState<string[]>([]);
+
+  useEffect(() => {
+    try {
+      const guardado = localStorage.getItem(claveOrden(project.projectId));
+      if (guardado) setOrden(JSON.parse(guardado));
+    } catch {
+      // sin storage, o JSON corrupto: arranca sin orden manual
+    }
+  }, [project.projectId]);
+
+  const sessionsOrdenadas = useMemo(() => aplicarOrdenManual(sessions, orden), [sessions, orden]);
+
+  const guardarOrden = (siguiente: SessionWithProvider[]) => {
+    const ids = siguiente.map((s) => s.id);
+    setOrden(ids);
+    try {
+      localStorage.setItem(claveOrden(project.projectId), JSON.stringify(ids));
+    } catch {
+      // sin storage: el orden vive solo en memoria de esta carga
+    }
+  };
 
   if (!isExpanded) {
     return null;
@@ -120,28 +161,35 @@ export default function SidebarProjectSessions({
         </div>
       ) : (
         <>
-          {sessions.map((session) => (
-            <SidebarSessionItem
-              key={session.id}
-              project={project}
-              session={session}
-              selectedSession={selectedSession}
-              isProcessing={activeSessions.has(session.id)}
-              needsAttention={attentionSessionIds.has(session.id)}
-              currentTime={currentTime}
-              onRenameDraftChange={onRenameDraftChange}
-              isEditing={session.id === sessionRenameId}
-              renameDraft={session.id === sessionRenameId ? sessionRenameDraft : ''}
-              onStartEditingSession={onStartEditingSession}
-              onCancelEditingSession={onCancelEditingSession}
-              onSaveEditingSession={onSaveEditingSession}
-              onProjectSelect={onProjectSelect}
-              onSessionSelect={onSessionSelect}
-              onDeleteSession={onDeleteSession}
-              onForkSession={onForkSession}
-              t={t}
-            />
-          ))}
+          <ReorderList
+            items={sessionsOrdenadas}
+            getId={(s) => s.id}
+            getLabel={(s) => s.summary || s.id}
+            onReorder={guardarOrden}
+            label={t('sessions.newSession', 'Sessions')}
+          >
+            {(session) => (
+              <SidebarSessionItem
+                project={project}
+                session={session}
+                selectedSession={selectedSession}
+                isProcessing={activeSessions.has(session.id)}
+                needsAttention={attentionSessionIds.has(session.id)}
+                currentTime={currentTime}
+                onRenameDraftChange={onRenameDraftChange}
+                isEditing={session.id === sessionRenameId}
+                renameDraft={session.id === sessionRenameId ? sessionRenameDraft : ''}
+                onStartEditingSession={onStartEditingSession}
+                onCancelEditingSession={onCancelEditingSession}
+                onSaveEditingSession={onSaveEditingSession}
+                onProjectSelect={onProjectSelect}
+                onSessionSelect={onSessionSelect}
+                onDeleteSession={onDeleteSession}
+                onForkSession={onForkSession}
+                t={t}
+              />
+            )}
+          </ReorderList>
 
           {hasMoreSessions && (
             <Button

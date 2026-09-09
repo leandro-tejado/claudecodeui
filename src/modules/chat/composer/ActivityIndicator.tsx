@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { Shimmer } from '@/shared/ui';
 import type { SessionActivity } from '@/shared/types';
+import { ShiningText } from '@/modules/chat/composer/ShiningText';
 
 type ActivityIndicatorProps = {
   activity: SessionActivity | null;
@@ -91,7 +91,7 @@ export default function ActivityIndicator({ activity, onAbort, isInputFocused = 
       <div className="flex items-end justify-between gap-2">
         <div className={`${tabSurfaceClassName} gap-2`}>
           <span className="h-1.5 w-1.5 shrink-0 animate-pulse rounded-full bg-primary" aria-hidden />
-          <Shimmer className="font-medium">{`${label}…`}</Shimmer>
+          <ShiningText text={`${label}…`} className="font-medium" />
           <span className="tabular-nums text-muted-foreground/60">{elapsedLabel}</span>
         </div>
 
