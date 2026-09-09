@@ -1,6 +1,8 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
 import type { CSSProperties, MouseEvent as ReactMouseEvent } from 'react';
 import {
+  Archive,
+  ArchiveRestore,
   Check,
   ChevronDown,
   ChevronRight,
@@ -16,7 +18,13 @@ import {
 
 import { useSkinUi } from '@/modules/skin/skinUiStore';
 import { api } from '@/shared/api';
-import type { Project, ProjectSession } from '@/shared/types';
+import { Dialog, DialogContent, DialogTitle } from '@/shared/ui';
+import type {
+  ArchivedProjectListItem,
+  ArchivedSessionListItem,
+  Project,
+  ProjectSession,
+} from '@/shared/types';
 
 /*
  * Sidebar del rediseño propio — boceto A.
@@ -38,6 +46,9 @@ import type { Project, ProjectSession } from '@/shared/types';
  */
 
 const WIDTH_STORAGE_KEY = 'skin:sidebar-width';
+
+/** Lo que el usuario pidió archivar y todavía no confirmó. */
+type PendingArchive = { kind: 'project' | 'session'; id: string; name: string };
 
 type SkinSidebarProps = {
   projects: Project[];
@@ -269,6 +280,79 @@ export function SkinSidebar({
     setOpenOverride((previous) => new Map(previous).set(projectId, !isOpenNow));
   }, []);
 
+  /* Archivar pide confirmación.
+     El tacho archiva (soft-delete): nada se pierde y se restaura desde la vista
+     de archivados. Aun así el click es de un píxel y está pegado al chevron,
+     así que la fila no se va sin que alguien lo diga dos veces. */
+  const [pendingArchive, setPendingArchive] = useState<PendingArchive | null>(null);
+
+  const confirmArchive = useCallback(() => {
+    if (!pendingArchive) return;
+    if (pendingArchive.kind === 'project') {
+      onProjectDelete?.(pendingArchive.id);
+    } else {
+      onSessionDelete?.(pendingArchive.id);
+    }
+    setPendingArchive(null);
+  }, [onProjectDelete, onSessionDelete, pendingArchive]);
+
+  /* Vista de archivados. Vive acá y no en `sidebarSharedProps` porque el estado
+     de arriba sólo conoce proyectos activos: los archivados se piden aparte. */
+  const [viewMode, setViewMode] = useState<'active' | 'archived'>('active');
+  const [archivedProjects, setArchivedProjects] = useState<ArchivedProjectListItem[]>([]);
+  const [archivedSessions, setArchivedSessions] = useState<ArchivedSessionListItem[]>([]);
+  const [archivedLoading, setArchivedLoading] = useState(false);
+
+  const loadArchived = useCallback(async () => {
+    setArchivedLoading(true);
+    try {
+      const [projectsResponse, sessionsResponse] = await Promise.all([
+        api.archivedProjects(),
+        api.getArchivedSessions(),
+      ]);
+      if (!projectsResponse.ok || !sessionsResponse.ok) throw new Error('archived fetch failed');
+
+      const projectsPayload = (await projectsResponse.json()) as {
+        data?: { projects?: ArchivedProjectListItem[] };
+      };
+      const sessionsPayload = (await sessionsResponse.json()) as {
+        data?: { sessions?: ArchivedSessionListItem[] };
+      };
+
+      const nextProjects = projectsPayload.data?.projects ?? [];
+      const archivedProjectIds = new Set(nextProjects.map((project) => project.projectId));
+      // Una sesión de un proyecto archivado ya viaja con ese proyecto: listarla
+      // suelta la mostraría dos veces y restaurarla sola no la sacaría del limbo.
+      const nextSessions = (sessionsPayload.data?.sessions ?? []).filter(
+        (session) => !session.projectId || !archivedProjectIds.has(session.projectId),
+      );
+
+      setArchivedProjects(nextProjects);
+      setArchivedSessions(nextSessions);
+    } catch (error) {
+      console.error('[SkinSidebar] No se pudieron cargar los archivados:', error);
+    } finally {
+      setArchivedLoading(false);
+    }
+  }, []);
+
+  const restoreArchived = useCallback(
+    async (kind: 'project' | 'session', id: string) => {
+      try {
+        const response = kind === 'project' ? await api.restoreProject(id) : await api.restoreSession(id);
+        if (!response.ok) throw new Error('restore failed');
+      } catch (error) {
+        console.error('[SkinSidebar] No se pudo restaurar:', error);
+        return;
+      }
+      // El refresh de arriba trae el ítem de vuelta a la lista activa; el de acá
+      // lo saca de la de archivados.
+      onRefresh?.();
+      await loadArchived();
+    },
+    [loadArchived, onRefresh],
+  );
+
   const rowStyle: CSSProperties = {
     padding: 'var(--skin-row-y) var(--skin-row-x)',
     gap: 'var(--skin-gap)',
@@ -326,11 +410,30 @@ export function SkinSidebar({
           </button>
           <button
             type="button"
-            onClick={onRefresh}
+            onClick={() => {
+              const next = viewMode === 'archived' ? 'active' : 'archived';
+              setViewMode(next);
+              // Se pide al entrar, no en un efecto: así el fetch queda atado al
+              // gesto que lo causa y no hay render extra por el estado de carga.
+              if (next === 'archived') void loadArchived();
+            }}
+            title={viewMode === 'archived' ? 'Volver a la lista' : 'Ver archivados'}
+            className={`grid h-7 w-7 place-items-center rounded-md transition-colors hover:bg-accent hover:text-foreground ${
+              viewMode === 'archived' ? 'bg-accent text-foreground' : 'text-muted-foreground'
+            }`}
+          >
+            <Archive className="h-4 w-4" />
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              if (viewMode === 'archived') void loadArchived();
+              else onRefresh?.();
+            }}
             title="Actualizar"
             className="grid h-7 w-7 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
           >
-            <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`h-4 w-4 ${isLoading || archivedLoading ? 'animate-spin' : ''}`} />
           </button>
           <button
             type="button"
@@ -344,7 +447,7 @@ export function SkinSidebar({
       </div>
 
       {/* --- Búsqueda: aparece sólo al pedirla desde la lupa --- */}
-      {searchOpen && (
+      {searchOpen && viewMode === 'active' && (
         <div className="relative px-3 pb-2 pt-2.5">
           <input
             value={query}
@@ -362,7 +465,83 @@ export function SkinSidebar({
         </div>
       )}
 
+      {/* --- Archivados: lo que salió de la lista activa y se puede recuperar --- */}
+      {viewMode === 'archived' && (
+        <div className="flex-1 overflow-y-auto px-2 pb-2">
+          <div className="flex items-center justify-between px-2 py-2">
+            <span className="font-medium">Archivados</span>
+            <button
+              type="button"
+              onClick={() => setViewMode('active')}
+              className="text-muted-foreground transition-colors hover:text-foreground"
+              style={{ fontSize: 'var(--skin-text-xs)' }}
+            >
+              Volver
+            </button>
+          </div>
+
+          {archivedLoading && (
+            <p className="px-3 py-6 text-center text-muted-foreground" style={{ fontSize: 'var(--skin-text-sm)' }}>
+              Cargando…
+            </p>
+          )}
+
+          {!archivedLoading && archivedProjects.length === 0 && archivedSessions.length === 0 && (
+            <p className="px-3 py-6 text-center text-muted-foreground" style={{ fontSize: 'var(--skin-text-sm)' }}>
+              No hay nada archivado.
+            </p>
+          )}
+
+          {archivedProjects.map((project) => (
+            <div
+              key={project.projectId}
+              className="flex items-center rounded-md transition-colors hover:bg-accent/60"
+              style={rowStyle}
+            >
+              <div className="min-w-0 flex-1">
+                <div className="truncate font-medium tracking-tight">{project.displayName}</div>
+                <div className="truncate text-muted-foreground" style={{ fontSize: 'var(--skin-text-xs)' }}>
+                  Proyecto · {shortPath(project)}
+                </div>
+              </div>
+              <button
+                type="button"
+                title="Restaurar proyecto"
+                onClick={() => void restoreArchived('project', project.projectId)}
+                className="flex-none text-muted-foreground transition-colors hover:text-foreground"
+              >
+                <ArchiveRestore className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          ))}
+
+          {archivedSessions.map((session) => (
+            <div
+              key={session.sessionId}
+              className="flex items-center rounded-md transition-colors hover:bg-accent/60"
+              style={rowStyle}
+            >
+              <div className="min-w-0 flex-1">
+                <div className="truncate">{session.sessionTitle || 'Sesión sin título'}</div>
+                <div className="truncate text-muted-foreground" style={{ fontSize: 'var(--skin-text-xs)' }}>
+                  Sesión · {session.projectDisplayName}
+                </div>
+              </div>
+              <button
+                type="button"
+                title="Restaurar sesión"
+                onClick={() => void restoreArchived('session', session.sessionId)}
+                className="flex-none text-muted-foreground transition-colors hover:text-foreground"
+              >
+                <ArchiveRestore className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* --- Lista --- */}
+      {viewMode === 'active' && (
       <div className="flex-1 overflow-y-auto px-2 pb-2">
         {visibleProjects.length === 0 && (
           <p className="px-3 py-6 text-center text-muted-foreground" style={{ fontSize: 'var(--skin-text-sm)' }}>
@@ -428,7 +607,11 @@ export function SkinSidebar({
                     title="Archivar proyecto"
                     onClick={(event) => {
                       event.stopPropagation();
-                      onProjectDelete(project.projectId);
+                      setPendingArchive({
+                        kind: 'project',
+                        id: project.projectId,
+                        name: project.displayName || project.projectId,
+                      });
                     }}
                     className="flex-none text-muted-foreground opacity-0 transition-opacity hover:text-destructive group-hover:opacity-100"
                   >
@@ -542,10 +725,10 @@ export function SkinSidebar({
                               {onSessionDelete && (
                                 <button
                                   type="button"
-                                  title="Borrar sesión"
+                                  title="Archivar sesión"
                                   onClick={(event) => {
                                     event.stopPropagation();
-                                    onSessionDelete(session.id);
+                                    setPendingArchive({ kind: 'session', id: session.id, name: title });
                                   }}
                                   className="text-muted-foreground hover:text-destructive"
                                 >
@@ -575,6 +758,7 @@ export function SkinSidebar({
           );
         })}
       </div>
+      )}
 
       {/* --- Pie: sólo Ajustes. Sin GitHub, sin comunidad, sin reportar issues. --- */}
       <div className="flex items-center gap-2 border-t border-border px-3 py-2">
@@ -589,6 +773,47 @@ export function SkinSidebar({
         </button>
       </div>
       </div>
+
+      {/* --- Confirmación de archivado. Cancelar va primero en el DOM a
+           propósito: DialogContent enfoca el primer botón al abrir, y ese foco
+           no puede caer sobre el que archiva. --- */}
+      <Dialog
+        open={pendingArchive !== null}
+        onOpenChange={(open) => {
+          if (!open) setPendingArchive(null);
+        }}
+      >
+        <DialogContent className="max-w-sm p-5" style={{ fontSize: 'var(--skin-text)' }}>
+          <DialogTitle>
+            {pendingArchive?.kind === 'project' ? 'Archivar proyecto' : 'Archivar sesión'}
+          </DialogTitle>
+          <div className="font-semibold tracking-tight">
+            {pendingArchive?.kind === 'project' ? '¿Archivar el proyecto?' : '¿Archivar la sesión?'}
+          </div>
+          <p className="mt-2 text-muted-foreground" style={{ fontSize: 'var(--skin-text-sm)' }}>
+            <span className="font-medium text-foreground">{pendingArchive?.name}</span> sale de la lista
+            activa. No se borra: se restaura desde Archivados.
+          </p>
+          <div className="mt-5 flex justify-end gap-2">
+            <button
+              type="button"
+              onClick={() => setPendingArchive(null)}
+              className="rounded-md px-3 py-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+              style={{ fontSize: 'var(--skin-text-sm)' }}
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              onClick={confirmArchive}
+              className="rounded-md bg-foreground px-3 py-1.5 font-medium text-background transition-opacity hover:opacity-90"
+              style={{ fontSize: 'var(--skin-text-sm)' }}
+            >
+              Archivar
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
