@@ -26,11 +26,11 @@ import ModelGroupList, { type ModelGroup } from "@/modules/chat/composer/ModelGr
 import ModelLibraryPanel from "@/modules/chat/modals/ModelLibraryPanel";
 import { writeSelectedProvider } from '@/shared/selectedProvider';
 
+// Instancia de un solo proveedor: acá sólo se usa Claude, así que el picker
+// muestra sus modelos y nada más. El resto de proveedores sigue soportado en el
+// tipo `LLMProvider` y en el backend — se saca de la vista, no del sistema.
 const PROVIDER_META: { id: LLMProvider; name: string }[] = [
   { id: "claude", name: "Anthropic" },
-  { id: "codex", name: "OpenAI" },
-  { id: "cursor", name: "Cursor" },
-  { id: "opencode", name: "OpenCode" },
 ];
 
 const MOD_KEY =

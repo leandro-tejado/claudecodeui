@@ -21,9 +21,6 @@ import type {
 
 const PROVIDERS: Array<{ id: LLMProvider; label: string }> = [
   { id: 'claude', label: 'Claude' },
-  { id: 'codex', label: 'Codex' },
-  { id: 'cursor', label: 'Cursor' },
-  { id: 'opencode', label: 'OpenCode' },
 ];
 
 type ModelLibraryPanelProps = {
@@ -182,6 +179,8 @@ export default function ModelLibraryPanel({
         )}
       </div>
 
+      {/* Con un solo proveedor la tira de pestañas es una pestaña sola: no elige nada. */}
+      {PROVIDERS.length > 1 && (
       <div className="scrollbar-thin flex shrink-0 gap-1 overflow-x-auto rounded-xl border border-border/70 bg-muted/25 p-1">
         {PROVIDERS.map((provider) => {
           const selected = provider.id === selectedProvider;
@@ -203,6 +202,7 @@ export default function ModelLibraryPanel({
           );
         })}
       </div>
+      )}
 
       <div className="scrollbar-thin grid min-h-0 flex-1 items-start gap-4 overflow-y-auto pr-1 lg:grid-cols-[minmax(16rem,0.8fr)_minmax(20rem,1.2fr)]">
         <form
