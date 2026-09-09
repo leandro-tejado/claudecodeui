@@ -1,49 +1,46 @@
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import sharp from 'sharp';
 
-// Icon sizes needed
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+// Icon sizes needed for the PWA manifest
 const sizes = [72, 96, 128, 144, 152, 192, 384, 512];
 
-// SVG template function
+// "LT" badge — same look as the in-app sidebar logo (SkinSidebar.tsx)
 function createIconSVG(size) {
-  const cornerRadius = Math.round(size * 0.25); // 25% corner radius
-  const strokeWidth = Math.max(2, Math.round(size * 0.06)); // Scale stroke width
-  
-  // MessageSquare path scaled to size
-  const padding = Math.round(size * 0.25);
-  const iconSize = size - (padding * 2);
-  const startX = padding;
-  const startY = Math.round(padding * 0.7);
-  const endX = startX + iconSize;
-  const endY = startY + Math.round(iconSize * 0.6);
-  const tailX = startX;
-  const tailY = endY + Math.round(iconSize * 0.3);
-  
-  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- Background with rounded corners -->
-  <rect width="${size}" height="${size}" rx="${cornerRadius}" fill="hsl(262.1 83.3% 57.8%)"/>
-  
-  <!-- MessageSquare icon -->
-  <path d="M${startX} ${startY}C${startX} ${startY - 10} ${startX + 10} ${startY - 20} ${startX + 20} ${startY - 20}H${endX - 20}C${endX - 10} ${startY - 20} ${endX} ${startY - 10} ${endX} ${startY}V${endY - 20}C${endX} ${endY - 10} ${endX - 10} ${endY} ${endX - 20} ${endY}H${startX + Math.round(iconSize * 0.4)}L${tailX} ${tailY}V${startY}Z" 
-        stroke="white" 
-        stroke-width="${strokeWidth}" 
-        stroke-linecap="round" 
-        stroke-linejoin="round" 
-        fill="none"/>
+  const cornerRadius = Math.round(size * 0.22);
+  const fontSize = Math.round(size * 0.42);
+
+  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg">
+  <rect width="${size}" height="${size}" rx="${cornerRadius}" fill="hsl(240 5.9% 10%)"/>
+  <text x="${size / 2}" y="${size / 2}" text-anchor="middle" dominant-baseline="central"
+        font-family="Encode Sans, -apple-system, Helvetica, Arial, sans-serif"
+        font-size="${fontSize}" font-weight="700" fill="#ffffff">LT</text>
 </svg>`;
 }
 
-// Generate SVG files for each size
-sizes.forEach(size => {
-  const svgContent = createIconSVG(size);
-  const filename = `icon-${size}x${size}.svg`;
-  const filepath = path.join(__dirname, 'icons', filename);
-  
-  fs.writeFileSync(filepath, svgContent);
-  console.log(`Created ${filename}`);
-});
+async function main() {
+  const iconsDir = path.join(__dirname, 'icons');
 
-console.log('\nSVG icons created! To convert to PNG, you can use:');
-console.log('1. Online converter like cloudconvert.com');
-console.log('2. If you have ImageMagick: convert icon.svg icon.png');
-console.log('3. If you have Inkscape: inkscape --export-type=png icon.svg');
+  for (const size of sizes) {
+    const svgContent = createIconSVG(size);
+    const svgPath = path.join(iconsDir, `icon-${size}x${size}.svg`);
+    fs.writeFileSync(svgPath, svgContent);
+
+    const pngPath = path.join(iconsDir, `icon-${size}x${size}.png`);
+    await sharp(Buffer.from(svgContent)).png().toFile(pngPath);
+    console.log(`Created icon-${size}x${size}.svg + .png`);
+  }
+
+  // 32x32 favicon.png used by index.html alongside favicon.svg
+  const faviconSvg = fs.readFileSync(path.join(__dirname, 'favicon.svg'));
+  await sharp(faviconSvg).resize(32, 32).png().toFile(path.join(__dirname, 'favicon.png'));
+  console.log('Created favicon.png');
+}
+
+main().catch((error) => {
+  console.error(error);
+  process.exit(1);
+});
