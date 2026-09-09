@@ -114,6 +114,7 @@ export function SkinSidebar({
   onSessionSelect,
   onNewSession,
   onSessionDelete,
+  onProjectDelete,
   onLoadMoreSessions,
   isLoading,
   onRefresh,
@@ -414,9 +415,25 @@ export function SkinSidebar({
                 </div>
 
                 {!isOpen && total > 0 && (
-                  <span className="flex-none text-muted-foreground" style={{ fontSize: 'var(--skin-text-xs)' }}>
+                  <span
+                    className="flex-none text-muted-foreground transition-opacity group-hover:opacity-0"
+                    style={{ fontSize: 'var(--skin-text-xs)' }}
+                  >
                     {total}
                   </span>
+                )}
+                {onProjectDelete && (
+                  <button
+                    type="button"
+                    title="Archivar proyecto"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      onProjectDelete(project.projectId);
+                    }}
+                    className="flex-none text-muted-foreground opacity-0 transition-opacity hover:text-destructive group-hover:opacity-100"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
                 )}
                 {isOpen ? (
                   <ChevronDown className="h-3.5 w-3.5 flex-none text-muted-foreground" />

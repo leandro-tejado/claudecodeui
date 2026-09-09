@@ -1059,8 +1059,26 @@ export function useProjectsState({
     [isMobile, navigate],
   );
 
+  // Archives on the server first (hardDelete=false) and only touches local
+  // state on success — this used to remove the row from `projects` without
+  // ever calling the API, so it looked deleted until the next reload brought
+  // it right back.
   const handleSessionDelete = useCallback(
-    (sessionIdToDelete: string) => {
+    async (sessionIdToDelete: string) => {
+      try {
+        const response = await api.deleteSession(sessionIdToDelete, false);
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('[Sidebar] Failed to archive session:', { status: response.status, error: errorText });
+          alert('No se pudo archivar la sesión.');
+          return;
+        }
+      } catch (error) {
+        console.error('[Sidebar] Error archiving session:', error);
+        alert('No se pudo archivar la sesión.');
+        return;
+      }
+
       clearSessionAttention(sessionIdToDelete);
 
       if (selectedSession?.id === sessionIdToDelete) {
@@ -1169,8 +1187,26 @@ export function useProjectsState({
 
   // `projectId` is the DB identifier passed from the sidebar's delete flow
   // after the migration away from folder-derived project names.
+  //
+  // Archives on the server first (hardDelete=false) and only touches local
+  // state on success — see `handleSessionDelete` for why that order matters.
   const handleProjectDelete = useCallback(
-    (projectId: string) => {
+    async (projectId: string) => {
+      try {
+        const response = await api.deleteProject(projectId, false);
+        if (!response.ok) {
+          const data = (await response.json().catch(() => null)) as { error?: string | { message?: string } } | null;
+          const err = data?.error;
+          const message = typeof err === 'string' ? err : err?.message || 'No se pudo archivar el proyecto.';
+          alert(message);
+          return;
+        }
+      } catch (error) {
+        console.error('Error archiving project:', error);
+        alert('No se pudo archivar el proyecto.');
+        return;
+      }
+
       if (selectedProject?.projectId === projectId) {
         setSelectedProject(null);
         setSelectedSession(null);
