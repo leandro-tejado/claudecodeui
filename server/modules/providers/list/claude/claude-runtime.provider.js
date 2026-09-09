@@ -486,6 +486,34 @@ function extractTokenBudget(sdkMessage) {
 }
 
 /**
+ * Budget read from a `/compact` boundary event.
+ *
+ * `compact_boundary` is a `system` message, so `extractTokenBudget` (which
+ * only reads `assistant` messages) silently drops it — the composer's usage
+ * indicator then stays pinned at its last pre-compact number until the next
+ * assistant turn reports fresh usage. `post_tokens` is the one figure that
+ * reflects the compaction immediately.
+ * @param {Object} sdkMessage - SDK stream message
+ * @returns {TokenBudget|null} Token budget object or null
+ */
+function extractCompactBoundaryTokenBudget(sdkMessage) {
+  if (!sdkMessage || typeof sdkMessage !== 'object') {
+    return null;
+  }
+
+  if (sdkMessage.type !== 'system' || sdkMessage.subtype !== 'compact_boundary') {
+    return null;
+  }
+
+  const postTokens = sdkMessage.compact_metadata?.post_tokens;
+  if (!Number.isFinite(postTokens)) {
+    return null;
+  }
+
+  return buildTokenBudget({ input_tokens: postTokens, output_tokens: 0 });
+}
+
+/**
  * Last-resort budget read from a turn's `result` message.
  *
  * `result.usage` and `result.modelUsage` are the turn's *bill*: every request
@@ -959,7 +987,8 @@ async function queryClaudeSDK(command, options = {}, ws, context) {
       // Extract and send token budget updates from assistant usage payloads,
       // falling back to the turn's cumulative bill only for SDK builds that
       // report no per-assistant usage at all.
-      const tokenBudgetData = extractTokenBudget(message)
+      const tokenBudgetData = extractCompactBoundaryTokenBudget(message)
+        || extractTokenBudget(message)
         || (assistantBudgetSent ? null : extractCumulativeTokenBudget(message));
       if (tokenBudgetData) {
         if (message.type === 'assistant') {
@@ -1213,5 +1242,6 @@ export {
   getPendingApprovalsForSession,
   reconnectSessionWriter,
   extractTokenBudget,
-  extractCumulativeTokenBudget
+  extractCumulativeTokenBudget,
+  extractCompactBoundaryTokenBudget
 };

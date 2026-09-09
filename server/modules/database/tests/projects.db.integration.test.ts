@@ -70,3 +70,32 @@ test('projectsDb.createProjectPath returns active_conflict for active duplicates
     assert.equal(conflict.project?.isArchived, 0);
   });
 });
+
+test('projectsDb.ensureProjectPathExists never reactivates an archived project', async () => {
+  await withIsolatedDatabase(() => {
+    const initial = projectsDb.createProjectPath('/workspace/archived-by-user', 'Archived Project');
+    assert.ok(initial.project);
+
+    projectsDb.updateProjectIsArchived('/workspace/archived-by-user', true);
+
+    // Session synchronizers call this on every disk scan, including scans
+    // that merely re-confirm a transcript already indexed. It must not undo
+    // the archive the way `createProjectPath`'s ON CONFLICT does.
+    projectsDb.ensureProjectPathExists('/workspace/archived-by-user', 'Renamed by sync');
+
+    const stillArchived = projectsDb.getProjectPath('/workspace/archived-by-user');
+    assert.equal(stillArchived?.isArchived, 1);
+    assert.equal(stillArchived?.project_id, initial.project?.project_id);
+  });
+});
+
+test('projectsDb.ensureProjectPathExists creates a fresh row when none exists', async () => {
+  await withIsolatedDatabase(() => {
+    projectsDb.ensureProjectPathExists('/workspace/brand-new', 'Brand New');
+
+    const row = projectsDb.getProjectPath('/workspace/brand-new');
+    assert.ok(row);
+    assert.equal(row?.isArchived, 0);
+    assert.equal(row?.custom_project_name, 'Brand New');
+  });
+});

@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import {
+  extractCompactBoundaryTokenBudget,
   extractCumulativeTokenBudget,
   extractTokenBudget,
 } from '@/modules/providers/list/claude/claude-runtime.provider.js';
@@ -98,6 +99,47 @@ test('the cumulative reader ignores anything that is not a result', () => {
     extractCumulativeTokenBudget({
       type: 'assistant',
       message: { usage: { input_tokens: 10, output_tokens: 2 } },
+    }),
+    null,
+  );
+});
+
+test('a compact boundary produces a budget from post_tokens', () => {
+  // `/compact` emits a `system`/`compact_boundary` message that
+  // `extractTokenBudget` drops (it only reads `assistant` messages), which
+  // otherwise leaves the composer's indicator pinned at its pre-compact
+  // number until the next assistant turn reports usage.
+  const budget = extractCompactBoundaryTokenBudget({
+    type: 'system',
+    subtype: 'compact_boundary',
+    compact_metadata: { trigger: 'manual', pre_tokens: 166_000, post_tokens: 8_500 },
+  });
+
+  assert.ok(budget);
+  assert.equal(budget.inputTokens, 8_500);
+  assert.equal(budget.outputTokens, 0);
+  assert.equal(budget.used, 8_500);
+});
+
+test('a compact boundary without post_tokens emits no budget', () => {
+  // Auto-compaction can fire mid-stream before the SDK has settled on a
+  // final post-compaction size; nothing to report yet.
+  assert.equal(
+    extractCompactBoundaryTokenBudget({
+      type: 'system',
+      subtype: 'compact_boundary',
+      compact_metadata: { trigger: 'auto', pre_tokens: 166_000 },
+    }),
+    null,
+  );
+});
+
+test('the compact boundary reader ignores non-compact system messages', () => {
+  assert.equal(
+    extractCompactBoundaryTokenBudget({
+      type: 'system',
+      subtype: 'task_progress',
+      usage: { total_tokens: 5_000 },
     }),
     null,
   );

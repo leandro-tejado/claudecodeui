@@ -53,26 +53,29 @@ test('session archive queries hide archived rows from active project views', asy
   });
 });
 
-test('createSession reactivates archived rows when the session becomes active again', async () => {
+test('createSession never reactivates an archived row', async () => {
   await withIsolatedDatabase(() => {
     sessionsDb.createSession('session-reused', 'claude', '/workspace/demo-project', 'First Name');
     sessionsDb.updateSessionIsArchived('session-reused', true);
 
+    // This upsert only ever runs from a synchronizer re-scanning disk;
+    // re-discovering the transcript must not undo the user's archive.
     sessionsDb.createSession('session-reused', 'claude', '/workspace/demo-project', 'Updated Name');
 
     const activeSessions = sessionsDb.getAllSessions();
     const archivedSessions = sessionsDb.getArchivedSessions();
     const restoredSession = sessionsDb.getSessionById('session-reused');
 
-    assert.equal(activeSessions.length, 1);
-    assert.equal(activeSessions[0]?.session_id, 'session-reused');
-    assert.equal(activeSessions[0]?.custom_name, 'Updated Name');
-    assert.equal(archivedSessions.length, 0);
-    assert.equal(restoredSession?.isArchived, 0);
+    assert.equal(activeSessions.length, 0);
+    assert.equal(archivedSessions.length, 1);
+    assert.equal(archivedSessions[0]?.session_id, 'session-reused');
+    // Other fields the synchronizer carries (name, jsonl_path...) still update.
+    assert.equal(archivedSessions[0]?.custom_name, 'Updated Name');
+    assert.equal(restoredSession?.isArchived, 1);
   });
 });
 
-test("createSession leaves an archived row archived when the transcript has not changed", async () => {
+test("createSession leaves an archived row archived regardless of the transcript's timestamp", async () => {
   await withIsolatedDatabase(() => {
     const createdAt = "2026-07-18T09:00:00.000Z";
     const updatedAt = "2026-07-18T10:00:00.000Z";
@@ -89,26 +92,24 @@ test("createSession leaves an archived row archived when the transcript has not 
     assert.equal(sessionsDb.getArchivedSessions().length, 1);
     assert.equal(sessionsDb.getAllSessions().length, 0);
 
-    // Actually writing to the session again still brings it back.
+    // Even a transcript that genuinely picked up new activity must not
+    // reactivate the row -- only an explicit restore does that.
     sessionsDb.createSession("session-untouched", "claude", "/workspace/demo-project", "A Name", createdAt, "2026-07-18T11:00:00.000Z", jsonlPath);
 
-    assert.equal(sessionsDb.getSessionById("session-untouched")?.isArchived, 0);
+    assert.equal(sessionsDb.getSessionById("session-untouched")?.isArchived, 1);
   });
 });
 
-test("the upsert path counts an omitted timestamp as activity", async () => {
+test("the upsert path never reactivates a row even with an omitted timestamp", async () => {
   await withIsolatedDatabase(() => {
     // An app-created row carries no provider id, so indexing it takes the
-    // INSERT ... ON CONFLICT branch rather than the UPDATE above. Its
-    // updated_at is CURRENT_TIMESTAMP, which resolves to whole seconds, so a
-    // call in the same second is not *newer* -- the omitted timestamp itself
-    // has to be what reactivates the row.
+    // INSERT ... ON CONFLICT branch rather than the UPDATE above.
     sessionsDb.createAppSession("session-legacy", "claude", "/workspace/demo-project");
     sessionsDb.updateSessionIsArchived("session-legacy", true);
 
     sessionsDb.createSession("session-legacy", "claude", "/workspace/demo-project", "Indexed Name");
 
-    assert.equal(sessionsDb.getSessionById("session-legacy")?.isArchived, 0);
+    assert.equal(sessionsDb.getSessionById("session-legacy")?.isArchived, 1);
   });
 });
 

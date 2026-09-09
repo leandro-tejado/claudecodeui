@@ -95,8 +95,10 @@ export const sessionsDb = {
     const normalizedProjectPath = normalizeProjectPathForProvider(provider, projectPath);
 
     // First, ensure the project path is recorded in the projects table,
-    // since it's a foreign key in the sessions table.
-    projectsDb.createProjectPath(normalizedProjectPath);
+    // since it's a foreign key in the sessions table. This is the
+    // background synchronizer's path, so it must not resurrect a project
+    // the user archived — see `ensureProjectPathExists`.
+    projectsDb.ensureProjectPathExists(normalizedProjectPath);
 
     const existing = db
       .prepare(
@@ -107,13 +109,16 @@ export const sessionsDb = {
       .get(providerSessionId, provider) as { session_id: string } | undefined;
 
     if (existing) {
+      // isArchived is deliberately absent from this SET: this upsert only
+      // ever runs from a synchronizer re-scanning disk, and re-discovering a
+      // transcript must not undo an archive the user did on purpose. Only
+      // `updateSessionIsArchived`/`restoreSessionById` touch that column.
       db.prepare(
         `UPDATE sessions SET
            provider = ?,
            updated_at = COALESCE(?, CURRENT_TIMESTAMP),
            project_path = ?,
            jsonl_path = ?,
-           isArchived = CASE WHEN ? IS NULL OR julianday(?) > julianday(updated_at) THEN 0 ELSE isArchived END,
            custom_name = CASE
              WHEN session_id <> provider_session_id AND custom_name IS NOT NULL THEN custom_name
              ELSE COALESCE(?, custom_name)
@@ -124,8 +129,6 @@ export const sessionsDb = {
         updatedAtValue,
         normalizedProjectPath,
         jsonlPath ?? null,
-        updatedAtValue,
-        updatedAtValue,
         customName ?? null,
         existing.session_id
       );
@@ -136,6 +139,8 @@ export const sessionsDb = {
     // Sessions created outside the app (directly via the provider CLI) are
     // keyed by the provider-native id for both columns. The ON CONFLICT path
     // covers legacy rows that predate the provider_session_id mapping.
+    // Same reasoning as the UPDATE branch above: isArchived is excluded from
+    // DO UPDATE SET so a re-scan can never resurrect an archived session.
     db.prepare(
       `INSERT INTO sessions (session_id, provider, provider_session_id, custom_name, project_path, jsonl_path, isArchived, created_at, updated_at)
        VALUES (?, ?, ?, ?, ?, ?, 0, COALESCE(?, CURRENT_TIMESTAMP), COALESCE(?, CURRENT_TIMESTAMP))
@@ -145,7 +150,6 @@ export const sessionsDb = {
          updated_at = excluded.updated_at,
          project_path = excluded.project_path,
          jsonl_path = excluded.jsonl_path,
-         isArchived = CASE WHEN ? IS NULL OR julianday(excluded.updated_at) > julianday(sessions.updated_at) THEN 0 ELSE sessions.isArchived END,
          custom_name = CASE
            WHEN sessions.session_id <> sessions.provider_session_id AND sessions.custom_name IS NOT NULL
              THEN sessions.custom_name
@@ -159,7 +163,6 @@ export const sessionsDb = {
       normalizedProjectPath,
       jsonlPath ?? null,
       createdAtValue,
-      updatedAtValue,
       updatedAtValue
     );
 

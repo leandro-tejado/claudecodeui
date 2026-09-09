@@ -44,6 +44,28 @@ export const projectsDb = {
         };
     },
 
+    /**
+     * Guarantees a project row exists for the path (the sessions table's FK
+     * needs one) without ever touching `isArchived`.
+     *
+     * Session synchronizers call this on every disk scan, including scans
+     * that merely re-confirm a transcript that was already indexed. Using
+     * `createProjectPath` there resurrected any project the user had just
+     * archived, because its `ON CONFLICT` unconditionally flips
+     * `isArchived` back to 0. Only an explicit user action (starting a new
+     * session, creating a project, restoring one) should do that.
+     */
+    ensureProjectPathExists(projectPath: string, customProjectName: string | null = null): void {
+        const db = getConnection();
+        const normalizedProjectPath = normalizeProjectPath(projectPath);
+        const normalizedProjectName = normalizeProjectDisplayName(normalizedProjectPath, customProjectName);
+        db.prepare(`
+            INSERT INTO projects (project_id, project_path, custom_project_name, isArchived)
+            VALUES (?, ?, ?, 0)
+            ON CONFLICT(project_path) DO NOTHING
+        `).run(randomUUID(), normalizedProjectPath, normalizedProjectName);
+    },
+
     getProjectPath(projectPath: string): ProjectRepositoryRow | null {
         const db = getConnection();
         const normalizedProjectPath = normalizeProjectPath(projectPath);
