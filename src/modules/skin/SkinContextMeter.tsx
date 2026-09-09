@@ -35,7 +35,7 @@ const formatTokens = (value: number): string => {
   return String(value);
 };
 
-/** Ventana configurada por env; el default es el mismo que usa el server. */
+/** Último recurso: el server ya manda la ventana del modelo en `total`. */
 const configuredWindow = (): number =>
   readNumber(import.meta.env.VITE_CONTEXT_WINDOW) || 160_000;
 
@@ -53,7 +53,7 @@ function SkinContextMeter({ usage, onClick }: SkinContextMeterProps) {
   // Sin consumo todavía (sesión nueva) no hay nada que informar.
   if (used === 0) return null;
 
-  const total = readNumber(usage?.contextWindow) || configuredWindow();
+  const total = readNumber(usage?.total) || configuredWindow();
   const ratio = Math.min(1, used / total);
   const percent = Math.round(ratio * 100);
 

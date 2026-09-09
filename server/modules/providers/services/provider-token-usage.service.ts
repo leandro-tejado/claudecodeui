@@ -182,6 +182,65 @@ function emptyCodexTokenUsage(): TokenUsageResult {
 }
 
 /**
+ * Context window per model id, in tokens. Anthropic model docs, cached
+ * 2026-06-24. Only documented models are listed: an unknown id resolves to
+ * null so the caller falls back instead of inventing a number.
+ */
+const CLAUDE_CONTEXT_WINDOWS: Record<string, number> = {
+  'claude-fable-5-1': 1_000_000,
+  'claude-fable-5': 1_000_000,
+  'claude-mythos-5-1': 1_000_000,
+  'claude-opus-5': 1_000_000,
+  'claude-opus-4-8': 1_000_000,
+  'claude-opus-4-7': 1_000_000,
+  'claude-opus-4-6': 1_000_000,
+  'claude-sonnet-5': 1_000_000,
+  'claude-sonnet-4-6': 1_000_000,
+  'claude-haiku-4-5': 200_000,
+};
+
+/**
+ * Context window for the model that actually produced a turn.
+ *
+ * The transcript records the model per assistant row, so the meter can size
+ * itself instead of trusting one global CONTEXT_WINDOW that goes stale the
+ * moment the user switches models mid-session.
+ */
+export function resolveClaudeContextWindow(model: unknown): number | null {
+  if (typeof model !== 'string' || model.length === 0) {
+    return null;
+  }
+
+  // Claude Code marks harness variants with a bracket suffix: `claude-opus-5[1m]`
+  // is the million-token variant of the same published id.
+  const variant = model.match(/\[(\d+)m\]$/i);
+  if (variant) {
+    return Number(variant[1]) * 1_000_000;
+  }
+
+  const id = model
+    .replace(/\[[^\]]*\]$/, '')
+    .replace(/-\d{8}$/, ''); // dated snapshot, e.g. claude-haiku-4-5-20251001
+
+  const exact = CLAUDE_CONTEXT_WINDOWS[id];
+  if (exact !== undefined) {
+    return exact;
+  }
+
+  // Longest documented prefix wins, so an unseen regional or dated variant of a
+  // known model still resolves rather than silently taking the fallback.
+  let best: number | null = null;
+  let bestLength = 0;
+  for (const [knownId, window] of Object.entries(CLAUDE_CONTEXT_WINDOWS)) {
+    if (id.startsWith(`${knownId}-`) && knownId.length > bestLength) {
+      best = window;
+      bestLength = knownId.length;
+    }
+  }
+  return best;
+}
+
+/**
  * Latest context-window usage from a Claude transcript's already-parsed rows.
  *
  * Exported because the session-messages reader hands the same usage back on
@@ -202,6 +261,7 @@ export function summarizeClaudeTokenUsage(
   let outputTokens = 0;
   let cacheReadTokens = 0;
   let cacheCreationTokens = 0;
+  let modelId: unknown = null;
 
   for (let index = entries.length - 1; index >= 0; index -= 1) {
     const entry = entries[index];
@@ -241,11 +301,15 @@ export function summarizeClaudeTokenUsage(
     cacheCreationTokens = rowCacheCreationTokens;
     inputTokens = rowInputTokens;
     outputTokens = rowOutputTokens;
+    modelId = entry.message?.model;
     break;
   }
 
   const parsedContextWindow = Number.parseInt(configuredContextWindow ?? '', 10);
-  const contextWindow = Number.isFinite(parsedContextWindow) ? parsedContextWindow : 160_000;
+  const fallbackContextWindow = Number.isFinite(parsedContextWindow) ? parsedContextWindow : 160_000;
+  // The model that wrote the turn wins: CONTEXT_WINDOW is one global number and
+  // cannot follow a session that switches models.
+  const contextWindow = resolveClaudeContextWindow(modelId) ?? fallbackContextWindow;
   const cacheTokens = cacheReadTokens + cacheCreationTokens;
 
   return {

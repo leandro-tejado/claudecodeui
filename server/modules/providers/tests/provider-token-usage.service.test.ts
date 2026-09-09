@@ -8,6 +8,7 @@ import Database from 'better-sqlite3';
 
 import {
   createProviderTokenUsageService,
+  resolveClaudeContextWindow,
   summarizeClaudeTokenUsage,
 } from '@/modules/providers/services/provider-token-usage.service.js';
 import { AppError } from '@/shared/utils.js';
@@ -370,4 +371,44 @@ test('Codex token usage falls back to the whole file when the tail has no token_
   } finally {
     await rm(tempDirectory, { recursive: true, force: true });
   }
+});
+
+test('the context window comes from the model that wrote the turn, not from CONTEXT_WINDOW', () => {
+  // The meter read 75% of a 160K default while the session was actually running
+  // a 1M model — a full context looked four turns away when it was not.
+  const entries = [
+    { type: 'assistant', message: { model: 'claude-opus-5', usage: { input_tokens: 3, cache_read_input_tokens: 4000, output_tokens: 80 } } },
+  ];
+
+  assert.equal(summarizeClaudeTokenUsage(entries, '160000').total, 1_000_000);
+});
+
+test('a session that switches models resizes to the newest turn', () => {
+  const entries = [
+    { type: 'assistant', message: { model: 'claude-opus-5', usage: { input_tokens: 3, cache_read_input_tokens: 4000, output_tokens: 80 } } },
+    { type: 'assistant', message: { model: 'claude-haiku-4-5', usage: { input_tokens: 3, cache_read_input_tokens: 500, output_tokens: 10 } } },
+  ];
+
+  assert.equal(summarizeClaudeTokenUsage(entries, '160000').total, 200_000);
+});
+
+test('an unknown model falls back to the configured window instead of inventing one', () => {
+  const entries = [
+    { type: 'assistant', message: { model: 'some-other-model', usage: { input_tokens: 3, cache_read_input_tokens: 4000, output_tokens: 80 } } },
+  ];
+
+  assert.equal(summarizeClaudeTokenUsage(entries, '160000').total, 160_000);
+});
+
+test('resolveClaudeContextWindow understands variants, snapshots and unknowns', () => {
+  assert.equal(resolveClaudeContextWindow('claude-opus-5'), 1_000_000);
+  assert.equal(resolveClaudeContextWindow('claude-sonnet-5'), 1_000_000);
+  assert.equal(resolveClaudeContextWindow('claude-haiku-4-5'), 200_000);
+  // Harness variant suffix written by Claude Code.
+  assert.equal(resolveClaudeContextWindow('claude-opus-5[1m]'), 1_000_000);
+  // Dated snapshot ids resolve to their base model.
+  assert.equal(resolveClaudeContextWindow('claude-haiku-4-5-20251001'), 200_000);
+  assert.equal(resolveClaudeContextWindow('<synthetic>'), null);
+  assert.equal(resolveClaudeContextWindow(null), null);
+  assert.equal(resolveClaudeContextWindow(''), null);
 });
