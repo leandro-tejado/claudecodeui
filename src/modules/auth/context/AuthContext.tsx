@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { ReactNode } from 'react';
 
@@ -15,6 +15,14 @@ type AuthUser = {
 };
 
 const AUTH_TOKEN_STORAGE_KEY = 'auth-token';
+
+// `setTimeout` guarda su delay en un entero de 32 bits con signo: cualquier
+// espera mayor a ~24.8 dias desborda y el timer dispara de inmediato. Con
+// JWT_EXPIRES_IN=365d la mitad de vida del token son 182 dias, asi que el
+// refresh saltaba al instante, emitia un token nuevo, y ese token volvia a
+// armar el timer: un bucle de refresh que tiraba el websocket en cada vuelta.
+// La espera se parte en saltos acotados.
+const MAX_TIMEOUT_DELAY_MS = 2_147_483_647;
 
 const AUTH_ERROR_MESSAGES = {
   authStatusCheckFailed: 'errors.authStatusCheckFailed',
@@ -113,6 +121,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [needsSetup, setNeedsSetup] = useState(false);
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // `checkAuthStatus` lee el token de un ref para que refrescarlo no cambie la
+  // identidad del callback: si dependiera de `token`, cada refresh re-corria la
+  // verificacion de sesion, y su `setIsLoading(true)` desconectaba el websocket
+  // hasta que volviera a resolver.
+  const tokenRef = useRef(token);
+  tokenRef.current = token;
 
   const setSession = useCallback((nextUser: AuthUser, nextToken: string) => {
     setUser(nextUser);
@@ -220,7 +234,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       setNeedsSetup(false);
 
-      if (!token) {
+      if (!tokenRef.current) {
         return;
       }
 
@@ -244,7 +258,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     } finally {
       setIsLoading(false);
     }
-  }, [checkOnboardingStatus, clearSession, t, token]);
+  }, [checkOnboardingStatus, clearSession, t]);
 
   useEffect(() => {
     if (IS_PLATFORM) {
@@ -264,6 +278,21 @@ export function AuthProvider({ children }: AuthProviderProps) {
       return undefined;
     }
 
+    let refreshTimer: number | null = null;
+
+    // Espera acotada y re-armada: al despertar, si todavia falta para la mitad
+    // de vida del token, vuelve a dormir en vez de refrescar antes de tiempo.
+    const scheduleRefresh = (delay: number) => {
+      refreshTimer = window.setTimeout(() => {
+        const remaining = getAuthTokenRefreshDelay(token);
+        if (remaining !== null && remaining > 0) {
+          scheduleRefresh(remaining);
+          return;
+        }
+        void refreshSession();
+      }, Math.min(delay, MAX_TIMEOUT_DELAY_MS));
+    };
+
     const refreshIfNeeded = () => {
       const refreshDelay = getAuthTokenRefreshDelay(token);
       if (refreshDelay !== null && refreshDelay <= 0) {
@@ -277,9 +306,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     };
 
     const refreshDelay = getAuthTokenRefreshDelay(token);
-    const refreshTimer = refreshDelay === null
-      ? null
-      : window.setTimeout(() => void refreshSession(), refreshDelay);
+    if (refreshDelay !== null) {
+      scheduleRefresh(refreshDelay);
+    }
 
     window.addEventListener('focus', refreshIfNeeded);
     document.addEventListener('visibilitychange', handleVisibilityChange);
