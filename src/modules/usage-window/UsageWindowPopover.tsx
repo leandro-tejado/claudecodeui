@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 
 import { cn } from '@/shared/utils';
 import type { UsageWindowSnapshot } from '@/modules/usage-window/types';
@@ -21,9 +22,13 @@ function remaining(resetsAt: number): string {
 type Props = {
   snapshot: UsageWindowSnapshot;
   onClose: () => void;
+  /** Rect del botón que lo abre, para anclarlo desde el portal. */
+  anchor: DOMRect | null;
+  /** El botón mismo, para no cerrar y reabrir en el mismo gesto. */
+  anchorEl: HTMLElement | null;
 };
 
-export default function UsageWindowPopover({ snapshot, onClose }: Props) {
+export default function UsageWindowPopover({ snapshot, onClose, anchor, anchorEl }: Props) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -31,7 +36,11 @@ export default function UsageWindowPopover({ snapshot, onClose }: Props) {
       if (event.key === 'Escape') onClose();
     };
     const onPointer = (event: MouseEvent) => {
-      if (ref.current && !ref.current.contains(event.target as Node)) onClose();
+      const target = event.target as Node;
+      // El botón se excluye a propósito: sin esto el `mousedown` cierra y el
+      // `click` que viene detrás vuelve a abrir, y el panel parpadea sin cerrarse.
+      if (anchorEl?.contains(target)) return;
+      if (ref.current && !ref.current.contains(target)) onClose();
     };
     document.addEventListener('keydown', onKey);
     // `mousedown` rather than `click`, so the toggle button's own click does not
@@ -41,17 +50,32 @@ export default function UsageWindowPopover({ snapshot, onClose }: Props) {
       document.removeEventListener('keydown', onKey);
       document.removeEventListener('mousedown', onPointer);
     };
-  }, [onClose]);
+  }, [onClose, anchorEl]);
 
   const medido = snapshot.calibradoDe.startsWith('medido');
   const sesiones = snapshot.porSesion.slice(0, 8);
 
-  return (
+  /*
+   * Va en un portal, no como hijo del botón.
+   *
+   * La cabecera lleva `backdrop-blur-sm`, y eso abre un stacking context
+   * propio: dentro de él un `z-50` sólo compite con sus hermanos, así que el
+   * panel quedaba entreverado con el texto del chat en vez de encima. Sacarlo
+   * a `body` lo devuelve al contexto raíz; a cambio hay que anclarlo a mano
+   * contra el rect del botón, y con `right` en vez de `left` para que no se
+   * salga por el borde derecho en pantallas angostas.
+   */
+  const width = Math.min(352, window.innerWidth - 24);
+  const top = (anchor?.bottom ?? 0) + 8;
+  const right = Math.max(12, window.innerWidth - (anchor?.right ?? window.innerWidth));
+
+  return createPortal(
     <div
       ref={ref}
       role="dialog"
       aria-label="Detalle de la ventana de 5 horas"
-      className="absolute right-0 top-full z-50 mt-2 max-h-[70vh] w-[min(22rem,calc(100vw-1.5rem))] overflow-y-auto rounded-lg border border-border bg-popover p-3 text-popover-foreground shadow-lg"
+      style={{ position: 'fixed', top, right, width }}
+      className="z-[100] max-h-[70vh] overflow-y-auto rounded-lg border border-border bg-popover p-3 text-popover-foreground shadow-xl"
     >
       <div className="flex items-baseline justify-between gap-2">
         <span className="text-sm font-semibold">Ventana de 5 horas</span>
@@ -106,6 +130,7 @@ export default function UsageWindowPopover({ snapshot, onClose }: Props) {
           : 'Límite estimado. Se recalibra solo la primera vez que la API rechace un pedido.'}{' '}
         No cubre la ventana semanal.
       </p>
-    </div>
+    </div>,
+    document.body,
   );
 }

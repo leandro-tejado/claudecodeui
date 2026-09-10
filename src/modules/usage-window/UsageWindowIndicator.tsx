@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 
 import { cn } from '@/shared/utils';
 import { CircleProgress } from '@/modules/usage-window/CircleProgress';
@@ -16,6 +16,14 @@ import { useUsageWindow } from '@/modules/usage-window/useUsageWindow';
 export default function UsageWindowIndicator() {
   const snapshot = useUsageWindow();
   const [open, setOpen] = useState(false);
+  // El panel vive en un portal, así que necesita saber contra qué anclarse.
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const [anchor, setAnchor] = useState<DOMRect | null>(null);
+
+  const toggle = useCallback(() => {
+    setAnchor(buttonRef.current?.getBoundingClientRect() ?? null);
+    setOpen((value) => !value);
+  }, []);
 
   // Grey ring until the first snapshot lands. Rendering zero would be a claim
   // about the account that we cannot make yet.
@@ -38,8 +46,9 @@ export default function UsageWindowIndicator() {
   return (
     <div className="relative flex-shrink-0">
       <button
+        ref={buttonRef}
         type="button"
-        onClick={() => setOpen((value) => !value)}
+        onClick={toggle}
         aria-label={label}
         aria-expanded={open}
         title={label}
@@ -56,7 +65,14 @@ export default function UsageWindowIndicator() {
         />
       </button>
 
-      {open && <UsageWindowPopover snapshot={snapshot} onClose={() => setOpen(false)} />}
+      {open && (
+        <UsageWindowPopover
+          snapshot={snapshot}
+          anchor={anchor}
+          anchorEl={buttonRef.current}
+          onClose={() => setOpen(false)}
+        />
+      )}
     </div>
   );
 }
