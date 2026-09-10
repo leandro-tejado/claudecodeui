@@ -366,7 +366,7 @@ El punto 5 es el que dice si el fork sigue siendo mantenible.
 
 **6 · No se verificó el endpoint HTTP con token.** El proceso usa un `JWT_SECRET` distinto al del `.env`, así que el token generado a mano da `AUTH_TOKEN_INVALID`. Se verificó que la ruta existe y está protegida (401, contra 200 de una ruta inexistente) y que el servicio que envuelve reproduce las dos ventanas con 0,00% de error. El camino completo con auth se ve al abrir la interfaz.
 
-**7 · Falta reiniciar CloudCLI.** El proceso (pid 236606) es el padre de las cuatro sesiones de Claude abiertas, incluida la que ejecutó este plan. Reiniciarlo las corta a todas, así que la decisión queda del lado del operador.
+**7 · Desplegado.** CloudCLI se reinició (pid 248911) y esta sesión se reanudó debajo del proceso nuevo. Verificado contra el servicio en vivo: `/api/usage-window` responde `401` (existe y está protegida, contra `200` del catch-all del SPA en una ruta inexistente), y el bundle que sirve — `index-BZXOp_Ul.js`, 3,1 MB — contiene todas las cadenas del indicador. Queda pendiente sólo la confirmación visual: el círculo renderizado y el popover abriendo.
 
 ### Medido, no estimado
 
@@ -388,8 +388,8 @@ El punto 5 es el que dice si el fork sigue siendo mantenible.
 
 ## Continuacion de Sesion
 
-**Fases completadas:** 1, 2, 3 y 5 validadas con datos reales. Fase 4 escrita, compilada y presente en el bundle; falta verla renderizada.
-**Fase actual:** Fase 4 - verificación visual, bloqueada por el reinicio de CloudCLI
-**Proximo paso exacto:** reiniciar el proceso de CloudCLI (pid 236606) para que sirva el build nuevo, abrir `:8443` y confirmar el círculo en el header
-**Bloqueantes:** el reinicio corta la sesión del navegador; requiere confirmación del usuario
+**Fases completadas:** 1, 2, 3 y 5 validadas con datos reales. Fase 4 desplegada y servida; falta la confirmación visual del operador.
+**Fase actual:** Fase 4 - confirmación visual del círculo y del popover
+**Proximo paso exacto:** recargar `:8443` y confirmar el círculo a la derecha del nombre de la sesión; al hacer clic, el popover con el desglose y la leyenda `Límite medido el 2026-09-10`
+**Bloqueantes:** ninguno
 **Micro-tasks pendientes:** 3 de 23 — todas de verificación visual
