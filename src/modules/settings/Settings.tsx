@@ -17,6 +17,7 @@ import { PluginSettingsTab } from '@/modules/plugins';
 import AboutTab from '@/modules/settings/tabs/AboutTab';
 import { useSettingsController } from '@/modules/settings/hooks/useSettingsController';
 import { useWebPush } from '@/modules/settings/hooks/useWebPush';
+import { useBrowserNotifications } from '@/modules/notifications';
 import type { AgentSettingsProject } from '@/shared/types';
 
 type SettingsProps = {
@@ -43,6 +44,7 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }: Set
       : ((window as any).cloudcliDesktopNotifications || null)
   ), []);
   const [desktopNotificationsState, setDesktopNotificationsState] = useState<DesktopNotificationsState | null>(null);
+  const browserNotifications = useBrowserNotifications();
   const {
     activeTab,
     setActiveTab,
@@ -212,6 +214,7 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }: Set
                   onDisablePush={handleDisablePush}
                   isDesktop={Boolean(desktopNotificationsBridge)}
                   desktopNotifications={desktopNotificationsState}
+                  browserNotifications={browserNotifications}
                   onEnableDesktopNotifications={handleEnableDesktopNotifications}
                   onDisableDesktopNotifications={handleDisableDesktopNotifications}
                 />

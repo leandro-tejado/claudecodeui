@@ -22,13 +22,15 @@ export default function ProjectEffects({
   });
 
   useEffect(() => {
-    if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) {
-      return undefined;
-    }
-
     const handleServiceWorkerMessage = (event: MessageEvent) => {
       const message = event.data;
       if (!message || message.type !== 'notification:navigate') {
+        return;
+      }
+
+      // Same-origin only. Window messages, unlike service worker ones, can be
+      // posted by any frame or extension that has a handle on this window.
+      if (event.origin && event.origin !== window.location.origin) {
         return;
       }
 
@@ -48,10 +50,21 @@ export default function ProjectEffects({
       navigate('/');
     };
 
-    navigator.serviceWorker.addEventListener('message', handleServiceWorkerMessage);
+    // Two sources, one handler. Push notifications arrive from the service
+    // worker; the ones the browser shows while the tab is alive are posted by
+    // BrowserNotificationsProvider on the window. Routing them through the same
+    // function is what keeps a single copy of the navigation rules.
+    const hasServiceWorker = typeof navigator !== 'undefined' && 'serviceWorker' in navigator;
+    if (hasServiceWorker) {
+      navigator.serviceWorker.addEventListener('message', handleServiceWorkerMessage);
+    }
+    window.addEventListener('message', handleServiceWorkerMessage);
 
     return () => {
-      navigator.serviceWorker.removeEventListener('message', handleServiceWorkerMessage);
+      if (hasServiceWorker) {
+        navigator.serviceWorker.removeEventListener('message', handleServiceWorkerMessage);
+      }
+      window.removeEventListener('message', handleServiceWorkerMessage);
     };
   }, [navigate, refreshProjectsSilently, setActiveTab, setSidebarOpen]);
 

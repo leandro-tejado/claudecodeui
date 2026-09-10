@@ -6,6 +6,7 @@ import { UiPreferencesProvider } from '@/shared/context/UiPreferencesContext';
 import { AuthProvider, ProtectedRoute } from '@/modules/auth';
 import { TaskMasterProvider,TasksSettingsProvider } from '@/modules/task-master';
 import { WebSocketProvider } from '@/shared/context/WebSocketContext';
+import { BrowserNotificationsProvider } from '@/modules/notifications';
 import { PluginsProvider } from '@/modules/plugins';
 import { ProjectWorkspaceRoute } from '@/modules/project-workspace';
 import { i18n } from '@/modules/i18n';
@@ -115,6 +116,10 @@ export default function App() {
         <UiPreferencesProvider>
         <AuthProvider>
           <WebSocketProvider>
+            {/* Inside AuthProvider because the notification socket authenticates
+                with the same token, and outside the router so a notification can
+                navigate the app it is mounted above. */}
+            <BrowserNotificationsProvider>
             <PluginsProvider>
               <TasksSettingsProvider>
                 <TaskMasterProvider>
@@ -129,6 +134,7 @@ export default function App() {
                 </TaskMasterProvider>
               </TasksSettingsProvider>
             </PluginsProvider>
+            </BrowserNotificationsProvider>
           </WebSocketProvider>
         </AuthProvider>
         </UiPreferencesProvider>

@@ -23,6 +23,14 @@ type NotificationsSettingsTabProps = {
   } | null;
   onEnableDesktopNotifications?: () => void;
   onDisableDesktopNotifications?: () => void;
+  /** Live state of this browser's notification channel; absent outside the web app. */
+  browserNotifications?: {
+    isSupported: boolean;
+    permission: NotificationPermission;
+    isConnected: boolean;
+    requestPermission: () => Promise<NotificationPermission>;
+    showTestNotification: () => void;
+  } | null;
 };
 
 /** Rendered by Settings for the "notifications" tab, covering notification channels and events. */
@@ -38,6 +46,7 @@ export default function NotificationsSettingsTab({
   desktopNotifications = null,
   onEnableDesktopNotifications,
   onDisableDesktopNotifications,
+  browserNotifications = null,
 }: NotificationsSettingsTabProps) {
   const { t } = useTranslation('settings');
 
@@ -146,6 +155,97 @@ export default function NotificationsSettingsTab({
                 </span>
               )}
             </div>
+          )}
+        </div>
+      )}
+
+      {/* Notificaciones del navegador. Se separan de Web Push a propósito: son
+          instantáneas y no salen del tailnet, pero necesitan la pestaña viva.
+          Las tres condiciones se muestran juntas porque fallar una sola deja
+          todo en silencio, y desde afuera las tres se ven igual. */}
+      {!isDesktop && browserNotifications?.isSupported && (
+        <div className="space-y-4 rounded-lg border border-border bg-card p-4">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <BellRing className="h-4 w-4 text-blue-600" />
+              <h4 className="font-medium text-foreground">
+                {t('notifications.browser.title', { defaultValue: 'Avisos en este navegador' })}
+              </h4>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              {t('notifications.browser.description', {
+                defaultValue: 'Muestra un aviso del sistema cuando termina una ejecución. Necesita esta pestaña abierta.',
+              })}
+            </p>
+          </div>
+
+          {browserNotifications.permission === 'denied' ? (
+            <p className="text-sm text-muted-foreground">
+              {t('notifications.browser.denied', {
+                defaultValue: 'El navegador bloqueó los avisos para este sitio. Hay que volver a permitirlos desde la barra de direcciones.',
+              })}
+            </p>
+          ) : (
+            <div className="flex flex-wrap items-center gap-3">
+              {browserNotifications.permission !== 'granted' && (
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={() => {
+                    void browserNotifications.requestPermission();
+                  }}
+                >
+                  <BellRing className="h-4 w-4" />
+                  {t('notifications.browser.grant', { defaultValue: 'Permitir avisos' })}
+                </Button>
+              )}
+
+              <label className="flex items-center gap-2 text-sm text-foreground">
+                <input
+                  type="checkbox"
+                  checked={notificationPreferences.channels.desktop}
+                  onChange={(event) =>
+                    onNotificationPreferencesChange({
+                      ...notificationPreferences,
+                      channels: {
+                        ...notificationPreferences.channels,
+                        desktop: event.target.checked,
+                      },
+                    })
+                  }
+                  className="h-4 w-4"
+                />
+                {t('notifications.browser.channelEnabled', { defaultValue: 'Enviar avisos a este navegador' })}
+              </label>
+
+              {browserNotifications.permission === 'granted' && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={browserNotifications.showTestNotification}
+                >
+                  <Play className="h-4 w-4" />
+                  {t('notifications.browser.test', { defaultValue: 'Probar aviso' })}
+                </Button>
+              )}
+            </div>
+          )}
+
+          {browserNotifications.permission === 'granted' && (
+            <p className="text-sm text-muted-foreground">
+              {browserNotifications.isConnected
+                ? t('notifications.browser.connected', { defaultValue: 'Conectado y esperando avisos.' })
+                : t('notifications.browser.connecting', { defaultValue: 'Conectando…' })}
+            </p>
+          )}
+
+          {browserNotifications.permission === 'granted' && !notificationPreferences.channels.desktop && (
+            <p className="text-sm text-amber-600 dark:text-amber-400">
+              {t('notifications.browser.channelOff', {
+                defaultValue: 'Los avisos están permitidos, pero el envío a este navegador está apagado: no va a llegar ninguno.',
+              })}
+            </p>
           )}
         </div>
       )}

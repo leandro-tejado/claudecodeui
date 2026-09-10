@@ -50,6 +50,12 @@ export default defineConfig(({ mode }) => {
         '/plugin-ws': {
           target: `ws://${proxyHost}:${serverPort}`,
           ws: true
+        },
+        // Without this, browser notifications only work in the built app: in
+        // dev the route never reaches the backend and the socket dies silently.
+        '/desktop-notifications': {
+          target: `ws://${proxyHost}:${serverPort}`,
+          ws: true
         }
       }
     },
