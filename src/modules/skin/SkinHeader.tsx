@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 
 import { usePlugins, PluginIcon } from '@/modules/plugins';
 import { toggleSidebarCollapsed } from '@/modules/skin/skinUiStore';
+import { UsageWindowIndicator } from '@/modules/usage-window';
 import { useTheme } from '@/shared/context/ThemeContext';
 import { Tooltip } from '@/shared/ui';
 import type { AppTab, Project, ProjectSession } from '@/shared/types';
@@ -172,6 +173,11 @@ export default function SkinHeader({
             {selectedProject.displayName}
           </div>
         </div>
+
+        {/* Cuánto queda de la ventana de 5 horas de la suscripción. Va acá, al
+            lado del nombre, porque es contexto de la sesión y no una acción:
+            se mira de reojo, no se usa. El detalle vive en su popover. */}
+        <UsageWindowIndicator />
 
         {/* Tema: un clic, sin entrar a Ajustes. El control de tres estados
             (con "Sistema") sigue estando en Ajustes → Apariencia; acá alcanza

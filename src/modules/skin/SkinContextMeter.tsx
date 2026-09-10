@@ -13,10 +13,12 @@ import { Tooltip } from '@/shared/ui';
  * Sigue abriendo el desglose detallado al hacer click, así que el número exacto
  * no se pierde: deja de ocupar la barra.
  *
- * NOTA sobre el límite de 5 horas de la suscripción: hoy no hay de dónde
- * sacarlo. CloudCLI sólo conoce el mensaje de error que Claude devuelve cuando
- * el límite YA se agotó (`formatUsageLimitText`), no la cuota restante. Añadir
- * esa segunda barra requiere primero una fuente de ese dato.
+ * El límite de 5 horas de la suscripción ya no vive acá: le faltaba una fuente
+ * del dato — CloudCLI sólo conocía el mensaje de error de un límite YA agotado
+ * (`formatUsageLimitText`) — y ahora la tiene. `modules/usage-window` la cuenta
+ * desde los transcripts y la dibuja en la cabecera, que es donde se mira sin
+ * estar escribiendo. Este medidor vuelve a ser una sola cosa: el contexto del
+ * turno.
  */
 
 type SkinContextMeterProps = {
