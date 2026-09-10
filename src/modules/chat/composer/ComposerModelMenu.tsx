@@ -94,7 +94,11 @@ function ComposerModelMenu({
         title={ariaLabel}
       >
         <span className="truncate">{triggerLabel}</span>
-        {hasModelSection && hasEffortSection && effort !== DEFAULT_EFFORT_VALUE && (
+        {/* El nivel se muestra siempre, incluido el default. Ocultarlo cuando
+            valia `default` hacia que el control mas caro de la app fuera
+            invisible justo en su estado inicial: no habia forma de saber, sin
+            abrir el menu, que el razonamiento era configurable. */}
+        {hasModelSection && hasEffortSection && (
           <span className="hidden shrink-0 capitalize text-muted-foreground sm:inline">· {effortLabel}</span>
         )}
       </button>
