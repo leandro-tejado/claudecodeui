@@ -9,9 +9,8 @@ import {
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-import { DarkModeToggle } from '@/shared/ui';
+import { ThemePreferenceSelect } from '@/shared/ui';
 import { LanguageSelector } from '@/modules/i18n';
-import { SETTING_ROW_CLASS } from '@/shared/constants';
 import type { PreferenceToggleKey, QuickSettingsPreferences } from '@/shared/types';
 import QuickSettingsSection from '@/modules/quick-settings-panel/QuickSettingsSection';
 import QuickSettingsToggleRow from '@/modules/quick-settings-panel/QuickSettingsToggleRow';
@@ -81,7 +80,9 @@ export default function QuickSettingsContent({
   return (
     <div className="flex-1 space-y-6 overflow-y-auto overflow-x-hidden bg-background p-4">
       <QuickSettingsSection title={t('quickSettings.sections.appearance')}>
-        <div className={SETTING_ROW_CLASS}>
+        {/* Stacked rather than side-by-side: the three-way selector does not
+            fit next to its label in a panel this narrow. */}
+        <div className="space-y-2 py-2">
           <span className="flex items-center gap-2 text-sm text-foreground">
             {isDarkMode ? (
               <Moon className="h-4 w-4 text-muted-foreground" />
@@ -90,7 +91,7 @@ export default function QuickSettingsContent({
             )}
             {t('quickSettings.darkMode')}
           </span>
-          <DarkModeToggle />
+          <ThemePreferenceSelect />
         </div>
         <LanguageSelector compact />
       </QuickSettingsSection>

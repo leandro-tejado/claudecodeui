@@ -27,12 +27,50 @@
     <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152x152.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-192x192.png" />
     
-    <!-- Theme Color -->
-    <meta name="theme-color" content="#ffffff" />
-    <meta name="msapplication-TileColor" content="#ffffff" />
-    
+    <!-- Theme Color. Matches the light background ThemeContext writes back
+         (#f6f4ef); the anti-FOUC script below overwrites it when dark. -->
+    <meta name="theme-color" content="#f6f4ef" />
+    <meta name="msapplication-TileColor" content="#f6f4ef" />
+
     <!-- Prevent zoom on iOS -->
     <meta name="format-detection" content="telephone=no" />
+
+    <!--
+      Paint the right theme before the bundle runs.
+
+      ThemeContext applies the `dark` class from a React effect, which is one
+      frame too late: every cold load flashed the light theme first. This reads
+      the same localStorage mirror it does (`user-preferences`, see
+      src/shared/userSettings.ts) and applies the class up front.
+
+      Kept deliberately dependency-free and wrapped in try/catch — it runs
+      before anything else, so a throw here would leave a blank page. If the
+      mirror is missing or corrupt, falling through to the OS preference is the
+      same default ThemeContext would pick anyway.
+    -->
+    <script>
+      (function () {
+        try {
+          var stored = null;
+          var mirror = localStorage.getItem('user-preferences');
+          if (mirror) {
+            var parsed = JSON.parse(mirror);
+            if (parsed && typeof parsed.theme === 'string') stored = parsed.theme;
+          }
+          var isDark = stored === 'dark'
+            || ((stored === 'system' || !stored)
+              && window.matchMedia
+              && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          if (isDark) {
+            document.documentElement.classList.add('dark');
+            var meta = document.querySelector('meta[name="theme-color"]');
+            if (meta) meta.setAttribute('content', '#141414');
+          }
+        } catch (error) {
+          /* No stored theme worth trusting; React will settle it on mount. */
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

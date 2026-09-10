@@ -217,6 +217,14 @@ export type ServerEvent = {
 /** Progress state of a single queue row, driving the indicator the Queue primitive renders. */
 export type QueueItemStatus = 'completed' | 'in_progress' | 'pending';
 
+/**
+ * What the user picked in Appearance settings — not the colour finally shown.
+ * `'system'` defers to `prefers-color-scheme`, so resolving it to an actual
+ * light or dark theme needs the media query; read `isDarkMode` from
+ * `useTheme()` for that instead of resolving this by hand.
+ */
+export type ThemePreference = 'light' | 'dark' | 'system';
+
 // ---------------------------
 
 //----------------- AUTH ------------

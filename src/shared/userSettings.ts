@@ -1,5 +1,6 @@
 import { api } from '@/shared/api';
 import { CODE_EDITOR_STORAGE_KEYS } from '@/shared/constants';
+import type { ThemePreference } from '@/shared/types';
 
 /**
  * The one reader and writer for the settings that used to live in browser
@@ -17,7 +18,13 @@ import { CODE_EDITOR_STORAGE_KEYS } from '@/shared/constants';
 
 /** Every setting the server stores for a user. */
 export type UserPreferences = {
-  theme: 'light' | 'dark';
+  /**
+   * `'system'` means "follow the OS", and is not the same as an absent value:
+   * an absent theme is a user who never chose, `'system'` is a user who chose
+   * to delegate. The distinction matters because only the first one may be
+   * overwritten by this device's default.
+   */
+  theme: ThemePreference;
   userLanguage: string;
   tasksEnabled: boolean;
   projectSortOrder: 'name' | 'date';

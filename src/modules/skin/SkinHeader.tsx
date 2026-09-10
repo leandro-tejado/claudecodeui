@@ -1,9 +1,10 @@
-import { Folder, GitBranch, Menu, MessageSquare, ClipboardCheck, MonitorPlay, PanelLeft, type LucideIcon } from 'lucide-react';
+import { Folder, GitBranch, Menu, MessageSquare, ClipboardCheck, MonitorPlay, Moon, PanelLeft, Sun, type LucideIcon } from 'lucide-react';
 import { useCallback, useRef, type Dispatch, type MouseEvent, type SetStateAction, type TouchEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { usePlugins, PluginIcon } from '@/modules/plugins';
 import { toggleSidebarCollapsed } from '@/modules/skin/skinUiStore';
+import { useTheme } from '@/shared/context/ThemeContext';
 import { Tooltip } from '@/shared/ui';
 import type { AppTab, Project, ProjectSession } from '@/shared/types';
 import { getSessionTitle } from '@/shared/utils';
@@ -112,6 +113,7 @@ export default function SkinHeader({
 }: SkinHeaderProps) {
   const { t } = useTranslation();
   const { plugins } = usePlugins();
+  const { isDarkMode, toggleDarkMode } = useTheme();
 
   const tabs: BuiltInTab[] = [
     ...BASE_TABS,
@@ -170,6 +172,20 @@ export default function SkinHeader({
             {selectedProject.displayName}
           </div>
         </div>
+
+        {/* Tema: un clic, sin entrar a Ajustes. El control de tres estados
+            (con "Sistema") sigue estando en Ajustes → Apariencia; acá alcanza
+            con alternar, que es lo que se hace todos los días. */}
+        <Tooltip content={isDarkMode ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro'} position="bottom">
+          <button
+            type="button"
+            onClick={toggleDarkMode}
+            aria-label={isDarkMode ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro'}
+            className="grid h-7 w-7 flex-none place-items-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+          >
+            {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          </button>
+        </Tooltip>
 
         {/* Pestañas: sólo íconos. El tooltip carga el nombre. */}
         <nav className="flex flex-none items-center gap-0.5 rounded-lg bg-muted p-0.5" role="tablist">

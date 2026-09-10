@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 
-import { DarkModeToggle } from '@/shared/ui';
+import { ThemePreferenceSelect } from '@/shared/ui';
 import type { CodeEditorSettingsState, ProjectSortOrder } from '@/shared/types';
 import { LanguageSelector } from '@/modules/i18n';
 import SettingsCard from '@/modules/settings/SettingsCard';
@@ -32,13 +32,15 @@ export default function AppearanceSettingsTab({
 
   return (
     <div className="space-y-8">
-      <SettingsSection title={t('appearanceSettings.darkMode.label')}>
+      <SettingsSection title={t('appearanceSettings.theme.label', { defaultValue: 'Tema' })}>
         <SettingsCard>
           <SettingsRow
-            label={t('appearanceSettings.darkMode.label')}
-            description={t('appearanceSettings.darkMode.description')}
+            label={t('appearanceSettings.theme.label', { defaultValue: 'Tema' })}
+            description={t('appearanceSettings.theme.description', {
+              defaultValue: 'Elegí el tema claro, el oscuro, o seguí el del sistema.',
+            })}
           >
-            <DarkModeToggle ariaLabel={t('appearanceSettings.darkMode.label')} />
+            <ThemePreferenceSelect ariaLabel={t('appearanceSettings.theme.label', { defaultValue: 'Tema' })} />
           </SettingsRow>
         </SettingsCard>
       </SettingsSection>
