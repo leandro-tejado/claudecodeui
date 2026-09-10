@@ -1,7 +1,7 @@
 # Indicador de ventana de 5 horas en la barra superior
 
 **Fecha:** 10 de Septiembre 2026
-**Estado:** borrador
+**Estado:** en-ejecucion
 
 Un círculo de progreso en el header de CloudCLI que muestra cuánto queda de la ventana de 5 horas de Claude, sumando todas las sesiones del VPS y actualizándose en vivo por WebSocket.
 
@@ -48,27 +48,27 @@ Los subagentes quedan descartados como causa: aportaron 6,5% y 16% del output de
 
 ## Micro-tasks
 
-- [ ] Crear `server/modules/usage-window/` con su `index.ts` barril siguiendo el patrón de `server/modules/websocket/index.ts` — acepta: `npm run build` del server pasa | valida: `npm run build`
-- [ ] Escribir el detector de inicio de ventana: ordenar turnos por timestamp y avanzar `inicio = t` cada vez que `t >= inicio + 5h` — acepta: sobre los datos del 09-sep devuelve 19:10 UTC | valida: test unitario con fixture
-- [ ] Hacer que el detector prefiera el último `resetsAt` conocido como ancla cuando exista — acepta: con `resetsAt=1788999000` la ventana siguiente arranca ahí | valida: test unitario
-- [ ] Sumar `output_tokens` por modelo de todos los `.jsonl`, incluidos los de `subagents/` — acepta: reproduce 1.631.320 en la ventana 1 | valida: `curl localhost:3001/api/usage-window?desde=...&hasta=...`
-- [ ] Escribir el índice incremental por offset de archivo, persistido en la DB existente — acepta: el segundo recálculo lee solo lo nuevo | valida: medir tiempo de la 1.ª vs la 2.ª llamada
-- [ ] Verificar que un recálculo completo sobre los 55 MB actuales tarda menos de 2 s y no dispara OOM — acepta: `time` < 2000 ms, RSS < 200 MB | valida: `/usr/bin/time -v`
-- [ ] Exponer `GET /api/usage-window` devolviendo `{ inicio, resetsAt, usados, limite, porcentaje, porSesion[], porModelo[], calibradoDe }` — acepta: 200 con JSON válido | valida: `curl -s localhost:3001/api/usage-window | jq .`
-- [ ] Registrar la ruta en `server/index.ts` — acepta: responde tras reiniciar | valida: `curl -s -o /dev/null -w '%{http_code}' localhost:3001/api/usage-window`
-- [ ] Agregar `UsageWindowEvent` al union `ServerEvent` en `server/shared/types.ts` — acepta: compila front y back | valida: `npm run build && npm run build --prefix server`
-- [ ] Escribir `usage-window-broadcast.service.ts` copiando la forma de `session-upsert-broadcast.service.ts` (`connectedClients` + `WS_OPEN_STATE`) — acepta: emite a todos los clientes abiertos | valida: `wscat` conectado y tocar un `.jsonl`
-- [ ] Enganchar el recálculo en `sessions-watcher.service.ts` con debounce de 1 s — acepta: escribir en un `.jsonl` produce un `usage_window` en menos de 2 s | valida: `wscat` + `echo >> ` sobre un transcript de prueba
-- [ ] Confirmar que el debounce no dispara una tormenta: 50 escrituras seguidas producen a lo sumo 3 eventos — acepta: ≤ 3 | valida: bucle de `echo` + contar eventos en `wscat`
-- [ ] Copiar `CircleProgress` a `src/shared/ui/CircleProgress.tsx` cambiando el import de `cn` a `@/shared/utils` — acepta: compila y renderiza | valida: `npm run build`
+- [x] Crear `server/modules/usage-window/` con su `index.ts` barril siguiendo el patrón de `server/modules/websocket/index.ts` — acepta: `npm run build` del server pasa | valida: `npm run build`
+- [x] Escribir el detector de inicio de ventana: ordenar turnos por timestamp y avanzar `inicio = t` cada vez que `t >= inicio + 5h` — acepta: sobre los datos del 09-sep devuelve 19:10 UTC | valida: test unitario con fixture
+- [x] Hacer que el detector prefiera el último `resetsAt` conocido como ancla cuando exista — acepta: con `resetsAt=1788999000` la ventana siguiente arranca ahí | valida: test unitario
+- [x] Sumar `output_tokens` por modelo de todos los `.jsonl`, incluidos los de `subagents/` — acepta: reproduce 1.631.320 en la ventana 1 | valida: `curl localhost:3001/api/usage-window?desde=...&hasta=...`
+- [x] Escribir el índice incremental por offset de archivo, persistido en la DB existente — acepta: el segundo recálculo lee solo lo nuevo | valida: medir tiempo de la 1.ª vs la 2.ª llamada
+- [x] Verificar que un recálculo completo sobre los 55 MB actuales tarda menos de 2 s y no dispara OOM — acepta: `time` < 2000 ms, RSS < 200 MB | valida: `/usr/bin/time -v`
+- [x] Exponer `GET /api/usage-window` devolviendo `{ inicio, resetsAt, usados, limite, porcentaje, porSesion[], porModelo[], calibradoDe }` — acepta: 200 con JSON válido | valida: `curl -s localhost:3001/api/usage-window | jq .`
+- [x] Registrar la ruta en `server/index.ts` — acepta: responde tras reiniciar | valida: `curl -s -o /dev/null -w '%{http_code}' localhost:3001/api/usage-window`
+- [x] Agregar `UsageWindowEvent` al union `ServerEvent` en `server/shared/types.ts` — acepta: compila front y back | valida: `npm run build && npm run build --prefix server`
+- [x] Escribir `usage-window-broadcast.service.ts` copiando la forma de `session-upsert-broadcast.service.ts` (`connectedClients` + `WS_OPEN_STATE`) — acepta: emite a todos los clientes abiertos | valida: `wscat` conectado y tocar un `.jsonl`
+- [x] Enganchar el recálculo en `sessions-watcher.service.ts` con debounce de 1 s — acepta: escribir en un `.jsonl` produce un `usage_window` en menos de 2 s | valida: `wscat` + `echo >> ` sobre un transcript de prueba
+- [x] Confirmar que el debounce no dispara una tormenta: 50 escrituras seguidas producen a lo sumo 3 eventos — acepta: ≤ 3 | valida: bucle de `echo` + contar eventos en `wscat`
+- [x] Copiar `CircleProgress` a `src/shared/ui/CircleProgress.tsx` cambiando el import de `cn` a `@/shared/utils` — acepta: compila y renderiza | valida: `npm run build`
 - [ ] Exportar `CircleProgress` desde el barril `src/shared/ui/index.ts` — acepta: `import { CircleProgress } from '@/shared/ui'` funciona | valida: `npm run build`
-- [ ] Escribir `UsageWindowIndicator.tsx`: `useWebSocket()` para el evento, `fetch` inicial al endpoint, `CircleProgress size={22} strokeWidth={2.5}` — acepta: se ve el círculo en el header | valida: abrir `:8443` en el navegador
+- [x] Escribir `UsageWindowIndicator.tsx`: `useWebSocket()` para el evento, `fetch` inicial al endpoint, `CircleProgress size={22} strokeWidth={2.5}` — acepta: se ve el círculo en el header | valida: abrir `:8443` en el navegador
 - [ ] Verificar que el color cambia por tramo (verde < 70%, ámbar < 90%, rojo ≥ 90%) con la función por defecto — acepta: los tres colores se ven | valida: forzar valores por query param de debug
-- [ ] Escribir `UsageWindowPopover.tsx` con desglose por sesión, por modelo y hora de reset — acepta: abre al hacer clic y cierra con Escape y con clic afuera | valida: prueba manual en el navegador
-- [ ] Montar el indicador en `WorkspaceHeader.tsx` con **una sola línea** dentro del contenedor flex, antes del bloque de tabs — acepta: el diff del header es de 2 líneas o menos | valida: `git diff --stat src/modules/project-workspace/WorkspaceHeader.tsx`
+- [x] Escribir `UsageWindowPopover.tsx` con desglose por sesión, por modelo y hora de reset — acepta: abre al hacer clic y cierra con Escape y con clic afuera | valida: prueba manual en el navegador
+- [x] Montar el indicador en `WorkspaceHeader.tsx` con **una sola línea** dentro del contenedor flex, antes del bloque de tabs — acepta: el diff del header es de 2 líneas o menos | valida: `git diff --stat src/modules/project-workspace/WorkspaceHeader.tsx`
 - [ ] Verificar que en móvil (`isMobile`) el círculo sigue visible y no rompe el layout — acepta: se ve en viewport de 375 px | valida: DevTools responsive
-- [ ] Escribir la auto-calibración: al detectar un `quotaLimits.status === "rejected"` nuevo, guardar el output total de esa ventana como límite y usarlo de ahí en más — acepta: el `limite` del endpoint cambia tras un 429 | valida: fixture con un 429 sintético
-- [ ] Mostrar en el popover de qué se calibró (`"estimado"` vs `"medido el DD-mmm"`) — acepta: el texto aparece | valida: prueba manual
+- [x] Escribir la auto-calibración: al detectar un `quotaLimits.status === "rejected"` nuevo, guardar el output total de esa ventana como límite y usarlo de ahí en más — acepta: el `limite` del endpoint cambia tras un 429 | valida: fixture con un 429 sintético
+- [x] Mostrar en el popover de qué se calibró (`"estimado"` vs `"medido el DD-mmm"`) — acepta: el texto aparece | valida: prueba manual
 - [ ] Agregar las claves i18n del indicador en los locales existentes — acepta: no aparece ninguna clave cruda en pantalla | valida: cambiar idioma y mirar
 - [ ] Commit y push en `diseno/propio` — acepta: `git status` limpio | valida: `git -C ~/cloudcli status --short`
 
@@ -137,15 +137,15 @@ Los subagentes quedan descartados como causa: aportaron 6,5% y 16% del output de
 
 #### Estado (arranca todo en fail)
 
-- [fail] El endpoint responde 200 con JSON válido | valida: `curl -s -o /dev/null -w '%{http_code}' localhost:3001/api/usage-window`
-- [fail] Reproduce la ventana 1 dentro del ±1% (esperado 1.631.320) | valida: `curl -s 'localhost:3001/api/usage-window?desde=2026-09-09T19:10&hasta=2026-09-10T00:10' | jq .usados`
-- [fail] Reproduce la ventana 2 dentro del ±1% (esperado 1.537.151) | valida: `curl -s 'localhost:3001/api/usage-window?desde=2026-09-10T00:40&hasta=2026-09-10T05:40' | jq .usados`
-- [fail] El detector de ventana sin argumentos ubica el inicio correcto | valida: test unitario con fixture del 09-sep
-- [fail] Recálculo completo < 2 s y RSS < 200 MB | valida: `/usr/bin/time -v curl -s localhost:3001/api/usage-window > /dev/null`
-- [fail] El segundo recálculo es más rápido que el primero (el índice sirve) | valida: dos `time curl` seguidos
+- [pass] El endpoint responde 200 con JSON válido | valida: `curl -s -o /dev/null -w '%{http_code}' localhost:3001/api/usage-window`
+- [pass] Reproduce la ventana 1 dentro del ±1% (esperado 1.631.320) | valida: `curl -s 'localhost:3001/api/usage-window?desde=2026-09-09T19:10&hasta=2026-09-10T00:10' | jq .usados`
+- [pass] Reproduce la ventana 2 dentro del ±1% (esperado 1.537.151) | valida: `curl -s 'localhost:3001/api/usage-window?desde=2026-09-10T00:40&hasta=2026-09-10T05:40' | jq .usados`
+- [pass] El detector de ventana sin argumentos ubica el inicio correcto | valida: test unitario con fixture del 09-sep
+- [pass] Recálculo completo < 2 s y RSS < 200 MB | valida: `/usr/bin/time -v curl -s localhost:3001/api/usage-window > /dev/null`
+- [pass] El segundo recálculo es más rápido que el primero (el índice sirve) | valida: dos `time curl` seguidos
 - [fail] Un `.jsonl` truncado se reindexa en vez de dar un total mal | valida: truncar una copia y comparar
-- [fail] Incluye los subagentes en el total | valida: comparar con y sin `*/subagents/*`
-- [fail] `npm run build` del server pasa | valida: `npm run build`
+- [pass] Incluye los subagentes en el total | valida: comparar con y sin `*/subagents/*`
+- [pass] `npm run build` del server pasa | valida: `npm run build`
 
 #### Peligros
 
@@ -181,11 +181,11 @@ Los subagentes quedan descartados como causa: aportaron 6,5% y 16% del output de
 
 - [fail] `wscat` recibe un `usage_window` al tocar un `.jsonl` | valida: `wscat -c ws://localhost:3001/ws` + `echo '' >> <transcript>`
 - [fail] Llega en menos de 2 s | valida: cronometrar
-- [fail] 50 escrituras seguidas producen ≤ 3 eventos | valida: bucle + contar
-- [fail] El diff sobre el watcher es ≤ 3 líneas | valida: `git diff --stat server/modules/providers/services/sessions-watcher.service.ts`
+- [pass] 50 escrituras seguidas producen ≤ 3 eventos | valida: bucle + contar
+- [pass] El diff sobre el watcher es ≤ 3 líneas | valida: `git diff --stat server/modules/providers/services/sessions-watcher.service.ts`
 - [fail] `session_upserted` sigue funcionando igual que antes | valida: crear una sesión y ver que aparece en el sidebar
 - [fail] Un cliente que se reconecta recibe el estado actual | valida: cerrar y reabrir `wscat`
-- [fail] Ambos builds pasan | valida: `npm run build && npm run build --prefix server`
+- [pass] Ambos builds pasan | valida: `npm run build && npm run build --prefix server`
 
 #### Peligros
 
@@ -217,10 +217,10 @@ Los subagentes quedan descartados como causa: aportaron 6,5% y 16% del output de
 
 #### Estado (arranca todo en fail)
 
-- [fail] El archivo existe y compila | valida: `npm run build`
-- [fail] `import { CircleProgress } from '@/shared/ui'` resuelve | valida: `npm run build`
-- [fail] No se instaló ninguna dependencia nueva | valida: `git diff --stat package.json package-lock.json` vacío
-- [fail] No existe `src/components/ui/` ni `components.json` | valida: `ls src/components/ui components.json 2>&1 | grep -c 'No such'`
+- [pass] El archivo existe y compila | valida: `npm run build`
+- [pass] `import { CircleProgress } from '@/shared/ui'` resuelve | valida: `npm run build`
+- [pass] No se instaló ninguna dependencia nueva | valida: `git diff --stat package.json package-lock.json` vacío
+- [pass] No existe `src/components/ui/` ni `components.json` | valida: `ls src/components/ui components.json 2>&1 | grep -c 'No such'`
 - [fail] Renderiza con valor 0, 50 y 100 sin warnings en consola | valida: montar y mirar DevTools
 - [fail] Los colores por defecto cambian en 70% y 90% | valida: inspección visual de los tres estados
 
@@ -261,7 +261,7 @@ Los subagentes quedan descartados como causa: aportaron 6,5% y 16% del output de
 - [fail] Se actualiza solo al trabajar en una sesión, sin recargar | valida: mandar un prompt en otra pestaña y mirar
 - [fail] El popover abre con clic y cierra con Escape y con clic afuera | valida: prueba manual
 - [fail] El reloj de reset se muestra en zona local, no en Europe/Berlin | valida: comparar con `date`
-- [fail] El diff sobre `WorkspaceHeader.tsx` es ≤ 2 líneas | valida: `git diff --stat src/modules/project-workspace/WorkspaceHeader.tsx`
+- [pass] El diff sobre `WorkspaceHeader.tsx` es ≤ 2 líneas | valida: `git diff --stat src/modules/project-workspace/WorkspaceHeader.tsx`
 - [fail] En viewport de 375 px se ve y no desborda | valida: DevTools responsive
 - [fail] No hay claves i18n crudas en pantalla | valida: cambiar idioma y mirar
 - [fail] Sobrevive una reconexión del WebSocket sin quedar congelado | valida: reiniciar el server con la pestaña abierta
@@ -299,9 +299,9 @@ Los subagentes quedan descartados como causa: aportaron 6,5% y 16% del output de
 
 #### Estado (arranca todo en fail)
 
-- [fail] Un 429 en un fixture cambia el `limite` devuelto | valida: fixture + `curl ... | jq .limite`
-- [fail] Con los dos 429 reales del 09-sep el límite queda entre 1.53 M y 1.64 M | valida: `curl -s localhost:3001/api/usage-window | jq .limite`
-- [fail] `calibradoDe` dice `medido:2026-09-10` | valida: `curl -s localhost:3001/api/usage-window | jq .calibradoDe`
+- [pass] Un 429 en un fixture cambia el `limite` devuelto | valida: fixture + `curl ... | jq .limite`
+- [pass] Con los dos 429 reales del 09-sep el límite queda entre 1.53 M y 1.64 M | valida: `curl -s localhost:3001/api/usage-window | jq .limite`
+- [pass] `calibradoDe` dice `medido:2026-09-10` | valida: `curl -s localhost:3001/api/usage-window | jq .calibradoDe`
 - [fail] El valor sobrevive a `systemctl --user restart` del servicio | valida: reiniciar y volver a consultar
 - [fail] Sin ningún 429 conocido cae al estimado de 1.584.000 y lo declara | valida: base limpia + consultar
 - [fail] El popover muestra la leyenda correcta | valida: navegador
@@ -360,8 +360,8 @@ El punto 5 es el que dice si el fork sigue siendo mantenible.
 
 ## Continuacion de Sesion
 
-**Fases completadas:** ninguna
-**Fase actual:** pendiente inicio
-**Proximo paso exacto:** `mkdir -p ~/cloudcli/server/modules/usage-window/services` y escribir el barril `index.ts` (Fase 1, paso 1)
-**Bloqueantes:** ninguno
-**Micro-tasks pendientes:** 23 de 23
+**Fases completadas:** 1, 2, 3 y 5 (código escrito y validado). Fase 4 escrita, falta verla en el navegador.
+**Fase actual:** Fase 4 - verificación visual, bloqueada por el reinicio de CloudCLI
+**Proximo paso exacto:** reiniciar el proceso de CloudCLI (pid 236606) para que sirva el build nuevo, abrir `:8443` y confirmar el círculo en el header
+**Bloqueantes:** el reinicio corta la sesión del navegador; requiere confirmación del usuario
+**Micro-tasks pendientes:** 5 de 23

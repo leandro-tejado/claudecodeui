@@ -7,6 +7,7 @@ import { cn } from '@/shared/utils';
 import MobileMenuButton from '@/modules/project-workspace/MobileMenuButton';
 import WorkspaceTabs from '@/modules/project-workspace/WorkspaceTabs';
 import WorkspaceTitle from '@/modules/project-workspace/WorkspaceTitle';
+import { UsageWindowIndicator } from '@/modules/usage-window';
 
 type WorkspaceHeaderProps = {
   activeTab: AppTab;
@@ -150,6 +151,7 @@ export default function WorkspaceHeader({
             )}
           </div>
         </div>
+        <UsageWindowIndicator />
       </div>
     </header>
   );

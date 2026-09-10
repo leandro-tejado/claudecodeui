@@ -34,6 +34,7 @@ import { createAgentModule } from './modules/agent/index.js';
 import projectModuleRoutes from './modules/projects/projects.routes.js';
 import notificationRoutes from './modules/notifications/notifications.routes.js';
 import { userRoutes } from './modules/user/index.js';
+import { usageWindowRoutes } from './modules/usage-window/index.js';
 import {
     getPluginPort,
     pluginsRoutes,
@@ -180,6 +181,8 @@ app.use('/api/notifications', authenticateToken, notificationRoutes);
 
 // User API Routes (protected)
 app.use('/api/user', authenticateToken, userRoutes);
+
+app.use('/api/usage-window', authenticateToken, usageWindowRoutes);
 
 // Plugins API Routes (protected)
 app.use('/api/plugins', authenticateToken, pluginsRoutes);

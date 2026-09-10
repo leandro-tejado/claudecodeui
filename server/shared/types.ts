@@ -205,6 +205,7 @@ export type GatewayEventKind =
   | 'chat_subscribed'
   | 'session_upserted'
   | 'loading_progress'
+  | 'usage_window'
   | 'protocol_error';
 
 /**

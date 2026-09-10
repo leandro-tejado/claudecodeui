@@ -6,6 +6,7 @@ import chokidar, { type FSWatcher } from 'chokidar';
 
 import { sessionSynchronizerService } from '@/modules/providers/services/session-synchronizer.service.js';
 import { broadcastSessionUpsertedBatch } from '@/modules/websocket/index.js';
+import { scheduleUsageWindowBroadcast } from '@/modules/usage-window/index.js';
 import type { LLMProvider } from '@/shared/types.js';
 
 type WatcherEventType = 'add' | 'change';
@@ -169,6 +170,7 @@ async function onUpdate(
   if (!isWatcherTargetFile(provider, filePath)) {
     return;
   }
+  scheduleUsageWindowBroadcast();
 
   try {
     const result = await sessionSynchronizerService.synchronizeProviderFile(provider, filePath);
