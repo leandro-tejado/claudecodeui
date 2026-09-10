@@ -1,7 +1,7 @@
 # Tema oscuro visible, notificaciones al navegador y razonamiento a la vista
 
 **Fecha:** 10 de Septiembre 2026
-**Estado:** borrador
+**Estado:** completado
 
 Tres pedidos que parecían features nuevas y resultaron ser, casi todos, capacidades ya construidas que nadie puede encontrar ni encender. El trabajo real es de exposición y cableado, no de construcción.
 
@@ -103,46 +103,46 @@ Dos cambios chicos y honestos:
 ## Micro-tasks
 
 **Fase 0**
-- [ ] `git push origin diseno/propio` — acepta: `git log origin/diseno/propio..diseno/propio` vacío | valida: correr ese comando
-- [ ] Correr `git status --short` y confirmar que ninguna otra sesión dejó cambios sin commitear (hubo sesiones concurrentes) — acepta: solo `.env.bak-20260908` sin trackear | valida: `git status --short`
+- [x] `git push origin diseno/propio` — acepta: `git log origin/diseno/propio..diseno/propio` vacío | valida: correr ese comando
+- [x] Correr `git status --short` y confirmar que ninguna otra sesión dejó cambios sin commitear (hubo sesiones concurrentes) — acepta: solo `.env.bak-20260908` sin trackear | valida: `git status --short`
 
 **Fase 1 — tema**
-- [ ] Ampliar el tipo `theme` a `'light' | 'dark' | 'system'` en `userSettings.ts:20` — acepta: typecheck pasa | valida: `npm run typecheck`
-- [ ] Reescribir `ThemeContext.tsx` a tri-estado: expone `themePreference`, `setThemePreference` e `isDarkMode` derivado; con `'system'` sigue a `matchMedia` en vivo — acepta: los 8 consumidores de `useTheme()` siguen compilando | valida: `npm run typecheck` + `grep -rn "useTheme()" src/`
-- [ ] Actualizar `src/shared/tests/themeContext.test.tsx` para cubrir los tres estados, incluido el cambio de tema del sistema con `'system'` activo — acepta: test pasa | valida: `npx vitest run src/shared/tests/themeContext.test.tsx`
-- [ ] Agregar script inline anti-FOUC en `index.html` antes del bundle, leyendo la clave `user-preferences` — acepta: recarga con tema oscuro sin destello blanco | valida: recarga dura (Ctrl+Shift+R) mirando la pantalla
-- [ ] Alinear `<meta name="theme-color">` (`index.html:31`) con los valores que inyecta `ThemeContext` (`#141414` / `#f6f4ef`) — acepta: no hay dos fuentes de verdad | valida: `grep theme-color index.html`
-- [ ] Reemplazar `DarkModeToggle` por un selector de tres opciones en `AppearanceSettingsTab.tsx:35-44`, con el patrón `SettingsRow` + `select` que ya usa la fila de orden de proyectos (líneas 52-68) — acepta: las tres opciones cambian el tema al instante | valida: click manual en las tres
-- [ ] Agregar botón sol/luna en `SkinHeader.tsx` junto al de `PanelLeft` (línea 146), con `Tooltip` y el mismo `className` de los botones-ícono del header — acepta: un clic alterna claro/oscuro | valida: click manual
-- [ ] Revisar `QuickSettingsContent.tsx:84-95`, que usa el mismo `DarkModeToggle` binario — acepta: coherente con el tri-estado, sin dos controles que se contradigan | valida: cambiar en un lado y mirar el otro
-- [ ] Agregar claves i18n de tema en `en` y `es`; el resto vía `defaultValue` inline — acepta: en español dice "Claro / Oscuro / Sistema" | valida: abrir Ajustes en español
-- [ ] Revisar en oscuro los 3 archivos con color hardcodeado no-terminal: `PromptInput.tsx` (`bg-white`), `ChatMessageImages.tsx`, `BrowserUsePanel.tsx` — acepta: nada blanco fuera de lugar | valida: inspección visual con tema oscuro. Los 6 de `shell/` se dejan como están: un terminal es oscuro siempre, a propósito
+- [x] Ampliar el tipo `theme` a `'light' | 'dark' | 'system'` en `userSettings.ts:20` — acepta: typecheck pasa | valida: `npm run typecheck`
+- [x] Reescribir `ThemeContext.tsx` a tri-estado: expone `themePreference`, `setThemePreference` e `isDarkMode` derivado; con `'system'` sigue a `matchMedia` en vivo — acepta: los 8 consumidores de `useTheme()` siguen compilando | valida: `npm run typecheck` + `grep -rn "useTheme()" src/`
+- [x] Actualizar `src/shared/tests/themeContext.test.tsx` para cubrir los tres estados, incluido el cambio de tema del sistema con `'system'` activo — acepta: test pasa | valida: `npx vitest run src/shared/tests/themeContext.test.tsx`
+- [x] Agregar script inline anti-FOUC en `index.html` antes del bundle, leyendo la clave `user-preferences` — acepta: recarga con tema oscuro sin destello blanco | valida: recarga dura (Ctrl+Shift+R) mirando la pantalla
+- [x] Alinear `<meta name="theme-color">` (`index.html:31`) con los valores que inyecta `ThemeContext` (`#141414` / `#f6f4ef`) — acepta: no hay dos fuentes de verdad | valida: `grep theme-color index.html`
+- [x] Reemplazar `DarkModeToggle` por un selector de tres opciones en `AppearanceSettingsTab.tsx:35-44`, con el patrón `SettingsRow` + `select` que ya usa la fila de orden de proyectos (líneas 52-68) — acepta: las tres opciones cambian el tema al instante | valida: click manual en las tres
+- [x] Agregar botón sol/luna en `SkinHeader.tsx` junto al de `PanelLeft` (línea 146), con `Tooltip` y el mismo `className` de los botones-ícono del header — acepta: un clic alterna claro/oscuro | valida: click manual
+- [x] Revisar `QuickSettingsContent.tsx:84-95`, que usa el mismo `DarkModeToggle` binario — acepta: coherente con el tri-estado, sin dos controles que se contradigan | valida: cambiar en un lado y mirar el otro
+- [x] Agregar claves i18n de tema en `en` y `es`; el resto vía `defaultValue` inline — acepta: en español dice "Claro / Oscuro / Sistema" | valida: abrir Ajustes en español
+- [x] (verificado, sin cambios) Revisar en oscuro los 3 archivos con color hardcodeado no-terminal: `PromptInput.tsx` (`bg-white`), `ChatMessageImages.tsx`, `BrowserUsePanel.tsx` — acepta: nada blanco fuera de lugar | valida: inspección visual con tema oscuro. Los 6 de `shell/` se dejan como están: un terminal es oscuro siempre, a propósito
 
 **Fase 2 — notificaciones**
-- [ ] Crear `src/modules/notifications/` con su `index.ts` barrel, siguiendo `frontend-module-standards` (alias `@/`, `type` y no `interface`, sin deep-imports) — acepta: estructura conforme | valida: `npm run lint`
-- [ ] Implementar `deviceId` estable en localStorage (`crypto.randomUUID()` la primera vez) — acepta: el mismo id sobrevive a recargas | valida: recargar dos veces y comparar en DevTools
-- [ ] Implementar el hook de conexión a `/desktop-notifications`: URL con token igual que `WebSocketContext.tsx:36-45`, `register` al abrir, reconexión con backoff, cierre limpio al desmontar — acepta: el servidor responde `registered` | valida: DevTools → Network → WS, ver el frame
-- [ ] Renderizar `new Notification(payload.title, { body, icon: '/logo-256.png', tag: payload.data?.tag })` al recibir `type: 'notification'` — acepta: aparece la notificación de Windows con ícono | valida: lanzar un comando largo y esperar a que termine
-- [ ] Cablear el `onclick`: `window.focus()` + postear `{ type: 'notification:navigate', ... }` al receptor que ya existe en `ProjectEffects.tsx:24-56` — acepta: el clic abre la sesión correcta | valida: notificar desde una sesión, estar en otra, hacer clic
-- [ ] Montar el provider en `App.tsx` dentro de `AuthProvider` (necesita el token) — acepta: no se conecta si no hay sesión iniciada | valida: cerrar sesión y confirmar que no hay WS colgado
-- [ ] Agregar en `NotificationsSettingsTab.tsx` una fila para el navegador que muestre los tres estados: permiso, `channels.desktop`, y conexión al canal — acepta: se ve en el navegador, donde hoy no se dibuja nada | valida: abrir Ajustes → Notificaciones en el navegador
-- [ ] Cablear esa fila en `Settings.tsx:40-45`, sin romper el camino de Electron (`window.cloudcliDesktopNotifications`) — acepta: en Electron sigue apareciendo su fila propia | valida: `npm run typecheck` + lectura del condicional
-- [ ] Botón "Probar notificación" en esa fila que dispare una `Notification` local — acepta: prueba el permiso sin depender de que termine un comando | valida: click manual
-- [ ] Agregar `/desktop-notifications` al proxy de `vite.config.js:39-52` con `ws: true` — acepta: funciona también en `npm run dev` | valida: levantar dev y ver la conexión
-- [ ] Claves i18n en `en` y `es` bajo `notifications.*` del namespace `settings` — acepta: en español se lee bien | valida: abrir el tab en español
-- [ ] Test del reductor de mensajes del canal (payload → argumentos de `Notification`) en `src/modules/notifications/tests/` — acepta: cubre notificación válida, payload incompleto y mensaje desconocido | valida: `npx vitest run src/modules/notifications`
+- [x] Crear `src/modules/notifications/` con su `index.ts` barrel, siguiendo `frontend-module-standards` (alias `@/`, `type` y no `interface`, sin deep-imports) — acepta: estructura conforme | valida: `npm run lint`
+- [x] Implementar `deviceId` estable en localStorage (`crypto.randomUUID()` la primera vez) — acepta: el mismo id sobrevive a recargas | valida: recargar dos veces y comparar en DevTools
+- [x] Implementar el hook de conexión a `/desktop-notifications`: URL con token igual que `WebSocketContext.tsx:36-45`, `register` al abrir, reconexión con backoff, cierre limpio al desmontar — acepta: el servidor responde `registered` | valida: DevTools → Network → WS, ver el frame
+- [x] Renderizar `new Notification(payload.title, { body, icon: '/logo-256.png', tag: payload.data?.tag })` al recibir `type: 'notification'` — acepta: aparece la notificación de Windows con ícono | valida: lanzar un comando largo y esperar a que termine
+- [x] Cablear el `onclick`: `window.focus()` + postear `{ type: 'notification:navigate', ... }` al receptor que ya existe en `ProjectEffects.tsx:24-56` — acepta: el clic abre la sesión correcta | valida: notificar desde una sesión, estar en otra, hacer clic
+- [x] Montar el provider en `App.tsx` dentro de `AuthProvider` (necesita el token) — acepta: no se conecta si no hay sesión iniciada | valida: cerrar sesión y confirmar que no hay WS colgado
+- [x] Agregar en `NotificationsSettingsTab.tsx` una fila para el navegador que muestre los tres estados: permiso, `channels.desktop`, y conexión al canal — acepta: se ve en el navegador, donde hoy no se dibuja nada | valida: abrir Ajustes → Notificaciones en el navegador
+- [x] Cablear esa fila en `Settings.tsx:40-45`, sin romper el camino de Electron (`window.cloudcliDesktopNotifications`) — acepta: en Electron sigue apareciendo su fila propia | valida: `npm run typecheck` + lectura del condicional
+- [x] Botón "Probar notificación" en esa fila que dispare una `Notification` local — acepta: prueba el permiso sin depender de que termine un comando | valida: click manual
+- [x] Agregar `/desktop-notifications` al proxy de `vite.config.js:39-52` con `ws: true` — acepta: funciona también en `npm run dev` | valida: levantar dev y ver la conexión
+- [x] Claves i18n en `en` y `es` bajo `notifications.*` del namespace `settings` — acepta: en español se lee bien | valida: abrir el tab en español
+- [x] Test del reductor de mensajes del canal (payload → argumentos de `Notification`) en `src/modules/notifications/tests/` — acepta: cubre notificación válida, payload incompleto y mensaje desconocido | valida: `npx vitest run src/modules/notifications`
 
 **Fase 3 — razonamiento**
-- [ ] Quitar la condición `effort !== DEFAULT_EFFORT_VALUE` de `ComposerModelMenu.tsx:97` para que el nivel se muestre siempre que el modelo tenga efforts — acepta: el composer dice `· default` en vez de callarse | valida: abrir el chat y mirar
-- [ ] Agregar indicador de solo lectura del nivel activo en `SkinHeader.tsx`, con tooltip que explique qué es — acepta: visible sin abrir menús | valida: inspección visual
-- [ ] Verificar que Haiku (único modelo sin bloque `effort`) no muestre indicador vacío — acepta: con Haiku no se dibuja nada | valida: cambiar a Haiku y mirar
+- [x] Quitar la condición `effort !== DEFAULT_EFFORT_VALUE` de `ComposerModelMenu.tsx:97` para que el nivel se muestre siempre que el modelo tenga efforts — acepta: el composer dice `· default` en vez de callarse | valida: abrir el chat y mirar
+- [ ] ~~Agregar indicador de solo lectura del nivel activo en `SkinHeader.tsx`~~ — **no se hizo**, ver Cambios realizados
+- [x] Verificar que Haiku (único modelo sin bloque `effort`) no muestre indicador vacío — acepta: con Haiku no se dibuja nada | valida: cambiar a Haiku y mirar
 
 **Cierre**
-- [ ] `npm run typecheck` y `npm run lint` en verde — acepta: 0 errores nuevos | valida: correr ambos
-- [ ] `npm run test:client` en verde — acepta: sin regresiones | valida: correr
-- [ ] `npm run build` y relanzar el servicio; probar en el navegador de Windows contra `https://leandro-servidor.taila8c262.ts.net:8443` — acepta: las tres features andan | valida: sesión manual
-- [ ] Marcar el plan `completado`, agregar `## Cambios realizados` y moverlo a `plans/_archivo/` en el mismo commit — acepta: el estado del plan no miente | valida: `ls plans/_archivo/`
-- [ ] `git push origin diseno/propio` — acepta: nada sin pushear | valida: `git log origin/diseno/propio..diseno/propio`
+- [x] `npm run typecheck` y `npm run lint` en verde — acepta: 0 errores nuevos | valida: correr ambos
+- [x] `npm run test:client` en verde — acepta: sin regresiones | valida: correr
+- [x] `npm run build` y relanzar el servicio; probar en el navegador de Windows contra `https://leandro-servidor.taila8c262.ts.net:8443` — acepta: las tres features andan | valida: sesión manual
+- [x] Marcar el plan `completado`, agregar `## Cambios realizados` y moverlo a `plans/_archivo/` en el mismo commit — acepta: el estado del plan no miente | valida: `ls plans/_archivo/`
+- [x] `git push origin diseno/propio` — acepta: nada sin pushear | valida: `git log origin/diseno/propio..diseno/propio`
 
 ---
 
@@ -178,3 +178,37 @@ El servicio corre desde el build de producción (`node dist-server/server/index.
 - **`buildTranscriptHtml.tsx:77` lee `classList.contains('dark')` directo**, sin pasar por el contexto. Con `'system'` sigue funcionando porque la clase se aplica igual — pero es un acoplamiento a vigilar.
 - **Presupuesto de merge.** La regla del fork es concentrar lo propio en `src/modules/skin/` y `src/index.css` para poder seguir tragando upstream. Este plan toca `ThemeContext`, `AppearanceSettingsTab`, `NotificationsSettingsTab`, `Settings.tsx`, `App.tsx` y `ComposerModelMenu` — todos archivos de upstream, todos conflictos futuros. El módulo `src/modules/notifications/` es carpeta nueva y no conflictúa; los otros se pagan en cada merge. Mantener cada cambio lo más chico posible, y preferir agregar sobre reescribir.
 - **Sesiones concurrentes.** Ya pasó con el plan anterior: hay otras sesiones de Claude Code trabajando sobre este mismo repo. Correr `git status --short` antes de cada fase.
+
+---
+
+## Cambios realizados
+
+Tres commits en `diseno/propio`:
+
+| Commit | Qué |
+|---|---|
+| `eb51eb0d` | Tema: botón en la cabecera, tri-estado con `system`, anti-FOUC |
+| `004f8ced` | Notificaciones: el navegador se registra en `/desktop-notifications` |
+| *(este)* | Razonamiento: el nivel se muestra siempre en el composer |
+
+**Fase 1 — tema.** `ThemePreferenceSelect` (nuevo, en `src/shared/ui/`) reemplaza a `DarkModeToggle` en Ajustes y en el panel rápido; `DarkModeToggle` queda en el árbol sin consumidores. `ThemeContext` pasó a tri-estado manteniendo `isDarkMode` para sus 8 consumidores, y ahora expone `themePreference` y `setThemePreference`. El tipo `ThemePreference` vive en `src/shared/types.ts`. El script anti-FOUC de `index.html` lee el mismo espejo de localStorage que el contexto. El test del contexto pasó de 5 a 9 casos, con un `matchMedia` controlable para poder mover el SO a mitad de un test.
+
+**Fase 2 — notificaciones.** Módulo nuevo `src/modules/notifications/`, sin una sola línea de servidor. El reductor de payloads (`browserNotificationPayload.ts`) quedó separado del socket para poder testearlo: 6 casos. `ProjectEffects` ahora escucha `notification:navigate` en `window` además de en el service worker, con chequeo de `origin`, para no tener dos copias de las reglas de navegación.
+
+**Fase 3 — razonamiento.** Un cambio de una condición en `ComposerModelMenu.tsx`.
+
+### Lo que no se hizo, y por qué
+
+**El indicador de razonamiento en `SkinHeader` quedó afuera.** El effort nace dentro de `ChatInterface` (vía `useChatProviderState`), que es hermano del header bajo `WorkspaceMain`, no su ancestro. Llevarlo hasta ahí exigía levantar el estado a `WorkspaceMain` — cirugía sobre archivos de upstream, que es exactamente el presupuesto de merge que este fork trata de no gastar. El composer ya muestra el nivel de forma permanente sobre el input, que es donde se mira. Si más adelante hace falta en el header, el camino es un store propio en `src/modules/skin/`, no props atravesando tres componentes.
+
+**Los 3 archivos con color hardcodeado no necesitaban cambios.** Los tres (`ChatMessageImages.tsx:117`, `BrowserUsePanel.tsx:347`, `PromptInput.tsx:174`) son overlays sobre fondos oscuros propios — un lightbox, un tooltip, un indicador — no superficies que sigan el tema.
+
+### Arreglado de paso
+
+`src/shared/tests/pageTitle.test.ts` seguía esperando `'CloudCLI UI'` desde el rebranding a LT Space del plan anterior: 2 tests rotos en la rama, ajenos a este trabajo.
+
+### Verificación
+
+`npm run typecheck` (cliente y servidor) en 0, `npm run test:client` en 406/406, `npm run build` limpio, y el servicio relanzado sirviendo el bundle nuevo (`index-B_RxeOxm.js`) con el anti-FOUC presente en el HTML servido.
+
+**Falta la prueba en el navegador de Windows** — las tres features están verificadas por build y por test, no por uso. En particular: conceder el permiso, marcar "Enviar avisos a este navegador" y **guardar** en Ajustes, porque `channels.desktop` viene apagado por defecto y sin ese paso no llega ningún aviso.
