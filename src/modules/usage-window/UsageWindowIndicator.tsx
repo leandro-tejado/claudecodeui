@@ -53,16 +53,27 @@ export default function UsageWindowIndicator() {
         aria-expanded={open}
         title={label}
         className={cn(
-          'flex h-6 w-6 items-center justify-center rounded-full outline-none',
+          'flex flex-shrink-0 items-center gap-1 rounded-full outline-none',
           'hover:opacity-80 focus-visible:ring-2 focus-visible:ring-primary/60',
         )}
       >
-        <CircleProgress
-          value={snapshot.bloqueado ? snapshot.limite : snapshot.usados}
-          maxValue={snapshot.limite}
-          size={22}
-          strokeWidth={2.5}
-        />
+        <span className="flex h-6 w-6 items-center justify-center">
+          <CircleProgress
+            value={snapshot.bloqueado ? snapshot.limite : snapshot.usados}
+            maxValue={snapshot.limite}
+            size={22}
+            strokeWidth={2.5}
+          />
+        </span>
+        {/* El porcentaje en texto, con el mismo markup que el anillo de
+            contexto: los dos indicadores tienen que leerse como un par, y en
+            pantallas chicas los dos números se esconden a la vez. */}
+        <span
+          className="hidden tabular-nums text-muted-foreground sm:inline"
+          style={{ fontSize: 'var(--skin-text-xs)' }}
+        >
+          {snapshot.porcentaje}%
+        </span>
       </button>
 
       {open && (

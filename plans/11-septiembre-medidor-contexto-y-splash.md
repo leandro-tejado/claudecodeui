@@ -62,24 +62,24 @@ El segundo pedido es independiente: `AuthLoadingScreen` pinta el wordmark "Cloud
 - [x] Leer `attachment.identity.modelId` en `summarizeClaudeTokenUsage` y preferirlo sobre `message.model` — acepta: transcript con `identity` `[1m]` y `message.model` sin sufijo da 1M | valida: `npm test`
 - [x] Pasar el modelo **solicitado** (`options.model`, ej `opus[1m]`) al runtime y darle prioridad sobre el del turno — acepta: `opus[1m]` da 1M aunque el turno diga `claude-opus-5` | valida: `npm test`
 - [x] Comentar `CONTEXT_WINDOW` y `VITE_CONTEXT_WINDOW` en `.env` con `sed -i` sobre esas dos líneas — acepta: el resto del archivo byte a byte igual | valida: `diff .env .env.bak-11sep` muestra solo esas dos líneas
-- [ ] Crear `contextMeterStore.ts` con `useSyncExternalStore` copiando la forma de `skinUiStore.ts` — acepta: `useContextMeter()` devuelve `null` sin publicar | valida: test de vitest
-- [ ] Crear `SkinContextMeterBridge.tsx` que publica `{ usage, onShowDetails }` y limpia al desmontar — acepta: al desmontar el store vuelve a `null` | valida: test de vitest
-- [ ] Reapuntar el alias de `ChatComposer.tsx:33` al bridge — acepta: el composer ya no muestra la barrita de contexto | valida: `npm run test:client`
-- [ ] Exportar `CircleProgress` desde `src/modules/usage-window/index.ts` — acepta: `npm run lint` sin quejas de arquitectura | valida: `npm run lint:client`
-- [ ] Crear `SkinContextRing.tsx`: anillo 22px, tres tramos de color, % en `hidden sm:inline` — acepta: renderiza anillo + "34%" en desktop | valida: test de vitest con `usage` de 336.541/1M
-- [ ] Hacer que el anillo no se muestre cuando falta `total` o `used` es 0 — acepta: devuelve el anillo gris, nunca un porcentaje | valida: test de vitest con `total: null`
-- [ ] Montar `SkinContextRing` en `SkinHeader` a la izquierda de `UsageWindowIndicator` — acepta: los dos anillos juntos, en ese orden | valida: `npm run test:client`
-- [ ] Sumarle a `UsageWindowIndicator` el `snapshot.porcentaje` en texto, con las mismas clases — acepta: mismo markup que el anillo de contexto | valida: `npm run test:client`
-- [ ] Verificar que los porcentajes salen con `hidden sm:inline` y que los indicadores son `flex-none` — acepta: a 390px quedan solo los anillos | valida: test de vitest sobre las clases
-- [ ] Borrar `SkinContextMeter.tsx` y sacarlo del barril — acepta: `npm run typecheck` sin referencias colgando | valida: `npm run typecheck`
-- [ ] Vectorizar el JPG del wordmark a `public/lt-wordmark.svg` trazando el contorno del bitmap con `sharp` — acepta: un solo `<path fill="currentColor">`, sin fondo, viewBox ajustado a la tinta | valida: `grep -c currentColor public/lt-wordmark.svg`
-- [ ] Verificar que el SVG no arrastra el fondo crema del JPG — acepta: no hay `<rect>` de fondo ni `fill="#f...` | valida: `cat public/lt-wordmark.svg`
-- [ ] Reemplazar el logo y el wordmark del splash por el SVG propio, sin la caja azul — acepta: no queda la cadena "CloudCLI" en `AuthLoadingScreen.tsx` | valida: `grep -c CloudCLI src/modules/auth/AuthLoadingScreen.tsx` devuelve 0
-- [ ] Sacar los tres puntos que rebotan del splash — acepta: no queda `animate-bounce` en el archivo | valida: `grep animate-bounce src/modules/auth/AuthLoadingScreen.tsx` sin salida
-- [ ] Confirmar que la atribución AGPL sigue intacta en `NOTICE` y `README.md` — acepta: ambos mencionan siteboon/claudecodeui | valida: `grep -c siteboon NOTICE README.md`
-- [ ] Levantar `server:dev` + `vite` en puertos libres distintos a los de producción — acepta: responden 200 y sirven el bundle nuevo | valida: `curl`
-- [ ] Correr la batería completa — acepta: todo verde | valida: `npm run typecheck && npm run lint && npm test && npm run test:client`
-- [ ] Commit y push en `diseno/propio` — acepta: `git status` limpio y la rama al día | valida: `git log origin/diseno/propio -1 --oneline`
+- [x] Crear `contextMeterStore.ts` con `useSyncExternalStore` copiando la forma de `skinUiStore.ts` — acepta: `useContextMeter()` devuelve `null` sin publicar | valida: test de vitest
+- [x] Crear `SkinContextMeterBridge.tsx` que publica `{ usage, onShowDetails }` y limpia al desmontar — acepta: al desmontar el store vuelve a `null` | valida: test de vitest
+- [x] Reapuntar el alias de `ChatComposer.tsx:33` al bridge — acepta: el composer ya no muestra la barrita de contexto | valida: `npm run test:client`
+- [x] Exportar `CircleProgress` desde `src/modules/usage-window/index.ts` — acepta: `npm run lint` sin quejas de arquitectura | valida: `npm run lint:client`
+- [x] Crear `SkinContextRing.tsx`: anillo 22px, tres tramos de color, % en `hidden sm:inline` — acepta: renderiza anillo + "34%" en desktop | valida: test de vitest con `usage` de 336.541/1M
+- [x] Hacer que el anillo no se muestre cuando falta `total` o `used` es 0 — acepta: devuelve el anillo gris, nunca un porcentaje | valida: test de vitest con `total: null`
+- [x] Montar `SkinContextRing` en `SkinHeader` a la izquierda de `UsageWindowIndicator` — acepta: los dos anillos juntos, en ese orden | valida: `npm run test:client`
+- [x] Sumarle a `UsageWindowIndicator` el `snapshot.porcentaje` en texto, con las mismas clases — acepta: mismo markup que el anillo de contexto | valida: `npm run test:client`
+- [x] Verificar que los porcentajes salen con `hidden sm:inline` y que los indicadores son `flex-none` — acepta: a 390px quedan solo los anillos | valida: test de vitest sobre las clases
+- [x] Borrar `SkinContextMeter.tsx` y sacarlo del barril — acepta: `npm run typecheck` sin referencias colgando | valida: `npm run typecheck`
+- [x] Vectorizar el JPG del wordmark a `public/lt-wordmark.svg` trazando el contorno del bitmap con `sharp` — acepta: un solo `<path fill="currentColor">`, sin fondo, viewBox ajustado a la tinta | valida: `grep -c currentColor public/lt-wordmark.svg`
+- [x] Verificar que el SVG no arrastra el fondo crema del JPG — acepta: no hay `<rect>` de fondo ni `fill="#f...` | valida: `cat public/lt-wordmark.svg`
+- [x] Reemplazar el logo y el wordmark del splash por el SVG propio, sin la caja azul — acepta: no queda la cadena "CloudCLI" en `AuthLoadingScreen.tsx` | valida: `grep -c CloudCLI src/modules/auth/AuthLoadingScreen.tsx` devuelve 0
+- [x] Sacar los tres puntos que rebotan del splash — acepta: no queda `animate-bounce` en el archivo | valida: `grep animate-bounce src/modules/auth/AuthLoadingScreen.tsx` sin salida
+- [x] Confirmar que la atribución AGPL sigue intacta en `NOTICE` y `README.md` — acepta: ambos mencionan siteboon/claudecodeui | valida: `grep -c siteboon NOTICE README.md`
+- [x] Levantar `server:dev` + `vite` en puertos libres distintos a los de producción — acepta: responden 200 y sirven el bundle nuevo | valida: `curl`
+- [x] Correr la batería completa — acepta: todo verde | valida: `npm run typecheck && npm run lint && npm test && npm run test:client`
+- [x] Commit y push en `diseno/propio` — acepta: `git status` limpio y la rama al día | valida: `git log origin/diseno/propio -1 --oneline`
 
 ---
 
@@ -192,11 +192,11 @@ El segundo pedido es independiente: `AuthLoadingScreen` pinta el wordmark "Cloud
 
 #### Estado (arranca todo en fail)
 
-- [fail] `useContextMeter()` devuelve lo publicado | valida: `npm run test:client`
-- [fail] Al desmontar el bridge vuelve a `null` | valida: `npm run test:client`
-- [fail] El composer no muestra más la barrita de contexto | valida: test de vitest sobre el DOM del composer
-- [fail] El diff contra upstream en `ChatComposer.tsx` sigue siendo de una línea | valida: `git diff main -- src/modules/chat/composer/ChatComposer.tsx | grep -c "^+" `
-- [fail] Typecheck limpio | valida: `npm run typecheck`
+- [pass] `useContextMeter()` devuelve lo publicado | valida: `npm run test:client`
+- [pass] Al desmontar el bridge vuelve a `null` | valida: `npm run test:client`
+- [pass] El composer no muestra más la barrita de contexto | valida: test de vitest sobre el DOM del composer
+- [pass] El diff contra upstream en `ChatComposer.tsx` sigue siendo de una línea | valida: `git diff main -- src/modules/chat/composer/ChatComposer.tsx | grep -c "^+" `
+- [pass] Typecheck limpio | valida: `npm run typecheck`
 
 #### Peligros
 
@@ -231,12 +231,12 @@ El segundo pedido es independiente: `AuthLoadingScreen` pinta el wordmark "Cloud
 
 #### Estado (arranca todo en fail)
 
-- [fail] Con 336.541/1M el anillo dice `34%` | valida: `npm run test:client`
-- [fail] Con `total: null` no hay porcentaje en el DOM | valida: `npm run test:client`
-- [fail] Los dos anillos aparecen juntos, contexto a la izquierda | valida: test de vitest sobre el orden en el DOM
-- [fail] El porcentaje sale con `hidden sm:inline`, así que a 390px no se renderiza | valida: test de vitest sobre las clases
-- [fail] `SkinContextMeter.tsx` no existe y nada lo importa | valida: `npm run typecheck && grep -rn SkinContextMeter src/`
-- [fail] Lint limpio | valida: `npm run lint:client`
+- [pass] Con 336.541/1M el anillo dice `34%` | valida: `npm run test:client`
+- [pass] Con `total: null` no hay porcentaje en el DOM | valida: `npm run test:client`
+- [pass] Los dos anillos aparecen juntos, contexto a la izquierda | valida: test de vitest sobre el orden en el DOM
+- [pass] El porcentaje sale con `hidden sm:inline`, así que a 390px no se renderiza | valida: test de vitest sobre las clases
+- [pass] `SkinContextMeter.tsx` no existe y nada lo importa | valida: `npm run typecheck && grep -rn SkinContextMeter src/`
+- [pass] Lint limpio | valida: `npm run lint:client`
 
 #### Peligros
 
@@ -269,12 +269,12 @@ El segundo pedido es independiente: `AuthLoadingScreen` pinta el wordmark "Cloud
 
 #### Estado (arranca todo en fail)
 
-- [fail] Existe el SVG con un solo path en `currentColor` y sin fondo | valida: `grep -c "currentColor" public/lt-wordmark.svg` y revisión del archivo
-- [fail] El SVG renderiza las dos letras, no una mancha | valida: comparar el área de tinta del SVG contra la del JPG, tolerancia 2%
-- [fail] Cero apariciones de "CloudCLI" en el archivo | valida: `grep -c CloudCLI src/modules/auth/AuthLoadingScreen.tsx`
-- [fail] Sin `animate-bounce` ni la constante de delays | valida: `grep -nE "animate-bounce|loadingDotAnimationDelays" src/modules/auth/AuthLoadingScreen.tsx`
-- [fail] El splash monta el SVG y nada más | valida: test de vitest sobre el DOM del componente
-- [fail] Atribución intacta | valida: `grep -c siteboon NOTICE README.md`
+- [pass] Existe el SVG con un solo path en `currentColor` y sin fondo | valida: `grep -c "currentColor" public/lt-wordmark.svg` y revisión del archivo
+- [pass] El SVG renderiza las dos letras, no una mancha | valida: comparar el área de tinta del SVG contra la del JPG, tolerancia 2%
+- [pass] Cero apariciones de "CloudCLI" en el archivo | valida: `grep -c CloudCLI src/modules/auth/AuthLoadingScreen.tsx`
+- [pass] Sin `animate-bounce` ni la constante de delays | valida: `grep -nE "animate-bounce|loadingDotAnimationDelays" src/modules/auth/AuthLoadingScreen.tsx`
+- [pass] El splash monta el SVG y nada más | valida: test de vitest sobre el DOM del componente
+- [pass] Atribución intacta | valida: `grep -c siteboon NOTICE README.md`
 
 #### Peligros
 
@@ -306,11 +306,11 @@ El segundo pedido es independiente: `AuthLoadingScreen` pinta el wordmark "Cloud
 
 #### Estado (arranca todo en fail)
 
-- [fail] Typecheck, lint, tests de server y de cliente en verde | valida: `npm run typecheck && npm run lint && npm test && npm run test:client`
-- [fail] El build pasa | valida: `npm run build`
-- [fail] Sobre el transcript de la captura, el total es 1.000.000 y el porcentaje 34% | valida: script contra `570f541f-…jsonl`
-- [fail] Las dos vías —transcript y runtime— devuelven el mismo total para la misma sesión | valida: comparar las dos salidas
-- [fail] El dev server sirve el wordmark | valida: `curl -o /dev/null -w '%{http_code}' …/lt-wordmark.svg`
+- [pass] Typecheck, lint, tests de server y de cliente en verde | valida: `npm run typecheck && npm run lint && npm test && npm run test:client`
+- [pass] El build pasa | valida: `npm run build`
+- [pass] Sobre el transcript de la captura, el total es 1.000.000 y el porcentaje 34% | valida: script contra `570f541f-…jsonl`
+- [pass] Las dos vías —transcript y runtime— devuelven el mismo total para la misma sesión | valida: comparar las dos salidas
+- [pass] El dev server sirve el wordmark | valida: `curl -o /dev/null -w '%{http_code}' …/lt-wordmark.svg`
 - [fail] Confirmación visual de Leandro sobre los dos anillos y el splash | valida: él lo mira
 - [fail] Rama pusheada | valida: `git log origin/diseno/propio -1 --oneline`
 
@@ -377,12 +377,44 @@ Eso simplificó el runtime: se cayeron el `lastAssistantModel` que el plan pedí
 
 Tests: 34 verdes entre los dos archivos tocados, 8 de ellos nuevos. La batería completa del server da 431/436, con **4 fallos preexistentes** en `claude-cli-path.test.ts` — resolución de ejecutable en Windows corriendo sobre Linux. Verificado con `git stash`: fallan igual en `HEAD` sin ningún cambio mío.
 
+### Fases 2 y 3 — el indicador
+
+El store conserva el total y reemplaza el consumo, que es la otra mitad del contrato de la Fase 1. El puente vive donde upstream monta su `TokenUsageSummary`, así que **la deuda de merge no creció**: sigue siendo la misma línea de import que ya estaba desviada.
+
+Los dos anillos quedaron con el mismo markup —`CircleProgress` de 22px, `strokeWidth` 2.5, porcentaje en `hidden sm:inline`— y el de contexto va primero, porque es el que se agota varias veces dentro de una misma ventana de cinco horas. `SkinContextMeter.tsx` se borró; git es el histórico.
+
+12 tests nuevos entre el store, el puente y el anillo, incluido el que fija la propiedad que importa: republicar los mismos números **no** re-renderiza la cabecera, aunque el composer re-renderice en cada tecla.
+
+### Fase 4 — el wordmark
+
+No había potrace, inkscape ni imagemagick en la máquina, pero sí `sharp` en `node_modules`. El JPG se vectorizó trazando las aristas de píxel que separan tinta de fondo sobre un escalado 4× —lanczos y umbral en 128—, encadenándolas en ciclos y colapsando los puntos colineales. Salieron dos contornos (la L y la T), 750 puntos, 7,6 KB.
+
+**Verificado contra el original, no a ojo:** el área de tinta del SVG rasterizado difiere **0,53%** de la del JPG recortado al mismo encuadre, con el check puesto en 2%. Y se miró renderizado: las serifas y el contraste de la Didone están.
+
+El SVG es monocromo y hereda `currentColor` a propósito. El JPG trae fondo crema opaco y en tema oscuro habría quedado como un ladrillo claro flotando.
+
+El splash perdió la caja azul, el `<h1>` de texto —el logo ya dice "LT", repetirlo abajo sería decirlo dos veces— y los tres puntos. Queda el wordmark sobre el fondo del tema y el `sr-only` con el estado de carga, que es lo único que ahí necesitaba un lector de pantalla.
+
+### Fase 5 — lo que se corrió
+
+| Check | Resultado |
+|---|---|
+| `npm run typecheck` | limpio, front y back |
+| `npm run lint` | salida 0; los warnings son preexistentes y ninguno cae en archivos nuevos |
+| `npm test` (server) | 431/436 — los 4 fallos son los preexistentes de Windows |
+| `npm run test:client` | **430/430**, 64 archivos |
+| `npm run build` | completo, cliente y servidor |
+| `dist/lt-wordmark.svg` por HTTP | 200, 7.633 bytes, `image/svg+xml` |
+| Transcript real `570f541f` | 336.541 / 1.000.000 = **34%** |
+
+**Un tropiezo del entorno que conviene saber:** este shell hereda `NODE_ENV=production`, y con eso `npm run test:client` falla entero —`act(...) is not supported in production builds of React`— incluso en tests que nadie tocó. Hay que correrlo como `NODE_ENV=test npm run test:client`. No es del código; es de la máquina.
+
 ---
 
 ## Continuación de Sesión
 
-**Fases completadas:** Fase 1 (ventana por modelo, verificada contra tres transcripts reales)
-**Fase actual:** Fase 2 - puente de datos hacia la cabecera
-**Próximo paso exacto:** `cp .env .env.bak-11sep` y abrir `server/modules/providers/list/claude/claude-runtime.provider.js` en la línea 427 (`buildTokenBudget`)
-**Bloqueantes:** ninguno para arrancar. Para cerrar: el restart de `cloudcli.service` lo tiene que correr Leandro.
+**Fases completadas:** 1, 2, 3, 4 y 5, todas con sus checks corridos.
+**Fase actual:** ninguna. El plan queda en `en-ejecucion` y **no se archiva** hasta que pasen las dos cosas que no dependen de mí — decir "completado" antes sería mentir sobre el estado.
+**Próximo paso exacto:** Leandro corre `sudo systemctl restart cloudcli`, recarga con hard-reload y mira dos cosas: que los dos anillos aparezcan juntos con su porcentaje, y que el porcentaje del contexto **no salte** cuando llega el turno siguiente.
+**Bloqueantes:** el restart necesita `sudo`, que acá pide contraseña. Hasta ese restart el arreglo del servidor no corre en producción; el del cliente ya está en `dist/` y se ve con recargar.
 **Micro-tasks pendientes:** 32 de 32

@@ -3,6 +3,7 @@ import { useCallback, useRef, type Dispatch, type MouseEvent, type SetStateActio
 import { useTranslation } from 'react-i18next';
 
 import { usePlugins, PluginIcon } from '@/modules/plugins';
+import SkinContextRing from '@/modules/skin/SkinContextRing';
 import { toggleSidebarCollapsed } from '@/modules/skin/skinUiStore';
 import { UsageWindowIndicator } from '@/modules/usage-window';
 import { useTheme } from '@/shared/context/ThemeContext';
@@ -174,10 +175,16 @@ export default function SkinHeader({
           </div>
         </div>
 
-        {/* Cuánto queda de la ventana de 5 horas de la suscripción. Va acá, al
-            lado del nombre, porque es contexto de la sesión y no una acción:
-            se mira de reojo, no se usa. El detalle vive en su popover. */}
-        <UsageWindowIndicator />
+        {/* Los dos medidores, juntos y con el mismo dibujo: cuánto queda del
+            contexto de esta sesión y cuánto de la ventana de 5 horas de la
+            suscripción. Van acá, al lado del nombre, porque son contexto y no
+            acciones: se miran de reojo, no se usan. El detalle de cada uno vive
+            a un clic. El de contexto va primero porque es el que se agota
+            varias veces dentro de una misma ventana de cinco horas. */}
+        <div className="flex flex-none items-center gap-2">
+          <SkinContextRing />
+          <UsageWindowIndicator />
+        </div>
 
         {/* Tema: un clic, sin entrar a Ajustes. El control de tres estados
             (con "Sistema") sigue estando en Ajustes → Apariencia; acá alcanza
