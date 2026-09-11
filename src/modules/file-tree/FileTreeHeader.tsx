@@ -9,6 +9,8 @@ import { MAX_FILE_UPLOAD_SIZE_LABEL } from '@/shared/constants';
 import type { FileTreeViewMode } from '@/shared/types';
 
 type FileTreeHeaderProps = {
+  /** En un panel lateral angosto no hay lugar para el selector de vistas. */
+  narrow?: boolean;
   viewMode: FileTreeViewMode;
   onViewModeChange: (mode: FileTreeViewMode) => void;
   searchQuery: string;
@@ -28,6 +30,7 @@ type FileTreeHeaderProps = {
 
 /** Rendered by FileTree to host the search box, view-mode switch and the create/upload/refresh/collapse actions. */
 export default function FileTreeHeader({
+  narrow,
   viewMode,
   onViewModeChange,
   searchQuery,
@@ -156,8 +159,9 @@ export default function FileTreeHeader({
             </Button>
           )}
           {/* Divider */}
-          <div className="mx-0.5 h-4 w-px bg-border" />
+          {!narrow && <div className="mx-0.5 h-4 w-px bg-border" />}
           {/* View mode buttons */}
+          {!narrow && (
           <Button
             variant={viewMode === 'simple' ? 'default' : 'ghost'}
             size="sm"
@@ -168,6 +172,8 @@ export default function FileTreeHeader({
           >
             <List className="h-3.5 w-3.5" />
           </Button>
+          )}
+          {!narrow && (
           <Button
             variant={viewMode === 'compact' ? 'default' : 'ghost'}
             size="sm"
@@ -178,6 +184,8 @@ export default function FileTreeHeader({
           >
             <Eye className="h-3.5 w-3.5" />
           </Button>
+          )}
+          {!narrow && (
           <Button
             variant={viewMode === 'detailed' ? 'default' : 'ghost'}
             size="sm"
@@ -188,6 +196,7 @@ export default function FileTreeHeader({
           >
             <TableProperties className="h-3.5 w-3.5" />
           </Button>
+          )}
         </div>
       </div>
 

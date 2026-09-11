@@ -12,7 +12,7 @@ import type { AppTab, Project, ProjectSession, SessionEstablishedContext, Sessio
 import { useUiPreferences } from '@/shared/context/UiPreferencesContext';
 import { useFileOpenResolver } from '@/modules/project-workspace/hooks/useFileOpenResolver';
 import { EditorSidebar, useEditorSidebar } from '@/modules/code-editor';
-import { SkinHeader as WorkspaceHeader } from '@/modules/skin';
+import { SkinFilesPanel, SkinHeader as WorkspaceHeader, toggleFilesPanel, useSkinUi } from '@/modules/skin';
 import WorkspaceStateView from '@/modules/project-workspace/WorkspaceStateView';
 import WorkspaceErrorBoundary from '@/modules/project-workspace/WorkspaceErrorBoundary';
 
@@ -58,6 +58,7 @@ function WorkspaceMain({
 }: WorkspaceMainProps) {
   const preferences = useUiPreferences();
   const { showRawParameters, showThinking, sendByCtrlEnter } = preferences;
+  const { filesPanelOpen } = useSkinUi();
 
   const { tasksEnabled, isTaskMasterInstalled } = useTasksSettings();
   const browserUseEnabled = useBrowserUseEnabled();
@@ -98,6 +99,14 @@ function WorkspaceMain({
     }
   }, [shouldShowBrowserTab, activeTab, setActiveTab]);
 
+  // En escritorio 'files' ya no renderiza nada: una sesión que venía con esa
+  // pestaña guardada mostraría el área principal vacía, sin pista de por qué.
+  useEffect(() => {
+    if (!isMobile && activeTab === 'files') {
+      setActiveTab('chat');
+    }
+  }, [isMobile, activeTab, setActiveTab]);
+
   // Stable so React.memo(ChatInterface) can bail out: an inline arrow here made
   // every WorkspaceMain render re-render the whole chat tree, including during
   // an editor-divider drag.
@@ -106,9 +115,13 @@ function WorkspaceMain({
   }, [setActiveTab]);
 
   const openFile = useCallback((filePath: string) => {
-    setActiveTab('files');
+    if (isMobile) {
+      setActiveTab('files');
+    } else if (!filesPanelOpen) {
+      toggleFilesPanel();
+    }
     handleFileOpen(filePath);
-  }, [handleFileOpen, setActiveTab]);
+  }, [filesPanelOpen, handleFileOpen, isMobile, setActiveTab]);
 
   // Opens the editor side panel in place, keeping the current tab (e.g. chat).
   const openFileInEditor = useCallback((filePath: string) => {
@@ -164,7 +177,10 @@ function WorkspaceMain({
             </WorkspaceErrorBoundary>
           </div>
 
-          {activeTab === 'files' && (
+          {/* En el teléfono no hay lugar para una columna al costado, así que
+              ahí Archivos sigue siendo una pestaña a pantalla completa. En
+              escritorio el árbol vive en SkinFilesPanel, al lado del chat. */}
+          {isMobile && activeTab === 'files' && (
             <div className="h-full overflow-hidden">
               <FileTree selectedProject={selectedProject} onFileOpen={handleFileOpen} />
             </div>
@@ -223,8 +239,17 @@ function WorkspaceMain({
           onCloseEditor={handleCloseEditor}
           onToggleEditorExpand={handleToggleEditorExpand}
           projectPath={selectedProject.path}
-          fillSpace={activeTab === 'files'}
+          fillSpace={false}
         />
+
+        {!isMobile && (
+          <SkinFilesPanel
+            selectedProject={selectedProject}
+            selectedSession={selectedSession}
+            editorOpen={Boolean(editingFile)}
+            onFileOpen={handleFileOpen}
+          />
+        )}
       </div>
     </div>
   );

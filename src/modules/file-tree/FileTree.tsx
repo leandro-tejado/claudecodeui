@@ -25,10 +25,21 @@ import ImageViewer from '@/modules/file-tree/ImageViewer';
 type FileTreeProps = {
   selectedProject: Project | null;
   onFileOpen?: (filePath: string) => void;
+  /**
+   * Ancho de panel lateral en vez de área principal: fuerza la vista simple y
+   * esconde el selector de vistas, que a 320px no entra y deja la tabla de
+   * columnas ilegible.
+   */
+  narrow?: boolean;
+  /**
+   * Recarga el árbol cada vez que cambia de valor, sin remontarlo: un `key`
+   * refrescaría igual pero perdería las carpetas expandidas y el scroll.
+   */
+  refreshSignal?: number;
 };
 
-/** Exported through the file-tree barrel; the project-workspace module renders it as the Files sidebar tab. */
-export default function FileTree({ selectedProject, onFileOpen }: FileTreeProps) {
+/** Exported through the file-tree barrel; rendered by the project-workspace module and by the skin's side panel. */
+export default function FileTree({ selectedProject, onFileOpen, narrow, refreshSignal }: FileTreeProps) {
   const { t } = useTranslation();
   const [selectedImage, setSelectedImage] = useState<FileTreeImageSelection | null>(null);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
@@ -49,7 +60,18 @@ export default function FileTree({ selectedProject, onFileOpen }: FileTreeProps)
   }, [toast]);
 
   const { files, loading, error, refreshFiles } = useFileTreeData(selectedProject);
-  const { viewMode, changeViewMode } = useFileTreeViewMode();
+  const { viewMode: storedViewMode, changeViewMode } = useFileTreeViewMode();
+  const viewMode = narrow ? 'simple' : storedViewMode;
+
+  // El primer valor no dispara nada: el árbol ya se carga solo al montarse.
+  const lastRefreshSignalRef = useRef(refreshSignal);
+  useEffect(() => {
+    if (refreshSignal === undefined || refreshSignal === lastRefreshSignalRef.current) {
+      return;
+    }
+    lastRefreshSignalRef.current = refreshSignal;
+    refreshFiles();
+  }, [refreshSignal, refreshFiles]);
   const { expandedDirs, toggleDirectory, expandDirectories, collapseAll } = useExpandedDirectories();
   const { searchQuery, setSearchQuery, filteredFiles } = useFileTreeSearch({
     files,
@@ -186,6 +208,7 @@ export default function FileTree({ selectedProject, onFileOpen }: FileTreeProps)
       )}
 
       <FileTreeHeader
+        narrow={narrow}
         viewMode={viewMode}
         onViewModeChange={changeViewMode}
         searchQuery={searchQuery}

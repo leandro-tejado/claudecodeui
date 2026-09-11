@@ -16,16 +16,48 @@ import { useSyncExternalStore } from 'react';
 
 export type SkinUiState = {
   sidebarCollapsed: boolean;
+  /** Preferencia del usuario, no visibilidad: el panel puede estar abierto y oculto por falta de ancho. */
+  filesPanelOpen: boolean;
+  filesPanelWidth: number;
 };
 
 const STORAGE_KEY = 'skin:sidebar-collapsed';
+const FILES_OPEN_KEY = 'skin:files-panel-open';
+const FILES_WIDTH_KEY = 'skin:files-panel-width';
+
+export const FILES_PANEL_MIN_WIDTH = 240;
+export const FILES_PANEL_MAX_WIDTH = 640;
+const FILES_PANEL_DEFAULT_WIDTH = 320;
+
+const clampFilesWidth = (value: number): number => (
+  Math.min(FILES_PANEL_MAX_WIDTH, Math.max(FILES_PANEL_MIN_WIDTH, Math.round(value)))
+);
 
 const readInitial = (): SkinUiState => {
   try {
-    return { sidebarCollapsed: localStorage.getItem(STORAGE_KEY) === '1' };
+    const storedWidth = Number(localStorage.getItem(FILES_WIDTH_KEY));
+    return {
+      sidebarCollapsed: localStorage.getItem(STORAGE_KEY) === '1',
+      filesPanelOpen: localStorage.getItem(FILES_OPEN_KEY) === '1',
+      filesPanelWidth: Number.isFinite(storedWidth) && storedWidth > 0
+        ? clampFilesWidth(storedWidth)
+        : FILES_PANEL_DEFAULT_WIDTH,
+    };
   } catch {
-    // Storage bloqueado: se arranca desplegado, que es el estado útil.
-    return { sidebarCollapsed: false };
+    // Storage bloqueado: se arranca desplegado y sin panel, que es el estado útil.
+    return {
+      sidebarCollapsed: false,
+      filesPanelOpen: false,
+      filesPanelWidth: FILES_PANEL_DEFAULT_WIDTH,
+    };
+  }
+};
+
+const persist = (key: string, value: string): void => {
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    // Sin persistencia la preferencia dura lo que la pestaña. No es un error.
   }
 };
 
@@ -47,11 +79,31 @@ const getSnapshot = () => state;
 
 export const toggleSidebarCollapsed = () => {
   state = { ...state, sidebarCollapsed: !state.sidebarCollapsed };
-  try {
-    localStorage.setItem(STORAGE_KEY, state.sidebarCollapsed ? '1' : '0');
-  } catch {
-    // Sin persistencia el colapso dura lo que la pestaña. No es un error.
-  }
+  persist(STORAGE_KEY, state.sidebarCollapsed ? '1' : '0');
+  emit();
+};
+
+/** Lo llama el botón de archivos de la cabecera. */
+export const toggleFilesPanel = () => {
+  state = { ...state, filesPanelOpen: !state.filesPanelOpen };
+  persist(FILES_OPEN_KEY, state.filesPanelOpen ? '1' : '0');
+  emit();
+};
+
+/** Lo llama el botón de cerrar del propio panel. */
+export const closeFilesPanel = () => {
+  if (!state.filesPanelOpen) return;
+  state = { ...state, filesPanelOpen: false };
+  persist(FILES_OPEN_KEY, '0');
+  emit();
+};
+
+/** La manija de arrastre del panel; el ancho se guarda ya acotado. */
+export const setFilesPanelWidth = (width: number) => {
+  const next = clampFilesWidth(width);
+  if (next === state.filesPanelWidth) return;
+  state = { ...state, filesPanelWidth: next };
+  persist(FILES_WIDTH_KEY, String(next));
   emit();
 };
 

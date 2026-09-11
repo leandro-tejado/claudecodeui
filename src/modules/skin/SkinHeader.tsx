@@ -4,7 +4,8 @@ import { useTranslation } from 'react-i18next';
 
 import { usePlugins, PluginIcon } from '@/modules/plugins';
 import SkinContextRing from '@/modules/skin/SkinContextRing';
-import { toggleSidebarCollapsed } from '@/modules/skin/skinUiStore';
+import { useRunningTabTitle } from '@/modules/skin/hooks/useRunningTabTitle';
+import { toggleFilesPanel, toggleSidebarCollapsed, useSkinUi } from '@/modules/skin/skinUiStore';
 import { UsageWindowIndicator } from '@/modules/usage-window';
 import { useTheme } from '@/shared/context/ThemeContext';
 import { Tooltip } from '@/shared/ui';
@@ -96,10 +97,14 @@ function SkinMenuButton({ onMenuClick }: { onMenuClick: () => void }) {
 }
 
 /* `shell` no está en la lista a propósito: es la forma de ocultar la pestaña
-   sin tocar el enum de upstream ni el componente que la renderiza. */
+   sin tocar el enum de upstream ni el componente que la renderiza.
+
+   `files` tampoco está, y por otro motivo: dejó de ser una pestaña. El botón de
+   archivos abre la columna lateral —está abajo, fuera del `nav`— en vez de
+   reemplazar el chat, que era lo que lo volvía inútil mientras el agente
+   trabajaba. */
 const BASE_TABS: BuiltInTab[] = [
   { id: 'chat', labelKey: 'tabs.chat', icon: MessageSquare },
-  { id: 'files', labelKey: 'tabs.files', icon: Folder },
   { id: 'git', labelKey: 'tabs.git', icon: GitBranch },
 ];
 
@@ -116,6 +121,10 @@ export default function SkinHeader({
   const { t } = useTranslation();
   const { plugins } = usePlugins();
   const { isDarkMode, toggleDarkMode } = useTheme();
+  const { filesPanelOpen } = useSkinUi();
+
+  // Un punto en el título mientras la sesión de esta pestaña esté corriendo.
+  useRunningTabTitle(selectedSession?.id ?? null);
 
   const tabs: BuiltInTab[] = [
     ...BASE_TABS,
@@ -130,14 +139,12 @@ export default function SkinHeader({
       ? selectedSession
         ? getSessionTitle(selectedSession)
         : t('mainContent.newSession')
-      : activeTab === 'files'
-        ? t('mainContent.projectFiles')
-        : activeTab === 'git'
-          ? t('tabs.git')
-          : activeTab === 'tasks'
-            ? 'TaskMaster'
-            : activeTab === 'browser'
-              ? t('tabs.browser')
+      : activeTab === 'git'
+        ? t('tabs.git')
+        : activeTab === 'tasks'
+          ? 'TaskMaster'
+          : activeTab === 'browser'
+            ? t('tabs.browser')
               : t('misc.projectFallback');
 
   return (
@@ -197,6 +204,28 @@ export default function SkinHeader({
             className="grid h-7 w-7 flex-none place-items-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
           >
             {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          </button>
+        </Tooltip>
+
+        {/* Archivos no es una pestaña: es una columna que se abre al lado del
+            chat. Va separado del grupo de pestañas justo para que no parezca
+            que reemplaza lo que estás mirando. El botón refleja la preferencia
+            guardada; si la ventana es angosta el panel puede estar replegado
+            igual. */}
+        <Tooltip content="Archivos del proyecto" position="bottom">
+          <button
+            type="button"
+            onClick={toggleFilesPanel}
+            aria-pressed={filesPanelOpen}
+            aria-label="Archivos del proyecto"
+            title="Archivos del proyecto"
+            className={`grid h-7 w-8 flex-none place-items-center rounded-md transition-colors ${
+              filesPanelOpen
+                ? 'bg-muted text-foreground shadow-sm'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            <Folder className="h-4 w-4" />
           </button>
         </Tooltip>
 
