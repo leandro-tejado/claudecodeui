@@ -77,6 +77,60 @@ export function attachWebSocketHeartbeat(
 }
 
 /**
+ * Application-level heartbeat for the chat socket.
+ *
+ * The protocol ping above keeps the transport honest, but a browser answers it
+ * down in its networking layer — the page's JavaScript never sees a ping or a
+ * pong. So a tab has no way to tell "the server has nothing to say" apart from
+ * "this socket died and nobody told me", which is the state a suspended laptop
+ * or a re-established tunnel leaves behind: `readyState` stays OPEN, `send()`
+ * reports no error, and not one frame ever arrives again.
+ *
+ * This sends traffic the client can actually observe, so its watchdog can treat
+ * a long silence as evidence of death rather than of calm. Chat only: the shell
+ * and plugin-proxy routes forward frames verbatim to another process, and an
+ * injected frame would corrupt their streams.
+ */
+export function attachChatApplicationHeartbeat(
+  ws: WebSocket,
+  intervalMs = 25_000,
+  scheduler = {
+    setInterval,
+    clearInterval,
+  },
+): () => void {
+  let stopped = false;
+
+  const stopHeartbeat = () => {
+    if (stopped) {
+      return;
+    }
+
+    stopped = true;
+    scheduler.clearInterval(heartbeat);
+    ws.off('close', stopHeartbeat);
+    ws.off('error', stopHeartbeat);
+  };
+
+  ws.on('close', stopHeartbeat);
+  ws.on('error', stopHeartbeat);
+
+  const heartbeat = scheduler.setInterval(() => {
+    if (ws.readyState !== WebSocket.OPEN) {
+      return;
+    }
+
+    try {
+      ws.send(JSON.stringify({ kind: 'heartbeat', timestamp: Date.now() }));
+    } catch {
+      stopHeartbeat();
+    }
+  }, intervalMs);
+
+  return stopHeartbeat;
+}
+
+/**
  * Creates and wires the server-wide websocket gateway used for chat, shell, and
  * plugin proxy routes. Exported through the websocket module for server startup.
  */
@@ -104,6 +158,7 @@ export function createWebSocketServer(
     }
 
     if (pathname === '/ws') {
+      attachChatApplicationHeartbeat(ws);
       handleChatConnection(ws, incomingRequest, dependencies.chat);
       return;
     }

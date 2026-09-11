@@ -4,7 +4,10 @@ import test from 'node:test';
 
 import { WebSocket } from 'ws';
 
-import { attachWebSocketHeartbeat } from '@/modules/websocket/services/websocket-server.service.js';
+import {
+  attachChatApplicationHeartbeat,
+  attachWebSocketHeartbeat,
+} from '@/modules/websocket/services/websocket-server.service.js';
 
 function createFakeSocket() {
   const socket = new EventEmitter() as EventEmitter & {
@@ -13,6 +16,8 @@ function createFakeSocket() {
     terminateCount: number;
     ping: () => void;
     terminate: () => void;
+    sent: string[];
+    send: (payload: string) => void;
   };
   socket.readyState = WebSocket.OPEN;
   socket.pingCount = 0;
@@ -22,6 +27,10 @@ function createFakeSocket() {
   };
   socket.terminate = () => {
     socket.terminateCount += 1;
+  };
+  socket.sent = [];
+  socket.send = (payload: string) => {
+    socket.sent.push(payload);
   };
   return socket;
 }
@@ -72,6 +81,35 @@ test('heartbeat keeps responsive sockets open and stops after close', () => {
 
   assert.equal(socket.pingCount, 2);
   assert.equal(socket.terminateCount, 0);
+
+  socket.emit('close');
+  assert.equal(scheduler.cleared(), true);
+});
+
+// The protocol ping is invisible to a browser's JavaScript, so the client
+// watchdog needs a frame it can actually observe to tell a quiet socket from a
+// dead one.
+test('the chat heartbeat sends an observable frame while the socket is open', () => {
+  const socket = createFakeSocket();
+  const scheduler = createScheduler();
+  attachChatApplicationHeartbeat(socket as never, 25_000, scheduler);
+
+  scheduler.tick();
+  scheduler.tick();
+
+  assert.equal(socket.sent.length, 2);
+  assert.deepEqual(Object.keys(JSON.parse(socket.sent[0])).sort(), ['kind', 'timestamp']);
+  assert.equal(JSON.parse(socket.sent[0]).kind, 'heartbeat');
+});
+
+test('the chat heartbeat stays quiet on a closing socket and stops after close', () => {
+  const socket = createFakeSocket();
+  const scheduler = createScheduler();
+  attachChatApplicationHeartbeat(socket as never, 25_000, scheduler);
+
+  socket.readyState = WebSocket.CLOSING;
+  scheduler.tick();
+  assert.equal(socket.sent.length, 0);
 
   socket.emit('close');
   assert.equal(scheduler.cleared(), true);

@@ -23,6 +23,23 @@ type WebSocketContextType = {
   isConnected: boolean;
 };
 
+/**
+ * A socket can die without the browser ever finding out: the machine suspends,
+ * the network changes, the Tailscale tunnel is re-established. The close frame
+ * never arrives, so `readyState` stays OPEN, `send()` reports no error, and
+ * `onclose` — the only thing that triggers the reconnect below — never fires.
+ * The tab looks connected and silently is not, until the page is reloaded.
+ *
+ * The server sends an application-level `heartbeat` frame every 25s, so silence
+ * past this threshold is evidence the transport is gone rather than idle. Two
+ * intervals of margin keeps a single dropped frame from recycling a live
+ * socket.
+ */
+const SILENCE_TIMEOUT_MS = 70_000;
+
+/** How often the watchdog checks for that silence. */
+const WATCHDOG_INTERVAL_MS = 10_000;
+
 const WebSocketContext = createContext<WebSocketContextType | null>(null);
 
 export const useWebSocket = () => {
@@ -56,6 +73,8 @@ const useWebSocketProviderState = (): WebSocketContextType => {
   const listenersRef = useRef(new Set<ServerEventListener>());
   const [isConnected, setIsConnected] = useState(false);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  /** When the last frame of any kind arrived; the watchdog's only input. */
+  const lastFrameAtRef = useRef(0);
   const { isLoading: isAuthLoading, token, user } = useAuth();
 
   const dispatch = useCallback((event: ServerEvent) => {
@@ -85,6 +104,7 @@ const useWebSocketProviderState = (): WebSocketContextType => {
       wsRef.current = websocket;
 
       websocket.onopen = () => {
+        lastFrameAtRef.current = Date.now();
         setIsConnected(true);
         if (hasConnectedRef.current) {
           // This is a reconnect — signal so components can catch up on missed messages
@@ -94,8 +114,14 @@ const useWebSocketProviderState = (): WebSocketContextType => {
       };
 
       websocket.onmessage = (event) => {
+        lastFrameAtRef.current = Date.now();
         try {
           const data = JSON.parse(event.data) as ServerEvent;
+          // Proof of life and nothing else: feeding it to the listeners would
+          // wake feature logic several times a minute for no reason.
+          if (data.kind === 'heartbeat') {
+            return;
+          }
           dispatch(data);
         } catch (error) {
           console.error('Error parsing WebSocket message:', error);
@@ -157,6 +183,74 @@ const useWebSocketProviderState = (): WebSocketContextType => {
       }
     };
   }, [connect, isAuthLoading, user]); // reconnect after authentication or token refresh
+
+  /**
+   * Replaces a socket the browser still believes is open. The old handlers are
+   * detached first so its late `onclose` cannot schedule a second, competing
+   * reconnect on top of the one starting here.
+   */
+  const recycleSocket = useCallback(() => {
+    const dead = wsRef.current;
+    if (dead) {
+      dead.onopen = null;
+      dead.onmessage = null;
+      dead.onclose = null;
+      dead.onerror = null;
+      try {
+        dead.close();
+      } catch {
+        // A socket whose transport is already gone can throw here. Replacing it
+        // is what matters; the old one is unreachable either way.
+      }
+    }
+    wsRef.current = null;
+    setIsConnected(false);
+    if (reconnectTimeoutRef.current) {
+      clearTimeout(reconnectTimeoutRef.current);
+      reconnectTimeoutRef.current = null;
+    }
+    connect();
+  }, [connect]);
+
+  useEffect(() => {
+    if (!IS_PLATFORM && (isAuthLoading || !user)) {
+      return undefined;
+    }
+
+    const recycleIfSilent = () => {
+      const socket = wsRef.current;
+      // Any other state is already on its way to a reconnect.
+      if (!socket || socket.readyState !== WebSocket.OPEN) {
+        return;
+      }
+      if (Date.now() - lastFrameAtRef.current < SILENCE_TIMEOUT_MS) {
+        return;
+      }
+
+      console.warn('[WebSocket] Silent past the heartbeat window; replacing the socket');
+      recycleSocket();
+    };
+
+    // Background tabs have their timers throttled, so the interval alone can
+    // sleep through the very drop it is meant to catch. Coming back to the tab
+    // and regaining the network are the two other moments worth checking, and
+    // they are exactly when a suspended machine surfaces a dead socket.
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        recycleIfSilent();
+      }
+    };
+
+    const watchdog = window.setInterval(recycleIfSilent, WATCHDOG_INTERVAL_MS);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('online', recycleIfSilent);
+
+    return () => {
+      window.clearInterval(watchdog);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('online', recycleIfSilent);
+    };
+  }, [isAuthLoading, recycleSocket, user]);
 
   const sendMessage = useCallback((message: unknown) => {
     const socket = wsRef.current;
