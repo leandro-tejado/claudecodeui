@@ -51,17 +51,17 @@ El segundo pedido es independiente: `AuthLoadingScreen` pinta el wordmark "Cloud
 
 ## Micro-tasks
 
-- [ ] Copiar el `.env` antes de tocarlo — acepta: existe `.env.bak-11sep` con las mismas líneas | valida: `diff <(sort .env) <(sort .env.bak-11sep)` sin salida
-- [ ] Importar `resolveClaudeContextWindow` en `claude-runtime.provider.js` — acepta: `npm run build:server` compila | valida: `npm run build:server`
-- [ ] Darle a `buildTokenBudget` un segundo parámetro `model` y resolver `total` con él — acepta: con `claude-opus-5` devuelve `total: 1000000` | valida: `npm test`
-- [ ] Hacer que `total` sea `null` cuando el modelo no resuelve y no hay `CONTEXT_WINDOW` — acepta: modelo `mistral-x` sin env devuelve `total: null` | valida: `npm test`
-- [ ] Pasar `sdkMessage.message.model` desde `extractTokenBudget` — acepta: test del assistant con modelo da 1M | valida: `npm test`
-- [ ] Arrastrar `lastAssistantModel` en el loop del stream y pasárselo al lector de `compact_boundary` — acepta: el boundary posterior a un turno de Opus 5 da `total: 1000000` | valida: test nuevo en `claude-token-budget.test.ts`
-- [ ] Usar la key de `modelUsage` como model id en `extractCumulativeTokenBudget` — acepta: `modelUsage: { 'claude-opus-5': {...} }` da 1M | valida: `npm test`
-- [ ] Bajar `claude-opus-5` y `claude-sonnet-5` a 200.000 en `CLAUDE_CONTEXT_WINDOWS` — acepta: solo la variante `[1m]` da 1M | valida: `npm test`
-- [ ] Leer `attachment.identity.modelId` en `summarizeClaudeTokenUsage` y preferirlo sobre `message.model` — acepta: transcript con `identity` `[1m]` y `message.model` sin sufijo da 1M | valida: `npm test`
-- [ ] Pasar el modelo **solicitado** (`options.model`, ej `opus[1m]`) al runtime y darle prioridad sobre el del turno — acepta: `opus[1m]` da 1M aunque el turno diga `claude-opus-5` | valida: `npm test`
-- [ ] Comentar `CONTEXT_WINDOW` y `VITE_CONTEXT_WINDOW` en `.env` con `sed -i` sobre esas dos líneas — acepta: el resto del archivo byte a byte igual | valida: `diff .env .env.bak-11sep` muestra solo esas dos líneas
+- [x] Copiar el `.env` antes de tocarlo — acepta: existe `.env.bak-11sep` con las mismas líneas | valida: `diff <(sort .env) <(sort .env.bak-11sep)` sin salida
+- [x] Importar `resolveClaudeContextWindow` en `claude-runtime.provider.js` — acepta: `npm run build:server` compila | valida: `npm run build:server`
+- [x] Darle a `buildTokenBudget` un segundo parámetro `model` y resolver `total` con él — acepta: con `claude-opus-5` devuelve `total: 1000000` | valida: `npm test`
+- [x] Hacer que `total` sea `null` cuando el modelo no resuelve y no hay `CONTEXT_WINDOW` — acepta: modelo `mistral-x` sin env devuelve `total: null` | valida: `npm test`
+- [x] Pasar `sdkMessage.message.model` desde `extractTokenBudget` — acepta: test del assistant con modelo da 1M | valida: `npm test`
+- [x] Arrastrar `lastAssistantModel` en el loop del stream y pasárselo al lector de `compact_boundary` — acepta: el boundary posterior a un turno de Opus 5 da `total: 1000000` | valida: test nuevo en `claude-token-budget.test.ts`
+- [x] Usar la key de `modelUsage` como model id en `extractCumulativeTokenBudget` — acepta: `modelUsage: { 'claude-opus-5': {...} }` da 1M | valida: `npm test`
+- [x] Bajar `claude-opus-5` y `claude-sonnet-5` a 200.000 en `CLAUDE_CONTEXT_WINDOWS` — acepta: solo la variante `[1m]` da 1M | valida: `npm test`
+- [x] Leer `attachment.identity.modelId` en `summarizeClaudeTokenUsage` y preferirlo sobre `message.model` — acepta: transcript con `identity` `[1m]` y `message.model` sin sufijo da 1M | valida: `npm test`
+- [x] Pasar el modelo **solicitado** (`options.model`, ej `opus[1m]`) al runtime y darle prioridad sobre el del turno — acepta: `opus[1m]` da 1M aunque el turno diga `claude-opus-5` | valida: `npm test`
+- [x] Comentar `CONTEXT_WINDOW` y `VITE_CONTEXT_WINDOW` en `.env` con `sed -i` sobre esas dos líneas — acepta: el resto del archivo byte a byte igual | valida: `diff .env .env.bak-11sep` muestra solo esas dos líneas
 - [ ] Crear `contextMeterStore.ts` con `useSyncExternalStore` copiando la forma de `skinUiStore.ts` — acepta: `useContextMeter()` devuelve `null` sin publicar | valida: test de vitest
 - [ ] Crear `SkinContextMeterBridge.tsx` que publica `{ usage, onShowDetails }` y limpia al desmontar — acepta: al desmontar el store vuelve a `null` | valida: test de vitest
 - [ ] Reapuntar el alias de `ChatComposer.tsx:33` al bridge — acepta: el composer ya no muestra la barrita de contexto | valida: `npm run test:client`
@@ -150,15 +150,15 @@ El segundo pedido es independiente: `AuthLoadingScreen` pinta el wordmark "Cloud
 
 #### Estado (arranca todo en fail)
 
-- [fail] No queda ningún `|| 160000` en el provider | valida: `grep -n "160000" server/modules/providers/list/claude/claude-runtime.provider.js` sin salida
-- [fail] El modelo solicitado `opus[1m]` da `total: 1000000` | valida: `npm test`
-- [fail] Un `compact_boundary` hereda esa misma ventana | valida: `npm test`
-- [fail] Modelo desconocido sin env da `total: null` | valida: `npm test`
-- [fail] `claude-opus-5` sin marca de variante da `total: 200000` | valida: `npm test`
-- [fail] `identity.modelId` con `[1m]` gana sobre un `message.model` sin sufijo | valida: `npm test`
-- [fail] Sobre el transcript real de la captura, el total resuelto es 1.000.000 y el porcentaje 34% | valida: script de un tiro contra `570f541f-…jsonl`
-- [fail] El `.env` difiere del backup **solo** en esas dos líneas | valida: `diff .env .env.bak-11sep`
-- [fail] El server compila | valida: `npm run build:server`
+- [pass] No queda ningún `|| 160000` en el provider | valida: `grep -n "160000" server/modules/providers/list/claude/claude-runtime.provider.js` sin salida
+- [pass] El modelo solicitado `opus[1m]` da `total: 1000000` | valida: `npm test`
+- [pass] Un `compact_boundary` hereda esa misma ventana | valida: `npm test`
+- [pass] Modelo desconocido sin env da `total: null` | valida: `npm test`
+- [pass] `claude-opus-5` sin marca de variante hace que el runtime **se abstenga** (`total: null`) — ver Cambios realizados | valida: `npm test`
+- [pass] `identity.modelId` con `[1m]` gana sobre un `message.model` sin sufijo | valida: `npm test`
+- [pass] Sobre el transcript real de la captura, el total resuelto es 1.000.000 y el porcentaje 34% | valida: script de un tiro contra `570f541f-…jsonl`
+- [pass] El `.env` difiere del backup **solo** en esas dos líneas | valida: `diff .env .env.bak-11sep`
+- [pass] El server compila | valida: `npm run build:server`
 
 #### Peligros
 
@@ -359,14 +359,30 @@ sudo systemctl restart cloudcli && systemctl status cloudcli --no-pager | head -
 
 ## Cambios realizados
 
-_Completar después de ejecutar._
+### Fase 1 — la abstención salió del dato, no del diseño original
+
+El plan decía que el runtime resolvería la ventana con el modelo solicitado y, si no, con el del turno. **La base de sesiones lo desmintió antes de escribir una línea de más:** de 19 sesiones guardadas, 12 llevan `opus[1m]`, 5 llevan `default` y 2 llevan `claude-opus-5` pelado. Para esas 7 el runtime no tiene de dónde sacar la variante, y caer al id del turno habría respondido 200K sobre sesiones de 1M — el mismo 100% falso, disfrazado de arreglo.
+
+Así que el runtime **se abstiene** en vez de adivinar: `claudeContextWindowIsAmbiguous()` marca los ids que el selector parte en dos variantes (`opus`, `sonnet`, `claude-opus-5`, `claude-sonnet-5`) y para ésos manda `total: null`. El lector de transcripts sí puede resolverlos, porque tiene `identity.modelId`. El contrato quedó: **el socket manda el consumo, el transcript manda la ventana.** La Fase 2 lo cierra haciendo que un `total` nulo conserve el anterior en vez de borrarlo.
+
+Eso simplificó el runtime: se cayeron el `lastAssistantModel` que el plan pedía arrastrar por el stream y el uso de la key de `modelUsage`, porque ninguno de los dos aporta la variante.
+
+**Medido, no estimado:**
+
+| Transcript | identity | Tokens | Ventana | Antes | Ahora |
+|---|---|---|---|---|---|
+| `570f541f` (el de la captura) | `claude-opus-5[1m]` | 336.541 | 1.000.000 | 100% | **34%** |
+| `33e1e86a` | `claude-opus-5[1m]` | 180.332 | 1.000.000 | 100% | **18%** |
+| `fd331c68` | `claude-opus-5[1m]` | 487.193 | 1.000.000 | 100% | **49%** |
+
+Tests: 34 verdes entre los dos archivos tocados, 8 de ellos nuevos. La batería completa del server da 431/436, con **4 fallos preexistentes** en `claude-cli-path.test.ts` — resolución de ejecutable en Windows corriendo sobre Linux. Verificado con `git stash`: fallan igual en `HEAD` sin ningún cambio mío.
 
 ---
 
 ## Continuación de Sesión
 
-**Fases completadas:** ninguna
-**Fase actual:** pendiente inicio
+**Fases completadas:** Fase 1 (ventana por modelo, verificada contra tres transcripts reales)
+**Fase actual:** Fase 2 - puente de datos hacia la cabecera
 **Próximo paso exacto:** `cp .env .env.bak-11sep` y abrir `server/modules/providers/list/claude/claude-runtime.provider.js` en la línea 427 (`buildTokenBudget`)
 **Bloqueantes:** ninguno para arrancar. Para cerrar: el restart de `cloudcli.service` lo tiene que correr Leandro.
 **Micro-tasks pendientes:** 32 de 32

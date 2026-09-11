@@ -144,3 +144,95 @@ test('the compact boundary reader ignores non-compact system messages', () => {
     null,
   );
 });
+
+test('the requested model sizes the window, not the id the turn reports', () => {
+  // The picker sends `opus[1m]`; the SDK writes `claude-opus-5` flat on every
+  // assistant message. Reading only the turn's id sized a 1M session against
+  // the 200K base and pinned the meter at 100% past the first long turn.
+  const budget = extractTokenBudget(
+    {
+      type: 'assistant',
+      message: {
+        model: 'claude-opus-5',
+        usage: { input_tokens: 3, cache_read_input_tokens: 336_000, output_tokens: 538 },
+      },
+    },
+    'opus[1m]',
+  );
+
+  assert.ok(budget);
+  assert.equal(budget.total, 1_000_000);
+  assert.equal(budget.used, 336_541);
+  assert.equal(Math.round((budget.used / budget.total) * 100), 34);
+});
+
+test('a request with no variant reports no total instead of guessing one', () => {
+  // Sessions recorded before the picker stored variants keep a bare
+  // `claude-opus-5` or a `default`, and the turn's own id never carries the
+  // suffix. Answering 200K there would size a 1M session against the base and
+  // pin the meter at 100%. A null total means "keep the transcript's figure".
+  const previous = process.env.CONTEXT_WINDOW;
+  delete process.env.CONTEXT_WINDOW;
+  try {
+    for (const requested of ['opus', 'default', 'claude-opus-5', null]) {
+      const budget = extractTokenBudget(
+        { type: 'assistant', message: { model: 'claude-opus-5', usage: { input_tokens: 10, output_tokens: 2 } } },
+        requested,
+      );
+
+      assert.ok(budget);
+      assert.equal(budget.total, null, `requested: ${requested}`);
+    }
+  } finally {
+    if (previous !== undefined) process.env.CONTEXT_WINDOW = previous;
+  }
+});
+
+test('a compact boundary is sized by the requested model like any other turn', () => {
+  // `compact_boundary` is a `system` message with no model of its own; before
+  // this it fell through to no window at all and the meter stayed pinned at
+  // its pre-compact number.
+  const budget = extractCompactBoundaryTokenBudget(
+    { type: 'system', subtype: 'compact_boundary', compact_metadata: { post_tokens: 54_000 } },
+    'opus[1m]',
+  );
+
+  assert.ok(budget);
+  assert.equal(budget.total, 1_000_000);
+  assert.equal(budget.used, 54_000);
+});
+
+test('an unknown model with no CONTEXT_WINDOW reports no total', () => {
+  // The meter skips drawing rather than measure a real number against a window
+  // nobody confirmed. Inventing one is what made every long session read 100%.
+  const previous = process.env.CONTEXT_WINDOW;
+  delete process.env.CONTEXT_WINDOW;
+  try {
+    const budget = extractTokenBudget(
+      { type: 'assistant', message: { model: 'some-other-model', usage: { input_tokens: 10, output_tokens: 2 } } },
+      'some-other-model',
+    );
+
+    assert.ok(budget);
+    assert.equal(budget.total, null);
+  } finally {
+    if (previous !== undefined) process.env.CONTEXT_WINDOW = previous;
+  }
+});
+
+test('CONTEXT_WINDOW still works as a deliberate override for unknown models', () => {
+  const previous = process.env.CONTEXT_WINDOW;
+  process.env.CONTEXT_WINDOW = '250000';
+  try {
+    const budget = extractTokenBudget(
+      { type: 'assistant', message: { model: 'some-other-model', usage: { input_tokens: 10, output_tokens: 2 } } },
+      'some-other-model',
+    );
+
+    assert.ok(budget);
+    assert.equal(budget.total, 250_000);
+  } finally {
+    if (previous === undefined) delete process.env.CONTEXT_WINDOW;
+    else process.env.CONTEXT_WINDOW = previous;
+  }
+});

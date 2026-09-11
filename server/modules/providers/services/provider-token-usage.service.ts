@@ -31,7 +31,8 @@ type ProviderTokenUsageServiceDependencies = {
 
 type TokenUsageResult = {
   used: number;
-  total?: number;
+  /** `null` when no model could size the window — the meter skips drawing. */
+  total?: number | null;
   inputTokens: number;
   outputTokens: number;
   cacheReadTokens?: number;
@@ -185,19 +186,63 @@ function emptyCodexTokenUsage(): TokenUsageResult {
  * Context window per model id, in tokens. Anthropic model docs, cached
  * 2026-06-24. Only documented models are listed: an unknown id resolves to
  * null so the caller falls back instead of inventing a number.
+ *
+ * `claude-opus-5` and `claude-sonnet-5` sit at the 200K base because the model
+ * picker offers `opus`/`opus[1m]` and `sonnet`/`sonnet[1m]` as separate
+ * entries — the proof that the plain id is not the million-token one. The
+ * variant is read from the `[1m]` suffix below.
+ *
+ * The older Opus/Sonnet ids and the Fable/Mythos family stay where they were:
+ * there is no picker entry proving a split for them, and guessing 200K on a
+ * model that really holds 1M would bring back the very bug this fixed — every
+ * long session pinned at 100%.
  */
 const CLAUDE_CONTEXT_WINDOWS: Record<string, number> = {
   'claude-fable-5-1': 1_000_000,
   'claude-fable-5': 1_000_000,
   'claude-mythos-5-1': 1_000_000,
-  'claude-opus-5': 1_000_000,
+  'claude-opus-5': 200_000,
   'claude-opus-4-8': 1_000_000,
   'claude-opus-4-7': 1_000_000,
   'claude-opus-4-6': 1_000_000,
-  'claude-sonnet-5': 1_000_000,
+  'claude-sonnet-5': 200_000,
   'claude-sonnet-4-6': 1_000_000,
   'claude-haiku-4-5': 200_000,
 };
+
+/**
+ * Models the picker offers in both a base and a `[1m]` flavour, by normalized
+ * id — the picker's own aliases included, since a session records the alias.
+ *
+ * A bare id from this set is genuinely ambiguous: the same string names a 200K
+ * session and a 1M one. Callers that cannot consult the transcript must say so
+ * instead of picking one.
+ */
+const CLAUDE_AMBIGUOUS_WINDOW_MODELS = new Set(['claude-opus-5', 'claude-sonnet-5', 'opus', 'sonnet']);
+
+/**
+ * True when a model id names a window that cannot be pinned down from the id.
+ *
+ * The live runtime only ever sees the requested model, so for these ids it has
+ * to abstain and let the transcript reader — which has `identity.modelId` —
+ * supply the window.
+ */
+export function claudeContextWindowIsAmbiguous(model: unknown): boolean {
+  if (typeof model !== 'string' || model.length === 0) {
+    return false;
+  }
+  if (/\[\d+m\]$/i.test(model)) {
+    return false; // the suffix settles it
+  }
+  return CLAUDE_AMBIGUOUS_WINDOW_MODELS.has(normalizeModelId(model));
+}
+
+/** Strips the harness variant suffix and any dated snapshot from a model id. */
+function normalizeModelId(model: string): string {
+  return model
+    .replace(/\[[^\]]*\]$/, '')
+    .replace(/-\d{8}$/, ''); // dated snapshot, e.g. claude-haiku-4-5-20251001
+}
 
 /**
  * Context window for the model that actually produced a turn.
@@ -218,9 +263,7 @@ export function resolveClaudeContextWindow(model: unknown): number | null {
     return Number(variant[1]) * 1_000_000;
   }
 
-  const id = model
-    .replace(/\[[^\]]*\]$/, '')
-    .replace(/-\d{8}$/, ''); // dated snapshot, e.g. claude-haiku-4-5-20251001
+  const id = normalizeModelId(model);
 
   const exact = CLAUDE_CONTEXT_WINDOWS[id];
   if (exact !== undefined) {
@@ -238,6 +281,26 @@ export function resolveClaudeContextWindow(model: unknown): number | null {
     }
   }
   return best;
+}
+
+/**
+ * Model id the session was started with, variant suffix included.
+ *
+ * Assistant rows record the resolved id (`claude-opus-5`) and drop the harness
+ * variant, so a 1M session is indistinguishable from a 200K one by that field
+ * alone. Claude Code also writes an `attachment`/`model` row carrying
+ * `identity.modelId` — `claude-opus-5[1m]` — and that is the only place in the
+ * transcript where the variant survives. Read newest-first: a session that
+ * switched models writes a fresh one.
+ */
+function readTranscriptModelIdentity(entries: AnyRecord[]): string | null {
+  for (let index = entries.length - 1; index >= 0; index -= 1) {
+    const modelId = entries[index]?.attachment?.identity?.modelId;
+    if (typeof modelId === 'string' && modelId.length > 0) {
+      return modelId;
+    }
+  }
+  return null;
 }
 
 /**
@@ -306,10 +369,22 @@ export function summarizeClaudeTokenUsage(
   }
 
   const parsedContextWindow = Number.parseInt(configuredContextWindow ?? '', 10);
-  const fallbackContextWindow = Number.isFinite(parsedContextWindow) ? parsedContextWindow : 160_000;
+  const fallbackContextWindow = Number.isFinite(parsedContextWindow) ? parsedContextWindow : null;
   // The model that wrote the turn wins: CONTEXT_WINDOW is one global number and
-  // cannot follow a session that switches models.
-  const contextWindow = resolveClaudeContextWindow(modelId) ?? fallbackContextWindow;
+  // cannot follow a session that switches models. The identity row is preferred
+  // over the turn's own id when both name the same model, because only it kept
+  // the `[1m]` suffix that tells the two windows apart.
+  const identityModelId = readTranscriptModelIdentity(entries);
+  const variantModelId =
+    typeof modelId === 'string'
+    && identityModelId
+    && normalizeModelId(identityModelId) === normalizeModelId(modelId)
+      ? identityModelId
+      : modelId;
+  const contextWindow =
+    resolveClaudeContextWindow(variantModelId)
+    ?? resolveClaudeContextWindow(modelId)
+    ?? fallbackContextWindow;
   const cacheTokens = cacheReadTokens + cacheCreationTokens;
 
   return {

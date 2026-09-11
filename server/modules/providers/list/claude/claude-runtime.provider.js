@@ -28,6 +28,10 @@ import {
   CLAUDE_PREDEFINED_MODELS,
   CLAUDE_ULTRACODE_EFFORT
 } from '@/modules/providers/list/claude/claude-models.provider.js';
+import {
+  claudeContextWindowIsAmbiguous,
+  resolveClaudeContextWindow
+} from '@/modules/providers/services/provider-token-usage.service.js';
 import { resolveClaudeCodeExecutablePath } from '@/shared/claude-cli-path.js';
 import {
   createNotificationEvent,
@@ -417,21 +421,49 @@ function readNumber(value) {
  */
 
 /**
+ * Context window for a turn, in tokens, or `null` when it cannot be known.
+ *
+ * Only the *requested* model is trusted here, because only it can carry the
+ * `[1m]` suffix: the picker sends `opus[1m]`, while the SDK writes
+ * `claude-opus-5` flat on every turn. Sizing a 1M session by the turn's id
+ * would read 200K and pin the meter at 100% — the 11-sep bug, in a new outfit.
+ *
+ * `null` is a real answer, not a failure. Sessions recorded before the picker
+ * stored variants keep a bare `claude-opus-5` or a `default`, and there is no
+ * honest window to derive from those here. The transcript reader *can* tell
+ * them apart (it has `identity.modelId`), so a null total means "keep the one
+ * you already have" and the client holds the transcript's figure instead of
+ * taking a guess from the wire.
+ * @param {string|null|undefined} requestedModel - Model the client asked for
+ * @returns {number|null} Context window in tokens, or null when unknown
+ */
+function resolveTurnContextWindow(requestedModel) {
+  const configured = parseInt(process.env.CONTEXT_WINDOW, 10);
+  const fallback = Number.isFinite(configured) ? configured : null;
+  // `claude-opus-5` names both the 200K model and the 1M one. Answering either
+  // number here is a coin flip, and the wrong side of it is the bug this fixed.
+  if (claudeContextWindowIsAmbiguous(requestedModel)) {
+    return fallback;
+  }
+  return resolveClaudeContextWindow(requestedModel) ?? fallback;
+}
+
+/**
  * Builds a context-window budget from an Anthropic-shaped usage payload.
  *
  * `input_tokens + cache_read + cache_creation` is one request's whole prompt,
  * which is exactly what the context window holds at that moment.
  * @param {Object} messageUsage - Anthropic usage payload
+ * @param {number|null} contextWindow - Resolved window, or null when unknown
  * @returns {TokenBudget} Token budget object
  */
-function buildTokenBudget(messageUsage) {
+function buildTokenBudget(messageUsage, contextWindow = null) {
   const directInputTokens = readNumber(messageUsage.input_tokens ?? messageUsage.inputTokens);
   const cacheCreationTokens = readNumber(messageUsage.cache_creation_input_tokens ?? messageUsage.cacheCreationInputTokens ?? messageUsage.cacheCreationTokens);
   const cacheReadTokens = readNumber(messageUsage.cache_read_input_tokens ?? messageUsage.cacheReadInputTokens ?? messageUsage.cacheReadTokens);
   const cacheTokens = cacheCreationTokens + cacheReadTokens;
   const inputTokens = directInputTokens + cacheTokens;
   const outputTokens = readNumber(messageUsage.output_tokens ?? messageUsage.outputTokens);
-  const contextWindow = parseInt(process.env.CONTEXT_WINDOW, 10) || 160000;
 
   return {
     used: inputTokens + outputTokens,
@@ -455,9 +487,10 @@ function buildTokenBudget(messageUsage) {
  * prompt its own request carried. The turn-ending `result` is deliberately not
  * a source here — see `extractCumulativeTokenBudget`.
  * @param {Object} sdkMessage - SDK stream message
+ * @param {string|null} [requestedModel] - Model the client asked for
  * @returns {TokenBudget|null} Token budget object or null
  */
-function extractTokenBudget(sdkMessage) {
+function extractTokenBudget(sdkMessage, requestedModel = null) {
   if (!sdkMessage || typeof sdkMessage !== 'object') {
     return null;
   }
@@ -482,7 +515,7 @@ function extractTokenBudget(sdkMessage) {
     return null;
   }
 
-  return buildTokenBudget(messageUsage);
+  return buildTokenBudget(messageUsage, resolveTurnContextWindow(requestedModel));
 }
 
 /**
@@ -494,9 +527,10 @@ function extractTokenBudget(sdkMessage) {
  * assistant turn reports fresh usage. `post_tokens` is the one figure that
  * reflects the compaction immediately.
  * @param {Object} sdkMessage - SDK stream message
+ * @param {string|null} [requestedModel] - Model the client asked for
  * @returns {TokenBudget|null} Token budget object or null
  */
-function extractCompactBoundaryTokenBudget(sdkMessage) {
+function extractCompactBoundaryTokenBudget(sdkMessage, requestedModel = null) {
   if (!sdkMessage || typeof sdkMessage !== 'object') {
     return null;
   }
@@ -510,7 +544,7 @@ function extractCompactBoundaryTokenBudget(sdkMessage) {
     return null;
   }
 
-  return buildTokenBudget({ input_tokens: postTokens, output_tokens: 0 });
+  return buildTokenBudget({ input_tokens: postTokens, output_tokens: 0 }, resolveTurnContextWindow(requestedModel));
 }
 
 /**
@@ -527,15 +561,16 @@ function extractCompactBoundaryTokenBudget(sdkMessage) {
  * message ever emits, so it stays available for the caller to use when a turn
  * produced no assistant budget at all.
  * @param {Object} sdkMessage - SDK stream message
+ * @param {string|null} [requestedModel] - Model the client asked for
  * @returns {TokenBudget|null} Token budget object or null
  */
-function extractCumulativeTokenBudget(sdkMessage) {
+function extractCumulativeTokenBudget(sdkMessage, requestedModel = null) {
   if (!sdkMessage || typeof sdkMessage !== 'object' || sdkMessage.type !== 'result') {
     return null;
   }
 
   if (sdkMessage.usage && typeof sdkMessage.usage === 'object') {
-    return buildTokenBudget(sdkMessage.usage);
+    return buildTokenBudget(sdkMessage.usage, resolveTurnContextWindow(requestedModel));
   }
 
   if (!sdkMessage.modelUsage || typeof sdkMessage.modelUsage !== 'object') {
@@ -553,7 +588,7 @@ function extractCumulativeTokenBudget(sdkMessage) {
   const inputTokens = readNumber(modelData.cumulativeInputTokens ?? modelData.inputTokens);
   const outputTokens = readNumber(modelData.cumulativeOutputTokens ?? modelData.outputTokens);
   const totalUsed = inputTokens + outputTokens;
-  const contextWindow = parseInt(process.env.CONTEXT_WINDOW, 10) || 160000;
+  const contextWindow = resolveTurnContextWindow(requestedModel);
 
   return {
     used: totalUsed,
@@ -987,9 +1022,12 @@ async function queryClaudeSDK(command, options = {}, ws, context) {
       // Extract and send token budget updates from assistant usage payloads,
       // falling back to the turn's cumulative bill only for SDK builds that
       // report no per-assistant usage at all.
-      const tokenBudgetData = extractCompactBoundaryTokenBudget(message)
-        || extractTokenBudget(message)
-        || (assistantBudgetSent ? null : extractCumulativeTokenBudget(message));
+      // `sdkOptions.model` keeps the picker's `[1m]` suffix; the model the SDK
+      // writes on each turn does not, so it alone cannot size the window.
+      const requestedModel = sdkOptions.model || null;
+      const tokenBudgetData = extractCompactBoundaryTokenBudget(message, requestedModel)
+        || extractTokenBudget(message, requestedModel)
+        || (assistantBudgetSent ? null : extractCumulativeTokenBudget(message, requestedModel));
       if (tokenBudgetData) {
         if (message.type === 'assistant') {
           assistantBudgetSent = true;

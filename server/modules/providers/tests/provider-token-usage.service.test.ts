@@ -7,6 +7,7 @@ import test from 'node:test';
 import Database from 'better-sqlite3';
 
 import {
+  claudeContextWindowIsAmbiguous,
   createProviderTokenUsageService,
   resolveClaudeContextWindow,
   summarizeClaudeTokenUsage,
@@ -375,12 +376,51 @@ test('Codex token usage falls back to the whole file when the tail has no token_
 
 test('the context window comes from the model that wrote the turn, not from CONTEXT_WINDOW', () => {
   // The meter read 75% of a 160K default while the session was actually running
-  // a 1M model — a full context looked four turns away when it was not.
+  // a model with a bigger window — a full context looked four turns away when
+  // it was not.
   const entries = [
     { type: 'assistant', message: { model: 'claude-opus-5', usage: { input_tokens: 3, cache_read_input_tokens: 4000, output_tokens: 80 } } },
   ];
 
-  assert.equal(summarizeClaudeTokenUsage(entries, '160000').total, 1_000_000);
+  assert.equal(summarizeClaudeTokenUsage(entries, '160000').total, 200_000);
+});
+
+test('the identity row supplies the variant the assistant rows drop', () => {
+  // Assistant rows record `claude-opus-5` whether the session runs the 200K
+  // base or the 1M variant. Sizing a 1M session against 200K pinned the meter
+  // at 100% from the first long turn — the 11-sep bug, second half.
+  const entries = [
+    { type: 'attachment', attachment: { type: 'model', identity: { modelId: 'claude-opus-5[1m]' } } },
+    { type: 'assistant', message: { model: 'claude-opus-5', usage: { input_tokens: 3, cache_read_input_tokens: 336_000, output_tokens: 538 } } },
+  ];
+
+  const usage = summarizeClaudeTokenUsage(entries, '160000');
+  assert.equal(usage.total, 1_000_000);
+  assert.equal(usage.used, 336_541);
+  assert.equal(Math.round((usage.used / (usage.total as number)) * 100), 34);
+});
+
+test('the identity row is ignored when a later turn ran a different model', () => {
+  // Switching models mid-session must not carry the old variant over.
+  const entries = [
+    { type: 'attachment', attachment: { type: 'model', identity: { modelId: 'claude-opus-5[1m]' } } },
+    { type: 'assistant', message: { model: 'claude-haiku-4-5', usage: { input_tokens: 3, cache_read_input_tokens: 500, output_tokens: 10 } } },
+  ];
+
+  assert.equal(summarizeClaudeTokenUsage(entries, '160000').total, 200_000);
+});
+
+test('an unknown model with no configured window reports no total at all', () => {
+  // A total nobody can confirm is worse than none: the meter would measure a
+  // real number against an invented window and read 100% on every long session.
+  const entries = [
+    { type: 'assistant', message: { model: 'some-other-model', usage: { input_tokens: 3, output_tokens: 80 } } },
+  ];
+
+  // Passing '' rather than undefined: undefined falls through to the default
+  // parameter, which reads process.env — and a .env with CONTEXT_WINDOW set
+  // would silently make this pass for the wrong reason.
+  assert.equal(summarizeClaudeTokenUsage(entries, '').total, null);
 });
 
 test('a session that switches models resizes to the newest turn', () => {
@@ -401,14 +441,35 @@ test('an unknown model falls back to the configured window instead of inventing 
 });
 
 test('resolveClaudeContextWindow understands variants, snapshots and unknowns', () => {
-  assert.equal(resolveClaudeContextWindow('claude-opus-5'), 1_000_000);
-  assert.equal(resolveClaudeContextWindow('claude-sonnet-5'), 1_000_000);
+  // Base ids sit at 200K: the picker lists `opus`/`opus[1m]` separately, which
+  // is the proof that the plain id is not the million-token one.
+  assert.equal(resolveClaudeContextWindow('claude-opus-5'), 200_000);
+  assert.equal(resolveClaudeContextWindow('claude-sonnet-5'), 200_000);
   assert.equal(resolveClaudeContextWindow('claude-haiku-4-5'), 200_000);
   // Harness variant suffix written by Claude Code.
   assert.equal(resolveClaudeContextWindow('claude-opus-5[1m]'), 1_000_000);
+  assert.equal(resolveClaudeContextWindow('claude-sonnet-5[1m]'), 1_000_000);
+  // The picker's own aliases carry the suffix too, and arrive before any turn.
+  assert.equal(resolveClaudeContextWindow('opus[1m]'), 1_000_000);
   // Dated snapshot ids resolve to their base model.
   assert.equal(resolveClaudeContextWindow('claude-haiku-4-5-20251001'), 200_000);
   assert.equal(resolveClaudeContextWindow('<synthetic>'), null);
   assert.equal(resolveClaudeContextWindow(null), null);
   assert.equal(resolveClaudeContextWindow(''), null);
+});
+
+test('ambiguous ids are the ones the picker splits into two variants', () => {
+  // The live runtime only sees the requested model. For these ids it must
+  // abstain, because the same string names a 200K session and a 1M one.
+  assert.equal(claudeContextWindowIsAmbiguous('claude-opus-5'), true);
+  assert.equal(claudeContextWindowIsAmbiguous('claude-sonnet-5'), true);
+  assert.equal(claudeContextWindowIsAmbiguous('opus'), true);
+  assert.equal(claudeContextWindowIsAmbiguous('sonnet'), true);
+  // The suffix settles it, so these are not ambiguous.
+  assert.equal(claudeContextWindowIsAmbiguous('opus[1m]'), false);
+  assert.equal(claudeContextWindowIsAmbiguous('claude-opus-5[1m]'), false);
+  // No variant is offered for these, so the id is the whole answer.
+  assert.equal(claudeContextWindowIsAmbiguous('claude-haiku-4-5'), false);
+  assert.equal(claudeContextWindowIsAmbiguous('default'), false);
+  assert.equal(claudeContextWindowIsAmbiguous(null), false);
 });
