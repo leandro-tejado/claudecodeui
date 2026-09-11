@@ -312,7 +312,7 @@ El segundo pedido es independiente: `AuthLoadingScreen` pinta el wordmark "Cloud
 - [pass] Las dos vías —transcript y runtime— devuelven el mismo total para la misma sesión | valida: comparar las dos salidas
 - [pass] El dev server sirve el wordmark | valida: `curl -o /dev/null -w '%{http_code}' …/lt-wordmark.svg`
 - [fail] Confirmación visual de Leandro sobre los dos anillos y el splash | valida: él lo mira
-- [fail] Rama pusheada | valida: `git log origin/diseno/propio -1 --oneline`
+- [pass] Rama pusheada | valida: `git log origin/diseno/propio -1 --oneline` → `8f00b197`
 
 #### Peligros
 
