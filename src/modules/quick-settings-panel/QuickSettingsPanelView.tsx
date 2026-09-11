@@ -10,7 +10,17 @@ import QuickSettingsContent from '@/modules/quick-settings-panel/QuickSettingsCo
 import QuickSettingsHandle from '@/modules/quick-settings-panel/QuickSettingsHandle';
 import QuickSettingsPanelHeader from '@/modules/quick-settings-panel/QuickSettingsPanelHeader';
 
-/** Exported as QuickSettingsPanel and rendered by the project-workspace module as its slide-out quick settings drawer. */
+/*
+ * SIN CONSUMIDORES desde el 11-sep-2026. El cajón se desmontó de
+ * ProjectWorkspaceShell: su manija flotante se comía el borde derecho, que
+ * ahora es del panel de archivos. Sus tres toggles se mudaron a
+ * Ajustes → Apariencia → Chat.
+ *
+ * El módulo queda en el árbol a propósito y no se borra: es código de upstream
+ * y borrarlo abre un conflicto en cada `git merge upstream/main`. Mismo criterio
+ * que `src/modules/sidebar/`, que también quedó sin renderizar.
+ */
+/** Exported as QuickSettingsPanel; sin consumidores desde el 11-sep-2026. */
 function QuickSettingsPanelView() {
   const [isOpen, setIsOpen] = useState(false);
   const { isMobile } = useDeviceSettings({ trackPWA: false });

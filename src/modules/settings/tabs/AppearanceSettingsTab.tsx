@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { ThemePreferenceSelect } from '@/shared/ui';
 import type { CodeEditorSettingsState, ProjectSortOrder } from '@/shared/types';
 import { LanguageSelector } from '@/modules/i18n';
+import { useSetUiPreference, useUiPreferences } from '@/shared/context/UiPreferencesContext';
 import SettingsCard from '@/modules/settings/SettingsCard';
 import SettingsRow from '@/modules/settings/SettingsRow';
 import SettingsSection from '@/modules/settings/SettingsSection';
@@ -29,6 +30,8 @@ export default function AppearanceSettingsTab({
   onCodeEditorFontSizeChange,
 }: AppearanceSettingsTabProps) {
   const { t } = useTranslation('settings');
+  const uiPreferences = useUiPreferences();
+  const setUiPreference = useSetUiPreference();
 
   return (
     <div className="space-y-8">
@@ -123,6 +126,47 @@ export default function AppearanceSettingsTab({
               <option value="18">18px</option>
               <option value="20">20px</option>
             </select>
+          </SettingsRow>
+        </SettingsCard>
+      </SettingsSection>
+
+      {/* Estos tres vivían en el cajón de Ajustes rápidos, que se retiró para
+          dejarle el borde derecho al panel de archivos. Eran los únicos
+          controles que ese cajón tenía y no existen en ninguna otra pantalla:
+          si se iban con él, se perdía el control de "Mostrar razonamiento". */}
+      <SettingsSection title="Chat">
+        <SettingsCard>
+          <SettingsRow
+            label="Mostrar razonamiento"
+            description="Muestra el bloque de pensamiento del modelo dentro de la respuesta."
+          >
+            <SettingsToggle
+              checked={uiPreferences.showThinking}
+              onChange={(value) => setUiPreference('showThinking', value)}
+              ariaLabel="Mostrar razonamiento"
+            />
+          </SettingsRow>
+
+          <SettingsRow
+            label="Mostrar parámetros sin procesar"
+            description="Muestra los argumentos crudos con los que se llamó a cada herramienta."
+          >
+            <SettingsToggle
+              checked={uiPreferences.showRawParameters}
+              onChange={(value) => setUiPreference('showRawParameters', value)}
+              ariaLabel="Mostrar parámetros sin procesar"
+            />
+          </SettingsRow>
+
+          <SettingsRow
+            label="Enviar con Ctrl+Enter"
+            description="Con esto activado, Enter hace un salto de línea y Ctrl+Enter manda el mensaje."
+          >
+            <SettingsToggle
+              checked={uiPreferences.sendByCtrlEnter}
+              onChange={(value) => setUiPreference('sendByCtrlEnter', value)}
+              ariaLabel="Enviar con Ctrl+Enter"
+            />
           </SettingsRow>
         </SettingsCard>
       </SettingsSection>
