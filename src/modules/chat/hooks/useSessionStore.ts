@@ -750,10 +750,18 @@ export function useSessionStore() {
 
   const appendRealtime = useCallback((sessionId: string, msg: NormalizedMessage) => {
     const slot = getSlot(sessionId);
+    // The realtime handler casts raw `ServerEvent` frames into this type, and
+    // on that wire every field is optional. A frame that arrives without an id
+    // used to be stored as-is and then blow up in the reconciliation pass —
+    // inside a React update, which left the tree half-committed and froze the
+    // composer. Stamping one here keeps every consumer's `message.id` honest.
+    const withId = typeof msg.id === 'string' && msg.id
+      ? msg
+      : { ...msg, id: `untagged_${Date.now()}_${Math.random().toString(36).slice(2, 8)}` };
     const normalizedMessage =
-      msg.sessionId === sessionId
-        ? msg
-        : { ...msg, sessionId };
+      withId.sessionId === sessionId
+        ? withId
+        : { ...withId, sessionId };
     let updated = [...slot.realtimeMessages, normalizedMessage];
     if (updated.length > MAX_REALTIME_MESSAGES) {
       updated = updated.slice(-MAX_REALTIME_MESSAGES);

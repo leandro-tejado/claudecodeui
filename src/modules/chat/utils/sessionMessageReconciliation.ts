@@ -103,7 +103,10 @@ export function removeOptimisticUserEchoes(
   const claimedServerIds = new Set<string>();
 
   return realtimeMessages.filter((message) => {
-    if (!message.id.startsWith('local_')) {
+    // Only optimistic rows minted client-side carry the `local_` prefix, so
+    // anything without a string id is by definition not one of them. Reading
+    // `.startsWith` off it threw and took the whole realtime append down.
+    if (typeof message.id !== 'string' || !message.id.startsWith('local_')) {
       return true;
     }
 
