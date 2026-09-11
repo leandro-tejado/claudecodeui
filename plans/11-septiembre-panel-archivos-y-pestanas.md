@@ -1,7 +1,7 @@
 # Panel de archivos al lado del chat + sesiones en pestañas nuevas
 
 **Fecha:** 11 de Septiembre 2026
-**Estado:** borrador
+**Estado:** en-ejecucion
 
 Convierte la vista de archivos en una columna lateral derecha permanente —visible mientras escribís en el chat— y devuelve a las filas de sesión del sidebar el `href` que el rediseño propio les sacó, para que la rueda del ratón abra la sesión en una pestaña nueva.
 
@@ -30,6 +30,8 @@ La ruta `/session/:sessionId` ya existe (`App.tsx:128`) y resuelve la sesión co
 | `src/modules/settings/tabs/AppearanceSettingsTab.tsx` | modificar — sección nueva con los tres toggles huérfanos |
 | `src/modules/file-tree/FileTree.tsx` | modificar — dos props opcionales: `compact` y `refreshSignal` |
 | `src/modules/file-tree/FileTreeHeader.tsx` | modificar — ocultar el switch lista/tabla cuando es compacto |
+| `src/modules/skin/hooks/useFilesPanelRoom.ts` | crear — umbrales de ancho para replegar el panel sin tocar la preferencia |
+| `src/modules/skin/hooks/useRunningTabTitle.ts` | crear — prefijo `●` en el título mientras corre la sesión de esta pestaña |
 | `src/modules/skin/tests/skinSessionRow.test.tsx` | crear — el `href` existe y el click con modificador no navega en la app |
 
 **Zona de merge:** todo lo propio vive en `src/modules/skin/`. Los cuatro archivos de upstream que se tocan reciben injertos de pocas líneas, nunca reescrituras.
@@ -38,27 +40,31 @@ La ruta `/session/:sessionId` ya existe (`App.tsx:128`) y resuelve la sesión co
 
 ## Micro-tasks
 
-- [ ] Leer `useHref` una sola vez en `SkinSidebar` (`const sessionHrefBase = useHref('/session')`) — acepta: una única llamada a hook, fuera de cualquier `map` — valida: `grep -c "useHref" src/modules/skin/SkinSidebar.tsx` devuelve 2 (import + uso)
-- [ ] Reestructurar la fila de sesión: wrapper `div.group.relative` → `<a>` con el contenido + botones como hermanos absolutos — acepta: ningún `<button>` queda dentro del `<a>` — valida: revisión del JSX + `npm run test:client`
-- [ ] `onClick` de la fila: `if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;` antes del `preventDefault()` — acepta: Ctrl+click abre pestaña nueva, click normal navega en la app — valida: prueba en el navegador
-- [ ] Mantener la rama `isRenaming` como `div` con el input, sin ancla — acepta: renombrar sigue funcionando y Enter guarda — valida: renombrar una sesión en el navegador
-- [ ] Escribir `src/modules/skin/tests/skinSessionRow.test.tsx` con `MemoryRouter` — acepta: assert de `href` = `/session/<id>` y de que `onSessionSelect` no se llama con `ctrlKey` — valida: `npm run test:client`
-- [ ] Agregar sección "Chat" a `AppearanceSettingsTab` con los tres `SettingsToggle` (`showThinking`, `showRawParameters`, `sendByCtrlEnter`) leyendo `useUiPreferences`/`useSetUiPreference` — acepta: los tres aparecen en Ajustes → Apariencia y persisten al recargar — valida: cambiar uno, recargar, verificar
-- [ ] Quitar `<QuickSettingsPanel />` y su import de `ProjectWorkspaceShell.tsx` — acepta: la manija flotante del borde derecho ya no aparece — valida: `grep -n QuickSettings src/modules/project-workspace/ProjectWorkspaceShell.tsx` sin resultados
-- [ ] Extender `skinUiStore` con `filesPanelOpen` (clave `skin:files-panel-open`) y `filesPanelWidth` (clave `skin:files-panel-width`, default 320, rango 240–640) — acepta: ambos sobreviven a un reload — valida: `localStorage.getItem('skin:files-panel-open')` en la consola del navegador
-- [ ] Exportar `toggleFilesPanel` y `setFilesPanelWidth` desde `skinUiStore` y el barrel `skin/index.ts` — acepta: importables como `@/modules/skin` — valida: `npm run typecheck`
-- [ ] Crear `SkinFilesPanel.tsx`: contenedor `flex-none` con ancho del store, manija de arrastre a la izquierda, cabecera con nombre del proyecto y botón cerrar — acepta: se arrastra y el ancho persiste — valida: arrastrar, recargar, comprobar
-- [ ] Agregar `compact?: boolean` a `FileTree`: fuerza `viewMode = 'list'` y pasa la señal al header — acepta: el panel angosto nunca muestra la tabla de columnas — valida: abrir el panel con el modo tabla previamente guardado
-- [ ] Agregar `refreshSignal?: number` a `FileTree` con un `useEffect` que llame `refreshFiles` al cambiar — acepta: incrementar la señal recarga el árbol sin perder carpetas expandidas — valida: crear un archivo por chat y ver si aparece sin colapsar el árbol
-- [ ] Ocultar el switch lista/tabla en `FileTreeHeader` cuando `compact` — acepta: la barra del panel entra sin desbordar a 320px — valida: inspección visual
-- [ ] Montar `<SkinFilesPanel />` en `WorkspaceMain`, como hermano de `EditorSidebar` dentro del `flex` principal — acepta: orden chat → editor → archivos — valida: abrir un archivo con el panel abierto
-- [ ] Borrar el bloque `{activeTab === 'files' && <FileTree …/>}` de `WorkspaceMain` y dejar `fillSpace={false}` en `EditorSidebar` — acepta: no queda ninguna referencia a la tab files — valida: `grep -n "'files'" src/modules/project-workspace/WorkspaceMain.tsx`
-- [ ] Agregar el efecto defensivo `if (activeTab === 'files') setActiveTab('chat')` — acepta: una sesión que venía con la tab files no queda en pantalla vacía — valida: forzar `activeTab='files'` y comprobar que vuelve a chat
-- [ ] Redirigir `openFile` de la paleta de comandos: abrir el panel + `handleFileOpen` en vez de `setActiveTab('files')` — acepta: buscar un archivo en la paleta lo abre en el editor lateral — valida: Cmd+K → archivo
-- [ ] Sacar `files` de `BASE_TABS` en `SkinHeader` y agregar el botón Folder con `onClick={toggleFilesPanel}` y `aria-pressed` — acepta: el botón queda marcado mientras el panel está abierto — valida: inspección visual
-- [ ] Quitar la rama `activeTab === 'files'` del cálculo del título en `SkinHeader` — acepta: el título sigue mostrando la sesión con el panel abierto — valida: abrir el panel y mirar la cabecera
-- [ ] Auto-refresco: en `SkinFilesPanel`, con `useBusySessionIdSet()`, incrementar `refreshSignal` cuando la sesión activa sale del set — acepta: al terminar una respuesta que creó un archivo, el árbol lo muestra sin tocar nada — valida: pedirle al agente que cree un archivo y mirar el panel
-- [ ] Correr `npm run lint`, `npm run typecheck`, `npm run test:client` y `npm run build:client` — acepta: los cuatro en verde — valida: los cuatro comandos
+- [x] Leer `useHref` una sola vez en `SkinSidebar` (`const sessionHrefBase = useHref('/session')`) — acepta: una única llamada a hook, fuera de cualquier `map` — valida: `grep -c "useHref" src/modules/skin/SkinSidebar.tsx` devuelve 2 (import + uso)
+- [x] Reestructurar la fila de sesión: wrapper `div.group.relative` → `<a>` con el contenido + botones como hermanos absolutos — acepta: ningún `<button>` queda dentro del `<a>` — valida: revisión del JSX + `npm run test:client`
+- [x] `onClick` de la fila: `if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;` antes del `preventDefault()` — acepta: Ctrl+click abre pestaña nueva, click normal navega en la app — valida: prueba en el navegador
+- [x] Mantener la rama `isRenaming` como `div` con el input, sin ancla — acepta: renombrar sigue funcionando y Enter guarda — valida: renombrar una sesión en el navegador
+- [x] Escribir `src/modules/skin/tests/skinSessionRow.test.tsx` con `MemoryRouter` — acepta: assert de `href` = `/session/<id>` y de que `onSessionSelect` no se llama con `ctrlKey` — valida: `npm run test:client`
+- [x] Agregar sección "Chat" a `AppearanceSettingsTab` con los tres `SettingsToggle` (`showThinking`, `showRawParameters`, `sendByCtrlEnter`) leyendo `useUiPreferences`/`useSetUiPreference` — acepta: los tres aparecen en Ajustes → Apariencia y persisten al recargar — valida: cambiar uno, recargar, verificar
+- [x] Quitar `<QuickSettingsPanel />` y su import de `ProjectWorkspaceShell.tsx` — acepta: la manija flotante del borde derecho ya no aparece — valida: `grep -n QuickSettings src/modules/project-workspace/ProjectWorkspaceShell.tsx` sin resultados
+- [x] Extender `skinUiStore` con `filesPanelOpen` (clave `skin:files-panel-open`) y `filesPanelWidth` (clave `skin:files-panel-width`, default 320, rango 240–640) — acepta: ambos sobreviven a un reload — valida: `localStorage.getItem('skin:files-panel-open')` en la consola del navegador
+- [x] Exportar `toggleFilesPanel` y `setFilesPanelWidth` desde `skinUiStore` y el barrel `skin/index.ts` — acepta: importables como `@/modules/skin` — valida: `npm run typecheck`
+- [x] Crear `SkinFilesPanel.tsx`: contenedor `flex-none` con ancho del store, manija de arrastre a la izquierda, cabecera con nombre del proyecto y botón cerrar — acepta: se arrastra y el ancho persiste — valida: arrastrar, recargar, comprobar
+- [x] Agregar `compact?: boolean` a `FileTree`: fuerza `viewMode = 'list'` y pasa la señal al header — acepta: el panel angosto nunca muestra la tabla de columnas — valida: abrir el panel con el modo tabla previamente guardado
+- [x] Agregar `refreshSignal?: number` a `FileTree` con un `useEffect` que llame `refreshFiles` al cambiar — acepta: incrementar la señal recarga el árbol sin perder carpetas expandidas — valida: crear un archivo por chat y ver si aparece sin colapsar el árbol
+- [x] Ocultar el switch lista/tabla en `FileTreeHeader` cuando `compact` — acepta: la barra del panel entra sin desbordar a 320px — valida: inspección visual
+- [x] Montar `<SkinFilesPanel />` en `WorkspaceMain`, como hermano de `EditorSidebar` dentro del `flex` principal — acepta: orden chat → editor → archivos — valida: abrir un archivo con el panel abierto
+- [x] Borrar el bloque `{activeTab === 'files' && <FileTree …/>}` de `WorkspaceMain` y dejar `fillSpace={false}` en `EditorSidebar` — acepta: no queda ninguna referencia a la tab files — valida: `grep -n "'files'" src/modules/project-workspace/WorkspaceMain.tsx`
+- [x] Agregar el efecto defensivo `if (activeTab === 'files') setActiveTab('chat')` — acepta: una sesión que venía con la tab files no queda en pantalla vacía — valida: forzar `activeTab='files'` y comprobar que vuelve a chat
+- [x] Redirigir `openFile` de la paleta de comandos: abrir el panel + `handleFileOpen` en vez de `setActiveTab('files')` — acepta: buscar un archivo en la paleta lo abre en el editor lateral — valida: Cmd+K → archivo
+- [x] Sacar `files` de `BASE_TABS` en `SkinHeader` y agregar el botón Folder con `onClick={toggleFilesPanel}` y `aria-pressed` — acepta: el botón queda marcado mientras el panel está abierto — valida: inspección visual
+- [x] Quitar la rama `activeTab === 'files'` del cálculo del título en `SkinHeader` — acepta: el título sigue mostrando la sesión con el panel abierto — valida: abrir el panel y mirar la cabecera
+- [x] Auto-refresco: en `SkinFilesPanel`, con `useBusySessionIdSet()`, incrementar `refreshSignal` cuando la sesión activa sale del set — acepta: al terminar una respuesta que creó un archivo, el árbol lo muestra sin tocar nada — valida: pedirle al agente que cree un archivo y mirar el panel
+- [x] Crear `useFilesPanelRoom.ts` en `skin` con dos `matchMedia` (`min-width: 1400px` y `min-width: 1100px`) — acepta: sin listeners de `resize`, un solo `MediaQueryList` por consulta — valida: `npm run test:client`
+- [x] Ocultar el panel cuando no hay lugar **sin tocar** `filesPanelOpen` — acepta: achicar la ventana lo repliega, agrandarla lo devuelve, la preferencia guardada no cambia — valida: achicar, agrandar, mirar `localStorage`
+- [x] Crear `useRunningTabTitle.ts` en `skin`: prefijo `● ` en `document.title` mientras la sesión de **esta** pestaña esté corriendo — acepta: sólo se marca la pestaña cuya sesión corre, no todas — valida: dos pestañas con sesiones distintas, una corriendo
+- [x] Convivencia con el indicador `[Done]` de `pageTitleNotification.ts` — acepta: ninguno de los dos deja basura en el título al limpiarse — valida: dejar terminar una respuesta en segundo plano y mirar la pestaña
+- [x] Correr `npm run lint`, `npm run typecheck`, `npm run test:client` y `npm run build:client` — acepta: los cuatro en verde — valida: los cuatro comandos
 - [ ] Recargar duro `:8443` (Ctrl+Shift+R por el service worker) y verificar las dos funcionalidades — acepta: chat + archivos a la vez, y rueda del ratón abriendo pestaña — valida: prueba manual de Leandro
 - [ ] Commit y push en `diseno/propio` — acepta: `git status` limpio y rama pusheada — valida: `git log origin/diseno/propio -1`
 
@@ -75,7 +81,7 @@ La ruta `/session/:sessionId` ya existe (`App.tsx:128`) y resuelve la sesión co
 
 ### Huecos no cubiertos
 
-- **Tres columnas no entran en una pantalla chica.** A 1920px entra justo (345 sidebar + chat + 600 editor + 320 árbol = 1585 y sobra). Abajo de ~1400px el chat queda asfixiado. El plan **no** agrega auto-colapso por ancho: si te pasa en el monitor secundario, se agrega después.
+- **Tres columnas no entran en una pantalla chica.** A 1920px entra justo (345 sidebar + chat + 600 editor + 320 árbol = 1585 y sobra). Abajo de ~1400px el chat queda asfixiado. Resuelto en la **Fase 5**: el panel se oculta solo cuando no hay lugar, sin tocar la preferencia guardada.
 - **Móvil.** El panel se monta sólo con `!isMobile`. En el teléfono el botón Archivos tiene que seguir haciendo lo de hoy, y eso obliga a **conservar** la rama de la tab en mobile. Lo resuelvo montando el `FileTree` a pantalla completa cuando `isMobile`, con la misma tab.
 - **El árbol no sabe qué archivo tocó el agente.** Se refresca, pero no resalta ni revela lo nuevo. Va como sugerencia.
 - **El refresco depende de que el WebSocket marque la sesión como idle.** Si una sesión queda colgada en "procesando" (pasó con el bug de sockets muertos del 10-sep), el auto-refresco no dispara. El botón manual sigue siendo la red de seguridad.
@@ -97,10 +103,12 @@ La ruta `/session/:sessionId` ya existe (`App.tsx:128`) y resuelve la sesión co
 
 ### Sugerencias opcionales
 
-- [ ] **Resaltar lo que el agente acaba de tocar**: marcar durante ~30 s los archivos aparecidos en el último refresco. Es lo que convierte el panel en un monitor de verdad. Esfuerzo: medio (hay que diffear el árbol anterior).
-- [ ] **Atajo de teclado para el panel** (Cmd/Ctrl+B o similar), registrado en la paleta de comandos. Esfuerzo: bajo.
-- [ ] **Auto-colapso por ancho de ventana**: si el viewport baja de ~1400px y el editor está abierto, replegar el árbol. Esfuerzo: bajo.
-- [ ] **Marcar la pestaña que tiene una sesión corriendo** en el `<title>` (ej. `● LT Space`), útil justo cuando hay varias pestañas. Ya existe `pageTitleNotification.ts`. Esfuerzo: bajo.
+> Resueltas el 11-sep: Leandro aceptó las dos últimas, que pasaron a ser las **Fases 5 y 6**. Las dos primeras quedan descartadas.
+
+- [ ] ~~**Resaltar lo que el agente acaba de tocar**~~ — descartada, no la necesita.
+- [ ] ~~**Atajo de teclado para el panel**~~ — descartada, no la necesita.
+- [x] **Auto-colapso por ancho de ventana** → **Fase 5**.
+- [x] **Marcar la pestaña que tiene una sesión corriendo** → **Fase 6**.
 
 ---
 
@@ -120,12 +128,12 @@ La ruta `/session/:sessionId` ya existe (`App.tsx:128`) y resuelve la sesión co
 5. Escribir el test con `@testing-library/react` + `MemoryRouter`.
 
 #### Estado (arranca todo en fail)
-- [fail] la fila expone `href="/session/<id>"` | valida: `npm run test:client`
-- [fail] ningún `<button>` anidado dentro del `<a>` | valida: revisión del JSX + el test no advierte anidamiento inválido
-- [fail] click con `ctrlKey` no llama `onSessionSelect` | valida: `npm run test:client`
-- [fail] click normal sigue navegando en la app sin recargar | valida: prueba en el navegador
-- [fail] renombrar y archivar siguen funcionando | valida: prueba en el navegador
-- [fail] `npm run typecheck` y `npm run lint` en verde | valida: los dos comandos
+- [pass] la fila expone `href="/session/<id>"` | valida: `npm run test:client`
+- [pass] ningún `<button>` anidado dentro del `<a>` | valida: revisión del JSX + el test no advierte anidamiento inválido
+- [pass] click con `ctrlKey` no llama `onSessionSelect` | valida: `npm run test:client`
+- [fail] click normal sigue navegando en la app sin recargar | valida: prueba en el navegador — **pendiente: verificación de Leandro en el navegador**
+- [fail] renombrar y archivar siguen funcionando | valida: prueba en el navegador — **pendiente: verificación de Leandro en el navegador**
+- [pass] `npm run typecheck` y `npm run lint` en verde | valida: los dos comandos
 
 #### Peligros
 - Un `<button>` dentro de un `<a>` es HTML inválido: el navegador reacomoda el DOM y los handlers dejan de recibir el evento. Es el error natural de este cambio.
@@ -149,11 +157,11 @@ La ruta `/session/:sessionId` ya existe (`App.tsx:128`) y resuelve la sesión co
 3. Verificar con `grep -rn "quick-settings-panel" src/` que no queda ningún consumidor, y dejar constancia en un comentario de una línea en el archivo del módulo explicando que quedó desmontado a propósito.
 
 #### Estado (arranca todo en fail)
-- [fail] los tres toggles aparecen en Ajustes → Apariencia | valida: abrir Ajustes en el navegador
-- [fail] desactivar "Mostrar razonamiento" y recargar lo mantiene desactivado | valida: prueba en el navegador
-- [fail] la manija flotante del borde derecho ya no existe | valida: inspección visual
-- [fail] sin consumidores de `quick-settings-panel` | valida: `grep -rn "quick-settings-panel" src/ --include=*.tsx --include=*.ts`
-- [fail] `npm run typecheck` y `npm run lint` en verde | valida: los dos comandos
+- [fail] los tres toggles aparecen en Ajustes → Apariencia | valida: abrir Ajustes en el navegador — **pendiente: verificación de Leandro en el navegador**
+- [fail] desactivar "Mostrar razonamiento" y recargar lo mantiene desactivado | valida: prueba en el navegador — **pendiente: verificación de Leandro en el navegador**
+- [fail] la manija flotante del borde derecho ya no existe | valida: inspección visual — **pendiente: verificación de Leandro en el navegador**
+- [pass] sin consumidores de `quick-settings-panel` | valida: `grep -rn "quick-settings-panel" src/ --include=*.tsx --include=*.ts`
+- [pass] `npm run typecheck` y `npm run lint` en verde | valida: los dos comandos
 
 #### Peligros
 - Estos tres toggles **no existen en ningún otro lugar de la UI**: si se desmonta el drawer antes de moverlos, se pierde el control de "Mostrar razonamiento", que hoy está activado. El orden de los pasos importa.
@@ -180,14 +188,14 @@ La ruta `/session/:sessionId` ya existe (`App.tsx:128`) y resuelve la sesión co
 6. `SkinHeader`: sacar `files` de `BASE_TABS`, agregar el botón Folder con `onClick={toggleFilesPanel}`, `aria-pressed={filesPanelOpen}` y el mismo estilo activo que las tabs; sacar la rama `'files'` del título.
 
 #### Estado (arranca todo en fail)
-- [fail] con el panel abierto se ve el chat y se puede escribir | valida: prueba en el navegador
-- [fail] el botón Folder abre y cierra el panel, y queda marcado mientras está abierto | valida: prueba en el navegador
-- [fail] el ancho se arrastra y sobrevive al reload | valida: arrastrar, `Ctrl+Shift+R`, comprobar
-- [fail] abierto/cerrado sobrevive al reload | valida: `localStorage.getItem('skin:files-panel-open')`
-- [fail] clic en un archivo lo abre en el editor lateral, con las tres columnas visibles | valida: prueba en el navegador
-- [fail] el panel nunca muestra la tabla de columnas | valida: guardar el modo tabla y reabrir el panel
-- [fail] en móvil el botón Archivos sigue abriendo el árbol a pantalla completa | valida: DevTools en viewport de teléfono
-- [fail] `npm run lint`, `npm run typecheck` y `npm run build:client` en verde | valida: los tres comandos
+- [fail] con el panel abierto se ve el chat y se puede escribir | valida: prueba en el navegador — **pendiente: verificación de Leandro en el navegador**
+- [fail] el botón Folder abre y cierra el panel, y queda marcado mientras está abierto | valida: prueba en el navegador — **pendiente: verificación de Leandro en el navegador**
+- [fail] el ancho se arrastra y sobrevive al reload | valida: arrastrar, `Ctrl+Shift+R`, comprobar — **pendiente: verificación de Leandro en el navegador**
+- [fail] abierto/cerrado sobrevive al reload | valida: `localStorage.getItem('skin:files-panel-open')` — **pendiente: verificación de Leandro en el navegador**
+- [fail] clic en un archivo lo abre en el editor lateral, con las tres columnas visibles | valida: prueba en el navegador — **pendiente: verificación de Leandro en el navegador**
+- [fail] el panel nunca muestra la tabla de columnas | valida: guardar el modo tabla y reabrir el panel — **pendiente: verificación de Leandro en el navegador**
+- [fail] en móvil el botón Archivos sigue abriendo el árbol a pantalla completa | valida: DevTools en viewport de teléfono — **pendiente: verificación de Leandro en el navegador**
+- [pass] `npm run lint`, `npm run typecheck` y `npm run build:client` en verde | valida: los tres comandos
 
 #### Peligros
 - Si se borra la rama `activeTab === 'files'` sin el efecto defensivo, una sesión que quedó con esa tab muestra el área principal **vacía**, y no es obvio por qué.
@@ -215,11 +223,11 @@ La ruta `/session/:sessionId` ya existe (`App.tsx:128`) y resuelve la sesión co
 4. Dejar el botón de refresco manual en la cabecera del panel como red de seguridad.
 
 #### Estado (arranca todo en fail)
-- [fail] un archivo creado por el agente aparece solo al terminar la respuesta | valida: pedir un archivo por chat y mirar el panel
-- [fail] el refresco conserva las carpetas expandidas y el scroll | valida: expandir dos niveles y disparar un refresco
-- [fail] sin el panel abierto no se dispara ninguna request | valida: pestaña Network de DevTools con el panel cerrado
-- [fail] el botón manual refresca igual | valida: clic en refrescar
-- [fail] `npm run typecheck` y `npm run lint` en verde | valida: los dos comandos
+- [fail] un archivo creado por el agente aparece solo al terminar la respuesta | valida: pedir un archivo por chat y mirar el panel — **pendiente: verificación de Leandro en el navegador**
+- [fail] el refresco conserva las carpetas expandidas y el scroll | valida: expandir dos niveles y disparar un refresco — **pendiente: verificación de Leandro en el navegador**
+- [fail] sin el panel abierto no se dispara ninguna request | valida: pestaña Network de DevTools con el panel cerrado — **pendiente: verificación de Leandro en el navegador**
+- [fail] el botón manual refresca igual | valida: clic en refrescar — **pendiente: verificación de Leandro en el navegador**
+- [pass] `npm run typecheck` y `npm run lint` en verde | valida: los dos comandos
 
 #### Peligros
 - Remontar el `FileTree` con `key` "refrescaría" pero perdería expandidos y scroll — por eso la prop y no la key.
@@ -231,7 +239,64 @@ La ruta `/session/:sessionId` ya existe (`App.tsx:128`) y resuelve la sesión co
 
 ---
 
-### Fase 5 — Build, verificación real y push
+### Fase 5 — El panel se repliega solo cuando no hay lugar
+
+**Goal (done-criterion):** Existe `src/modules/skin/hooks/useFilesPanelRoom.ts` Y achicar la ventana por debajo del umbral oculta el panel mientras `localStorage.getItem('skin:files-panel-open')` sigue en `'1'`, Y agrandarla lo devuelve sin tocar nada, Y `npm run typecheck` en verde.
+**Alcance:** Tocar: `src/modules/skin/hooks/useFilesPanelRoom.ts` (nuevo), `src/modules/skin/SkinFilesPanel.tsx`. Ignorar: el store (la preferencia no se toca), `WorkspaceMain`, todo `file-tree`.
+**Paralelizable:** No — necesita el panel de la Fase 3.
+
+#### Pasos
+1. Crear el hook con dos `matchMedia`: `(min-width: 1400px)` y `(min-width: 1100px)`, leídos con `useSyncExternalStore` igual que `useCompactSidebar`.
+2. Regla: con el editor abierto hace falta el umbral alto; con el editor cerrado, el bajo.
+3. En `SkinFilesPanel`, devolver `null` cuando no hay lugar. **No** llamar a `toggleFilesPanel`: la preferencia del usuario no se pisa, sólo se ignora mientras no entre.
+
+#### Estado (arranca todo en fail)
+- [fail] bajo el umbral el panel desaparece | valida: achicar la ventana en el navegador — **pendiente: verificación de Leandro en el navegador**
+- [fail] al agrandar vuelve solo, con su ancho | valida: agrandar la ventana — **pendiente: verificación de Leandro en el navegador**
+- [fail] `skin:files-panel-open` no cambia en todo el proceso | valida: `localStorage.getItem('skin:files-panel-open')` antes y después — **pendiente: verificación de Leandro en el navegador**
+- [pass] sin listeners de `resize` | valida: `grep -n "resize" src/modules/skin/hooks/useFilesPanelRoom.ts` sin resultados
+- [pass] `npm run typecheck` y `npm run lint` en verde | valida: los dos comandos
+
+#### Peligros
+- Apagar `filesPanelOpen` al colapsar sería destructivo: al volver a la pantalla grande el panel quedaría cerrado sin que nadie lo haya cerrado. Ocultar ≠ cerrar.
+- El botón del header sigue marcado mientras el panel está oculto por espacio. Es deliberado (refleja la preferencia, no la visibilidad) y va en el `title` del botón.
+
+#### Mejores prácticas
+- `matchMedia` y no `resize`: el navegador avisa sólo al cruzar el umbral, en vez de en cada píxel de arrastre.
+- Un `MediaQueryList` por consulta, compartido — el mismo patrón que ya usa `useCompactSidebar`.
+
+---
+
+### Fase 6 — La pestaña avisa que su sesión está corriendo
+
+**Goal (done-criterion):** Existe `src/modules/skin/hooks/useRunningTabTitle.ts` Y con una sesión produciendo respuesta el `document.title` de **esa** pestaña arranca con `● ` mientras las otras quedan intactas, Y al terminar el prefijo se va, Y `npm run typecheck` en verde.
+**Alcance:** Tocar: `src/modules/skin/hooks/useRunningTabTitle.ts` (nuevo), `src/modules/skin/SkinHeader.tsx` (montar el hook). Ignorar: `pageTitleNotification.ts` (no se modifica), `src/modules/chat/**`.
+**Paralelizable:** Sí — no comparte archivos con las Fases 3, 4 y 5.
+
+#### Pasos
+1. Crear el hook: lee `useBusySessionIdSet()` y el id de la sesión seleccionada; marca sólo si **esa** sesión está en el set.
+2. Aplicar y quitar el prefijo `● ` sobre el `document.title` vigente, quitándolo desde cualquier posición para no pelear con el `[Done] ` que antepone `pageTitleNotification.ts`.
+3. Limpiar el prefijo al desmontar.
+4. Montarlo una sola vez, en `SkinHeader`.
+
+#### Estado (arranca todo en fail)
+- [fail] la pestaña con la sesión corriendo muestra `●` | valida: mandar un mensaje y mirar la pestaña — **pendiente: verificación de Leandro en el navegador**
+- [fail] una segunda pestaña con otra sesión **no** se marca | valida: dos pestañas, una sola corriendo — **pendiente: verificación de Leandro en el navegador**
+- [fail] al terminar el `●` desaparece | valida: esperar el fin de la respuesta — **pendiente: verificación de Leandro en el navegador**
+- [fail] el `[Done]` de fondo sigue funcionando y no deja basura | valida: dejar terminar una respuesta en segundo plano — **pendiente: verificación de Leandro en el navegador**
+- [pass] `npm run typecheck` y `npm run lint` en verde | valida: los dos comandos
+
+#### Peligros
+- `useBusySessionIdSet` es **global**: trae todas las sesiones que corren en el servidor. Marcar por "hay alguna corriendo" pintaría las cuatro pestañas iguales y el indicador no serviría para nada. Hay que filtrar por la sesión de la pestaña.
+- Dos escritores sobre `document.title` se pisan. El strip tiene que tolerar que el `●` no esté al principio.
+
+#### Mejores prácticas
+- Nada de `MutationObserver` sobre el título: el efecto se re-dispara con el set y con la sesión seleccionada, que son los dos únicos momentos en que el valor correcto cambia.
+- Hoy el título base es estático (`LT Space`): el único que lo reescribía era `SidebarProjectList`, que es código muerto.
+
+---
+
+### Fase 7 — Build, verificación real y push
 
 **Goal (done-criterion):** `npm run lint`, `npm run typecheck`, `npm run test:client` y `npm run build:client` terminan los cuatro sin error, Leandro confirma en `:8443` las dos funcionalidades, Y `git log origin/diseno/propio -1` muestra el commit de este trabajo.
 **Alcance:** Tocar: nada de código salvo lo que rompa un check. Ignorar: todo lo demás.
@@ -245,14 +310,14 @@ La ruta `/session/:sessionId` ya existe (`App.tsx:128`) y resuelve la sesión co
 5. `git commit` y `git push` en `diseno/propio`.
 
 #### Estado (arranca todo en fail)
-- [fail] `npm run lint` en verde | valida: `npm run lint`
-- [fail] `npm run typecheck` en verde | valida: `npm run typecheck`
-- [fail] `npm run test:client` en verde | valida: `npm run test:client`
-- [fail] `npm run build:client` en verde | valida: `npm run build:client`
-- [fail] chat + archivos a la vez, confirmado por Leandro | valida: prueba en `:8443`
-- [fail] rueda del ratón abre la sesión en pestaña nueva, confirmado por Leandro | valida: prueba en `:8443`
-- [fail] dos pestañas con sesiones distintas conviven sin romperse | valida: prueba en `:8443`
-- [fail] plan archivado y rama pusheada | valida: `git log origin/diseno/propio -1`
+- [pass] `npm run lint` en verde | valida: `npm run lint`
+- [pass] `npm run typecheck` en verde | valida: `npm run typecheck`
+- [pass] `npm run test:client` en verde | valida: `npm run test:client`
+- [pass] `npm run build:client` en verde | valida: `npm run build:client`
+- [fail] chat + archivos a la vez, confirmado por Leandro | valida: prueba en `:8443` — **pendiente: verificación de Leandro en el navegador**
+- [fail] rueda del ratón abre la sesión en pestaña nueva, confirmado por Leandro | valida: prueba en `:8443` — **pendiente: verificación de Leandro en el navegador**
+- [fail] dos pestañas con sesiones distintas conviven sin romperse | valida: prueba en `:8443` — **pendiente: verificación de Leandro en el navegador**
+- [fail] plan archivado y rama pusheada | valida: `git log origin/diseno/propio -1` — **pendiente: verificación de Leandro en el navegador**
 
 #### Peligros
 - **Recargar normal no alcanza:** el service worker sirve el bundle viejo y parece que el cambio no se aplicó. Ya pasó en este repo.
@@ -267,10 +332,11 @@ La ruta `/session/:sessionId` ya existe (`App.tsx:128`) y resuelve la sesión co
 ## Orden de ejecución
 
 - **Fases 1, 2 y 3 en paralelo:** no comparten un solo archivo. La 1 vive en `SkinSidebar`, la 2 en `settings` + `ProjectWorkspaceShell`, la 3 en `skin` + `WorkspaceMain` + `file-tree`.
-- **Fase 4 después de la 3:** necesita el panel montado y la prop `refreshSignal`.
-- **Fase 5 al final**, con todo integrado.
+- **Fases 4 y 5 después de la 3:** las dos necesitan el panel montado.
+- **Fase 6 en paralelo** con todo: no comparte archivos con nadie.
+- **Fase 7 al final**, con todo integrado.
 
-Si se ejecuta en serie, el orden que antes da algo usable es **1 → 3 → 4 → 2 → 5**: la Fase 1 son treinta líneas y resuelve la mitad del pedido.
+Si se ejecuta en serie, el orden que antes da algo usable es **1 → 3 → 4 → 5 → 2 → 6 → 7**: la Fase 1 son treinta líneas y resuelve la mitad del pedido.
 
 ## Verificación final
 
@@ -283,6 +349,8 @@ Con el build nuevo cargado en `:8443`:
 5. Ctrl+click sobre una tercera: ídem, en segundo plano.
 6. Ajustes → Apariencia: los tres toggles están y persisten.
 7. Recargar duro: el panel vuelve con el mismo ancho y el mismo estado.
+8. Achicar la ventana: el panel se repliega solo; agrandarla lo devuelve, y la preferencia guardada no cambió.
+9. Con dos pestañas en sesiones distintas, mandar un mensaje en una: **sólo esa** pestaña muestra el `●` en el título.
 
 ## Riesgos globales
 
@@ -294,14 +362,21 @@ Con el build nuevo cargado en `:8443`:
 
 ## Cambios realizados
 
-[Completar después de ejecutar.]
+Todo lo planificado, con cuatro desvíos que valen la pena anotar:
+
+1. **`NODE_ENV=production` está fijado en el entorno del VPS**, así que `npm run test:client` falla con *"act(...) is not supported in production builds of React"* — y falla igual en `master`, sin tocar nada. Los tests hay que correrlos con `NODE_ENV=test npx vitest run`. No es de este trabajo, pero cualquiera que corra la suite acá se lo va a comer.
+2. **La prop del `FileTree` se llama `narrow`, no `compact`**: `FileTreeViewMode` ya tiene un modo llamado `'compact'` y las dos cosas juntas eran una trampa de lectura. El modo que fuerza el panel es `'simple'`.
+3. **El módulo `quick-settings-panel` sigue en el árbol**, sin consumidores y con un comentario que explica por qué. Se desmontó de `ProjectWorkspaceShell`; borrarlo abriría conflicto en cada merge con upstream.
+4. **El botón de archivos quedó fuera del `<nav>` de pestañas**, separado del grupo: es una columna que se abre al lado, no una vista que reemplaza lo que estás mirando, y el botón tenía que decirlo.
+
+Durante la ejecución llegaron commits nuevos al repo desde otra sesión (`8f00b197` del medidor de contexto, `5a705e1a` con este plan y su boceto), que cambiaron `src/modules/skin/index.ts` y `SkinHeader.tsx`. Se releyeron los dos antes de editarlos.
 
 ---
 
 ## Continuación de Sesión
 
-**Fases completadas:** ninguna
-**Fase actual:** pendiente inicio
-**Próximo paso exacto:** Fase 1 — abrir `src/modules/skin/SkinSidebar.tsx` y reestructurar la fila de sesión (~línea 641) a `<a href>` + botones hermanos
-**Bloqueantes:** ninguno
-**Micro-tasks pendientes:** 23 de 23
+**Fases completadas:** 1 a 6, en código. Los checks de comando (lint, typecheck, 434 tests, build) están en `[pass]`.
+**Fase actual:** Fase 7 — falta sólo la verificación visual.
+**Próximo paso exacto:** recargar duro `:8443` (Ctrl+Shift+R) y recorrer los nueve puntos de `## Verificación final`. Si algo falla, se corrige acá mismo: el plan no se archiva hasta que pasen.
+**Bloqueantes:** ninguno técnico. Los checks marcados "pendiente: verificación de Leandro" no los puede cerrar un agente sin navegador.
+**Micro-tasks pendientes:** 2 de 27 (verificación visual y push)
