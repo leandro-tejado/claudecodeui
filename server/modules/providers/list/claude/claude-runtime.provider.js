@@ -41,6 +41,7 @@ import {
   notifyUserIfEnabled
 } from '@/modules/notifications/index.js';
 import { createCompleteMessage, createNormalizedMessage } from '@/shared/utils.js';
+import { recordRateLimitEvent } from '@/modules/usage-window/index.js';
 
 const activeSessions = new Map();
 const pendingToolApprovals = new Map();
@@ -1033,6 +1034,11 @@ async function queryClaudeSDK(command, options = {}, ws, context) {
           assistantBudgetSent = true;
         }
         ws.send(createNormalizedMessage({ kind: 'status', text: 'token_budget', tokenBudget: tokenBudgetData, sessionId: capturedSessionId || sessionId || null, provider: 'claude' }));
+      }
+
+      // Real quota, straight from the SDK: usage-window owns state, broadcast and cuota.json.
+      if (message.type === 'rate_limit_event' && message.rate_limit_info) {
+        recordRateLimitEvent(message.rate_limit_info);
       }
 
       if (startsBackgroundWork(message)) {

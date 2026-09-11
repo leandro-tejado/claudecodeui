@@ -1,4 +1,3 @@
-import { connectedClients, WS_OPEN_STATE } from '@/modules/websocket/index.js';
 import { getUsageWindow } from './usage-window.service.js';
 
 /**
@@ -9,6 +8,17 @@ import { getUsageWindow } from './usage-window.service.js';
  * the point of the indicator is that it costs nothing to watch.
  */
 export async function broadcastUsageWindow(): Promise<void> {
+  // Dynamic, not a static top-level import: `claude-runtime.provider.js` now
+  // reaches this module while `provider.registry.ts` is still mid-evaluation
+  // (it is one of the modules that module's own import chain constructs), and
+  // `@/modules/websocket/index.js` re-exports `chat-websocket.service.ts`,
+  // which imports back into `@/modules/providers/index.js`. A static import
+  // here closed that into a cycle and threw `Cannot access 'providerRegistry'
+  // before initialization` from `provider-models.service.ts`. By the time this
+  // function actually runs — a live broadcast, never at module load — the
+  // whole graph is long done evaluating, so the dynamic import just hits the
+  // module cache. Still the barrel, per this repo's import-boundaries rule.
+  const { connectedClients, WS_OPEN_STATE } = await import('@/modules/websocket/index.js');
   const snapshot = await getUsageWindow();
   const frame = JSON.stringify(snapshot);
 

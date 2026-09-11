@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { cn } from '@/shared/utils';
 import { CircleProgress } from '@/modules/usage-window/CircleProgress';
@@ -12,36 +12,49 @@ import { useUsageWindow } from '@/modules/usage-window/useUsageWindow';
  * a request, so without this the first sign of trouble is work stopping. All the
  * behaviour lives in this module; `WorkspaceHeader` only mounts it, which is
  * what keeps the upstream file to a one-line diff.
+ *
+ * The value it shows is the real percentage the SDK reports on `rate_limit_event`
+ * — there is no local estimate to fall back on. A reading older than
+ * `STALE_MS` is treated as no reading at all: the ring goes grey and says
+ * "sin dato" rather than holding a number that may no longer be true.
  */
+
+/** A reading older than this is shown as "sin dato" instead of a stale number. */
+const STALE_MS = 15 * 60 * 1000;
+/** How often the ring re-checks staleness on its own, without a new WS push. */
+const TICK_MS = 60 * 1000;
+
 export default function UsageWindowIndicator() {
   const snapshot = useUsageWindow();
   const [open, setOpen] = useState(false);
   // El panel vive en un portal, así que necesita saber contra qué anclarse.
   const buttonRef = useRef<HTMLButtonElement>(null);
   const [anchor, setAnchor] = useState<DOMRect | null>(null);
+  // Sin esto, una lectura que se puso vieja mientras la pestaña estaba
+  // abierta se seguiría mostrando como fresca hasta el próximo mensaje.
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), TICK_MS);
+    return () => clearInterval(id);
+  }, []);
 
   const toggle = useCallback(() => {
     setAnchor(buttonRef.current?.getBoundingClientRect() ?? null);
     setOpen((value) => !value);
   }, []);
 
-  // Grey ring until the first snapshot lands. Rendering zero would be a claim
-  // about the account that we cannot make yet.
-  if (!snapshot) {
-    return (
-      <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center" aria-hidden="true">
-        <CircleProgress value={0} maxValue={1} size={22} strokeWidth={2.5} disableAnimation getColor={() => 'stroke-transparent'} />
-      </div>
-    );
-  }
+  const fiveHour = snapshot?.fiveHour ?? null;
+  const isFresh = fiveHour !== null && now - fiveHour.leidoEn <= STALE_MS;
 
-  const label = snapshot.bloqueado
-    ? 'Ventana de 5 horas agotada'
-    : `Ventana de 5 horas: ${snapshot.porcentaje}% usado${
-        snapshot.resetsAt
-          ? `, se renueva a las ${new Date(snapshot.resetsAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
-          : ''
-      }`;
+  const label =
+    isFresh && fiveHour
+      ? `Ventana de 5 horas: ${Math.round(fiveHour.porcentaje)}% real${
+          fiveHour.resetsAt
+            ? `, se renueva a las ${new Date(fiveHour.resetsAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+            : ''
+        }`
+      : 'Ventana de 5 horas: sin dato';
 
   return (
     <div className="relative flex-shrink-0">
@@ -58,27 +71,38 @@ export default function UsageWindowIndicator() {
         )}
       >
         <span className="flex h-6 w-6 items-center justify-center">
-          <CircleProgress
-            value={snapshot.bloqueado ? snapshot.limite : snapshot.usados}
-            maxValue={snapshot.limite}
-            size={22}
-            strokeWidth={2.5}
-          />
+          {isFresh && fiveHour ? (
+            <CircleProgress value={fiveHour.porcentaje} maxValue={100} size={22} strokeWidth={2.5} />
+          ) : (
+            // Sin dato: anillo gris. Mostrar un número acá sería afirmar algo
+            // sobre la cuenta que no se puede sostener.
+            <CircleProgress
+              value={0}
+              maxValue={1}
+              size={22}
+              strokeWidth={2.5}
+              disableAnimation
+              getColor={() => 'stroke-transparent'}
+            />
+          )}
         </span>
         {/* El porcentaje en texto, con el mismo markup que el anillo de
             contexto: los dos indicadores tienen que leerse como un par, y en
             pantallas chicas los dos números se esconden a la vez. */}
-        <span
-          className="hidden tabular-nums text-muted-foreground sm:inline"
-          style={{ fontSize: 'var(--skin-text-xs)' }}
-        >
-          {snapshot.porcentaje}%
-        </span>
+        {isFresh && fiveHour && (
+          <span
+            className="hidden tabular-nums text-muted-foreground sm:inline"
+            style={{ fontSize: 'var(--skin-text-xs)' }}
+          >
+            {Math.round(fiveHour.porcentaje)}%
+          </span>
+        )}
       </button>
 
       {open && (
         <UsageWindowPopover
           snapshot={snapshot}
+          now={now}
           anchor={anchor}
           anchorEl={buttonRef.current}
           onClose={() => setOpen(false)}

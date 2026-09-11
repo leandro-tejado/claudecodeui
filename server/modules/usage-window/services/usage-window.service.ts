@@ -1,401 +1,116 @@
-import fs from 'node:fs';
-import os from 'node:os';
-import path from 'node:path';
-import readline from 'node:readline';
-
 /**
- * The five-hour usage window, computed from the transcripts Claude Code writes
- * to disk.
+ * The five-hour and seven-day usage windows, as reported live by the SDK.
  *
  * WHY THIS EXISTS. The server only tells us about the limit once it has already
- * refused a request: `quotaLimits` shows up in a transcript attached to a 429
- * and never before it. On 09-sep the window ran out twice with no warning, so
- * the only way to see it coming is to count locally.
+ * refused a request — except for one message the SDK stream itself emits mid-run:
+ * `rate_limit_event`, whose `rate_limit_info.unifiedWindows` carries the REAL
+ * utilization (0..1) and reset time for both the five-hour and the seven-day
+ * window. That is the only number worth showing, so this module does nothing
+ * but hold the latest reading of each and hand it back.
  *
- * WHAT COUNTS. Output tokens — not cache reads, and not dollars. Measured
- * against the two windows that actually ran out that night (resetsAt
- * 1788999000 and 1789018800):
- *
- *   window 1: 1706 turns, 1_631_320 output, 334.2M cache-read, ~$167
- *   window 2: 1620 turns, 1_537_151 output, 290.2M cache-read, ~$218
- *
- * Turns and output land within 6% of each other across two windows that used
- * different model mixes (Opus 5 + Sonnet 5, then Opus 5 + Sonnet 4.6). Cache
- * reads diverge by 15% and dollars by 30%, so neither of those is what the
- * limit meters. Anthropic's own docs agree: cache reads do not count toward
- * input rate limits.
- *
- * Two samples are not a formula, which is why ESTIMATED_LIMIT is a starting
- * point and `recordedLimit()` replaces it with a measured one the first time a
- * 429 of our own shows up. Everything this module returns says which of the two
- * it is; a bar that hides its own uncertainty is worse than no bar.
+ * WHAT USED TO BE HERE. Until 11-sep-2026 this module counted output tokens
+ * across every transcript on disk and calibrated a self-updating 100% mark
+ * from them (see `plans/10-septiembre-indicador-ventana-5h.md`, now archived).
+ * That calibration counted transcript LINES instead of calls (inflating turns
+ * ~2.2x) and measured the wrong unit besides: a corte measured in cost lands
+ * inside the normal range for every corte in September, while the same corte
+ * measured in output tokens looks like an anomaly. See
+ * `plans/11-septiembre-cuota-dos-maquinas.md` for the full measurement. That
+ * local estimate is gone — there is nothing left here to recalibrate.
  */
 
-/** Anthropic's session window. The reset lands exactly five hours after the first message. */
-export const WINDOW_MS = 5 * 60 * 60 * 1000;
+/** A reading older than this is not shown as current; the caller decides what "current" means. */
+export const REAL_DATA_STALE_MS = 15 * 60 * 1000;
 
-/** Mean of the two measured windows, used until a 429 of our own calibrates it. */
-export const ESTIMATED_LIMIT = 1_584_000;
-
-/** Where the calibration survives a restart. Alongside `assets/`, not in the upstream DB schema. */
-const CALIBRATION_FILE = path.join(os.homedir(), '.cloudcli', 'usage-window-calibration.json');
-
-/** Roots to scan. Cursor writes the same JSONL shape, so it is counted too when present. */
-const TRANSCRIPT_ROOTS = [
-  path.join(os.homedir(), '.claude', 'projects'),
-  path.join(os.homedir(), '.cursor', 'projects'),
-];
-
-/** Turns older than this are dropped from the index; the window is only five hours wide. */
-const RETENTION_MS = 48 * 60 * 60 * 1000;
-
-export type UsageTurn = {
-  ts: number;
-  model: string;
-  out: number;
-  /** Transcript file the turn came from, used to group by session. */
-  file: string;
-  session: string;
-  isSubagent: boolean;
-};
-
-export type UsageWindowSession = {
-  session: string;
-  file: string;
-  project: string;
-  isSubagent: boolean;
-  turns: number;
-  out: number;
+export type UsageWindowReading = {
+  /** 0-100. */
+  porcentaje: number;
+  /** epoch ms when the window resets, or null when the SDK didn't send one. */
+  resetsAt: number | null;
+  /** epoch ms: local clock when this reading was recorded. */
+  leidoEn: number;
 };
 
 export type UsageWindowSnapshot = {
   kind: 'usage_window';
-  /** Start of the window in epoch ms, or null when nothing has been sent yet. */
-  inicio: number | null;
-  /** When the window rolls over. `inicio + WINDOW_MS`, or the server's own value when rejected. */
-  resetsAt: number | null;
-  /** Output tokens spent inside the window. */
-  usados: number;
-  limite: number;
-  porcentaje: number;
-  /** True when the last thing the API said was that we are out. */
-  bloqueado: boolean;
-  turnos: number;
-  porSesion: UsageWindowSession[];
-  porModelo: { model: string; turns: number; out: number }[];
-  calibradoDe: string;
-  timestamp: string;
+  fiveHour: UsageWindowReading | null;
+  sevenDay: UsageWindowReading | null;
 };
 
-type FileIndex = {
-  offset: number;
-  size: number;
-  turns: UsageTurn[];
-  /** epoch ms of every five-hour rejection seen in this file. */
-  rejections: number[];
+const state: { fiveHour: UsageWindowReading | null; sevenDay: UsageWindowReading | null } = {
+  fiveHour: null,
+  sevenDay: null,
 };
 
-const index = new Map<string, FileIndex>();
+/** One window's slice of the SDK payload: a 0..1 fraction plus a reset in epoch seconds. */
+type RawWindow = { utilization?: unknown; resetsAt?: unknown };
 
-type Calibration = { limite: number; medidoEn: string; muestras: number[] };
-let calibration: Calibration | null = null;
-
-function loadCalibration(): Calibration | null {
-  if (calibration) return calibration;
-  try {
-    const raw = fs.readFileSync(CALIBRATION_FILE, 'utf8');
-    const parsed = JSON.parse(raw) as Calibration;
-    if (typeof parsed?.limite === 'number' && parsed.limite > 0) {
-      calibration = parsed;
-    }
-  } catch {
-    // No calibration yet is the normal first-run state, not an error.
-  }
-  return calibration;
+function isRawWindow(value: unknown): value is RawWindow {
+  return typeof value === 'object' && value !== null;
 }
 
-function saveCalibration(next: Calibration): void {
-  calibration = next;
-  try {
-    fs.mkdirSync(path.dirname(CALIBRATION_FILE), { recursive: true });
-    fs.writeFileSync(CALIBRATION_FILE, JSON.stringify(next, null, 2), 'utf8');
-  } catch (error) {
-    console.error('usage-window: could not persist calibration', { error });
-  }
-}
-
-/** Every `.jsonl` under the transcript roots, including the `subagents/` ones. */
-function listTranscripts(): string[] {
-  const found: string[] = [];
-
-  const walk = (dir: string, depth: number): void => {
-    if (depth > 4) return;
-    let entries: fs.Dirent[];
-    try {
-      entries = fs.readdirSync(dir, { withFileTypes: true });
-    } catch {
-      return;
-    }
-    for (const entry of entries) {
-      const full = path.join(dir, entry.name);
-      if (entry.isDirectory()) {
-        walk(full, depth + 1);
-      } else if (entry.isFile() && entry.name.endsWith('.jsonl')) {
-        found.push(full);
-      }
-    }
-  };
-
-  for (const root of TRANSCRIPT_ROOTS) walk(root, 0);
-  return found;
+function toReading(raw: unknown, now: number): UsageWindowReading | null {
+  if (!isRawWindow(raw)) return null;
+  const utilization = Number(raw.utilization);
+  if (!Number.isFinite(utilization)) return null;
+  const porcentaje = Math.max(0, Math.min(100, utilization * 100));
+  const resetsAtSec = Number(raw.resetsAt);
+  const resetsAt = Number.isFinite(resetsAtSec) && resetsAtSec > 0 ? resetsAtSec * 1000 : null;
+  return { porcentaje, resetsAt, leidoEn: now };
 }
 
 /**
- * Reads only the bytes appended since the last pass.
+ * Folds one `rate_limit_info` payload into the in-memory state.
  *
- * A transcript grows by tens of writes per turn, so re-reading all of them on
- * every filesystem event is what would make this cost more CPU than the chat
- * it sits next to. When a file shrinks — truncated, rotated, replaced — the
- * saved offset points past the end and would silently under-count, so that case
- * reindexes the file from zero instead.
- */
-async function indexFile(file: string): Promise<void> {
-  let stat: fs.Stats;
-  try {
-    stat = fs.statSync(file);
-  } catch {
-    index.delete(file);
-    return;
-  }
-
-  let entry = index.get(file);
-  if (!entry || stat.size < entry.offset) {
-    entry = { offset: 0, size: 0, turns: [], rejections: [] };
-    index.set(file, entry);
-  }
-  if (stat.size === entry.offset) {
-    entry.size = stat.size;
-    return;
-  }
-
-  const isSubagent = file.includes(`${path.sep}subagents${path.sep}`);
-  const session = path.basename(file, '.jsonl');
-
-  await new Promise<void>((resolve) => {
-    const stream = fs.createReadStream(file, { start: entry.offset, encoding: 'utf8' });
-    const rl = readline.createInterface({ input: stream, crlfDelay: Infinity });
-    let consumed = entry.offset;
-
-    rl.on('line', (line) => {
-      consumed += Buffer.byteLength(line, 'utf8') + 1;
-      if (!line || line.charCodeAt(0) !== 123 /* '{' */) return;
-
-      let row: any;
-      try {
-        row = JSON.parse(line);
-      } catch {
-        // A partial last line is normal while a session is mid-write; the next
-        // pass re-reads it because `consumed` only advances past parsed bytes.
-        return;
-      }
-
-      const quota = row?.quotaLimits;
-      if (quota?.rateLimitType === 'five_hour' && quota?.status === 'rejected' && quota?.resetsAt) {
-        const at = Number(quota.resetsAt) * 1000;
-        if (Number.isFinite(at) && !entry!.rejections.includes(at)) entry!.rejections.push(at);
-      }
-
-      if (row?.type !== 'assistant') return;
-      const usage = row?.message?.usage;
-      const model = row?.message?.model;
-      if (!usage || !model || model === '<synthetic>') return;
-
-      const ts = Date.parse(row?.timestamp ?? '');
-      if (!Number.isFinite(ts)) return;
-
-      entry!.turns.push({
-        ts,
-        model,
-        out: Number(usage.output_tokens) || 0,
-        file,
-        session,
-        isSubagent,
-      });
-    });
-
-    rl.on('close', () => {
-      entry!.offset = Math.min(consumed, stat.size);
-      entry!.size = stat.size;
-      const cutoff = Date.now() - RETENTION_MS;
-      if (entry!.turns.length && entry!.turns[0].ts < cutoff) {
-        entry!.turns = entry!.turns.filter((t) => t.ts >= cutoff);
-      }
-      resolve();
-    });
-
-    rl.on('error', () => resolve());
-  });
-}
-
-/** Refreshes the index across every transcript. Incremental after the first pass. */
-export async function refreshIndex(): Promise<void> {
-  const files = listTranscripts();
-  const live = new Set(files);
-  for (const known of index.keys()) {
-    if (!live.has(known)) index.delete(known);
-  }
-  for (const file of files) {
-    await indexFile(file);
-  }
-}
-
-/**
- * Finds where the current window opened.
+ * `unifiedWindows.{five_hour,seven_day}` carries both windows and is the
+ * normal shape. Older SDK builds may send neither `unifiedWindows` nor both
+ * windows at once — just a bare `utilization` + `rateLimitType` naming the
+ * one window that changed — so that shape updates only the window it names
+ * and leaves the other one exactly as it was.
  *
- * Anthropic starts the window at the first message and closes it five hours
- * later, so the boundaries are not clock-aligned and cannot be assumed. Walking
- * the turns forward and opening a new window whenever one lands five hours past
- * the current start reproduces that. A recorded rejection is a harder fact than
- * the walk, so any turn after one also opens a new window.
+ * Returns whether anything changed, so the caller only broadcasts and writes
+ * `cuota.json` when there is something new to report.
  */
-function findWindowStart(turns: UsageTurn[], rejections: number[]): number | null {
-  if (!turns.length) return null;
-  const resets = [...rejections].sort((a, b) => a - b);
-  let start: number | null = null;
-  let cursor = 0;
-
-  for (const turn of turns) {
-    while (cursor < resets.length && resets[cursor] <= (start ?? turn.ts)) cursor += 1;
-    const crossedReset = cursor < resets.length && resets[cursor] <= turn.ts;
-    if (start === null || turn.ts >= start + WINDOW_MS || crossedReset) {
-      start = turn.ts;
-      while (cursor < resets.length && resets[cursor] <= turn.ts) cursor += 1;
-    }
-  }
-  return start;
-}
-
-/** Project folder a transcript belongs to, for the popover breakdown. */
-function projectOf(file: string): string {
-  const parts = file.split(path.sep);
-  const idx = parts.lastIndexOf('projects');
-  if (idx === -1 || idx + 1 >= parts.length) return '?';
-  return parts[idx + 1];
-}
-
-function allTurns(): { turns: UsageTurn[]; rejections: number[] } {
-  const turns: UsageTurn[] = [];
-  const rejections: number[] = [];
-  for (const entry of index.values()) {
-    turns.push(...entry.turns);
-    rejections.push(...entry.rejections);
-  }
-  turns.sort((a, b) => a.ts - b.ts);
-  return { turns, rejections: [...new Set(rejections)].sort((a, b) => a - b) };
-}
-
-/**
- * Turns a 429 into a measured limit.
- *
- * The rejection carries the moment the window resets, and the window is exactly
- * five hours wide, so the output spent between `resetsAt - 5h` and `resetsAt`
- * is what the account was actually allowed. Averaging the last few keeps one
- * odd window — a limit hit while the machine was half idle — from dragging the
- * bar off.
- */
-function calibrate(turns: UsageTurn[], rejections: number[]): void {
-  if (!rejections.length) return;
-  const samples: number[] = [];
-  for (const reset of rejections) {
-    const from = reset - WINDOW_MS;
-    let sum = 0;
-    for (const t of turns) {
-      if (t.ts >= from && t.ts < reset) sum += t.out;
-    }
-    if (sum > 0) samples.push(sum);
-  }
-  if (!samples.length) return;
-
-  const recent = samples.slice(-5);
-  const limite = Math.round(recent.reduce((a, b) => a + b, 0) / recent.length);
-  const previous = loadCalibration();
-  if (previous?.limite === limite && previous.muestras.length === recent.length) return;
-
-  saveCalibration({
-    limite,
-    medidoEn: new Date(Math.max(...rejections)).toISOString(),
-    muestras: recent,
-  });
-}
-
-/** Computes the snapshot the header renders. Call `refreshIndex()` first. */
-export function buildSnapshot(range?: { desde?: number; hasta?: number }): UsageWindowSnapshot {
-  const { turns, rejections } = allTurns();
-  calibrate(turns, rejections);
-
-  const stored = loadCalibration();
-  const limite = stored?.limite ?? ESTIMATED_LIMIT;
-  const calibradoDe = stored ? `medido:${stored.medidoEn.slice(0, 10)}` : 'estimado';
-
+export function recordRateLimitReading(info: unknown): boolean {
+  if (!isRawWindow(info)) return false;
   const now = Date.now();
-  const lastReset = rejections.length ? rejections[rejections.length - 1] : null;
-  const bloqueado = lastReset !== null && lastReset > now;
+  const payload = info as Record<string, unknown>;
+  let changed = false;
 
-  let inicio: number | null;
-  let hasta: number;
-  if (range?.desde !== undefined) {
-    inicio = range.desde;
-    hasta = range.hasta ?? now;
-  } else if (bloqueado && lastReset !== null) {
-    inicio = lastReset - WINDOW_MS;
-    hasta = now;
-  } else {
-    inicio = findWindowStart(turns, rejections);
-    hasta = now;
+  const unified = payload.unifiedWindows;
+  if (isRawWindow(unified)) {
+    const fiveHour = toReading((unified as Record<string, unknown>).five_hour, now);
+    if (fiveHour) {
+      state.fiveHour = fiveHour;
+      changed = true;
+    }
+    const sevenDay = toReading((unified as Record<string, unknown>).seven_day, now);
+    if (sevenDay) {
+      state.sevenDay = sevenDay;
+      changed = true;
+    }
+    return changed;
   }
 
-  const inWindow = inicio === null ? [] : turns.filter((t) => t.ts >= inicio! && t.ts < hasta);
-  const usados = inWindow.reduce((sum, t) => sum + t.out, 0);
-
-  const bySession = new Map<string, UsageWindowSession>();
-  const byModel = new Map<string, { model: string; turns: number; out: number }>();
-  for (const t of inWindow) {
-    const s = bySession.get(t.file) ?? {
-      session: t.session,
-      file: t.file,
-      project: projectOf(t.file),
-      isSubagent: t.isSubagent,
-      turns: 0,
-      out: 0,
-    };
-    s.turns += 1;
-    s.out += t.out;
-    bySession.set(t.file, s);
-
-    const m = byModel.get(t.model) ?? { model: t.model, turns: 0, out: 0 };
-    m.turns += 1;
-    m.out += t.out;
-    byModel.set(t.model, m);
+  // Fallback shape: a single window, named by `rateLimitType`.
+  const reading = toReading(payload, now);
+  if (!reading) return false;
+  if (payload.rateLimitType === 'five_hour') {
+    state.fiveHour = reading;
+    changed = true;
+  } else if (payload.rateLimitType === 'seven_day') {
+    state.sevenDay = reading;
+    changed = true;
   }
-
-  return {
-    kind: 'usage_window',
-    inicio,
-    resetsAt: bloqueado ? lastReset : inicio === null ? null : inicio + WINDOW_MS,
-    usados,
-    limite,
-    porcentaje: bloqueado ? 100 : Math.min(100, Math.round((usados / limite) * 100)),
-    bloqueado,
-    turnos: inWindow.length,
-    porSesion: [...bySession.values()].sort((a, b) => b.out - a.out),
-    porModelo: [...byModel.values()].sort((a, b) => b.out - a.out),
-    calibradoDe,
-    timestamp: new Date().toISOString(),
-  };
+  return changed;
 }
 
-/** Refresh plus compute, for the route and the broadcaster. */
-export async function getUsageWindow(range?: { desde?: number; hasta?: number }): Promise<UsageWindowSnapshot> {
-  await refreshIndex();
-  return buildSnapshot(range);
+/** Current snapshot. Synchronous: there is nothing left to read from disk. */
+export function buildSnapshot(): UsageWindowSnapshot {
+  return { kind: 'usage_window', fiveHour: state.fiveHour, sevenDay: state.sevenDay };
+}
+
+/** Kept async for its callers (the route and the broadcaster already `await` it). */
+export async function getUsageWindow(): Promise<UsageWindowSnapshot> {
+  return buildSnapshot();
 }

@@ -1,24 +1,15 @@
 /** Mirror of `UsageWindowSnapshot` in server/modules/usage-window. */
-export type UsageWindowSession = {
-  session: string;
-  file: string;
-  project: string;
-  isSubagent: boolean;
-  turns: number;
-  out: number;
+export type UsageWindowReading = {
+  /** 0-100. */
+  porcentaje: number;
+  /** epoch ms when the window resets, or null when the SDK didn't send one. */
+  resetsAt: number | null;
+  /** epoch ms: when the server recorded this reading. */
+  leidoEn: number;
 };
 
 export type UsageWindowSnapshot = {
   kind: 'usage_window';
-  inicio: number | null;
-  resetsAt: number | null;
-  usados: number;
-  limite: number;
-  porcentaje: number;
-  bloqueado: boolean;
-  turnos: number;
-  porSesion: UsageWindowSession[];
-  porModelo: { model: string; turns: number; out: number }[];
-  calibradoDe: string;
-  timestamp: string;
+  fiveHour: UsageWindowReading | null;
+  sevenDay: UsageWindowReading | null;
 };
