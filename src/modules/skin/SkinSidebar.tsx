@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
 import type { CSSProperties, MouseEvent as ReactMouseEvent } from 'react';
+import { useHref } from 'react-router-dom';
 import {
   Archive,
   ArchiveRestore,
@@ -353,6 +354,17 @@ export function SkinSidebar({
     [loadArchived, onRefresh],
   );
 
+  /*
+   * El `href` real de cada sesión, que es lo que hace que la rueda del ratón,
+   * Ctrl+click y "abrir en pestaña nueva" del menú contextual funcionen sin un
+   * handler propio. `useHref` resuelve el basename del router, así que sigue
+   * siendo correcto si algún día la app se sirve detrás de un prefijo.
+   *
+   * Se llama una sola vez acá y no dentro del `map`: la cantidad de sesiones
+   * cambia entre renders y eso violaría las reglas de los hooks.
+   */
+  const sessionHrefBase = useHref('/session');
+
   const rowStyle: CSSProperties = {
     padding: 'var(--skin-row-y) var(--skin-row-x)',
     gap: 'var(--skin-gap)',
@@ -641,103 +653,121 @@ export function SkinSidebar({
                     const isActive = selectedSession?.id === session.id;
                     const isRenaming = renamingId === session.id;
                     const title = titleOverride.get(session.id) ?? sessionTitle(session);
-                    return (
-                      <div
-                        key={session.id}
-                        onClick={() => onSessionSelect(session)}
-                        className={`group relative flex cursor-pointer items-center rounded-md transition-colors ${
-                          isActive ? 'bg-primary/10 text-foreground' : 'text-muted-foreground hover:bg-accent/60'
+                    const rowClass = `flex w-full items-center rounded-md transition-colors ${
+                      isActive ? 'bg-primary/10 text-foreground' : 'text-muted-foreground hover:bg-accent/60'
+                    }`;
+                    const activityDot = (
+                      <span
+                        className={`h-1.5 w-1.5 flex-none rounded-full ${
+                          attention.has(session.id)
+                            ? 'bg-emerald-500 ring-2 ring-emerald-500/20'
+                            : isActive
+                              ? 'bg-primary'
+                              : 'bg-muted-foreground/60'
                         }`}
-                        style={rowStyle}
-                      >
-                        <span
-                          className={`h-1.5 w-1.5 flex-none rounded-full ${
-                            attention.has(session.id)
-                              ? 'bg-emerald-500 ring-2 ring-emerald-500/20'
-                              : isActive
-                                ? 'bg-primary'
-                                : 'bg-muted-foreground/60'
-                          }`}
-                        />
-                        {isRenaming ? (
-                          <>
-                            <input
-                              value={renameValue}
-                              autoFocus
-                              onClick={(event) => event.stopPropagation()}
-                              onChange={(event) => setRenameValue(event.target.value)}
-                              onKeyDown={(event) => {
-                                if (event.key === 'Enter') void commitRename(session.id);
-                                if (event.key === 'Escape') setRenamingId(null);
-                              }}
-                              onBlur={() => void commitRename(session.id)}
-                              className="min-w-0 flex-1 rounded border border-primary bg-background px-1 py-0 text-foreground outline-none"
-                              style={{ fontSize: 'var(--skin-text-sm)' }}
-                            />
+                      />
+                    );
+
+                    // Mientras se renombra no hay ancla: el input y sus botones
+                    // ocupan la fila entera.
+                    if (isRenaming) {
+                      return (
+                        <div key={session.id} className={rowClass} style={rowStyle}>
+                          {activityDot}
+                          <input
+                            value={renameValue}
+                            autoFocus
+                            onChange={(event) => setRenameValue(event.target.value)}
+                            onKeyDown={(event) => {
+                              if (event.key === 'Enter') void commitRename(session.id);
+                              if (event.key === 'Escape') setRenamingId(null);
+                            }}
+                            onBlur={() => void commitRename(session.id)}
+                            className="min-w-0 flex-1 rounded border border-primary bg-background px-1 py-0 text-foreground outline-none"
+                            style={{ fontSize: 'var(--skin-text-sm)' }}
+                          />
+                          <button
+                            type="button"
+                            title="Guardar"
+                            onClick={() => void commitRename(session.id)}
+                            className="flex-none text-muted-foreground hover:text-foreground"
+                          >
+                            <Check className="h-3.5 w-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            title="Cancelar"
+                            onMouseDown={(event) => {
+                              // mousedown y no click: el onBlur del input se
+                              // dispara antes y guardaría igual.
+                              event.preventDefault();
+                              setRenamingId(null);
+                            }}
+                            className="flex-none text-muted-foreground hover:text-foreground"
+                          >
+                            <X className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      );
+                    }
+
+                    /*
+                     * La fila es un ancla, y los botones de acción son sus
+                     * hermanos: un `<button>` dentro de un `<a>` es HTML
+                     * inválido y el navegador reacomoda el DOM por su cuenta.
+                     */
+                    return (
+                      <div key={session.id} className="group relative">
+                        <a
+                          href={`${sessionHrefBase}/${session.id}`}
+                          className={`${rowClass} cursor-pointer no-underline`}
+                          style={rowStyle}
+                          // El click normal navega dentro de la app; con
+                          // modificador (o con la rueda, que ni siquiera pasa
+                          // por acá) manda el href y el navegador abre pestaña.
+                          onClick={(event) => {
+                            if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+                            event.preventDefault();
+                            onSessionSelect(session);
+                          }}
+                        >
+                          {activityDot}
+                          <span className="min-w-0 flex-1 truncate">{title}</span>
+                          <span
+                            className="flex-none text-muted-foreground transition-opacity group-hover:opacity-0"
+                            style={{ fontSize: 'var(--skin-text-xs)' }}
+                          >
+                            {formatAge(session)}
+                          </span>
+                        </a>
+
+                        <div className="absolute right-2 top-1/2 hidden -translate-y-1/2 items-center gap-1.5 group-hover:flex">
+                          <button
+                            type="button"
+                            title="Renombrar sesión"
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              setRenameValue(title);
+                              setRenamingId(session.id);
+                            }}
+                            className="text-muted-foreground hover:text-foreground"
+                          >
+                            <Pencil className="h-3.5 w-3.5" />
+                          </button>
+                          {onSessionDelete && (
                             <button
                               type="button"
-                              title="Guardar"
+                              title="Archivar sesión"
                               onClick={(event) => {
                                 event.stopPropagation();
-                                void commitRename(session.id);
+                                setPendingArchive({ kind: 'session', id: session.id, name: title });
                               }}
-                              className="flex-none text-muted-foreground hover:text-foreground"
+                              className="text-muted-foreground hover:text-destructive"
                             >
-                              <Check className="h-3.5 w-3.5" />
+                              <Trash2 className="h-3.5 w-3.5" />
                             </button>
-                            <button
-                              type="button"
-                              title="Cancelar"
-                              onMouseDown={(event) => {
-                                // mousedown y no click: el onBlur del input se
-                                // dispara antes y guardaría igual.
-                                event.preventDefault();
-                                event.stopPropagation();
-                                setRenamingId(null);
-                              }}
-                              className="flex-none text-muted-foreground hover:text-foreground"
-                            >
-                              <X className="h-3.5 w-3.5" />
-                            </button>
-                          </>
-                        ) : (
-                          <>
-                            <span className="min-w-0 flex-1 truncate">{title}</span>
-                            <span
-                              className="flex-none text-muted-foreground transition-opacity group-hover:opacity-0"
-                              style={{ fontSize: 'var(--skin-text-xs)' }}
-                            >
-                              {formatAge(session)}
-                            </span>
-                            <div className="absolute right-2 hidden items-center gap-1.5 group-hover:flex">
-                              <button
-                                type="button"
-                                title="Renombrar sesión"
-                                onClick={(event) => {
-                                  event.stopPropagation();
-                                  setRenameValue(title);
-                                  setRenamingId(session.id);
-                                }}
-                                className="text-muted-foreground hover:text-foreground"
-                              >
-                                <Pencil className="h-3.5 w-3.5" />
-                              </button>
-                              {onSessionDelete && (
-                                <button
-                                  type="button"
-                                  title="Archivar sesión"
-                                  onClick={(event) => {
-                                    event.stopPropagation();
-                                    setPendingArchive({ kind: 'session', id: session.id, name: title });
-                                  }}
-                                  className="text-muted-foreground hover:text-destructive"
-                                >
-                                  <Trash2 className="h-3.5 w-3.5" />
-                                </button>
-                              )}
-                            </div>
-                          </>
-                        )}
+                          )}
+                        </div>
                       </div>
                     );
                   })}
