@@ -1,9 +1,28 @@
 # Indicador de ventana de 5 horas en la barra superior
 
 **Fecha:** 10 de Septiembre 2026
-**Estado:** en-ejecucion
+**Estado:** corregido y archivado — el indicador existe, su calibración no vale
 
 Un círculo de progreso en el header de CloudCLI que muestra cuánto queda de la ventana de 5 horas de Claude, sumando todas las sesiones del VPS y actualizándose en vivo por WebSocket.
+
+---
+
+## Corrección del 11-sep-2026 — la calibración de este plan medía dos cosas mal
+
+**El indicador se construyó y funciona. Lo que no vale es cómo calculaba el porcentaje**, y se reemplazó entero el 11-sep. Los dos errores están en la tabla del Contexto que sigue abajo, que se deja tal cual quedó para poder auditarla.
+
+**Error 1 — contó líneas del transcript, no llamadas.** Una respuesta del modelo se escribe en varias líneas del `.jsonl`. Los "1.706 turnos" de la Ventana 1 fueron **791 llamadas reales**: un factor ×2,2. El cache-read de 334,2 M está inflado por lo mismo. La unidad correcta es el `requestId` único.
+
+**Error 2, el que importa — la métrica no es el output.** El plan concluye que *"la métrica es el output"* porque los dólares divergían un 30% entre las dos ventanas mientras la salida divergía un 6%. Medido sobre ocho ventanas agotadas, en vez de dos: **la salida explica entre el 10% y el 18% del costo**; el resto es contexto releído (43-67%) y escritura de cache (20-39%). Las dos ventanas del 09-sep tenían salida parecida por casualidad —eran dos días de trabajo parecido—, no porque la salida sea el límite.
+
+La consecuencia práctica fue un anillo que mostraba un número plausible y equivocado, y un "hueco" inexistente en los cortes del 10 y el 11-sep: ventanas que en salida parecían haber cortado antes de tiempo y que, medidas en costo, entran en el rango normal.
+
+**Y el auto-recalibrado empeoraba el problema en vez de arreglarlo.** El plan preveía que cada `429` revelara el 100% real de su ventana. Recalibrar sobre la unidad equivocada solo hace que el número siga siendo falso con más decimales.
+
+**Con qué se reemplazó.** No hace falta estimar nada: el SDK emite `rate_limit_event` con `rate_limit_info.unifiedWindows.{five_hour,seven_day}.{utilization,resetsAt}`, que es el porcentaje **real de la cuenta**. Desde el commit `c97f2131` el anillo usa ese valor, la estimación por salida se eliminó del código, y cuando la última lectura tiene más de 15 minutos el popover dice **"sin dato"** en vez de inventar un número.
+
+- Plan que lo reemplaza: `workspace-leandro/plans/11-septiembre-cuota-dos-maquinas.md` (Fase 7).
+- Teoría, para no repetir el error: `workspace-leandro/biblioteca/claude-code/cuota-y-costo.md`.
 
 ---
 
