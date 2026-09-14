@@ -213,19 +213,50 @@ export function normalizeProjectPath(inputPath: string): string {
 }
 
 /**
+ * Expands a leading `~` against `WORKSPACES_ROOT`.
+ *
+ * The server does not run from the user's home, so a `~` left literal reaches
+ * `path.resolve` as a relative segment and lands under the process cwd — which
+ * for a path under the workspace root passes every containment check and then
+ * gets created by `mkdir -p`. That is how `cloudcli/~/workspace-leandro/...`
+ * appeared once: a real directory named `~`, empty, registered as a project.
+ */
+export function expandWorkspaceHomePath(inputPath: string): string {
+  const trimmedPath = inputPath.trim();
+  if (trimmedPath === '~') {
+    return WORKSPACES_ROOT;
+  }
+
+  if (trimmedPath.startsWith('~/') || trimmedPath.startsWith('~\\')) {
+    return path.join(WORKSPACES_ROOT, trimmedPath.slice(2));
+  }
+
+  return trimmedPath;
+}
+
+/**
  * Validates that a user-supplied workspace path is safe to use.
  *
  * Call this before any filesystem mutation that creates or registers projects.
- * The function resolves symlinks, enforces `WORKSPACES_ROOT` containment, and
- * blocks known system directories.
+ * The function expands `~`, rejects relative paths, resolves symlinks, enforces
+ * `WORKSPACES_ROOT` containment, and blocks known system directories.
  */
 export async function validateWorkspacePath(requestedPath: string): Promise<WorkspacePathValidationResult> {
   try {
-    const normalizedRequestedPath = normalizeProjectPath(requestedPath);
+    const normalizedRequestedPath = normalizeProjectPath(expandWorkspaceHomePath(requestedPath ?? ''));
     if (!normalizedRequestedPath) {
       return {
         valid: false,
         error: 'Workspace path is required',
+      };
+    }
+
+    // A relative path would be resolved against the server's cwd, which is never
+    // what the caller meant: it silently creates a directory next to the app.
+    if (!path.isAbsolute(normalizedRequestedPath)) {
+      return {
+        valid: false,
+        error: `Workspace path must be absolute: ${requestedPath}`,
       };
     }
 

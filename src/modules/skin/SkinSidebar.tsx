@@ -966,7 +966,7 @@ export function SkinSidebar({
               event.preventDefault();
               void confirmAdd();
             }}
-            placeholder="~/workspace-leandro/desarrollo/app-norte"
+            placeholder="/home/usuario/proyectos/mi-proyecto"
             className="mt-3 w-full rounded-md border border-border bg-background px-2 py-1.5 font-mono text-foreground outline-none transition-colors placeholder:font-sans placeholder:text-muted-foreground focus:border-primary"
             style={{ fontSize: 'var(--skin-text-sm)' }}
           />

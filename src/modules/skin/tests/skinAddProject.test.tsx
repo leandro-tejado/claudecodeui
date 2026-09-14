@@ -53,7 +53,7 @@ describe('SkinSidebar add project', () => {
 
     fireEvent.click(screen.getByTitle('Agregar proyecto'));
 
-    const input = await screen.findByPlaceholderText(/desarrollo\/app-norte/);
+    const input = await screen.findByPlaceholderText(/mi-proyecto/);
     fireEvent.change(input, { target: { value: '/home/leantejado/workspace-leandro/desarrollo/app-norte' } });
     fireEvent.click(screen.getByRole('button', { name: 'Agregar' }));
 
