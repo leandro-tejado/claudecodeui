@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { CSSProperties, MouseEvent as ReactMouseEvent } from 'react';
 import { useHref } from 'react-router-dom';
 import {
@@ -7,6 +7,8 @@ import {
   Check,
   ChevronDown,
   ChevronRight,
+  Folder,
+  FolderPlus,
   Pencil,
   Plus,
   RefreshCw,
@@ -18,11 +20,17 @@ import {
 } from 'lucide-react';
 
 import { useSkinUi } from '@/modules/skin/skinUiStore';
+import {
+  browseFilesystemFolders,
+  createProjectRequest,
+  getSuggestionRootPath,
+} from '@/modules/project-creation-wizard';
 import { api } from '@/shared/api';
 import { Dialog, DialogContent, DialogTitle } from '@/shared/ui';
 import type {
   ArchivedProjectListItem,
   ArchivedSessionListItem,
+  FolderSuggestion,
   Project,
   ProjectSession,
 } from '@/shared/types';
@@ -281,6 +289,82 @@ export function SkinSidebar({
     setOpenOverride((previous) => new Map(previous).set(projectId, !isOpenNow));
   }, []);
 
+  /* Agregar un proyecto a la lista.
+
+     El wizard de upstream vive en `sidebar/SidebarModals`, que este skin dejó de
+     renderizar: desde entonces la única forma de trabajar en una carpeta era que
+     ya estuviera en la lista. Un solo paso en vez de los dos del wizard, porque
+     acá la carpeta ya existe en disco; si no existe, el servidor la crea. */
+  const [addOpen, setAddOpen] = useState(false);
+  const [addPath, setAddPath] = useState('');
+  const [addError, setAddError] = useState<string | null>(null);
+  const [addBusy, setAddBusy] = useState(false);
+  const [addSuggestions, setAddSuggestions] = useState<FolderSuggestion[]>([]);
+
+  const openAdd = useCallback(() => {
+    setAddPath('');
+    setAddError(null);
+    setAddSuggestions([]);
+    setAddOpen(true);
+  }, []);
+
+  /* El desplegable lista las carpetas del directorio padre de lo tipeado y las
+     filtra por prefijo: acompaña mientras se escribe en vez de exigir la ruta
+     entera, y un click en una sugerencia vuelve a disparar el listado, que es lo
+     que permite bajar carpeta por carpeta sin un explorador aparte. */
+  useEffect(() => {
+    if (!addOpen) return undefined;
+
+    const timerId = window.setTimeout(async () => {
+      try {
+        const typed = addPath.trim();
+        const { suggestions } = await browseFilesystemFolders(
+          typed.length > 0 ? getSuggestionRootPath(typed) : '~',
+        );
+        const normalizedInput = typed.toLowerCase();
+        setAddSuggestions(
+          suggestions
+            .filter(
+              (suggestion) =>
+                normalizedInput.length === 0 ||
+                suggestion.path.toLowerCase().startsWith(normalizedInput),
+            )
+            .slice(0, 8),
+        );
+      } catch {
+        // Ruta a medio escribir o inaccesible: sin sugerencias, el input sigue valiendo.
+        setAddSuggestions([]);
+      }
+    }, 180);
+
+    return () => window.clearTimeout(timerId);
+  }, [addOpen, addPath]);
+
+  const confirmAdd = useCallback(async () => {
+    const target = addPath.trim();
+    if (!target) {
+      setAddError('Escribí la ruta de la carpeta.');
+      return;
+    }
+
+    setAddBusy(true);
+    setAddError(null);
+    try {
+      await createProjectRequest({ path: target });
+      setAddOpen(false);
+      setAddPath('');
+      // La lista la manda el estado de arriba: sin refresco el proyecto existe en
+      // la base y no en la pantalla.
+      onRefresh?.();
+    } catch (error) {
+      setAddError(
+        error instanceof Error ? error.message : 'No se pudo agregar el proyecto.',
+      );
+    } finally {
+      setAddBusy(false);
+    }
+  }, [addPath, onRefresh]);
+
   /* Archivar pide confirmación.
      El tacho archiva (soft-delete): nada se pierde y se restaura desde la vista
      de archivados. Aun así el click es de un píxel y está pegado al chevron,
@@ -446,6 +530,14 @@ export function SkinSidebar({
             className="grid h-7 w-7 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
           >
             <RefreshCw className={`h-4 w-4 ${isLoading || archivedLoading ? 'animate-spin' : ''}`} />
+          </button>
+          <button
+            type="button"
+            onClick={openAdd}
+            title="Agregar proyecto"
+            className="grid h-7 w-7 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+          >
+            <FolderPlus className="h-4 w-4" />
           </button>
           <button
             type="button"
@@ -840,6 +932,85 @@ export function SkinSidebar({
               style={{ fontSize: 'var(--skin-text-sm)' }}
             >
               Archivar
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* --- Alta de proyecto: una carpeta del disco entra a la lista. --- */}
+      <Dialog
+        open={addOpen}
+        onOpenChange={(open) => {
+          if (open) return;
+          setAddOpen(false);
+          setAddError(null);
+        }}
+      >
+        <DialogContent className="max-w-md p-5" style={{ fontSize: 'var(--skin-text)' }}>
+          <DialogTitle>Agregar proyecto</DialogTitle>
+          <div className="font-semibold tracking-tight">Abrir una carpeta como proyecto</div>
+          <p className="mt-2 text-muted-foreground" style={{ fontSize: 'var(--skin-text-sm)' }}>
+            La ruta completa en el servidor. Si la carpeta no existe, se crea.
+          </p>
+
+          <input
+            value={addPath}
+            autoFocus
+            disabled={addBusy}
+            onChange={(event) => {
+              setAddPath(event.target.value);
+              setAddError(null);
+            }}
+            onKeyDown={(event) => {
+              if (event.key !== 'Enter') return;
+              event.preventDefault();
+              void confirmAdd();
+            }}
+            placeholder="~/workspace-leandro/desarrollo/app-norte"
+            className="mt-3 w-full rounded-md border border-border bg-background px-2 py-1.5 font-mono text-foreground outline-none transition-colors placeholder:font-sans placeholder:text-muted-foreground focus:border-primary"
+            style={{ fontSize: 'var(--skin-text-sm)' }}
+          />
+
+          {addSuggestions.length > 0 && (
+            <div className="mt-1.5 max-h-52 overflow-y-auto rounded-md border border-border">
+              {addSuggestions.map((suggestion) => (
+                <button
+                  key={suggestion.path}
+                  type="button"
+                  onClick={() => setAddPath(suggestion.path)}
+                  className="flex w-full items-center gap-2 px-2 py-1.5 text-left text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                  style={{ fontSize: 'var(--skin-text-sm)' }}
+                >
+                  <Folder className="h-3.5 w-3.5 flex-none" />
+                  <span className="truncate">{suggestion.path}</span>
+                </button>
+              ))}
+            </div>
+          )}
+
+          {addError && (
+            <p className="mt-2 text-destructive" style={{ fontSize: 'var(--skin-text-sm)' }}>
+              {addError}
+            </p>
+          )}
+
+          <div className="mt-5 flex justify-end gap-2">
+            <button
+              type="button"
+              onClick={() => setAddOpen(false)}
+              className="rounded-md px-3 py-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+              style={{ fontSize: 'var(--skin-text-sm)' }}
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              onClick={() => void confirmAdd()}
+              disabled={addBusy}
+              className="rounded-md bg-foreground px-3 py-1.5 font-medium text-background transition-opacity hover:opacity-90 disabled:opacity-50"
+              style={{ fontSize: 'var(--skin-text-sm)' }}
+            >
+              {addBusy ? 'Agregando…' : 'Agregar'}
             </button>
           </div>
         </DialogContent>
