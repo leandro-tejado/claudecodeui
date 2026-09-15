@@ -4,6 +4,7 @@ import { useHref } from 'react-router-dom';
 import {
   Archive,
   ArchiveRestore,
+  Bot,
   Check,
   ChevronDown,
   ChevronRight,
@@ -58,6 +59,45 @@ const WIDTH_STORAGE_KEY = 'skin:sidebar-width';
 
 /** Lo que el usuario pidió archivar y todavía no confirmó. */
 type PendingArchive = { kind: 'project' | 'session'; id: string; name: string };
+
+/**
+ * Un subagente de una sesión, tal como lo arma
+ * `projects-with-sessions-fetch.service.ts` a partir de `agent-*.meta.json` y
+ * la cola de su transcript. `ProjectSession` no declara estos campos —
+ * llegan por su índice `[key: string]: unknown` — así que se leen acá con el
+ * shape local en vez de tocar `shared/types.ts`.
+ */
+type SkinSubagentStatus = 'running' | 'completed' | 'failed';
+type SkinSubagentSummary = {
+  id: string;
+  type: string;
+  description: string;
+  model: string | null;
+  status: SkinSubagentStatus;
+  startedAt: string | null;
+};
+type SessionWithSubagents = ProjectSession & {
+  subagentCount?: number;
+  subagents?: SkinSubagentSummary[];
+};
+
+const getSubagentCount = (session: ProjectSession): number =>
+  (session as SessionWithSubagents).subagentCount ?? 0;
+
+const getSubagents = (session: ProjectSession): SkinSubagentSummary[] =>
+  (session as SessionWithSubagents).subagents ?? [];
+
+const SUBAGENT_STATUS_LABEL: Record<SkinSubagentStatus, string> = {
+  running: 'corriendo',
+  completed: 'terminado',
+  failed: 'falló',
+};
+
+const SUBAGENT_STATUS_DOT_CLASS: Record<SkinSubagentStatus, string> = {
+  running: 'bg-purple-500 animate-pulse',
+  completed: 'bg-muted-foreground/50',
+  failed: 'bg-red-500',
+};
 
 type SkinSidebarProps = {
   projects: Project[];
@@ -380,6 +420,56 @@ export function SkinSidebar({
     }
     setPendingArchive(null);
   }, [onProjectDelete, onSessionDelete, pendingArchive]);
+
+  /* Popover de subagentes: qué sesión lo tiene abierto, y la fila de esa
+     sesión para saber si un click cayó afuera. Una sola apertura a la vez, así
+     que un `Map` es de más — el id alcanza. */
+  const [openSubagentSessionId, setOpenSubagentSessionId] = useState<string | null>(null);
+  const subagentRowRefs = useRef<Map<string, HTMLDivElement>>(new Map());
+
+  useEffect(() => {
+    if (!openSubagentSessionId) return undefined;
+
+    const closeOnOutsideClick = (event: MouseEvent) => {
+      const container = subagentRowRefs.current.get(openSubagentSessionId);
+      if (container && !container.contains(event.target as Node)) {
+        setOpenSubagentSessionId(null);
+      }
+    };
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setOpenSubagentSessionId(null);
+    };
+
+    document.addEventListener('mousedown', closeOnOutsideClick);
+    document.addEventListener('keydown', closeOnEscape);
+    return () => {
+      document.removeEventListener('mousedown', closeOnOutsideClick);
+      document.removeEventListener('keydown', closeOnEscape);
+    };
+  }, [openSubagentSessionId]);
+
+  /**
+   * Salta a la tarjeta `Task` del subagente en el chat, reusando el mecanismo
+   * de "ir a este resultado de búsqueda" que ya tiene `useChatSessionState`
+   * (`__searchTargetSnippet`/`__searchTargetTimestamp`, el mismo que dispara
+   * `@/modules/sidebar/Sidebar.tsx` en su búsqueda). No hay un visor nuevo:
+   * `SubagentPanel` ya renderiza el timeline completo en esa tarjeta — esto
+   * es sólo el ancla. El snippet es la `description` del meta.json, que el
+   * `Task` original lleva textual en su `toolInput`; `startedAt` es el
+   * respaldo por si la descripción es demasiado corta para matchear.
+   */
+  const jumpToSubagent = useCallback(
+    (session: ProjectSession, subagent: SkinSubagentSummary) => {
+      setOpenSubagentSessionId(null);
+      const snippet = subagent.description.trim().length > 0 ? subagent.description : subagent.type;
+      onSessionSelect({
+        ...session,
+        __searchTargetSnippet: snippet,
+        __searchTargetTimestamp: subagent.startedAt ?? undefined,
+      } as ProjectSession);
+    },
+    [onSessionSelect],
+  );
 
   /* Vista de archivados. Vive acá y no en `sidebarSharedProps` porque el estado
      de arriba sólo conoce proyectos activos: los archivados se piden aparte. */
@@ -745,6 +835,9 @@ export function SkinSidebar({
                     const isActive = selectedSession?.id === session.id;
                     const isRenaming = renamingId === session.id;
                     const title = titleOverride.get(session.id) ?? sessionTitle(session);
+                    const subagentCount = getSubagentCount(session);
+                    const subagents = getSubagents(session);
+                    const isSubagentPopoverOpen = openSubagentSessionId === session.id;
                     const rowClass = `flex w-full items-center rounded-md transition-colors ${
                       isActive ? 'bg-primary/10 text-foreground' : 'text-muted-foreground hover:bg-accent/60'
                     }`;
@@ -809,7 +902,14 @@ export function SkinSidebar({
                      * inválido y el navegador reacomoda el DOM por su cuenta.
                      */
                     return (
-                      <div key={session.id} className="group relative">
+                      <div
+                        key={session.id}
+                        className="group relative"
+                        ref={(node) => {
+                          if (node) subagentRowRefs.current.set(session.id, node);
+                          else subagentRowRefs.current.delete(session.id);
+                        }}
+                      >
                         <a
                           href={`${sessionHrefBase}/${session.id}`}
                           className={`${rowClass} cursor-pointer no-underline`}
@@ -825,6 +925,31 @@ export function SkinSidebar({
                         >
                           {activityDot}
                           <span className="min-w-0 flex-1 truncate">{title}</span>
+                          {subagentCount > 0 && (
+                            // Un `<span>` con rol de botón, no un `<button>`: el
+                            // comentario de arriba explica por qué nada
+                            // interactivo real puede anidarse en el `<a>`.
+                            <span
+                              role="button"
+                              tabIndex={0}
+                              title={`${subagentCount} subagentes desde que existe esta sesion`}
+                              onClick={(event) => {
+                                event.preventDefault();
+                                event.stopPropagation();
+                                setOpenSubagentSessionId((current) => (current === session.id ? null : session.id));
+                              }}
+                              onKeyDown={(event) => {
+                                if (event.key !== 'Enter' && event.key !== ' ') return;
+                                event.preventDefault();
+                                event.stopPropagation();
+                                setOpenSubagentSessionId((current) => (current === session.id ? null : session.id));
+                              }}
+                              className="flex-none cursor-pointer rounded-full bg-purple-500/15 px-1.5 font-medium text-purple-600 dark:text-purple-300"
+                              style={{ fontSize: 'var(--skin-text-xs)' }}
+                            >
+                              {subagentCount}
+                            </span>
+                          )}
                           <span
                             className="flex-none text-muted-foreground transition-opacity group-hover:opacity-0"
                             style={{ fontSize: 'var(--skin-text-xs)' }}
@@ -832,6 +957,49 @@ export function SkinSidebar({
                             {formatAge(session)}
                           </span>
                         </a>
+
+                        {isSubagentPopoverOpen && (
+                          <div
+                            role="menu"
+                            aria-label="Subagentes de esta sesión"
+                            className="absolute right-0 top-full z-50 mt-1 max-h-64 w-64 overflow-y-auto rounded-lg border border-border bg-popover p-1 text-popover-foreground shadow-lg"
+                          >
+                            {subagents.length === 0 ? (
+                              <div
+                                className="px-2 py-1.5 text-muted-foreground"
+                                style={{ fontSize: 'var(--skin-text-xs)' }}
+                              >
+                                Sin detalle todavía.
+                              </div>
+                            ) : (
+                              subagents.map((subagent) => (
+                                <button
+                                  key={subagent.id}
+                                  type="button"
+                                  role="menuitem"
+                                  onClick={() => jumpToSubagent(session, subagent)}
+                                  className="flex w-full items-start gap-2 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-accent"
+                                >
+                                  <Bot className="mt-0.5 h-3.5 w-3.5 flex-none text-purple-500 dark:text-purple-400" />
+                                  <span className="min-w-0 flex-1">
+                                    <span className="block truncate font-medium" style={{ fontSize: 'var(--skin-text-sm)' }}>
+                                      {subagent.type}
+                                    </span>
+                                    <span
+                                      className="block truncate text-muted-foreground"
+                                      style={{ fontSize: 'var(--skin-text-xs)' }}
+                                    >
+                                      {subagent.model ?? '—'} · {SUBAGENT_STATUS_LABEL[subagent.status]}
+                                    </span>
+                                  </span>
+                                  <span
+                                    className={`mt-1 h-1.5 w-1.5 flex-none rounded-full ${SUBAGENT_STATUS_DOT_CLASS[subagent.status]}`}
+                                  />
+                                </button>
+                              ))
+                            )}
+                          </div>
+                        )}
 
                         <div className="absolute right-2 top-1/2 hidden -translate-y-1/2 items-center gap-1.5 group-hover:flex">
                           <button
