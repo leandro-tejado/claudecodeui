@@ -44,6 +44,8 @@ type TokenUsageResult = {
   };
   unsupported?: boolean;
   message?: string;
+  /** `null` when `CLAUDE_CODE_AUTO_COMPACT_WINDOW` is absent or out of range — the meter skips drawing. */
+  compactAt?: number | null;
 };
 
 type OpenCodeTokenRow = {
@@ -284,6 +286,51 @@ export function resolveClaudeContextWindow(model: unknown): number | null {
 }
 
 /**
+ * Valid range for `CLAUDE_CODE_AUTO_COMPACT_WINDOW`, mirrored from the CLI's
+ * own bounds (`pTe`/`zBe` in the bundle). Outside this range the CLI caps and
+ * logs instead of using the value, so a threshold derived from it would lie.
+ */
+const AUTO_COMPACT_WINDOW_MIN = 100_000;
+const AUTO_COMPACT_WINDOW_MAX = 1_000_000;
+
+/** Output reserve the CLI subtracts from the window, capped at this many tokens. */
+const AUTO_COMPACT_OUTPUT_RESERVE_CAP = 20_000;
+
+/** Safety buffer the CLI subtracts after the output reserve. */
+const AUTO_COMPACT_SAFETY_BUFFER = 13_000;
+
+/**
+ * Input-token threshold at which Claude Code auto-compacts the session,
+ * derived from `CLAUDE_CODE_AUTO_COMPACT_WINDOW` the same way the CLI derives
+ * it internally: `effectiveWindow = window − min(maxOutput, 20_000)`,
+ * `threshold = effectiveWindow − 13_000`. Full derivation and the bundle
+ * offsets it came from: `knowledge/dev/diagnostico-autocompact-sdk.md`.
+ *
+ * `null` is a real answer, not a failure: the variable is absent on the
+ * notebook and out-of-range values are silently capped by the CLI, so in
+ * both cases nobody can say where the real cut lands. Drawing a bar against
+ * a guessed threshold would lie about the one number this exists to get
+ * right — callers read `null` as "don't draw".
+ */
+export function resolveAutoCompactThreshold(): number | null {
+  const raw = process.env.CLAUDE_CODE_AUTO_COMPACT_WINDOW;
+  if (!raw) {
+    return null;
+  }
+
+  const window = Number(raw);
+  if (
+    !Number.isFinite(window)
+    || window < AUTO_COMPACT_WINDOW_MIN
+    || window > AUTO_COMPACT_WINDOW_MAX
+  ) {
+    return null;
+  }
+
+  return window - AUTO_COMPACT_OUTPUT_RESERVE_CAP - AUTO_COMPACT_SAFETY_BUFFER;
+}
+
+/**
  * Model id the session was started with, variant suffix included.
  *
  * Assistant rows record the resolved id (`claude-opus-5`) and drop the harness
@@ -396,6 +443,7 @@ export function summarizeClaudeTokenUsage(
     cacheCreationTokens,
     cacheTokens,
     breakdown: { input: inputTokens, output: outputTokens },
+    compactAt: resolveAutoCompactThreshold(),
   };
 }
 

@@ -30,6 +30,7 @@ import {
 } from '@/modules/providers/list/claude/claude-models.provider.js';
 import {
   claudeContextWindowIsAmbiguous,
+  resolveAutoCompactThreshold,
   resolveClaudeContextWindow
 } from '@/modules/providers/services/provider-token-usage.service.js';
 import { resolveClaudeCodeExecutablePath } from '@/shared/claude-cli-path.js';
@@ -419,6 +420,7 @@ function readNumber(value) {
  * @property {number} [cacheCreationTokens]
  * @property {number} [cacheTokens]
  * @property {{ input: number, output: number }} breakdown
+ * @property {number|null} [compactAt] - Input-token threshold that triggers auto-compaction, or null when unknown
  */
 
 /**
@@ -478,6 +480,7 @@ function buildTokenBudget(messageUsage, contextWindow = null) {
       input: inputTokens,
       output: outputTokens,
     },
+    compactAt: resolveAutoCompactThreshold(),
   };
 }
 
