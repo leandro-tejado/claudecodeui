@@ -26,6 +26,7 @@ import {
 import ChatMessagesPane from '@/modules/chat/transcript/ChatMessagesPane';
 import ChatComposer from '@/modules/chat/composer/ChatComposer';
 import CommandResultModal from '@/modules/chat/modals/CommandResultModal';
+import { SkinSubagentBridge } from '@/modules/skin';
 
 type ChatInterfaceProps = {
   isActive: boolean;
@@ -418,6 +419,7 @@ function ChatInterface({
   return (
     <PermissionContext.Provider value={permissionContextValue}>
       <div className="flex h-full min-h-0 flex-col">
+        <SkinSubagentBridge sessionId={currentSessionId} messages={chatMessages} />
         <ChatMessagesPane
           scrollContainerRef={scrollContainerRef}
           // Not redundant with the `scroll` listener. A first page is 20 rows,

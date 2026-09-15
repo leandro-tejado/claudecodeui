@@ -5,4 +5,7 @@ export { default as SkinContextMeterBridge } from '@/modules/skin/SkinContextMet
 export { default as SkinContextRing } from '@/modules/skin/SkinContextRing';
 export { useContextMeter, publishContextMeter } from '@/modules/skin/contextMeterStore';
 export type { ContextMeterState } from '@/modules/skin/contextMeterStore';
+export { default as SkinSubagentBridge } from '@/modules/skin/SkinSubagentBridge';
+export { useSubagents } from '@/modules/skin/subagentStore';
+export type { SubagentRow, SubagentStatus } from '@/modules/skin/subagentStore';
 export { useSkinUi, toggleSidebarCollapsed, toggleFilesPanel } from '@/modules/skin/skinUiStore';
