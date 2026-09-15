@@ -7,12 +7,30 @@ import { WS_OPEN_STATE, connectedClients } from '@/modules/websocket/index.js';
 import type { RealtimeClientConnection } from '@/shared/types.js';
 import { AppError } from '@/shared/utils.js';
 
+/** Derived, not authoritative — see `deriveSubagentModelAndStatus`. */
+type SubagentStatus = 'running' | 'completed' | 'failed';
+
+/** One entry for the sidebar's subagent popover: what a `agent-*.meta.json` plus a tail read of its transcript can tell without loading the whole file. */
+export type SessionSubagentSummary = {
+  id: string;
+  type: string;
+  description: string;
+  model: string | null;
+  status: SubagentStatus;
+  /** ISO instant the meta file was written — a proxy for spawn time, used as the timestamp fallback when jumping to this subagent's card in chat. */
+  startedAt: string | null;
+};
+
 type SessionSummary = {
   id: string;
   provider: string;
   summary: string;
   messageCount: number;
   lastActivity: string;
+  /** Count of `agent-*.meta.json` files under the session's `subagents/` dir — 0 when the dir does not exist. Acumulado: never drops when a run finishes. */
+  subagentCount: number;
+  /** Empty when `subagentCount` is 0 — no extra I/O beyond the one `readdir`. */
+  subagents: SessionSubagentSummary[];
 };
 
 type SessionRepositoryRow = {
@@ -21,6 +39,7 @@ type SessionRepositoryRow = {
   custom_name?: string | null;
   updated_at?: string | null;
   created_at?: string | null;
+  jsonl_path?: string | null;
 };
 
 export type ProjectListItem = {
@@ -117,21 +136,171 @@ function normalizeSessionPagination(options: SessionPaginationOptions = {}): { l
   };
 }
 
-function mapSessionRowToSummary(row: SessionRepositoryRow): SessionSummary {
+/** `<jsonl path without extension>/subagents` — where Claude writes one `agent-<id>.jsonl` + `.meta.json` pair per spawned subagent. `null` for a session with no transcript yet (an app-created row before the first provider write). */
+function deriveSubagentsDirectory(jsonlPath: string | null | undefined): string | null {
+  if (!jsonlPath) return null;
+  const withoutExtension = jsonlPath.endsWith('.jsonl') ? jsonlPath.slice(0, -'.jsonl'.length) : jsonlPath;
+  return path.join(withoutExtension, 'subagents');
+}
+
+const SUBAGENT_META_FILE_PATTERN = /^agent-(.+)\.meta\.json$/;
+
+/** Bytes read from the tail of a subagent transcript to guess its model/status. Bounded on purpose: a heavy fan-out can leave a multi-megabyte transcript, and this only runs for sessions that actually spawned subagents. */
+const SUBAGENT_TAIL_READ_BYTES = 8192;
+
+/**
+ * Reads the last parseable JSON line of a subagent transcript without loading
+ * the whole file. A tail read that lands mid-line drops that leading
+ * fragment — it is not valid JSON on its own, and the line before it (fully
+ * inside the read window) is used instead.
+ */
+async function readLastSubagentTranscriptEntry(jsonlPath: string): Promise<Record<string, unknown> | null> {
+  let fileHandle: Awaited<ReturnType<typeof fs.open>> | null = null;
+  try {
+    const stats = await fs.stat(jsonlPath);
+    const start = Math.max(0, stats.size - SUBAGENT_TAIL_READ_BYTES);
+    const length = stats.size - start;
+    if (length <= 0) return null;
+
+    fileHandle = await fs.open(jsonlPath, 'r');
+    const buffer = Buffer.alloc(length);
+    await fileHandle.read(buffer, 0, length, start);
+
+    const rawLines = buffer.toString('utf8').split('\n');
+    const candidateLines = start > 0 ? rawLines.slice(1) : rawLines;
+
+    for (let index = candidateLines.length - 1; index >= 0; index -= 1) {
+      const line = candidateLines[index].trim();
+      if (!line) continue;
+      try {
+        return JSON.parse(line) as Record<string, unknown>;
+      } catch {
+        continue;
+      }
+    }
+    return null;
+  } catch {
+    // Missing, unreadable or empty transcript: the caller falls back to
+    // "running", which is the safe read for a subagent that just started.
+    return null;
+  } finally {
+    await fileHandle?.close();
+  }
+}
+
+/**
+ * Best-effort status/model derived from the subagent's own transcript tail.
+ *
+ * Not authoritative: the live subagent store the client keeps while a run is
+ * in flight is the source of truth for a run that has not written its file
+ * yet, and a run that just finished can briefly still read as `running` here
+ * until its last line lands on disk.
+ */
+function deriveSubagentModelAndStatus(
+  lastEntry: Record<string, unknown> | null,
+): { model: string | null; status: SubagentStatus } {
+  if (!lastEntry) return { model: null, status: 'running' };
+
+  if (lastEntry.type === 'assistant') {
+    const message = lastEntry.message as Record<string, unknown> | undefined;
+    const model = typeof message?.model === 'string' ? message.model : null;
+    const content = Array.isArray(message?.content) ? (message.content as Array<Record<string, unknown>>) : [];
+    const hasPendingToolUse = content.some((block) => block?.type === 'tool_use');
+    return { model, status: hasPendingToolUse ? 'running' : 'completed' };
+  }
+
+  if (lastEntry.type === 'user') {
+    const message = lastEntry.message as Record<string, unknown> | undefined;
+    const content = Array.isArray(message?.content) ? (message.content as Array<Record<string, unknown>>) : [];
+    const hasFailedToolResult = content.some(
+      (block) => block?.type === 'tool_result' && block?.is_error === true,
+    );
+    return { model: null, status: hasFailedToolResult ? 'failed' : 'running' };
+  }
+
+  return { model: null, status: 'running' };
+}
+
+async function readSubagentSummary(
+  subagentsDirectory: string,
+  metaFileName: string,
+): Promise<SessionSubagentSummary | null> {
+  const match = SUBAGENT_META_FILE_PATTERN.exec(metaFileName);
+  if (!match) return null;
+  const agentId = match[1];
+
+  let type = 'general-purpose';
+  let description = '';
+  let id = agentId;
+  // Fallback anchor for the sidebar's "scroll to this subagent" jump, for the
+  // rare case its description is too short to match on its own (see
+  // `searchTargetLocator.ts`'s `MIN_SNIPPET_LENGTH`).
+  let startedAt: string | null = null;
+  try {
+    const metaPath = path.join(subagentsDirectory, metaFileName);
+    const [rawMeta, metaStats] = await Promise.all([fs.readFile(metaPath, 'utf8'), fs.stat(metaPath)]);
+    const parsedMeta = JSON.parse(rawMeta) as Record<string, unknown>;
+    if (typeof parsedMeta.agentType === 'string' && parsedMeta.agentType) type = parsedMeta.agentType;
+    if (typeof parsedMeta.description === 'string') description = parsedMeta.description;
+    if (typeof parsedMeta.toolUseId === 'string' && parsedMeta.toolUseId) id = parsedMeta.toolUseId;
+    startedAt = metaStats.mtime.toISOString();
+  } catch {
+    // A meta file that fails to parse still counts as a subagent — it just
+    // renders with the defaults above instead of dropping out of the count.
+  }
+
+  const transcriptPath = path.join(subagentsDirectory, `agent-${agentId}.jsonl`);
+  const lastEntry = await readLastSubagentTranscriptEntry(transcriptPath);
+  const { model, status } = deriveSubagentModelAndStatus(lastEntry);
+
+  return { id, type, description, model, status, startedAt };
+}
+
+/**
+ * Lists the subagents a session spawned, newest file system state only — the
+ * live rows for a run that has not written its file yet are added on the
+ * client, from the subagent store.
+ */
+async function listSessionSubagents(jsonlPath: string | null | undefined): Promise<SessionSubagentSummary[]> {
+  const subagentsDirectory = deriveSubagentsDirectory(jsonlPath);
+  if (!subagentsDirectory) return [];
+
+  let entries: string[];
+  try {
+    entries = await fs.readdir(subagentsDirectory);
+  } catch {
+    // No `subagents/` directory is the common case — a session that never
+    // spawned a subagent, not an error.
+    return [];
+  }
+
+  const metaFileNames = entries.filter((name) => SUBAGENT_META_FILE_PATTERN.test(name));
+  const summaries = await Promise.all(
+    metaFileNames.map((metaFileName) => readSubagentSummary(subagentsDirectory, metaFileName)),
+  );
+  return summaries.filter((summary): summary is SessionSubagentSummary => summary !== null);
+}
+
+async function mapSessionRowToSummary(row: SessionRepositoryRow): Promise<SessionSummary> {
+  const subagents = await listSessionSubagents(row.jsonl_path);
+
   return {
     id: row.session_id,
     provider: row.provider,
     summary: row.custom_name || '',
     messageCount: 0,
     lastActivity: row.updated_at ?? row.created_at ?? new Date().toISOString(),
+    subagentCount: subagents.length,
+    subagents,
   };
 }
 
-function readProjectSessionsIncludingArchived(projectPath: string): ProjectSessionsPageResult {
+async function readProjectSessionsIncludingArchived(projectPath: string): Promise<ProjectSessionsPageResult> {
   const rows = sessionsDb.getSessionsByProjectPathIncludingArchived(projectPath) as SessionRepositoryRow[];
+  const sessions = await Promise.all(rows.map(mapSessionRowToSummary));
 
   return {
-    sessions: rows.map(mapSessionRowToSummary),
+    sessions,
     total: rows.length,
     hasMore: false,
   };
@@ -140,10 +309,10 @@ function readProjectSessionsIncludingArchived(projectPath: string): ProjectSessi
 /**
  * Reads one paginated project session slice from the DB and groups rows by provider.
  */
-function readProjectSessionsPageByPath(
+async function readProjectSessionsPageByPath(
   projectPath: string,
   options: SessionPaginationOptions = {},
-): ProjectSessionsPageResult {
+): Promise<ProjectSessionsPageResult> {
   const pagination = normalizeSessionPagination(options);
   const rows = sessionsDb.getSessionsByProjectPathPage(
     projectPath,
@@ -151,9 +320,10 @@ function readProjectSessionsPageByPath(
     pagination.offset,
   ) as SessionRepositoryRow[];
   const total = sessionsDb.countSessionsByProjectPath(projectPath);
+  const sessions = await Promise.all(rows.map(mapSessionRowToSummary));
 
   return {
-    sessions: rows.map(mapSessionRowToSummary),
+    sessions,
     total,
     hasMore: pagination.offset + rows.length < total,
   };
@@ -212,7 +382,7 @@ export async function getProjectsWithSessions(
         ? row.custom_project_name
         : await generateDisplayName(path.basename(projectPath) || projectPath, projectPath);
 
-    const sessionsPage = readProjectSessionsPageByPath(projectPath, {
+    const sessionsPage = await readProjectSessionsPageByPath(projectPath, {
       limit: options.sessionsLimit,
       offset: options.sessionsOffset,
     });
@@ -267,7 +437,7 @@ export async function getArchivedProjectsWithSessions(
         ? row.custom_project_name
         : await generateDisplayName(path.basename(row.project_path) || row.project_path, row.project_path);
 
-    const sessionsPage = readProjectSessionsIncludingArchived(row.project_path);
+    const sessionsPage = await readProjectSessionsIncludingArchived(row.project_path);
 
     archivedProjects.push({
       projectId: row.project_id,
@@ -302,7 +472,7 @@ export async function getProjectSessionsPage(
     });
   }
 
-  const sessionsPage = readProjectSessionsPageByPath(projectRow.project_path, options);
+  const sessionsPage = await readProjectSessionsPageByPath(projectRow.project_path, options);
   return {
     projectId: projectRow.project_id,
     sessions: sessionsPage.sessions,
