@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { CSSProperties, MouseEvent as ReactMouseEvent } from 'react';
 import { useHref } from 'react-router-dom';
 import {
@@ -21,6 +21,8 @@ import {
 } from 'lucide-react';
 
 import { useSkinUi } from '@/modules/skin/skinUiStore';
+import { useSubagents } from '@/modules/skin/subagentStore';
+import type { SubagentRow, SubagentStatus } from '@/modules/skin/subagentStore';
 import {
   browseFilesystemFolders,
   createProjectRequest,
@@ -87,6 +89,22 @@ const getSubagentCount = (session: ProjectSession): number =>
 const getSubagents = (session: ProjectSession): SkinSubagentSummary[] =>
   (session as SessionWithSubagents).subagents ?? [];
 
+/*
+ * Los subagentes VIVOS, que son otra cosa que los contados del servidor.
+ * El badge cuenta lo que quedó escrito en disco desde que existe la sesión; esto
+ * es lo que está corriendo ahora mismo y desaparece solo. Por eso hay dos mapas
+ * de estado: el del servidor tiene tres estados y el vivo tiene un cuarto,
+ * `stale`, para el subagente del que hace 15 minutos no se sabe nada.
+ */
+const EMPTY_SESSION_IDS: ReadonlySet<string> = new Set<string>();
+
+const LIVE_STATUS_DOT_CLASS: Record<SubagentStatus, string> = {
+  running: 'bg-purple-500 animate-pulse',
+  completed: 'bg-muted-foreground/50',
+  failed: 'bg-red-500',
+  stale: 'bg-muted-foreground/30',
+};
+
 const SUBAGENT_STATUS_LABEL: Record<SkinSubagentStatus, string> = {
   running: 'corriendo',
   completed: 'terminado',
@@ -104,6 +122,13 @@ type SkinSidebarProps = {
   selectedProject: Project | null;
   selectedSession: ProjectSession | null;
   attentionSessionIds?: Set<string> | string[];
+  /**
+   * Las sesiones con una corrida en vuelo. Llega como prop y no por hook a
+   * propósito: `useBusySessionIdSet()` lanza sin su provider, y ese provider
+   * pega contra la API al montarse. El sidebar es presentación — que un puntito
+   * le exija red es acoplar al revés. Mismo idioma que `attentionSessionIds`.
+   */
+  activeSessions?: ReadonlySet<string>;
   onProjectSelect: (project: Project) => void;
   onSessionSelect: (session: ProjectSession) => void;
   onNewSession: (project: Project) => void;
@@ -170,6 +195,7 @@ export function SkinSidebar({
   selectedProject,
   selectedSession,
   attentionSessionIds,
+  activeSessions,
   onProjectSelect,
   onSessionSelect,
   onNewSession,
@@ -299,6 +325,27 @@ export function SkinSidebar({
       ? attentionSessionIds
       : new Set(attentionSessionIds);
   }, [attentionSessionIds]);
+
+  /*
+   * Las sesiones con una corrida en vuelo. El dato existía desde siempre —el
+   * servidor mantiene el mapa `activeSessions`, una entrada por corrida— y el
+   * sidebar de upstream lo dibujaba como spinner. El rediseño se había quedado
+   * solo con `attentionSessionIds`, que significa otra cosa: "pasó algo mientras
+   * mirabas otra sesión". Confundir las dos hacía imposible saber cuál está
+   * trabajando.
+   */
+  const busySessions = activeSessions ?? EMPTY_SESSION_IDS;
+
+  const liveSubagents = useSubagents();
+  const liveBySession = useMemo(() => {
+    const grouped = new Map<string, SubagentRow[]>();
+    liveSubagents.forEach((row) => {
+      const rows = grouped.get(row.sessionId);
+      if (rows) rows.push(row);
+      else grouped.set(row.sessionId, [row]);
+    });
+    return grouped;
+  }, [liveSubagents]);
 
   /* Filtro y orden. Buscar mira el proyecto y también sus sesiones, así que
      escribir el tema de una conversación encuentra la carpeta donde vive. */
@@ -841,14 +888,32 @@ export function SkinSidebar({
                     const rowClass = `flex w-full items-center rounded-md transition-colors ${
                       isActive ? 'bg-primary/10 text-foreground' : 'text-muted-foreground hover:bg-accent/60'
                     }`;
+                    const liveRows = liveBySession.get(session.id) ?? [];
+                    const isRunning = busySessions.has(session.id);
+                    /*
+                     * Cuatro estados, y la precedencia importa: corriendo gana
+                     * sobre atención, porque una sesión que está trabajando no
+                     * te está esperando. El pulso la distingue del verde fijo
+                     * sin depender del color, que es lo único que se lee de
+                     * reojo.
+                     */
                     const activityDot = (
                       <span
+                        title={
+                          isRunning
+                            ? 'Corriendo ahora'
+                            : attention.has(session.id)
+                              ? 'Algo llegó mientras mirabas otra sesión'
+                              : undefined
+                        }
                         className={`h-1.5 w-1.5 flex-none rounded-full ${
-                          attention.has(session.id)
-                            ? 'bg-emerald-500 ring-2 ring-emerald-500/20'
-                            : isActive
-                              ? 'bg-primary'
-                              : 'bg-muted-foreground/60'
+                          isRunning
+                            ? 'animate-pulse bg-sky-500'
+                            : attention.has(session.id)
+                              ? 'bg-emerald-500 ring-2 ring-emerald-500/20'
+                              : isActive
+                                ? 'bg-primary'
+                                : 'bg-muted-foreground/60'
                         }`}
                       />
                     );
@@ -902,8 +967,8 @@ export function SkinSidebar({
                      * inválido y el navegador reacomoda el DOM por su cuenta.
                      */
                     return (
+                      <Fragment key={session.id}>
                       <div
-                        key={session.id}
                         className="group relative"
                         ref={(node) => {
                           if (node) subagentRowRefs.current.set(session.id, node);
@@ -951,6 +1016,7 @@ export function SkinSidebar({
                             </span>
                           )}
                           <span
+                            title={`Último turno escrito hace ${formatAge(session)}`}
                             className="flex-none text-muted-foreground transition-opacity group-hover:opacity-0"
                             style={{ fontSize: 'var(--skin-text-xs)' }}
                           >
@@ -1029,6 +1095,42 @@ export function SkinSidebar({
                           )}
                         </div>
                       </div>
+
+                      {/*
+                        * Los subagentes vivos de esta sesión, un nivel más
+                        * adentro. Van FUERA del `<div>` de la fila, no dentro
+                        * del `<a>`: la fila es un ancla y lo que se le mete
+                        * adentro el navegador lo reacomoda por su cuenta.
+                        *
+                        * No navegan. Un subagente no es una sesión que se pueda
+                        * abrir: nace, trabaja y se cierra solo, y cuando termina
+                        * esta fila se va con él.
+                        */}
+                      {liveRows.length > 0 && (
+                        <div
+                          role="group"
+                          aria-label={`Subagentes en curso de ${title}`}
+                          className="ml-[19px] border-l border-border pl-2"
+                        >
+                          {liveRows.map((row) => (
+                            <div
+                              key={row.toolUseId}
+                              title={row.description || row.type}
+                              className="flex w-full items-center gap-2 rounded-md px-2 py-1 text-muted-foreground"
+                              style={{ fontSize: 'var(--skin-text-xs)' }}
+                            >
+                              <Bot className="h-3 w-3 flex-none text-purple-500 dark:text-purple-400" />
+                              <span className="min-w-0 flex-1 truncate">{row.type}</span>
+                              {/* Nunca se inventa un modelo: si no se sabe, va la raya. */}
+                              <span className="flex-none truncate opacity-70">{row.model ?? '—'}</span>
+                              <span
+                                className={`h-1.5 w-1.5 flex-none rounded-full ${LIVE_STATUS_DOT_CLASS[row.status]}`}
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      </Fragment>
                     );
                   })}
 

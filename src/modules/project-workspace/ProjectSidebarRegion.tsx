@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 
 import { useProjectSidebarState } from '@/modules/project-workspace/context/ProjectsStateContext';
 import { SkinSidebar as Sidebar } from '@/modules/skin';
+import { useBusySessionIdSet } from '@/shared/context/SessionProtectionContext';
 import type { ProjectWorkspaceShellProps } from '@/shared/types';
 
 /** Rendered by ProjectWorkspaceShell to host the sidebar module, docked on desktop and as a drawer on mobile. */
@@ -15,6 +16,9 @@ function ProjectSidebarRegion({
 }: Pick<ProjectWorkspaceShellProps, 'isMobile'>) {
   const { t } = useTranslation('common');
   const { sidebarOpen, setSidebarOpen, sidebarSharedProps } = useProjectSidebarState();
+  // Las sesiones con una corrida en vuelo. El hook vive acá, donde el provider
+  // ya está montado; el sidebar las recibe como dato, no como dependencia.
+  const activeSessions = useBusySessionIdSet();
 
   const handleBackdropClick = useCallback((event: ReactMouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
@@ -30,7 +34,7 @@ function ProjectSidebarRegion({
   if (!isMobile) {
     return (
       <div className="h-full flex-shrink-0 border-r border-border/50">
-        <Sidebar {...sidebarSharedProps} />
+        <Sidebar {...sidebarSharedProps} activeSessions={activeSessions} />
       </div>
     );
   }
@@ -54,7 +58,7 @@ function ProjectSidebarRegion({
         onClick={(event) => event.stopPropagation()}
         onTouchStart={(event) => event.stopPropagation()}
       >
-        <Sidebar {...sidebarSharedProps} />
+        <Sidebar {...sidebarSharedProps} activeSessions={activeSessions} />
       </div>
     </div>
   );
