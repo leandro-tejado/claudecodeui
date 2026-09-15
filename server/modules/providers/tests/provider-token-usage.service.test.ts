@@ -9,6 +9,7 @@ import Database from 'better-sqlite3';
 import {
   claudeContextWindowIsAmbiguous,
   createProviderTokenUsageService,
+  resolveAutoCompactThreshold,
   resolveClaudeContextWindow,
   summarizeClaudeTokenUsage,
 } from '@/modules/providers/services/provider-token-usage.service.js';
@@ -35,6 +36,11 @@ function createSessionRow(overrides: Record<string, unknown> = {}) {
 test('token usage lookup requires only the app-facing session id for Claude', async () => {
   const tempDirectory = await mkdtemp(path.join(tmpdir(), 'provider-token-usage-claude-'));
   const sessionFilePath = path.join(tempDirectory, 'provider-session.jsonl');
+  // This machine's own shell may export CLAUDE_CODE_AUTO_COMPACT_WINDOW (it
+  // does, via ~/.claude/settings.json); pin it so compactAt is deterministic
+  // regardless of where the suite runs.
+  const previousAutoCompactWindow = process.env.CLAUDE_CODE_AUTO_COMPACT_WINDOW;
+  delete process.env.CLAUDE_CODE_AUTO_COMPACT_WINDOW;
 
   try {
     await writeFile(sessionFilePath, [
@@ -66,9 +72,13 @@ test('token usage lookup requires only the app-facing session id for Claude', as
       cacheCreationTokens: 5,
       cacheTokens: 25,
       breakdown: { input: 125, output: 30 },
+      compactAt: null,
     });
   } finally {
     await rm(tempDirectory, { recursive: true, force: true });
+    if (previousAutoCompactWindow !== undefined) {
+      process.env.CLAUDE_CODE_AUTO_COMPACT_WINDOW = previousAutoCompactWindow;
+    }
   }
 });
 
@@ -200,16 +210,27 @@ test('the Claude summarizer reads the newest assistant turn, not the whole conve
     { type: 'assistant', message: { usage: { input_tokens: 3, cache_read_input_tokens: 4000, cache_creation_input_tokens: 100, output_tokens: 80 } } },
   ];
 
-  assert.deepEqual(summarizeClaudeTokenUsage(entries, '200000'), {
-    used: 4183,
-    total: 200_000,
-    inputTokens: 4103,
-    outputTokens: 80,
-    cacheReadTokens: 4000,
-    cacheCreationTokens: 100,
-    cacheTokens: 4100,
-    breakdown: { input: 4103, output: 80 },
-  });
+  // Same isolation as above: this machine's shell exports
+  // CLAUDE_CODE_AUTO_COMPACT_WINDOW, and compactAt must not depend on that.
+  const previousAutoCompactWindow = process.env.CLAUDE_CODE_AUTO_COMPACT_WINDOW;
+  delete process.env.CLAUDE_CODE_AUTO_COMPACT_WINDOW;
+  try {
+    assert.deepEqual(summarizeClaudeTokenUsage(entries, '200000'), {
+      used: 4183,
+      total: 200_000,
+      inputTokens: 4103,
+      outputTokens: 80,
+      cacheReadTokens: 4000,
+      cacheCreationTokens: 100,
+      cacheTokens: 4100,
+      breakdown: { input: 4103, output: 80 },
+      compactAt: null,
+    });
+  } finally {
+    if (previousAutoCompactWindow !== undefined) {
+      process.env.CLAUDE_CODE_AUTO_COMPACT_WINDOW = previousAutoCompactWindow;
+    }
+  }
 });
 
 test('the Claude summarizer skips synthetic rows that carry an all-zero usage block', () => {
@@ -472,4 +493,67 @@ test('ambiguous ids are the ones the picker splits into two variants', () => {
   assert.equal(claudeContextWindowIsAmbiguous('claude-haiku-4-5'), false);
   assert.equal(claudeContextWindowIsAmbiguous('default'), false);
   assert.equal(claudeContextWindowIsAmbiguous(null), false);
+});
+
+test('resolveAutoCompactThreshold derives the CLI cut from the configured window', () => {
+  // 278_000 − min(maxOutput, 20_000) − 13_000 = 245_000. Derivation:
+  // knowledge/dev/diagnostico-autocompact-sdk.md.
+  const previous = process.env.CLAUDE_CODE_AUTO_COMPACT_WINDOW;
+  process.env.CLAUDE_CODE_AUTO_COMPACT_WINDOW = '278000';
+  try {
+    assert.equal(resolveAutoCompactThreshold(), 245_000);
+  } finally {
+    if (previous === undefined) delete process.env.CLAUDE_CODE_AUTO_COMPACT_WINDOW;
+    else process.env.CLAUDE_CODE_AUTO_COMPACT_WINDOW = previous;
+  }
+});
+
+test('resolveAutoCompactThreshold reports null when the variable is absent', () => {
+  const previous = process.env.CLAUDE_CODE_AUTO_COMPACT_WINDOW;
+  delete process.env.CLAUDE_CODE_AUTO_COMPACT_WINDOW;
+  try {
+    assert.equal(resolveAutoCompactThreshold(), null);
+  } finally {
+    if (previous !== undefined) process.env.CLAUDE_CODE_AUTO_COMPACT_WINDOW = previous;
+  }
+});
+
+test('resolveAutoCompactThreshold reports null when the variable falls outside [100_000, 1_000_000]', () => {
+  const previous = process.env.CLAUDE_CODE_AUTO_COMPACT_WINDOW;
+  process.env.CLAUDE_CODE_AUTO_COMPACT_WINDOW = '50000';
+  try {
+    assert.equal(resolveAutoCompactThreshold(), null);
+  } finally {
+    if (previous === undefined) delete process.env.CLAUDE_CODE_AUTO_COMPACT_WINDOW;
+    else process.env.CLAUDE_CODE_AUTO_COMPACT_WINDOW = previous;
+  }
+});
+
+test('the transcript path carries compactAt on its budget', () => {
+  const entries = [
+    { type: 'assistant', message: { usage: { input_tokens: 3, cache_read_input_tokens: 4000, output_tokens: 80 } } },
+  ];
+
+  const previous = process.env.CLAUDE_CODE_AUTO_COMPACT_WINDOW;
+  process.env.CLAUDE_CODE_AUTO_COMPACT_WINDOW = '278000';
+  try {
+    assert.equal(summarizeClaudeTokenUsage(entries, '200000').compactAt, 245_000);
+  } finally {
+    if (previous === undefined) delete process.env.CLAUDE_CODE_AUTO_COMPACT_WINDOW;
+    else process.env.CLAUDE_CODE_AUTO_COMPACT_WINDOW = previous;
+  }
+});
+
+test('the transcript path reports compactAt: null with no variable set', () => {
+  const entries = [
+    { type: 'assistant', message: { usage: { input_tokens: 3, cache_read_input_tokens: 4000, output_tokens: 80 } } },
+  ];
+
+  const previous = process.env.CLAUDE_CODE_AUTO_COMPACT_WINDOW;
+  delete process.env.CLAUDE_CODE_AUTO_COMPACT_WINDOW;
+  try {
+    assert.equal(summarizeClaudeTokenUsage(entries, '200000').compactAt, null);
+  } finally {
+    if (previous !== undefined) process.env.CLAUDE_CODE_AUTO_COMPACT_WINDOW = previous;
+  }
 });

@@ -236,3 +236,36 @@ test('CONTEXT_WINDOW still works as a deliberate override for unknown models', (
     else process.env.CONTEXT_WINDOW = previous;
   }
 });
+
+test('the stream budget carries compactAt derived from CLAUDE_CODE_AUTO_COMPACT_WINDOW', () => {
+  const previous = process.env.CLAUDE_CODE_AUTO_COMPACT_WINDOW;
+  process.env.CLAUDE_CODE_AUTO_COMPACT_WINDOW = '278000';
+  try {
+    const budget = extractTokenBudget({
+      type: 'assistant',
+      message: { usage: { input_tokens: 12, output_tokens: 5 } },
+    });
+
+    assert.ok(budget);
+    assert.equal(budget.compactAt, 245_000);
+  } finally {
+    if (previous === undefined) delete process.env.CLAUDE_CODE_AUTO_COMPACT_WINDOW;
+    else process.env.CLAUDE_CODE_AUTO_COMPACT_WINDOW = previous;
+  }
+});
+
+test('the stream budget reports compactAt: null with no variable set', () => {
+  const previous = process.env.CLAUDE_CODE_AUTO_COMPACT_WINDOW;
+  delete process.env.CLAUDE_CODE_AUTO_COMPACT_WINDOW;
+  try {
+    const budget = extractTokenBudget({
+      type: 'assistant',
+      message: { usage: { input_tokens: 12, output_tokens: 5 } },
+    });
+
+    assert.ok(budget);
+    assert.equal(budget.compactAt, null);
+  } finally {
+    if (previous !== undefined) process.env.CLAUDE_CODE_AUTO_COMPACT_WINDOW = previous;
+  }
+});
