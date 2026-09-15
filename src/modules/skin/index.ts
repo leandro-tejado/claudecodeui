@@ -3,6 +3,8 @@ export { default as SkinHeader } from '@/modules/skin/SkinHeader';
 export { default as SkinFilesPanel } from '@/modules/skin/SkinFilesPanel';
 export { default as SkinContextMeterBridge } from '@/modules/skin/SkinContextMeterBridge';
 export { default as SkinContextRing } from '@/modules/skin/SkinContextRing';
+export { default as SkinCompactBar } from '@/modules/skin/SkinCompactBar';
+export { AMBER_AT, RED_AT } from '@/modules/skin/compactBarThresholds';
 export { useContextMeter, publishContextMeter } from '@/modules/skin/contextMeterStore';
 export type { ContextMeterState } from '@/modules/skin/contextMeterStore';
 export { default as SkinSubagentBridge } from '@/modules/skin/SkinSubagentBridge';

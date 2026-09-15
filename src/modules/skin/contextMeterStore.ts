@@ -21,6 +21,17 @@ export type ContextMeterState = {
   used: number;
   /** `null` mientras nadie pudo afirmar la ventana; el anillo no se dibuja. */
   total: number | null;
+  /**
+   * Solo la entrada. Es contra esto que el CLI decide compactar, no contra
+   * `used`, que suma la salida y por eso corre más rápido que el corte real.
+   */
+  inputTokens: number;
+  /**
+   * Los tokens de entrada a los que el CLI se autocompacta, o `null` si el
+   * servidor no pudo afirmarlo. Mismo criterio que `total`: sin número no se
+   * dibuja la barra, porque un 0% inventado es peor que el hueco.
+   */
+  compactAt: number | null;
   onShowDetails: (() => void) | null;
 };
 
@@ -29,18 +40,24 @@ const readNumber = (value: unknown): number => {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
 };
 
+const readBreakdown = (usage: Record<string, unknown>): Record<string, unknown> | null =>
+  usage.breakdown && typeof usage.breakdown === 'object'
+    ? (usage.breakdown as Record<string, unknown>)
+    : null;
+
 /** Saca el consumo del payload crudo, que cambia de forma según el proveedor. */
 const readUsed = (usage: Record<string, unknown>): number => {
-  const breakdown =
-    usage.breakdown && typeof usage.breakdown === 'object'
-      ? (usage.breakdown as Record<string, unknown>)
-      : null;
+  const breakdown = readBreakdown(usage);
 
   return (
     readNumber(usage.used)
     || readNumber(usage.inputTokens ?? breakdown?.input) + readNumber(usage.outputTokens ?? breakdown?.output)
   );
 };
+
+/** La entrada sola, que es la vara de la autocompactación. */
+const readInput = (usage: Record<string, unknown>): number =>
+  readNumber(usage.inputTokens ?? readBreakdown(usage)?.input);
 
 let state: ContextMeterState | null = null;
 const listeners = new Set<() => void>();
@@ -72,14 +89,23 @@ export const publishContextMeter = (
 
   const used = readUsed(usage);
   const total = readNumber(usage.total) || state?.total || null;
+  const inputTokens = readInput(usage) || state?.inputTokens || 0;
+  const compactAt = readNumber(usage.compactAt) || state?.compactAt || null;
 
   // El composer re-renderiza en cada tecla; sin esta comparación el header
   // re-renderizaría con él aunque los números no se hayan movido.
-  if (state && state.used === used && state.total === total && state.onShowDetails === onShowDetails) {
+  if (
+    state
+    && state.used === used
+    && state.total === total
+    && state.inputTokens === inputTokens
+    && state.compactAt === compactAt
+    && state.onShowDetails === onShowDetails
+  ) {
     return;
   }
 
-  state = { used, total, onShowDetails };
+  state = { used, total, inputTokens, compactAt, onShowDetails };
   emit();
 };
 

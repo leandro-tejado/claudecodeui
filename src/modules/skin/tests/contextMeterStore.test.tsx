@@ -90,3 +90,48 @@ test('the bridge publishes on mount and clears on unmount', () => {
   act(() => view.unmount());
   assert.equal(result.current, null);
 });
+
+/*
+ * `inputTokens` y `compactAt` viajan con la misma regla pegajosa que `total`:
+ * un turno que no los trae conserva el anterior en vez de apagar la barra. Sin
+ * esto el indicador parpadearía en cada turno, que es la variante nerviosa del
+ * bug del 11-sep que motivó la regla original.
+ */
+
+test('inputTokens and compactAt ride along with the budget', () => {
+  const { result } = renderHook(() => useContextMeter());
+
+  act(() => publishContextMeter(
+    { used: 210_000, inputTokens: 196_000, total: 1_000_000, compactAt: 245_000 },
+    null,
+  ));
+
+  assert.equal(result.current?.inputTokens, 196_000);
+  assert.equal(result.current?.compactAt, 245_000);
+  // La entrada corre más despacio que el total: son denominadores distintos.
+  assert.ok((result.current?.inputTokens ?? 0) < (result.current?.used ?? 0));
+});
+
+test('a later budget without the fields keeps the previous ones instead of blanking them', () => {
+  const { result } = renderHook(() => useContextMeter());
+
+  act(() => publishContextMeter(
+    { used: 210_000, inputTokens: 196_000, total: 1_000_000, compactAt: 245_000 },
+    null,
+  ));
+  act(() => publishContextMeter({ used: 220_000, total: 1_000_000 }, null));
+
+  assert.equal(result.current?.compactAt, 245_000);
+  assert.equal(result.current?.inputTokens, 196_000);
+});
+
+test('inputTokens falls back to the breakdown when the budget nests it', () => {
+  const { result } = renderHook(() => useContextMeter());
+
+  act(() => publishContextMeter(
+    { used: 210_000, total: 1_000_000, compactAt: 245_000, breakdown: { input: 196_000, output: 14_000 } },
+    null,
+  ));
+
+  assert.equal(result.current?.inputTokens, 196_000);
+});

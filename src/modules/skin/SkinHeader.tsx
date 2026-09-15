@@ -3,6 +3,7 @@ import { useCallback, useRef, type Dispatch, type MouseEvent, type SetStateActio
 import { useTranslation } from 'react-i18next';
 
 import { usePlugins, PluginIcon } from '@/modules/plugins';
+import SkinCompactBar from '@/modules/skin/SkinCompactBar';
 import SkinContextRing from '@/modules/skin/SkinContextRing';
 import { useRunningTabTitle } from '@/modules/skin/hooks/useRunningTabTitle';
 import { toggleFilesPanel, toggleSidebarCollapsed, useSkinUi } from '@/modules/skin/skinUiStore';
@@ -182,14 +183,20 @@ export default function SkinHeader({
           </div>
         </div>
 
-        {/* Los dos medidores, juntos y con el mismo dibujo: cuánto queda del
-            contexto de esta sesión y cuánto de la ventana de 5 horas de la
-            suscripción. Van acá, al lado del nombre, porque son contexto y no
-            acciones: se miran de reojo, no se usan. El detalle de cada uno vive
-            a un clic. El de contexto va primero porque es el que se agota
-            varias veces dentro de una misma ventana de cinco horas. */}
+        {/* Los tres medidores, juntos: cuánto queda del contexto de esta
+            sesión, cuánto falta para que se compacte sola, y cuánto queda de la
+            ventana de 5 horas de la suscripción. Van acá, al lado del nombre,
+            porque son contexto y no acciones: se miran de reojo, no se usan. El
+            de contexto va primero porque es el que se agota varias veces dentro
+            de una misma ventana de cinco horas.
+
+            La compactación es barra y no anillo a propósito: divide por otra
+            cosa (245K de entrada, no la ventana del modelo), y en una sesión de
+            1M el anillo está en 24% —verde— justo cuando esta barra está llena.
+            Si se parecieran, se leerían como si midieran lo mismo. */}
         <div className="flex flex-none items-center gap-2">
           <SkinContextRing />
+          <SkinCompactBar />
           <UsageWindowIndicator />
         </div>
 
