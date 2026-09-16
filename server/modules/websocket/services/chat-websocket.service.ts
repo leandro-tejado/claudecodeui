@@ -215,7 +215,8 @@ async function handleChatSendTmux(
     const creada = await tmuxBridgeService.asegurarSesionTmux(
       nombreSesion,
       session.project_path ?? '',
-      session.provider_session_id ?? null
+      session.provider_session_id ?? null,
+      session.session_id
     );
     if (creada) {
       // The pane exists the instant `tmux new-session` returns, but the

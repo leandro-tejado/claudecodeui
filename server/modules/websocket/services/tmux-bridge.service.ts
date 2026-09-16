@@ -152,15 +152,30 @@ const defaultCrearSesionDependencies: CrearSesionDependencies = {
  * same recovery `buildShellCommand` uses for the Shell UI, in
  * shell-websocket.service.ts, which this intentionally mirrors instead of
  * importing: touching that file is out of this fase's Alcance, and the two
- * recipes are short enough to keep in sync by inspection); starts a fresh
- * `claude` outright for a session whose first turn never ran anywhere yet.
+ * recipes are short enough to keep in sync by inspection).
  *
- * `providerSessionId` is validated against the same safe charset
- * `shell-websocket.service.ts` already applies before it is allowed inside
- * the constructed shell string — it comes from this app's own database, but
- * this is the one place in the module where a value travels through a shell
- * parse (`bash -ic "<command>"`) rather than as a bare `execFile` argv
- * element, so it gets checked again right here rather than trusted on faith.
+ * For a session whose first turn never ran anywhere yet, this forces the
+ * fresh `claude` process to use `appSessionId` (this app's own session id,
+ * already a UUID) as its provider-native session id via `--session-id`,
+ * instead of letting Claude Code mint a random one. Found empirically 16-sep:
+ * without this, `sessionsDb.createSession` (called later by the file
+ * watcher once the new transcript appears) keys its upsert on
+ * `provider_session_id`, which this pending row does not have yet — nothing
+ * in tmux mode announces the id early the way the in-process SDK runtime
+ * does for `chat.send`. That upsert then falls through to
+ * `INSERT ... ON CONFLICT(session_id)`, minting a second, disconnected
+ * session row: the chat window still open on `appSessionId` never hears
+ * about it again. Forcing the id closes that gap by making the eventual
+ * upsert land on `ON CONFLICT(session_id)` against the *same* row instead.
+ *
+ * `providerSessionId` and `appSessionId` are both validated against the same
+ * safe charset `shell-websocket.service.ts` already applies before either is
+ * allowed inside the constructed shell string — `providerSessionId` comes
+ * from this app's own database and `appSessionId` from its own session
+ * allocator, but this is the one place in the module where a value travels
+ * through a shell parse (`bash -ic "<command>"`) rather than as a bare
+ * `execFile` argv element, so both get checked again here rather than
+ * trusted on faith.
  *
  * Returns whether it actually created a pane (`false` when one was already
  * alive) — the caller uses that to decide whether the freshly spawned
@@ -170,6 +185,7 @@ export async function asegurarSesionTmux(
   nombreSesion: string,
   cwd: string,
   providerSessionId: string | null,
+  appSessionId: string,
   dependencies: CrearSesionDependencies = defaultCrearSesionDependencies,
 ): Promise<boolean> {
   assertNombreSesionValido(nombreSesion);
@@ -185,9 +201,15 @@ export async function asegurarSesionTmux(
     providerSessionId && SAFE_PROVIDER_SESSION_ID_PATTERN.test(providerSessionId)
       ? providerSessionId
       : null;
-  const claudeCommand = resumeId
-    ? `claude --resume "${resumeId}"${bypassFlag} || claude${bypassFlag}`
-    : `claude${bypassFlag}`;
+
+  let claudeCommand: string;
+  if (resumeId) {
+    claudeCommand = `claude --resume "${resumeId}"${bypassFlag} || claude${bypassFlag}`;
+  } else if (SAFE_PROVIDER_SESSION_ID_PATTERN.test(appSessionId)) {
+    claudeCommand = `claude --session-id "${appSessionId}"${bypassFlag} || claude${bypassFlag}`;
+  } else {
+    claudeCommand = `claude${bypassFlag}`;
+  }
 
   await dependencies.crearSesionDetached(nombreSesion, cwd, ['bash', '-ic', claudeCommand]);
   return true;
@@ -215,6 +237,15 @@ async function defaultCapturarPaneCruda(nombreSesion: string): Promise<string> {
  * it right now would race a shell that has not started reading its terminal
  * yet. It never reads the conversation itself — only whether the screen is
  * still empty.
+ *
+ * The first non-blank frame is the splash/banner, not proof the TUI's key
+ * handler is wired up yet — verified 16-sep end-to-end on this VPS: a real
+ * `enviarPrompt` fired the instant this resolved typed the prompt into the
+ * input box correctly, but its `Enter` landed before Ink finished mounting
+ * and was silently dropped, leaving the prompt sitting unsent until a second,
+ * manual `Enter` submitted it. `settleMs` holds a little longer after the
+ * first paint for exactly that mount window — still not reading what is on
+ * screen, just giving the pane more time before anything is typed into it.
  */
 export async function esperarPrimerRender(
   nombreSesion: string,
@@ -224,10 +255,12 @@ export async function esperarPrimerRender(
 ): Promise<void> {
   const maxEsperaMs = 5000;
   const intervaloMs = 150;
+  const settleMs = 1000;
   const inicio = Date.now();
   while (Date.now() - inicio < maxEsperaMs) {
     const pantalla = await dependencies.capturarPaneCruda(nombreSesion).catch(() => '');
     if (pantalla.trim().length > 0) {
+      await new Promise((resolve) => setTimeout(resolve, settleMs));
       return;
     }
     await new Promise((resolve) => setTimeout(resolve, intervaloMs));
@@ -334,7 +367,15 @@ export async function leerUltimaFilaCruda(
     }
     try {
       const fila = JSON.parse(line) as FilaTranscriptCruda;
-      if (fila.sessionId === providerSessionId) {
+      // Only `user`/`assistant` rows carry a turn's `stop_reason` — Claude
+      // Code also appends non-message bookkeeping rows after them (`system`,
+      // `last-prompt`, `ai-title`, `mode`, `permission-mode`, `atis-latch`;
+      // verified 16-sep on this VPS against a real Claude Code v2.1.273
+      // transcript: six such rows landed after the last `assistant` row on
+      // every turn). Skipping them here is what keeps `esFinDeTurno` looking
+      // at the actual last turn instead of at whichever bookkeeping row
+      // happened to get written last.
+      if (fila.sessionId === providerSessionId && (fila.type === 'user' || fila.type === 'assistant')) {
         ultima = fila;
       }
     } catch {
