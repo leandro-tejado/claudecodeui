@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { execFile, execFileSync } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
-import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -10,12 +10,18 @@ import { promisify } from 'node:util';
 import {
   InvalidTmuxSessionNameError,
   asegurarSesionTmux,
+  defaultAsegurarConfianzaProyecto,
   enviarPrompt,
   esFinDeTurno,
   esperarPrimerRender,
   leerUltimaFilaCruda,
   tieneSesionTmux,
 } from '@/modules/websocket/services/tmux-bridge.service.js';
+
+// Mock por defecto para las pruebas de `asegurarSesionTmux` que no ejercen
+// `asegurarConfianzaProyecto`: nunca debe tocar el `~/.claude.json` real de
+// la maquina que corre los tests.
+const confianzaNoop = async () => undefined;
 
 const execFileAsync = promisify(execFile);
 
@@ -199,6 +205,7 @@ test('asegurarSesionTmux: no crea nada si ya hay una pane viva (idempotente)', a
   let llamadasACrear = 0;
   const creada = await asegurarSesionTmux('fase3-test-existente', '/tmp', null, APP_SESSION_ID, {
     hasSession: () => true,
+    asegurarConfianzaProyecto: confianzaNoop,
     crearSesionDetached: async () => {
       llamadasACrear += 1;
     },
@@ -211,6 +218,7 @@ test('asegurarSesionTmux: crea la pane con bypassPermissions y --session-id cuan
   const comandosRecibidos: string[][] = [];
   const creada = await asegurarSesionTmux('fase3-test-nueva', '/tmp/proyecto', null, APP_SESSION_ID, {
     hasSession: () => false,
+    asegurarConfianzaProyecto: confianzaNoop,
     crearSesionDetached: async (_nombre, _cwd, comandoArgv) => {
       comandosRecibidos.push(comandoArgv);
     },
@@ -234,6 +242,7 @@ test('asegurarSesionTmux: con provider_session_id arma un --resume con fallback 
   let comandoRecibido: string[] | null = null;
   await asegurarSesionTmux('fase3-test-resume', '/tmp/proyecto', 'abc-123', APP_SESSION_ID, {
     hasSession: () => false,
+    asegurarConfianzaProyecto: confianzaNoop,
     crearSesionDetached: async (_nombre, _cwd, comandoArgv) => {
       comandoRecibido = comandoArgv;
     },
@@ -249,6 +258,7 @@ test('asegurarSesionTmux: un provider_session_id fuera de charset se descarta en
   let comandoRecibido: string[] | null = null;
   await asegurarSesionTmux('fase3-test-resume-malo', '/tmp/proyecto', '"; rm -rf ~ #', APP_SESSION_ID, {
     hasSession: () => false,
+    asegurarConfianzaProyecto: confianzaNoop,
     crearSesionDetached: async (_nombre, _cwd, comandoArgv) => {
       comandoRecibido = comandoArgv;
     },
@@ -264,6 +274,7 @@ test('asegurarSesionTmux: un appSessionId fuera de charset se descarta en vez de
   let comandoRecibido: string[] | null = null;
   await asegurarSesionTmux('fase3-test-appid-malo', '/tmp/proyecto', null, '"; rm -rf ~ #', {
     hasSession: () => false,
+    asegurarConfianzaProyecto: confianzaNoop,
     crearSesionDetached: async (_nombre, _cwd, comandoArgv) => {
       comandoRecibido = comandoArgv;
     },
@@ -278,6 +289,7 @@ test('asegurarSesionTmux: rechaza un cwd vacio en vez de abrir la pane en cualqu
   await assert.rejects(
     () => asegurarSesionTmux('fase3-test-sin-cwd', '', null, APP_SESSION_ID, {
       hasSession: () => false,
+      asegurarConfianzaProyecto: confianzaNoop,
       crearSesionDetached: async () => undefined,
     }),
     /cwd no vacio/,
@@ -290,6 +302,7 @@ test('asegurarSesionTmux: rechaza nombres de sesion fuera de charset antes de to
       hasSession: () => {
         throw new Error('no deberia llegar aca');
       },
+      asegurarConfianzaProyecto: confianzaNoop,
       crearSesionDetached: async () => undefined,
     }),
     InvalidTmuxSessionNameError,
@@ -391,6 +404,99 @@ test('leerUltimaFilaCruda: las filas de bookkeeping despues del assistant no tap
     const ultima = await leerUltimaFilaCruda(jsonlPath, sessionId);
     assert.equal(ultima?.type, 'assistant');
     assert.equal(esFinDeTurno(ultima ? [ultima] : []), true);
+  } finally {
+    await rm(tempDirectory, { recursive: true, force: true });
+  }
+});
+
+test('asegurarSesionTmux: aprueba la confianza del proyecto antes de crear la pane, nunca despues', async () => {
+  const orden: string[] = [];
+  await asegurarSesionTmux('fase3-test-orden-confianza', '/tmp/proyecto', null, APP_SESSION_ID, {
+    hasSession: () => false,
+    asegurarConfianzaProyecto: async () => {
+      orden.push('confianza');
+    },
+    crearSesionDetached: async () => {
+      orden.push('crear-pane');
+    },
+  });
+  assert.deepEqual(orden, ['confianza', 'crear-pane']);
+});
+
+test('asegurarSesionTmux: no toca la confianza del proyecto si ya hay una pane viva', async () => {
+  let llamadas = 0;
+  await asegurarSesionTmux('fase3-test-sin-confianza-si-ya-existe', '/tmp/proyecto', null, APP_SESSION_ID, {
+    hasSession: () => true,
+    asegurarConfianzaProyecto: async () => {
+      llamadas += 1;
+    },
+    crearSesionDetached: async () => undefined,
+  });
+  assert.equal(llamadas, 0);
+});
+
+test('defaultAsegurarConfianzaProyecto: crea la entrada del proyecto cuando el archivo no existe todavia', async () => {
+  const tempDirectory = await mkdtemp(path.join(os.tmpdir(), 'tmux-bridge-claude-json-'));
+  const rutaClaudeJson = path.join(tempDirectory, '.claude.json');
+
+  try {
+    await defaultAsegurarConfianzaProyecto('/home/leantejado/proyecto-nuevo', rutaClaudeJson);
+    const config = JSON.parse(await readFile(rutaClaudeJson, 'utf8'));
+    assert.deepEqual(config.projects['/home/leantejado/proyecto-nuevo'], {
+      hasTrustDialogAccepted: true,
+      hasClaudeMdExternalIncludesApproved: true,
+    });
+  } finally {
+    await rm(tempDirectory, { recursive: true, force: true });
+  }
+});
+
+test('defaultAsegurarConfianzaProyecto: preserva el resto del archivo y de la entrada del proyecto', async () => {
+  const tempDirectory = await mkdtemp(path.join(os.tmpdir(), 'tmux-bridge-claude-json-'));
+  const rutaClaudeJson = path.join(tempDirectory, '.claude.json');
+  const cwd = '/home/leantejado/workspace-leandro/clientes/optimum/desarrollo/app-optimum-main';
+
+  const configOriginal = {
+    mcpServers: { 'cloudcli-browser': { env: { CLOUDCLI_BROWSER_USE_API_URL: 'http://100.77.186.53:3001' } } },
+    projects: {
+      '/otro/proyecto': { hasTrustDialogAccepted: true },
+      [cwd]: {
+        allowedTools: ['Bash(git *)'],
+        hasTrustDialogAccepted: false,
+        hasClaudeMdExternalIncludesApproved: false,
+      },
+    },
+  };
+
+  try {
+    await writeFile(rutaClaudeJson, JSON.stringify(configOriginal, null, 2), 'utf8');
+    await defaultAsegurarConfianzaProyecto(cwd, rutaClaudeJson);
+    const config = JSON.parse(await readFile(rutaClaudeJson, 'utf8'));
+
+    assert.deepEqual(config.mcpServers, configOriginal.mcpServers);
+    assert.deepEqual(config.projects['/otro/proyecto'], { hasTrustDialogAccepted: true });
+    assert.deepEqual(config.projects[cwd], {
+      allowedTools: ['Bash(git *)'],
+      hasTrustDialogAccepted: true,
+      hasClaudeMdExternalIncludesApproved: true,
+    });
+  } finally {
+    await rm(tempDirectory, { recursive: true, force: true });
+  }
+});
+
+test('defaultAsegurarConfianzaProyecto: idempotente en dos llamadas seguidas', async () => {
+  const tempDirectory = await mkdtemp(path.join(os.tmpdir(), 'tmux-bridge-claude-json-'));
+  const rutaClaudeJson = path.join(tempDirectory, '.claude.json');
+  const cwd = '/tmp/proyecto-idempotente';
+
+  try {
+    await defaultAsegurarConfianzaProyecto(cwd, rutaClaudeJson);
+    const primeraPasada = await readFile(rutaClaudeJson, 'utf8');
+    await defaultAsegurarConfianzaProyecto(cwd, rutaClaudeJson);
+    const segundaPasada = await readFile(rutaClaudeJson, 'utf8');
+
+    assert.equal(primeraPasada, segundaPasada);
   } finally {
     await rm(tempDirectory, { recursive: true, force: true });
   }

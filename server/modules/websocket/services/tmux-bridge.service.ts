@@ -1,5 +1,7 @@
 import { execFile, execFileSync } from 'node:child_process';
 import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 import readline from 'node:readline';
 import { promisify } from 'node:util';
 
@@ -105,9 +107,70 @@ const SAFE_PROVIDER_SESSION_ID_PATTERN = /^[a-zA-Z0-9_.\-:]+$/;
 export type CrearSesionDependencies = {
   /** Overridable for tests; real default shells out to `tmux has-session`. */
   hasSession: (nombreSesion: string) => boolean;
+  /** Overridable for tests; real default writes the trust flags into `~/.claude.json`. */
+  asegurarConfianzaProyecto: (cwd: string) => Promise<void>;
   /** Overridable for tests; real default shells out to `tmux new-session -d`. */
   crearSesionDetached: (nombreSesion: string, cwd: string, comandoArgv: string[]) => Promise<void>;
 };
+
+/**
+ * Pre-approves both of Claude Code's interactive trust dialogs for `cwd` —
+ * "Is this a project you created or one you trust?" and, when the project's
+ * `CLAUDE.md` has external imports, "Only use Claude Code with files you
+ * trust" — by writing the same two flags Claude Code itself persists after a
+ * person clicks through them by hand (`hasTrustDialogAccepted`,
+ * `hasClaudeMdExternalIncludesApproved`) into `~/.claude.json`.
+ *
+ * Called from `asegurarSesionTmux` only on the branch that is about to spawn
+ * a brand-new pane (never on an already-live one — see its early
+ * `hasSession` return), so this never re-reads/re-writes the file on every
+ * message of a chat that is already open. Same rationale as the
+ * `bypassPermissions` decision already in that function: gating one of these
+ * two doors and not the other is security theater when the whole app runs
+ * on this one account and disk. Verified 16-sep via `claude --help`: there
+ * is no flag to skip either dialog in interactive/TUI mode — only via
+ * pre-marking the directory trusted here, or via `-p`/non-interactive mode,
+ * which this bridge's architecture (an attended-looking TUI driven by
+ * `send-keys`) cannot use.
+ *
+ * Writes atomically (temp file + rename) so a process crash mid-write never
+ * leaves `~/.claude.json` half-written for every other `claude` process
+ * reading it. Does NOT lock against a concurrent writer — another live
+ * `claude` process persisting its own usage counters at the same instant
+ * can still lose its update to this one, or vice versa. That narrow race is
+ * an accepted risk (documented in the plan's Análisis Crítico), not solved
+ * here: it only opens when a genuinely new pane is created, not on every
+ * turn, and no other code in this repo uses file locking for this file.
+ *
+ * `rutaClaudeJson` defaults to the real `~/.claude.json` and is only ever
+ * overridden by tests, against a temp file — never against the real one.
+ */
+export async function defaultAsegurarConfianzaProyecto(
+  cwd: string,
+  rutaClaudeJson: string = path.join(os.homedir(), '.claude.json'),
+): Promise<void> {
+  let config: { projects?: Record<string, AnyRecord> };
+  try {
+    const contenidoCrudo = await fs.promises.readFile(rutaClaudeJson, 'utf8');
+    config = JSON.parse(contenidoCrudo) as { projects?: Record<string, AnyRecord> };
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
+      throw error;
+    }
+    config = {};
+  }
+
+  config.projects = config.projects ?? {};
+  config.projects[cwd] = {
+    ...config.projects[cwd],
+    hasTrustDialogAccepted: true,
+    hasClaudeMdExternalIncludesApproved: true,
+  };
+
+  const rutaTemporal = `${rutaClaudeJson}.tmp-${process.pid}-${Date.now()}`;
+  await fs.promises.writeFile(rutaTemporal, JSON.stringify(config, null, 2));
+  await fs.promises.rename(rutaTemporal, rutaClaudeJson);
+}
 
 async function defaultCrearSesionDetached(
   nombreSesion: string,
@@ -136,6 +199,7 @@ async function defaultCrearSesionDetached(
 
 const defaultCrearSesionDependencies: CrearSesionDependencies = {
   hasSession: defaultHasSession,
+  asegurarConfianzaProyecto: defaultAsegurarConfianzaProyecto,
   crearSesionDetached: defaultCrearSesionDetached,
 };
 
@@ -211,6 +275,7 @@ export async function asegurarSesionTmux(
     claudeCommand = `claude${bypassFlag}`;
   }
 
+  await dependencies.asegurarConfianzaProyecto(cwd);
   await dependencies.crearSesionDetached(nombreSesion, cwd, ['bash', '-ic', claudeCommand]);
   return true;
 }
