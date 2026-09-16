@@ -6,6 +6,7 @@ import { projectsDb, sessionsDb } from '@/modules/database/index.js';
 import { broadcastSessionUpserted, chatRunRegistry } from '@/modules/websocket/index.js';
 import { providerRegistry } from '@/modules/providers/provider.registry.js';
 import { sessionHistoryCache } from '@/modules/providers/services/session-history-cache.service.js';
+import { gobernadorService, RAM_CEILING_PERCENT, ramCeilingService } from '@/modules/system/index.js';
 import type {
   FetchHistoryOptions,
   FetchHistoryResult,
@@ -65,6 +66,26 @@ type SessionDetails = {
 };
 
 const MAX_CLOUDCLI_SESSION_NAME_WORDS = 4;
+
+// Allowlist of cheap models, not a blocklist: an unrecognized or future model
+// id is treated as expensive so the candado (Fase 5 del plan de sesiones
+// persistentes) fails safe instead of quietly letting a new model burn quota
+// while the governor is red.
+const CHEAP_MODEL_VALUES = new Set(['haiku', 'sonnet', 'sonnet[1m]']);
+
+/**
+ * Whether `model` counts as "caro" for the governor's candado. `model` is
+ * `null`/`undefined` for every session created today (the frontend only picks
+ * a model after the session id exists), so that case is treated as cheap —
+ * otherwise a red governor would block every new session, not just the
+ * expensive ones the plan calls out.
+ */
+export function isExpensiveModel(model: string | null | undefined): boolean {
+  if (!model) {
+    return false;
+  }
+  return !CHEAP_MODEL_VALUES.has(model.trim().toLowerCase());
+}
 
 function buildCloudCliSessionName(initialMessage: string): string {
   const words = initialMessage.trim().split(/\s+/).filter(Boolean);
@@ -216,6 +237,7 @@ export const sessionsService = {
     provider: LLMProvider,
     projectPath: string,
     initialMessage: string,
+    options: { model?: string | null } = {},
   ): CreateAppSessionResult {
     const normalizedProjectPath = projectPath.trim();
     if (!normalizedProjectPath) {
@@ -223,6 +245,26 @@ export const sessionsService = {
         code: 'PROJECT_PATH_REQUIRED',
         statusCode: 400,
       });
+    }
+
+    // El candado del gobernador (Fase 5): solo protege la creación de
+    // sesiones nuevas, nunca toca una sesión viva.
+    const ram = ramCeilingService.estaSobreElTecho();
+    if (ram.sobreElTecho) {
+      throw new AppError(
+        `RAM del servidor al ${ram.porcentaje?.toFixed(0)}%, por encima del techo del ${RAM_CEILING_PERCENT}%: no se crean sesiones nuevas.`,
+        { code: 'RAM_CEILING_EXCEEDED', statusCode: 409 },
+      );
+    }
+
+    if (isExpensiveModel(options.model)) {
+      const gobernador = gobernadorService.evaluar();
+      if (gobernador.color === 'rojo') {
+        throw new AppError(
+          `Gobernador en rojo (${gobernador.motivo}): no se crean sesiones nuevas en modelo caro.`,
+          { code: 'GOBERNADOR_ROJO', statusCode: 409 },
+        );
+      }
     }
 
     const sessionId = randomUUID();

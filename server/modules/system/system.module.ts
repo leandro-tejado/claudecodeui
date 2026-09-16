@@ -5,6 +5,7 @@ import type { Router } from 'express';
 
 import { createSystemRouter } from './system.routes.js';
 import { createSystemUpdateService } from './system.service.js';
+import { gobernadorService } from './services/gobernador.service.js';
 
 type SystemModuleOptions = {
   appRoot: string;
@@ -58,5 +59,5 @@ export function createSystemModule(options: SystemModuleOptions): Router {
     logError: (message, detail) => console.error(message, detail ?? ''),
   });
 
-  return createSystemRouter(systemUpdateService);
+  return createSystemRouter(systemUpdateService, gobernadorService);
 }

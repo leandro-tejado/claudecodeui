@@ -5,7 +5,8 @@ import path from 'node:path';
 import test from 'node:test';
 
 import { closeConnection, initializeDatabase, projectsDb, sessionsDb } from '@/modules/database/index.js';
-import { sessionsService } from '@/modules/providers/services/sessions.service.js';
+import { gobernadorService, ramCeilingService } from '@/modules/system/index.js';
+import { isExpensiveModel, sessionsService } from '@/modules/providers/services/sessions.service.js';
 
 async function withIsolatedDatabase(runTest: () => void | Promise<void>): Promise<void> {
   const previousDatabasePath = process.env.DATABASE_PATH;
@@ -59,6 +60,87 @@ test('app sessions without message text receive a stable fallback name', { concu
 
     assert.equal(result.sessionName, 'Untitled Session');
     assert.equal(sessionsDb.getSessionById(result.sessionId)?.custom_name, 'Untitled Session');
+  });
+});
+
+test('isExpensiveModel treats haiku and sonnet as cheap, everything else as expensive', () => {
+  assert.equal(isExpensiveModel('haiku'), false);
+  assert.equal(isExpensiveModel('sonnet'), false);
+  assert.equal(isExpensiveModel('sonnet[1m]'), false);
+  assert.equal(isExpensiveModel('opus'), true);
+  assert.equal(isExpensiveModel('fable'), true);
+  assert.equal(isExpensiveModel('best'), true);
+  // No model chosen yet (the real shape of every session-creation request
+  // today) must not block, or a red governor would block ALL new sessions.
+  assert.equal(isExpensiveModel(undefined), false);
+  assert.equal(isExpensiveModel(null), false);
+});
+
+test('a red governor blocks a new expensive-model session with a 409 and a readable motivo', { concurrency: false }, async (t) => {
+  t.mock.method(ramCeilingService, 'estaSobreElTecho', () => ({ sobreElTecho: false, porcentaje: 10 }));
+  t.mock.method(gobernadorService, 'evaluar', () => ({
+    color: 'rojo',
+    pace: 130,
+    motivo: 'pace 130% (>= 125%)',
+  }));
+
+  await withIsolatedDatabase(() => {
+    assert.throws(
+      () => sessionsService.createAppSession('claude', '/tmp/gobernador-rojo-project', 'hola', { model: 'opus' }),
+      (error: unknown) => {
+        const typedError = error as { code?: string; statusCode?: number; message?: string };
+        return typedError.code === 'GOBERNADOR_ROJO'
+          && typedError.statusCode === 409
+          && typeof typedError.message === 'string'
+          && typedError.message.includes('pace 130%');
+      },
+    );
+  });
+});
+
+test('a red governor does not block a cheap-model session', { concurrency: false }, async (t) => {
+  t.mock.method(ramCeilingService, 'estaSobreElTecho', () => ({ sobreElTecho: false, porcentaje: 10 }));
+  t.mock.method(gobernadorService, 'evaluar', () => ({ color: 'rojo', pace: 130, motivo: 'pace 130%' }));
+
+  await withIsolatedDatabase(() => {
+    const result = sessionsService.createAppSession('claude', '/tmp/gobernador-rojo-cheap-project', 'hola', {
+      model: 'haiku',
+    });
+    assert.ok(sessionsDb.getSessionById(result.sessionId));
+  });
+});
+
+test('an amber governor never blocks session creation, even for an expensive model', { concurrency: false }, async (t) => {
+  t.mock.method(ramCeilingService, 'estaSobreElTecho', () => ({ sobreElTecho: false, porcentaje: 10 }));
+  t.mock.method(gobernadorService, 'evaluar', () => ({ color: 'ambar', pace: 110, motivo: 'pace 110%' }));
+
+  await withIsolatedDatabase(() => {
+    const result = sessionsService.createAppSession('claude', '/tmp/gobernador-ambar-project', 'hola', {
+      model: 'opus',
+    });
+    assert.ok(sessionsDb.getSessionById(result.sessionId));
+  });
+});
+
+test('being over the RAM ceiling blocks session creation regardless of model or governor color', { concurrency: false }, async (t) => {
+  t.mock.method(ramCeilingService, 'estaSobreElTecho', () => ({ sobreElTecho: true, porcentaje: 95 }));
+  const evaluarGobernador = t.mock.method(gobernadorService, 'evaluar', () => ({
+    color: 'verde',
+    pace: 10,
+    motivo: 'pace 10%',
+  }));
+
+  await withIsolatedDatabase(() => {
+    assert.throws(
+      () => sessionsService.createAppSession('claude', '/tmp/ram-ceiling-project', 'hola'),
+      (error: unknown) => {
+        const typedError = error as { code?: string; statusCode?: number };
+        return typedError.code === 'RAM_CEILING_EXCEEDED' && typedError.statusCode === 409;
+      },
+    );
+    // The RAM ceiling short-circuits before the (more expensive) governor
+    // evaluation ever runs.
+    assert.equal(evaluarGobernador.mock.callCount(), 0);
   });
 });
 
