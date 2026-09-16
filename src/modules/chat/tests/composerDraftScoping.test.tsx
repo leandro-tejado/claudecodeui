@@ -4,6 +4,7 @@ import { act, renderHook } from '@testing-library/react';
 import { beforeEach, test, vi } from 'vitest';
 
 import { useChatComposerState } from '@/modules/chat/hooks/useChatComposerState';
+import { useSessionStore } from '@/modules/chat/hooks/useSessionStore';
 import { readDraftText, resetChatDrafts, writeDraftText } from '@/shared/chatDrafts';
 import type { PermissionMode, Project, ProjectSession } from '@/shared/types';
 
@@ -62,6 +63,8 @@ const renderComposer = (selectedSession: ProjectSession | null) => renderHook(
     addMessage: () => undefined,
     setIsUserScrolledUp: () => undefined,
     setPendingPermissionRequests: () => undefined,
+    // Not under test here; a real store keeps the type honest without adding a stub.
+    sessionStore: useSessionStore(),
   }),
   { initialProps: { session: selectedSession } },
 );

@@ -138,6 +138,14 @@ export function useChatRealtimeHandlers({
             });
           }
 
+          // Live answer to "does this session run in tmux" — never a stored
+          // flag (see chat-websocket.service.ts), so every ack is a fresh
+          // read, including one that flips a session back to `chat.send`
+          // (its pane died, or was never there to begin with).
+          if (typeof msg.runsInTmux === 'boolean') {
+            sessionStore.setRunsInTmux(sid, msg.runsInTmux);
+          }
+
           const isViewedSession = sid === activeViewSessionId;
           if (isViewedSession && Array.isArray(msg.pendingPermissions)) {
             const nextPendingPermissionRequests = msg.pendingPermissions as PendingPermissionRequest[];
@@ -157,6 +165,14 @@ export function useChatRealtimeHandlers({
         case 'protocol_error': {
           console.error('[Chat] Protocol error:', msg.code, msg.error);
           if (sid) {
+            // A tmux-mode failure (dead pane, creation failed, unsupported
+            // provider) falls back to `chat.send` on the next attempt rather
+            // than repeating a send that cannot work — `stream-json` is the
+            // backup path exactly for this ("el camino viejo... pasa a ser
+            // el respaldo, no el default").
+            if (typeof msg.code === 'string' && msg.code.startsWith('TMUX_')) {
+              sessionStore.setRunsInTmux(sid, false);
+            }
             // Surface the failure in the conversation and stop the spinner —
             // the run never started (or was rejected), so no `complete` follows.
             onSessionIdle?.(sid);

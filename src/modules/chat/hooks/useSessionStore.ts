@@ -47,6 +47,17 @@ export type SessionSlot = {
   hasMore: boolean;
   offset: number;
   tokenUsage: unknown;
+  /**
+   * Whether this session's turns currently go over the tmux bridge
+   * (`chat.send-tmux`) instead of `chat.send`. Never fetched on its own —
+   * only ever set from something the server already told this client: the
+   * live `runsInTmux` on a `chat_subscribed` ack, or `true` the moment a
+   * brand-new session is allocated (Fase 3, Paso 7: a new session is born in
+   * tmux mode). Defaults to `false` so a session this client has not heard
+   * about yet never guesses tmux and risks a `chat.send-tmux` against a pane
+   * that was never asked to exist.
+   */
+  runsInTmux: boolean;
 };
 
 const EMPTY: NormalizedMessage[] = [];
@@ -72,6 +83,7 @@ function createEmptySlot(): SessionSlot {
     // endpoint with it.
     tokenUsage: undefined,
     _historyMutationQueue: Promise.resolve(),
+    runsInTmux: false,
   };
 }
 
@@ -874,6 +886,23 @@ export function useSessionStore() {
     return storeRef.current.get(sessionId);
   }, []);
 
+  /** Whether `sessionId` currently sends over the tmux bridge. */
+  const runsInTmux = useCallback((sessionId: string): boolean => {
+    return storeRef.current.get(sessionId)?.runsInTmux ?? false;
+  }, []);
+
+  /**
+   * Records whether `sessionId` runs over the tmux bridge. Does not persist
+   * anywhere — this only mirrors what the server already decided (a live
+   * `chat_subscribed` ack) or announced by creating the session (Paso 7).
+   */
+  const setRunsInTmux = useCallback((sessionId: string, value: boolean) => {
+    const slot = getSlot(sessionId);
+    if (slot.runsInTmux === value) return;
+    slot.runsInTmux = value;
+    notify(sessionId);
+  }, [getSlot, notify]);
+
   return useMemo(() => ({
     fetchFromServer,
     fetchMore,
@@ -886,10 +915,12 @@ export function useSessionStore() {
     finalizeStreaming,
     getMessages,
     getSessionSlot,
+    runsInTmux,
+    setRunsInTmux,
   }), [
     fetchFromServer, fetchMore, appendRealtime, truncateAt, refreshLatestFromServer,
     setActiveSession, isStale, updateStreaming, finalizeStreaming,
-    getMessages, getSessionSlot,
+    getMessages, getSessionSlot, runsInTmux, setRunsInTmux,
   ]);
 }
 
