@@ -183,7 +183,22 @@ async function handleChatSendTmux(
   if (!resolved) {
     return;
   }
-  const { sessionId, session } = resolved;
+  const { sessionId, session, provider } = resolved;
+
+  // The turn-completion and transcript-diffing logic in tmux-bridge.service.ts
+  // (esFinDeTurno, manejarActualizacionTranscript) reads fields specific to
+  // Claude Code's own .jsonl format; sessions-watcher.service.ts only calls it
+  // for provider === 'claude' too. Refusing here keeps that assumption honest
+  // instead of accepting a send that could never complete client-side.
+  if (provider !== 'claude') {
+    sendProtocolError(
+      ws,
+      'TMUX_PROVIDER_UNSUPPORTED',
+      `El modo tmux todavia no soporta el proveedor "${provider}".`,
+      sessionId
+    );
+    return;
+  }
 
   const content = typeof data.content === 'string' ? data.content : '';
   if (!content.trim()) {
@@ -192,6 +207,29 @@ async function handleChatSendTmux(
   }
 
   const nombreSesion = nombreTmux(session.project_path ?? '', session.session_id);
+
+  // A brand-new session (or one whose pane died) has nothing to type into
+  // yet. asegurarSesionTmux is idempotent and a no-op when the pane is
+  // already alive, so this is safe to call on every send, not just the first.
+  try {
+    const creada = await tmuxBridgeService.asegurarSesionTmux(
+      nombreSesion,
+      session.project_path ?? '',
+      session.provider_session_id ?? null
+    );
+    if (creada) {
+      // The pane exists the instant `tmux new-session` returns, but the
+      // `claude` process behind it does not start reading its terminal
+      // immediately — see esperarPrimerRender for the measured boot time.
+      await tmuxBridgeService.esperarPrimerRender(nombreSesion);
+    }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error('[Chat] tmux-bridge could not open the pane', { sessionId, error: message });
+    sendProtocolError(ws, 'TMUX_SESSION_CREATE_FAILED', message, sessionId);
+    return;
+  }
+
   if (!tmuxBridgeService.tieneSesionTmux(nombreSesion)) {
     sendProtocolError(
       ws,

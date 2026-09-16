@@ -95,6 +95,145 @@ const defaultDependencies: TmuxBridgeDependencies = {
   hasSession: defaultHasSession,
 };
 
+// Same charset the app already validates a provider-native session id
+// against elsewhere (`SAFE_SESSION_ID_PATTERN` in shell-websocket.service.ts).
+// Duplicated here rather than imported so this module never depends on that
+// file exporting a private-looking constant; the two are meant to keep
+// matching by inspection, not by import.
+const SAFE_PROVIDER_SESSION_ID_PATTERN = /^[a-zA-Z0-9_.\-:]+$/;
+
+export type CrearSesionDependencies = {
+  /** Overridable for tests; real default shells out to `tmux has-session`. */
+  hasSession: (nombreSesion: string) => boolean;
+  /** Overridable for tests; real default shells out to `tmux new-session -d`. */
+  crearSesionDetached: (nombreSesion: string, cwd: string, comandoArgv: string[]) => Promise<void>;
+};
+
+async function defaultCrearSesionDetached(
+  nombreSesion: string,
+  cwd: string,
+  comandoArgv: string[],
+): Promise<void> {
+  try {
+    // Every element after `-c cwd` is its own argv entry — tmux execs the
+    // first one directly with the rest as its arguments, no intermediate
+    // shell parse of a composed string (verified empirically 16-sep: `tmux
+    // new-session -d -s x bash -ic 'echo $HOME'` runs `bash` with argv
+    // `['-ic', 'echo $HOME']`, `bash` alone doing the parsing of its own `-c`
+    // string). `cwd` never has to survive a shell quote because of that — it
+    // travels as one argv element, same as the tmux session name.
+    await execFileAsync('tmux', ['new-session', '-d', '-s', nombreSesion, '-c', cwd, ...comandoArgv]);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (message.includes(`duplicate session: ${nombreSesion}`)) {
+      // A concurrent caller already created it — not a failure, just a race
+      // this function is supposed to be idempotent against.
+      return;
+    }
+    throw error;
+  }
+}
+
+const defaultCrearSesionDependencies: CrearSesionDependencies = {
+  hasSession: defaultHasSession,
+  crearSesionDetached: defaultCrearSesionDetached,
+};
+
+/**
+ * Creates the tmux pane for a chat session that never had one — the "who
+ * opens the pane the first time" gap the Fase 3 plan flags as unowned.
+ * No-ops if a pane under this name is already alive.
+ *
+ * Runs `claude` with the permissions already decided in the plan
+ * ("Decisión de permisos de la sesión desatendida": `bypassPermissions`, no
+ * allowlist) — an unattended pane cannot be left waiting on a permission
+ * dialog it has no way to answer. Resumes the provider-native session when
+ * one already exists (falls back to a fresh `claude` if the resume fails —
+ * same recovery `buildShellCommand` uses for the Shell UI, in
+ * shell-websocket.service.ts, which this intentionally mirrors instead of
+ * importing: touching that file is out of this fase's Alcance, and the two
+ * recipes are short enough to keep in sync by inspection); starts a fresh
+ * `claude` outright for a session whose first turn never ran anywhere yet.
+ *
+ * `providerSessionId` is validated against the same safe charset
+ * `shell-websocket.service.ts` already applies before it is allowed inside
+ * the constructed shell string — it comes from this app's own database, but
+ * this is the one place in the module where a value travels through a shell
+ * parse (`bash -ic "<command>"`) rather than as a bare `execFile` argv
+ * element, so it gets checked again right here rather than trusted on faith.
+ *
+ * Returns whether it actually created a pane (`false` when one was already
+ * alive) — the caller uses that to decide whether the freshly spawned
+ * `claude` process needs a moment before it can be typed into.
+ */
+export async function asegurarSesionTmux(
+  nombreSesion: string,
+  cwd: string,
+  providerSessionId: string | null,
+  dependencies: CrearSesionDependencies = defaultCrearSesionDependencies,
+): Promise<boolean> {
+  assertNombreSesionValido(nombreSesion);
+  if (dependencies.hasSession(nombreSesion)) {
+    return false;
+  }
+  if (!cwd) {
+    throw new Error('asegurarSesionTmux requiere un cwd no vacio para abrir la pane.');
+  }
+
+  const bypassFlag = ' --dangerously-skip-permissions';
+  const resumeId =
+    providerSessionId && SAFE_PROVIDER_SESSION_ID_PATTERN.test(providerSessionId)
+      ? providerSessionId
+      : null;
+  const claudeCommand = resumeId
+    ? `claude --resume "${resumeId}"${bypassFlag} || claude${bypassFlag}`
+    : `claude${bypassFlag}`;
+
+  await dependencies.crearSesionDetached(nombreSesion, cwd, ['bash', '-ic', claudeCommand]);
+  return true;
+}
+
+async function defaultCapturarPaneCruda(nombreSesion: string): Promise<string> {
+  const { stdout } = await execFileAsync('tmux', ['capture-pane', '-p', '-t', targetExacto(nombreSesion)]);
+  return stdout;
+}
+
+/**
+ * Waits, briefly and boundedly, for a freshly created pane to have painted
+ * *something* — evidence that `bash -ic` finished sourcing `.bashrc` and
+ * `claude` got far enough to draw its first frame, not a read of what it
+ * drew. Measured empirically 16-sep on this VPS: `claude
+ * --dangerously-skip-permissions` paints its first frame around 1.5s after
+ * `tmux new-session`; this polls for up to 5s so a slow boot still clears it
+ * with margin, and gives up silently past that (a pane that stays blank
+ * forever — `claude` missing from PATH, a broken `.bashrc` — is a real
+ * failure, but one `enviarPrompt` right after this will surface on its own
+ * rather than one worth hanging a chat send over).
+ *
+ * This is the one place in the module `capture-pane` reads more than "is
+ * there a stuck dialog": a blank pane is exactly the signal that typing into
+ * it right now would race a shell that has not started reading its terminal
+ * yet. It never reads the conversation itself — only whether the screen is
+ * still empty.
+ */
+export async function esperarPrimerRender(
+  nombreSesion: string,
+  dependencies: { capturarPaneCruda: (nombreSesion: string) => Promise<string> } = {
+    capturarPaneCruda: defaultCapturarPaneCruda,
+  },
+): Promise<void> {
+  const maxEsperaMs = 5000;
+  const intervaloMs = 150;
+  const inicio = Date.now();
+  while (Date.now() - inicio < maxEsperaMs) {
+    const pantalla = await dependencies.capturarPaneCruda(nombreSesion).catch(() => '');
+    if (pantalla.trim().length > 0) {
+      return;
+    }
+    await new Promise((resolve) => setTimeout(resolve, intervaloMs));
+  }
+}
+
 /**
  * Sends a prompt to an existing tmux session the way a person would type it.
  *
@@ -255,8 +394,9 @@ function enviarATodosLosConectados(payload: AnyRecord): void {
  * history (`sessionsService.fetchHistory`, which is the same
  * `session-history-cache`-backed reader the REST endpoint uses — no second
  * parse of the file), broadcasts whatever rows are new since the last poll,
- * and announces `complete` exactly once per turn by watching the raw JSONL's
- * closing `result` row.
+ * and announces `complete` exactly once per turn by watching `message.
+ * stop_reason` on the last raw `assistant` row (see `esFinDeTurno`) — never
+ * `capture-pane`.
  */
 export async function manejarActualizacionTranscript(providerSessionIdOEspacioApp: string): Promise<void> {
   const session = sessionsDb.getSessionByProviderSessionId(providerSessionIdOEspacioApp)
@@ -303,6 +443,8 @@ export async function manejarActualizacionTranscript(providerSessionIdOEspacioAp
 export const tmuxBridgeService = {
   enviarPrompt,
   tieneSesionTmux,
+  asegurarSesionTmux,
+  esperarPrimerRender,
   esFinDeTurno,
   leerUltimaFilaCruda,
   manejarActualizacionTranscript,

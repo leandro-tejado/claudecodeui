@@ -9,8 +9,10 @@ import { promisify } from 'node:util';
 
 import {
   InvalidTmuxSessionNameError,
+  asegurarSesionTmux,
   enviarPrompt,
   esFinDeTurno,
+  esperarPrimerRender,
   leerUltimaFilaCruda,
   tieneSesionTmux,
 } from '@/modules/websocket/services/tmux-bridge.service.js';
@@ -189,6 +191,126 @@ test('leerUltimaFilaCruda: lee sobre un .jsonl de ejemplo sin capture-pane', asy
   } finally {
     await rm(tempDirectory, { recursive: true, force: true });
   }
+});
+
+test('asegurarSesionTmux: no crea nada si ya hay una pane viva (idempotente)', async () => {
+  let llamadasACrear = 0;
+  const creada = await asegurarSesionTmux('fase3-test-existente', '/tmp', null, {
+    hasSession: () => true,
+    crearSesionDetached: async () => {
+      llamadasACrear += 1;
+    },
+  });
+  assert.equal(creada, false);
+  assert.equal(llamadasACrear, 0);
+});
+
+test('asegurarSesionTmux: crea la pane con bypassPermissions y sin resume cuando no hay provider_session_id', async () => {
+  let comandoRecibido: string[] | null = null;
+  let cwdRecibido: string | null = null;
+  const creada = await asegurarSesionTmux('fase3-test-nueva', '/tmp/proyecto', null, {
+    hasSession: () => false,
+    crearSesionDetached: async (_nombre, cwd, comandoArgv) => {
+      cwdRecibido = cwd;
+      comandoRecibido = comandoArgv;
+    },
+  });
+  assert.equal(creada, true);
+  assert.equal(cwdRecibido, '/tmp/proyecto');
+  assert.deepEqual(comandoRecibido?.slice(0, 2), ['bash', '-ic']);
+  const claudeCommand = comandoRecibido?.[2] ?? '';
+  assert.ok(claudeCommand.includes('--dangerously-skip-permissions'));
+  assert.ok(!claudeCommand.includes('--resume'));
+});
+
+test('asegurarSesionTmux: con provider_session_id arma un --resume con fallback a claude nuevo', async () => {
+  let comandoRecibido: string[] | null = null;
+  await asegurarSesionTmux('fase3-test-resume', '/tmp/proyecto', 'abc-123', {
+    hasSession: () => false,
+    crearSesionDetached: async (_nombre, _cwd, comandoArgv) => {
+      comandoRecibido = comandoArgv;
+    },
+  });
+  const claudeCommand = comandoRecibido?.[2] ?? '';
+  assert.ok(claudeCommand.includes('claude --resume "abc-123" --dangerously-skip-permissions'));
+  assert.ok(claudeCommand.includes('|| claude --dangerously-skip-permissions'));
+});
+
+test('asegurarSesionTmux: un provider_session_id fuera de charset se descarta en vez de interpolarse', async () => {
+  let comandoRecibido: string[] | null = null;
+  await asegurarSesionTmux('fase3-test-resume-malo', '/tmp/proyecto', '"; rm -rf ~ #', {
+    hasSession: () => false,
+    crearSesionDetached: async (_nombre, _cwd, comandoArgv) => {
+      comandoRecibido = comandoArgv;
+    },
+  });
+  const claudeCommand = comandoRecibido?.[2] ?? '';
+  assert.ok(!claudeCommand.includes('rm -rf'));
+  assert.ok(!claudeCommand.includes('--resume'));
+});
+
+test('asegurarSesionTmux: rechaza un cwd vacio en vez de abrir la pane en cualquier lado', async () => {
+  await assert.rejects(
+    () => asegurarSesionTmux('fase3-test-sin-cwd', '', null, {
+      hasSession: () => false,
+      crearSesionDetached: async () => undefined,
+    }),
+    /cwd no vacio/,
+  );
+});
+
+test('asegurarSesionTmux: rechaza nombres de sesion fuera de charset antes de tocar tmux', async () => {
+  await assert.rejects(
+    () => asegurarSesionTmux('; rm -rf ~ #', '/tmp', null, {
+      hasSession: () => {
+        throw new Error('no deberia llegar aca');
+      },
+      crearSesionDetached: async () => undefined,
+    }),
+    InvalidTmuxSessionNameError,
+  );
+});
+
+test('esperarPrimerRender: vuelve apenas la pantalla deja de estar en blanco', async () => {
+  let llamadas = 0;
+  const inicio = Date.now();
+  await esperarPrimerRender('fase3-test-render', {
+    capturarPaneCruda: async () => {
+      llamadas += 1;
+      return llamadas < 3 ? '' : 'Claude Code v2.1.273';
+    },
+  });
+  const duracionMs = Date.now() - inicio;
+  assert.equal(llamadas, 3);
+  // Dos intervalos de 150ms entre el primer y el tercer intento, con margen.
+  assert.ok(duracionMs < 5000, `no deberia haber agotado el limite de 5s: ${duracionMs}ms`);
+});
+
+test('esperarPrimerRender: se rinde en silencio si la pantalla nunca deja de estar en blanco', async () => {
+  let llamadas = 0;
+  await esperarPrimerRender('fase3-test-render-mudo', {
+    capturarPaneCruda: async () => {
+      llamadas += 1;
+      return '';
+    },
+  });
+  // No lanza: el llamador (enviarPrompt) es quien va a fallar si la pane
+  // realmente nunca arranco.
+  assert.ok(llamadas > 1);
+});
+
+test('esperarPrimerRender: un capture-pane que tira error cuenta como pantalla en blanco, no corta la espera', async () => {
+  let llamadas = 0;
+  await esperarPrimerRender('fase3-test-render-error', {
+    capturarPaneCruda: async () => {
+      llamadas += 1;
+      if (llamadas < 2) {
+        throw new Error('no hay tal pane todavia');
+      }
+      return 'listo';
+    },
+  });
+  assert.equal(llamadas, 2);
 });
 
 test('leerUltimaFilaCruda: filas de otra sesion en el mismo archivo se ignoran', async () => {
