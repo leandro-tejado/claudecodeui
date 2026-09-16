@@ -1,7 +1,3 @@
-# ⚠️ RETIRADA el 16-sep-2026. La unidad viva es deploy/cloudcli.user.service,
-# instalada en ~/.config/systemd/user/. Esta copia queda como camino de vuelta:
-#   sudo cp deploy/cloudcli.service /etc/systemd/system/ && sudo systemctl enable --now cloudcli
-# El motivo de la migracion y el script estan en deploy/migrar-a-unidad-de-usuario.sh
 [Unit]
 Description=CloudCLI UI (self-hosted, bind Tailscale-only)
 Documentation=https://github.com/siteboon/claudecodeui
@@ -14,23 +10,16 @@ Wants=network-online.target
 StartLimitIntervalSec=0
 
 [Service]
-EnvironmentFile=-/home/leantejado/.claude/token.env
 Type=simple
 User=leantejado
 Group=leantejado
-WorkingDirectory=/home/leantejado/cloudcli
+WorkingDirectory=/home/leantejado/workspace/claudecodeui
 
 # EL BIND VIVE EN EL .env DEL REPO (HOST=100.77.186.53). Fuente unica de
 # verdad: no repetir HOST/SERVER_PORT aca o vuelven a divergir.
-EnvironmentFile=/home/leantejado/cloudcli/.env
+EnvironmentFile=/home/leantejado/workspace/claudecodeui/.env
 Environment=NODE_ENV=production
 Environment=PATH=/home/leantejado/.local/node22/bin:/home/leantejado/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-
-# Corte automatico del CLI. Sin esta variable wv() resuelve source:"auto" para
-# opus[1m] y el corte por umbral muere antes de mirar el tamano del contexto.
-# 278000 - 20000 (reserva de salida) - 13000 (buffer) = umbral real 245.000.
-# Diagnostico: workspace-leandro/knowledge/dev/diagnostico-autocompact-sdk.md
-Environment=CLAUDE_CODE_AUTO_COMPACT_WINDOW=278000
 
 # tailscaled puede estar activo pero todavia sin IP asignada. Esperar aca
 # evita un ciclo de reinicios ruidoso durante el boot.

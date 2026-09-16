@@ -1,23 +1,26 @@
-# ⚠️ RETIRADA el 16-sep-2026. La unidad viva es deploy/cloudcli.user.service,
-# instalada en ~/.config/systemd/user/. Esta copia queda como camino de vuelta:
-#   sudo cp deploy/cloudcli.service /etc/systemd/system/ && sudo systemctl enable --now cloudcli
-# El motivo de la migracion y el script estan en deploy/migrar-a-unidad-de-usuario.sh
 [Unit]
 Description=CloudCLI UI (self-hosted, bind Tailscale-only)
 Documentation=https://github.com/siteboon/claudecodeui
-Requires=tailscaled.service
-After=tailscaled.service tailscale-online.target network-online.target
-Wants=network-online.target
-# La IP 100.77.186.53 solo existe cuando tailscale0 esta arriba: si el bind
-# falla al bootear, reintentamos para siempre en vez de rendirnos.
-# Mismo motivo que las unidades de ttyd y cabina.
+# Unidad DE USUARIO desde el 16-sep-2026. Antes vivia en /etc/systemd/system y
+# cada reinicio necesitaba sudo, que el agente no tiene: tres fases del plan
+# 16-septiembre-os-orquestador-y-recursos.md se frenaban ahi. No necesita root
+# (User=leantejado, puerto 3001 > 1024, WorkingDirectory en el home), asi que
+# el privilegio no aportaba nada y solo agregaba un intermediario humano.
+#
+# Lo que NO se puede traer de la version de sistema: Requires=/After=tailscaled
+# .service. El manager de usuario no ve las unidades del sistema y la unidad
+# quedaria en estado 'not-found'. El orden lo garantiza el ExecStartPre de
+# abajo, que ya esperaba la IP igual: tailscaled puede estar activo y todavia
+# sin direccion, asi que la dependencia formal nunca alcanzo por si sola.
+#
+# Arranca al bootear sin login porque el linger esta activo (loginctl
+# enable-linger leantejado). Si alguna vez se apaga, el servicio deja de
+# levantar solo: ese es el unico supuesto de esta unidad.
 StartLimitIntervalSec=0
 
 [Service]
 EnvironmentFile=-/home/leantejado/.claude/token.env
 Type=simple
-User=leantejado
-Group=leantejado
 WorkingDirectory=/home/leantejado/cloudcli
 
 # EL BIND VIVE EN EL .env DEL REPO (HOST=100.77.186.53). Fuente unica de
@@ -44,4 +47,4 @@ StandardError=journal
 SyslogIdentifier=cloudcli
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=default.target
