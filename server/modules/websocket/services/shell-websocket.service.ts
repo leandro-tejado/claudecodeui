@@ -1,3 +1,5 @@
+import { execFileSync } from 'node:child_process';
+import crypto from 'node:crypto';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -107,6 +109,10 @@ type ShellWebSocketDependencies = {
     provider: string,
   ) => string | null | undefined;
   spawnPty?: typeof pty.spawn;
+  /** Overridable for tests; real default probes the PATH for a `tmux` binary. */
+  isTmuxAvailable?: () => boolean;
+  /** Overridable for tests; real default shells out to `tmux kill-session`. */
+  killTmuxSession?: (nombre: string) => void;
 };
 
 /**
@@ -173,10 +179,138 @@ function resolveResumeSessionId(
   return resolvedSessionId;
 }
 
+const TMUX_SESSION_NAME_MAX_LENGTH = 40;
+const TMUX_SESSION_NAME_UNSAFE_CHARS_REGEX = /[^A-Za-z0-9_-]+/g;
+const TMUX_SESSION_NAME_HASH_LENGTH = 8;
+const TMUX_SESSION_NAME_PREFIX = 'cloudcli-';
+
+/**
+ * Deterministic tmux session name for a project + session pair: two `init`
+ * calls for the same pair must resolve to the same name so `new-session -A`
+ * (attach-or-create) reattaches instead of minting a sibling session. Built
+ * from a sanitized, truncated slice of the project path (for readability in
+ * `tmux ls`) plus a stable hash of the full key (so truncation never causes
+ * two different sessions to collide on the same name).
+ */
+export function nombreTmux(projectPath: string, sessionId: string | null): string {
+  const key = `${projectPath}::${sessionId ?? 'default'}`;
+  const hash = crypto.createHash('sha1').update(key).digest('hex').slice(0, TMUX_SESSION_NAME_HASH_LENGTH);
+  const readableSeed = path.basename(projectPath) || 'proj';
+  const sanitizedReadable = readableSeed.replace(TMUX_SESSION_NAME_UNSAFE_CHARS_REGEX, '-');
+  const readableBudget = Math.max(
+    TMUX_SESSION_NAME_MAX_LENGTH - TMUX_SESSION_NAME_PREFIX.length - TMUX_SESSION_NAME_HASH_LENGTH - 1,
+    0
+  );
+  const readablePart = sanitizedReadable.slice(0, readableBudget);
+  return `${TMUX_SESSION_NAME_PREFIX}${readablePart}-${hash}`.slice(0, TMUX_SESSION_NAME_MAX_LENGTH);
+}
+
+const TMUX_LOGIN_COMMAND_MARKERS = ['setup-token', 'cursor-agent login', 'auth login'];
+
+/**
+ * Login flows print their own prompt/URL directly to the pty and must run
+ * unwrapped: a detached tmux pane is the wrong place to ask for a browser
+ * click, and the caller (handleShellConnection) already restarts the PTY
+ * from scratch on these regardless of tmux.
+ */
+function isLoginCommand(initialCommand: string): boolean {
+  return !!initialCommand && TMUX_LOGIN_COMMAND_MARKERS.some((marker) => initialCommand.includes(marker));
+}
+
+/**
+ * POSIX single-quote escaping: close the quote, emit a literal quote via a
+ * backslash outside of any quoting, then reopen. Used twice when wrapping in
+ * tmux (see wrapInTmuxSession) because the composed line goes through two
+ * real shell parses (the pty's `bash -c` and tmux's own internal `$SHELL -c`)
+ * before the final process starts, and each parse must hand the next one
+ * back the exact original text.
+ */
+function quoteForShell(value: string): string {
+  return `'${value.replace(/'/g, `'\\''`)}'`;
+}
+
+function checkTmuxAvailable(): boolean {
+  try {
+    execFileSync('tmux', ['-V'], { stdio: 'ignore' });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+let tmuxMissingLogged = false;
+
+/**
+ * Wraps an agent command line so it runs inside a named, attach-or-create
+ * tmux session instead of directly under the pty's `bash -c`. This is the
+ * piece that lets a long session survive a `systemctl restart cloudcli`: the
+ * tmux server (and the pane's process) lives outside CloudCLI's own process
+ * tree.
+ *
+ * Token resolution (the delicate part): the VPS token lives in `~/.bashrc`
+ * and is only exported by an INTERACTIVE bash. CloudCLI's own pty already
+ * runs `bash -c` (non-interactive), and if the tmux *server* was started
+ * earlier by ttyd (whose systemd unit doesn't read the EnvironmentFile
+ * either — see `~/CLAUDE.md`), a brand new session on that same server can
+ * inherit an environment with no token at all. `.claude/bin/claude-tmux`
+ * (`ct`) already solved this with `bash -ic`, which sources `.bashrc`
+ * regardless of what the tmux server's environment looked like — so the pane
+ * re-exports the token itself. Reusing that exact recipe here is simpler and
+ * safer than teaching this service where the systemd EnvironmentFile lives
+ * (that would mean reading a credential path, which crosses REGLA 5).
+ */
+function wrapInTmuxSession(
+  command: string,
+  message: ShellIncomingMessage,
+  dependencies: ShellWebSocketDependencies
+): string {
+  const isTmuxAvailable = dependencies.isTmuxAvailable ?? checkTmuxAvailable;
+  if (!isTmuxAvailable()) {
+    if (!tmuxMissingLogged) {
+      tmuxMissingLogged = true;
+      console.warn(
+        '[WARN] tmux not found in PATH; falling back to a plain shell process (the session will NOT survive a service restart)'
+      );
+    }
+    return command;
+  }
+
+  const projectPath = readString(message.projectPath, process.cwd());
+  const resolvedCwd = path.resolve(projectPath);
+  const sessionId = readString(message.sessionId) || null;
+  const nombre = nombreTmux(projectPath, sessionId);
+
+  const innerShell = `bash -ic ${quoteForShell(command)}`;
+  return `tmux new-session -A -s ${nombre} -c ${quoteForShell(resolvedCwd)} ${quoteForShell(innerShell)}`;
+}
+
+/**
+ * Best-effort: kills the tmux session backing a forced restart before a new
+ * PTY is spawned, so `forceRestart` truly restarts the agent instead of
+ * reattaching (`-A`) to the still-running old one. Silently no-ops when tmux
+ * is unavailable or the session doesn't exist — there is nothing to restart.
+ */
+function killTmuxSessionIfExists(nombre: string, dependencies: ShellWebSocketDependencies): void {
+  const isTmuxAvailable = dependencies.isTmuxAvailable ?? checkTmuxAvailable;
+  if (!isTmuxAvailable()) {
+    return;
+  }
+
+  const kill = dependencies.killTmuxSession ?? ((sessionName: string) => {
+    try {
+      execFileSync('tmux', ['kill-session', '-t', sessionName], { stdio: 'ignore' });
+    } catch {
+      // No session with that name — nothing to restart.
+    }
+  });
+
+  kill(nombre);
+}
+
 /**
  * Resolves provider command line for plain shell and agent-backed shell modes.
  */
-function buildShellCommand(
+export function buildShellCommand(
   message: ShellIncomingMessage,
   dependencies: ShellWebSocketDependencies
 ): string {
@@ -193,44 +327,46 @@ function buildShellCommand(
     return initialCommand;
   }
 
+  let command: string;
+
   if (provider === 'cursor') {
+    command = resumeSessionId ? `cursor-agent --resume="${resumeSessionId}"` : 'cursor-agent';
+  } else if (provider === 'codex') {
     if (resumeSessionId) {
-      return `cursor-agent --resume="${resumeSessionId}"`;
+      command =
+        os.platform() === 'win32'
+          ? `codex resume "${resumeSessionId}"; if ($LASTEXITCODE -ne 0) { codex }`
+          : `codex resume "${resumeSessionId}" || codex`;
+    } else {
+      command = 'codex';
     }
-    return 'cursor-agent';
+  } else if (provider === 'opencode') {
+    command = resumeSessionId ? `opencode --session "${resumeSessionId}"` : initialCommand || 'opencode';
+  } else {
+    // Launching with the flag is what unlocks "bypass permissions" in the CLI's
+    // shift+tab permission-mode cycle; it cannot be enabled from inside a
+    // session started without it.
+    const bypassFlag = readBoolean(message.bypassPermissions) ? ' --dangerously-skip-permissions' : '';
+    const claudeCommand = initialCommand || `claude${bypassFlag}`;
+    if (resumeSessionId) {
+      command =
+        os.platform() === 'win32'
+          ? `claude --resume "${resumeSessionId}"${bypassFlag}; if ($LASTEXITCODE -ne 0) { claude${bypassFlag} }`
+          : `claude --resume "${resumeSessionId}"${bypassFlag} || claude${bypassFlag}`;
+    } else {
+      command = claudeCommand;
+    }
   }
 
-  if (provider === 'codex') {
-    if (resumeSessionId) {
-      if (os.platform() === 'win32') {
-        return `codex resume "${resumeSessionId}"; if ($LASTEXITCODE -ne 0) { codex }`;
-      }
-      return `codex resume "${resumeSessionId}" || codex`;
-    }
-    return 'codex';
+  // tmux wrapping is POSIX-only (single-quote escaping + `bash -ic`); on
+  // win32 there is no tmux and the command above is already PowerShell
+  // syntax, so it is returned unwrapped regardless of what tmux detection
+  // would say.
+  if (os.platform() === 'win32' || isLoginCommand(initialCommand)) {
+    return command;
   }
 
-  if (provider === 'opencode') {
-    if (resumeSessionId) {
-      return `opencode --session "${resumeSessionId}"`;
-    }
-    return initialCommand || 'opencode';
-  }
-
-  // Launching with the flag is what unlocks "bypass permissions" in the CLI's
-  // shift+tab permission-mode cycle; it cannot be enabled from inside a
-  // session started without it.
-  const bypassFlag = readBoolean(message.bypassPermissions)
-    ? ' --dangerously-skip-permissions'
-    : '';
-  const command = initialCommand || `claude${bypassFlag}`;
-  if (resumeSessionId) {
-    if (os.platform() === 'win32') {
-      return `claude --resume "${resumeSessionId}"${bypassFlag}; if ($LASTEXITCODE -ne 0) { claude${bypassFlag} }`;
-    }
-    return `claude --resume "${resumeSessionId}"${bypassFlag} || claude${bypassFlag}`;
-  }
-  return command;
+  return wrapInTmuxSession(command, message, dependencies);
 }
 
 function readEnvValue(env: NodeJS.ProcessEnv, key: string): string | undefined {
@@ -326,11 +462,7 @@ export function handleShellConnection(
         urlDetectionBuffer = '';
         announcedAuthUrls.clear();
 
-        const isLoginCommand =
-          !!initialCommand &&
-          (initialCommand.includes('setup-token') ||
-            initialCommand.includes('cursor-agent login') ||
-            initialCommand.includes('auth login'));
+        const isLoginCmd = isLoginCommand(initialCommand);
 
         const commandSuffix =
           isPlainShell && initialCommand
@@ -338,7 +470,7 @@ export function handleShellConnection(
             : '';
         ptySessionKey = `${projectPath}_${sessionId ?? 'default'}${commandSuffix}`;
 
-        if (isLoginCommand || forceRestart) {
+        if (isLoginCmd || forceRestart) {
           const oldSession = ptySessionsMap.get(ptySessionKey);
           if (oldSession) {
             if (oldSession.timeoutId) {
@@ -347,10 +479,18 @@ export function handleShellConnection(
             oldSession.pty.kill();
             ptySessionsMap.delete(ptySessionKey);
           }
+
+          // The local pty above is just CloudCLI's handle on the session; the
+          // tmux server (and the pane's process) survives independently of
+          // it. A forced restart has to kill the tmux session itself too, or
+          // `-A` would just reattach to the still-running old one.
+          if (forceRestart && !isPlainShell && !isLoginCmd) {
+            killTmuxSessionIfExists(nombreTmux(projectPath, sessionId), dependencies);
+          }
         }
 
         const existingSession =
-          isLoginCommand || forceRestart ? null : ptySessionsMap.get(ptySessionKey);
+          isLoginCmd || forceRestart ? null : ptySessionsMap.get(ptySessionKey);
         if (existingSession) {
           shellProcess = existingSession.pty;
           if (existingSession.timeoutId) {

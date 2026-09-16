@@ -124,6 +124,9 @@ test('bypassPermissions launches claude with --dangerously-skip-permissions', ()
   const spawnedCommands: string[] = [];
   const dependencies = {
     resolveProviderSessionId: () => null,
+    // tmux wrapping is its own concern, covered by shell-tmux.test.ts; this
+    // test cares only about the bypassPermissions flag reaching the command.
+    isTmuxAvailable: () => false,
     spawnPty: (_shell: string, args: string | string[]) => {
       spawnedCommands.push(Array.isArray(args) ? args[args.length - 1] : args);
       return createFakePty() as never;
@@ -164,6 +167,9 @@ test('bypassPermissions carries through to resumed claude sessions', () => {
   const spawnedCommands: string[] = [];
   const dependencies = {
     resolveProviderSessionId: () => 'resumed-session-id',
+    // tmux wrapping is its own concern, covered by shell-tmux.test.ts; this
+    // test cares only about the resume + bypassPermissions command shape.
+    isTmuxAvailable: () => false,
     spawnPty: (_shell: string, args: string | string[]) => {
       spawnedCommands.push(Array.isArray(args) ? args[args.length - 1] : args);
       return createFakePty() as never;
