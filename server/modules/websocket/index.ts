@@ -9,3 +9,7 @@ export { broadcastSessionUpserted, broadcastSessionUpsertedBatch } from './servi
 // from a timer, with no socket to stream to or report errors on.
 export { runDetachedChatTurn } from './services/chat-websocket.service.js';
 export type { ProviderRuntimeGateway } from './services/chat-websocket.service.js';
+// Consumed by the providers module's sessions watcher (Fase 3): a tmux-bridged
+// session has no in-process run to stream from, so the watcher is what tells
+// this service a new transcript row may have landed.
+export { tmuxBridgeService } from './services/tmux-bridge.service.js';

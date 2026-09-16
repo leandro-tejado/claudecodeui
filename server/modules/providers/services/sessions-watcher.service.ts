@@ -5,7 +5,7 @@ import { promises as fsPromises } from 'node:fs';
 import chokidar, { type FSWatcher } from 'chokidar';
 
 import { sessionSynchronizerService } from '@/modules/providers/services/session-synchronizer.service.js';
-import { broadcastSessionUpsertedBatch } from '@/modules/websocket/index.js';
+import { broadcastSessionUpsertedBatch, tmuxBridgeService } from '@/modules/websocket/index.js';
 import { scheduleUsageWindowBroadcast } from '@/modules/usage-window/index.js';
 import type { LLMProvider } from '@/shared/types.js';
 
@@ -183,6 +183,20 @@ async function onUpdate(
       sessionId: result.sessionId,
     });
     queuePendingWatcherUpdate(eventType, provider, result.sessionId);
+
+    // tmux-bridge mode (Fase 3): a session driven by `send-keys` has no
+    // in-process run to stream from, so this file-change is the only signal
+    // that new rows exist. No-ops for everything except a session that is
+    // both Claude and currently backed by a live tmux pane — cheap to call
+    // on every synced change because `manejarActualizacionTranscript` bails
+    // out immediately (a single `tmux has-session`) for the common case
+    // where nothing is bridged.
+    if (provider === 'claude' && result.sessionId) {
+      void tmuxBridgeService.manejarActualizacionTranscript(result.sessionId).catch((error) => {
+        const message = error instanceof Error ? error.message : String(error);
+        console.error('tmux-bridge transcript update failed', { sessionId: result.sessionId, error: message });
+      });
+    }
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     console.error(`Session watcher sync failed for provider "${provider}"`, {
