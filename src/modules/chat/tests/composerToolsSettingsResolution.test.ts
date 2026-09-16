@@ -4,6 +4,7 @@ import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, test, vi } from 'vitest';
 
 import { useChatComposerState } from '@/modules/chat/hooks/useChatComposerState';
+import { useSessionStore } from '@/modules/chat/hooks/useSessionStore';
 import type { LLMProvider, PermissionMode, Project, ProjectSession } from '@/shared/types';
 import { resetUserPreferences, writeUserPreference } from '@/shared/userSettings';
 
@@ -59,6 +60,8 @@ const submit = async (provider: LLMProvider) => {
       addMessage: () => undefined,
       setIsUserScrolledUp: () => undefined,
       setPendingPermissionRequests: () => undefined,
+      // Not under test here; a real store keeps the type honest without adding a stub.
+      sessionStore: useSessionStore(),
     }),
   );
 

@@ -255,6 +255,7 @@ function ChatInterface({
     setIsUserScrolledUp,
     setPendingPermissionRequests,
     resolvePermissionModeForProvider,
+    sessionStore,
   });
 
   // On WebSocket reconnect, request a bounded persisted-tail sync (deferred
