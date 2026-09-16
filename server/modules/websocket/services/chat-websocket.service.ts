@@ -5,6 +5,8 @@ import type { WebSocket } from 'ws';
 import { sessionsDb } from '@/modules/database/index.js';
 import { providerModelsService, sessionsService } from '@/modules/providers/index.js';
 import { chatRunRegistry } from '@/modules/websocket/services/chat-run-registry.service.js';
+import { nombreTmux } from '@/modules/websocket/services/shell-websocket.service.js';
+import { tmuxBridgeService } from '@/modules/websocket/services/tmux-bridge.service.js';
 import { connectedClients, WS_OPEN_STATE } from '@/modules/websocket/services/websocket-state.service.js';
 import {
   getGlobalImageAssetsDir,
@@ -155,6 +157,77 @@ async function handleChatSend(
   }
 
   await dispatchRun(ws, userId, resolved.sessionId, resolved.session, data, dependencies);
+}
+
+/**
+ * Handles `chat.send-tmux`: the tmux-bridge mode of `chat.send`.
+ *
+ * Nothing in this process runs the model — the prompt is typed into an
+ * already-running tmux pane (`enviarPrompt`), and the answer is read back
+ * later off the same `.jsonl` the REST history endpoint serves, pushed by
+ * `sessions-watcher.service.ts` as the file changes. There is no
+ * `chatRunRegistry` run to register: no runtime call is dispatched here, so
+ * there is nothing for the registry's `run.writer` to attach to.
+ *
+ * The tmux session name is always computed server-side from the session row
+ * (`project_path` + `session_id`, both from the DB) — never taken from the
+ * client. A name the browser could pick would be a command injection vector
+ * into `tmux send-keys -t <name>`.
+ */
+async function handleChatSendTmux(
+  ws: WebSocket,
+  data: AnyRecord,
+  dependencies: ChatWebSocketDependencies
+): Promise<void> {
+  const resolved = resolveSendTarget(ws, data, dependencies, 'chat.send-tmux');
+  if (!resolved) {
+    return;
+  }
+  const { sessionId, session } = resolved;
+
+  const content = typeof data.content === 'string' ? data.content : '';
+  if (!content.trim()) {
+    sendProtocolError(ws, 'EMPTY_PROMPT', 'chat.send-tmux requires non-empty content.', sessionId);
+    return;
+  }
+
+  const nombreSesion = nombreTmux(session.project_path ?? '', session.session_id);
+  if (!tmuxBridgeService.tieneSesionTmux(nombreSesion)) {
+    sendProtocolError(
+      ws,
+      'TMUX_SESSION_NOT_FOUND',
+      `No hay una sesion de tmux viva para "${sessionId}".`,
+      sessionId
+    );
+    return;
+  }
+
+  try {
+    await tmuxBridgeService.enviarPrompt(nombreSesion, content);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error('[Chat] tmux-bridge send failed', { sessionId, error: message });
+    sendProtocolError(ws, 'TMUX_SEND_FAILED', message, sessionId);
+    return;
+  }
+
+  // No provider run was dispatched, so no `complete` will come from
+  // `chatRunRegistry` either. Every connected client (this one included) is
+  // told the session is busy now; `sessions-watcher.service.ts` is what
+  // clears it, once the transcript's closing `result` row shows the turn
+  // actually ended.
+  const busyEvent = {
+    kind: 'status' as const,
+    sessionId,
+    text: null,
+    canInterrupt: false,
+    timestamp: new Date().toISOString(),
+  };
+  connectedClients.forEach((client) => {
+    if (client.readyState === WS_OPEN_STATE) {
+      client.send(JSON.stringify(busyEvent));
+    }
+  });
 }
 
 type ResolvedSendTarget = {
@@ -482,12 +555,23 @@ function handleChatSubscribe(
     // Claude runtime, so they can be looked up directly.
     const pendingPermissions = dependencies.runtime.getPendingApprovalsForSession(sessionId);
 
+    // "Runs in tmux" is never stored — it is answered live by asking tmux for
+    // a session under this app session's deterministic name (see
+    // `nombreTmux`/Fase 2). That is what lets it survive a `systemctl
+    // restart` with nothing to reload: the flag is only ever a question, not
+    // a row.
+    const sessionRow = sessionsDb.getSessionById(sessionId);
+    const runsInTmux = sessionRow
+      ? tmuxBridgeService.tieneSesionTmux(nombreTmux(sessionRow.project_path ?? '', sessionRow.session_id))
+      : false;
+
     sendJson(ws, {
       kind: 'chat_subscribed',
       sessionId,
       isProcessing,
       lastSeq: run?.lastSeq ?? 0,
       pendingPermissions,
+      runsInTmux,
       timestamp: new Date().toISOString(),
     });
 
@@ -626,6 +710,9 @@ export function handleChatConnection(
           return;
         case 'chat.send':
           await handleChatSend(ws, userId, data, dependencies);
+          return;
+        case 'chat.send-tmux':
+          await handleChatSendTmux(ws, data, dependencies);
           return;
         case 'chat.abort':
           await handleChatAbort(ws, data, dependencies);
