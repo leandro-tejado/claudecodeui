@@ -1,8 +1,8 @@
-import { promises as fs } from 'node:fs';
+import { promises as fs, readFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
-import type { UsageWindowSnapshot } from './usage-window.service.js';
+import type { UsageWindowReading, UsageWindowSnapshot } from './usage-window.service.js';
 
 /**
  * Persists the real usage-window readings to `~/.cache/aos/cuota.json`, the
@@ -89,4 +89,55 @@ export async function writeCuotaFile(snapshot: UsageWindowSnapshot): Promise<voi
   } catch (error) {
     console.error('usage-window: failed to write cuota.json', { error });
   }
+}
+
+/** What the boot-time seed needs back from the file: both windows, plus when they were recorded. */
+export type CuotaFileReading = {
+  /** epoch ms — the file's own `ts`, converted. Staleness is judged against this, not against read time. */
+  ts: number;
+  fiveHour: UsageWindowReading | null;
+  sevenDay: UsageWindowReading | null;
+};
+
+export type ReadCuotaFileOptions = {
+  leerArchivo?: () => string;
+};
+
+function leerArchivoReal(): string {
+  return readFileSync(CUOTA_FILE, 'utf8');
+}
+
+/**
+ * The read side of `cuota.json`, for the boot-time seed in `usage-window.service.ts`.
+ * Never throws: a missing file, corrupt JSON, or a shape without `ts` all read as
+ * "nothing to seed" — same contract as `usageDetalleService.leer`.
+ */
+export function leerCuotaFile(options: ReadCuotaFileOptions = {}): CuotaFileReading | null {
+  let crudo: Partial<CuotaEstado>;
+  try {
+    crudo = JSON.parse((options.leerArchivo ?? leerArchivoReal)()) as Partial<CuotaEstado>;
+  } catch {
+    return null;
+  }
+  if (!crudo || typeof crudo.ts !== 'number') return null;
+
+  const tsMs = crudo.ts * 1000;
+  const fiveHour = readNumberOrNull(crudo.five_hour);
+  const sevenDay = readNumberOrNull(crudo.seven_day);
+
+  return {
+    ts: tsMs,
+    fiveHour:
+      fiveHour !== null
+        ? { porcentaje: fiveHour, resetsAt: toEpochMs(readNumberOrNull(crudo.five_hour_resets_at)), leidoEn: tsMs }
+        : null,
+    sevenDay:
+      sevenDay !== null
+        ? { porcentaje: sevenDay, resetsAt: toEpochMs(readNumberOrNull(crudo.seven_day_resets_at)), leidoEn: tsMs }
+        : null,
+  };
+}
+
+function toEpochMs(seconds: number | null): number | null {
+  return seconds !== null ? seconds * 1000 : null;
 }
