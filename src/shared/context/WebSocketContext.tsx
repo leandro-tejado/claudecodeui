@@ -40,6 +40,20 @@ const SILENCE_TIMEOUT_MS = 70_000;
 /** How often the watchdog checks for that silence. */
 const WATCHDOG_INTERVAL_MS = 10_000;
 
+/**
+ * `sendMessage` used to fail silently — a `console.warn` and nothing else —
+ * whenever the socket was CONNECTING (the up-to-3s gap after a drop, or the
+ * up-to-70s window before the watchdog even notices a silent one). A click
+ * that lands there, most visibly "approve" on a tool-permission prompt,
+ * never reaches the server: `handlePermissionDecision` clears the request
+ * from local state regardless, so the prompt just disappears and the run
+ * sits blocked server-side with nothing left on screen to retry. This queue
+ * is what a "sesión trabada" report traced back to (17-sep, Fase 6 of
+ * `17-septiembre-ux-sesiones-y-cuota.md`) — capped so a client left
+ * offline for a long time doesn't accumulate an unbounded backlog to replay.
+ */
+const MAX_QUEUED_OUTBOUND_MESSAGES = 50;
+
 const WebSocketContext = createContext<WebSocketContextType | null>(null);
 
 export const useWebSocket = () => {
@@ -75,6 +89,8 @@ const useWebSocketProviderState = (): WebSocketContextType => {
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   /** When the last frame of any kind arrived; the watchdog's only input. */
   const lastFrameAtRef = useRef(0);
+  /** Messages sent while the socket wasn't OPEN; flushed in order on the next `onopen`. */
+  const pendingOutboundRef = useRef<unknown[]>([]);
   const { isLoading: isAuthLoading, token, user } = useAuth();
 
   const dispatch = useCallback((event: ServerEvent) => {
@@ -106,6 +122,17 @@ const useWebSocketProviderState = (): WebSocketContextType => {
       websocket.onopen = () => {
         lastFrameAtRef.current = Date.now();
         setIsConnected(true);
+
+        // Flush anything queued while this socket (or its predecessor) wasn't
+        // OPEN, oldest first, before the reconnect catch-up below runs.
+        const queued = pendingOutboundRef.current;
+        if (queued.length > 0) {
+          pendingOutboundRef.current = [];
+          for (const message of queued) {
+            websocket.send(JSON.stringify(message));
+          }
+        }
+
         if (hasConnectedRef.current) {
           // This is a reconnect — signal so components can catch up on missed messages
           dispatch({ kind: 'websocket_reconnected', timestamp: Date.now() });
@@ -256,8 +283,13 @@ const useWebSocketProviderState = (): WebSocketContextType => {
     const socket = wsRef.current;
     if (socket && socket.readyState === WebSocket.OPEN) {
       socket.send(JSON.stringify(message));
-    } else {
-      console.warn('WebSocket not connected');
+      return;
+    }
+    console.warn('WebSocket not connected — queued for the next reconnect');
+    const queue = pendingOutboundRef.current;
+    queue.push(message);
+    if (queue.length > MAX_QUEUED_OUTBOUND_MESSAGES) {
+      queue.shift();
     }
   }, []);
 
