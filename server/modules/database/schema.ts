@@ -131,6 +131,15 @@ CREATE TABLE IF NOT EXISTS sessions (
     -- id mid-run, or equals \`session_id\` for sessions discovered on disk.
     provider_session_id TEXT,
     custom_name TEXT,
+    -- 1 while \`custom_name\` is still an app-derived guess (the literal first
+    -- few words of the user's opening message, set by \`createAppSession\`)
+    -- that a provider synchronizer may still replace with a better title
+    -- (the provider SDK's own auto-generated title, once it exists on disk).
+    -- Cleared to 0 the first time a synchronizer applies a real title, and by
+    -- any explicit user rename — from then on the name is locked and no
+    -- synchronizer touches it again. NULL/0 for legacy rows and rows
+    -- discovered directly on disk, which were never a CloudCLI guess.
+    custom_name_is_placeholder BOOLEAN DEFAULT 0,
     project_path TEXT,
     jsonl_path TEXT,
     -- Model and reasoning effort this session runs with. Written when the user

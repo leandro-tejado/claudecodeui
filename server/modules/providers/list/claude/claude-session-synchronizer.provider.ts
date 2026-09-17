@@ -140,16 +140,33 @@ export class ClaudeSessionSynchronizer implements IProviderSessionSynchronizer {
     const existingSession = sessionsDb.getSessionByProviderSessionId(parsed.sessionId)
       ?? sessionsDb.getSessionById(parsed.sessionId);
     const existingSessionName = existingSession?.custom_name;
-    if (existingSessionName && existingSessionName !== 'Untitled Claude Session') {
+    // A locked name (any name that isn't still an app-guessed placeholder —
+    // see `custom_name_is_placeholder`) is never touched again: either a
+    // synchronizer already upgraded it once, or the user renamed it.
+    const isLocked = Boolean(existingSessionName)
+      && existingSessionName !== 'Untitled Claude Session'
+      && !existingSession?.custom_name_is_placeholder;
+    if (isLocked) {
       return {
         ...parsed,
-        sessionName: normalizeSessionName(existingSessionName, 'Untitled Claude Session'),
+        sessionName: normalizeSessionName(existingSessionName ?? undefined, 'Untitled Claude Session'),
       };
     }
 
     let sessionName = nameMap.get(parsed.sessionId);
     if (!sessionName) {
       sessionName = await this.extractSessionAiTitleFromEnd(filePath, parsed.sessionId);
+    }
+
+    if (!sessionName && existingSessionName) {
+      // Nothing better on disk yet (common right after the session is
+      // created: the SDK only writes its `ai-title` bookkeeping row after
+      // the first turn completes). Report "no update" rather than the
+      // generic fallback label, so `createSession` leaves the app's
+      // placeholder guess untouched instead of downgrading it to "Untitled
+      // Claude Session". A row with no name at all yet still falls through
+      // to the normalizeSessionName fallback below, same as before.
+      return { ...parsed, sessionName: undefined };
     }
 
     return {

@@ -9,6 +9,13 @@ type SessionRow = {
   project_path: string | null;
   jsonl_path: string | null;
   custom_name: string | null;
+  /**
+   * 1 while `custom_name` is still `createAppSession`'s literal-first-words
+   * guess and a provider synchronizer may still replace it with a real
+   * title; 0/NULL once locked (a synchronizer upgraded it once, or the user
+   * renamed it). See the column comment in schema.ts.
+   */
+  custom_name_is_placeholder: number | null;
   /** Model this session runs with; NULL until the app records one for it. */
   model: string | null;
   /** Reasoning effort this session runs with; NULL until the app records one. */
@@ -26,7 +33,7 @@ type RecentSessionsPage = {
 };
 
 const SESSION_ROW_COLUMNS =
-  'session_id, provider, provider_session_id, project_path, jsonl_path, custom_name, model, effort, forked_from_session_id, isArchived, created_at, updated_at';
+  'session_id, provider, provider_session_id, project_path, jsonl_path, custom_name, custom_name_is_placeholder, model, effort, forked_from_session_id, isArchived, created_at, updated_at';
 
 const SQLITE_UTC_TIMESTAMP_REGEX = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/;
 
@@ -76,9 +83,16 @@ export const sessionsDb = {
    * The given id is the provider-native session id. Rows are keyed by
    * `provider_session_id` so a session that was first created by the app
    * (with an app-allocated `session_id`) is updated in place once its
-   * transcript shows up on disk, instead of producing a duplicate row. An
-   * app-created row keeps its existing name; synchronizer names only update
-   * rows that were themselves created by indexing provider storage.
+   * transcript shows up on disk, instead of producing a duplicate row.
+   *
+   * An app-created row's name is locked (kept as-is) once
+   * `custom_name_is_placeholder` is 0/NULL — either because a synchronizer
+   * already upgraded it once, or because the user renamed it explicitly.
+   * While it's still 1, `customName` (the freshest name the synchronizer
+   * found, or undefined if it found nothing better) is applied and the
+   * placeholder flag is cleared, so the one upgrade sticks instead of the
+   * title changing on every subsequent turn (Fase 5,
+   * `17-septiembre-ux-sesiones-y-cuota.md`).
    */
   createSession(
     providerSessionId: string,
@@ -120,8 +134,19 @@ export const sessionsDb = {
            project_path = ?,
            jsonl_path = ?,
            custom_name = CASE
-             WHEN session_id <> provider_session_id AND custom_name IS NOT NULL THEN custom_name
+             WHEN session_id <> provider_session_id
+               AND custom_name IS NOT NULL
+               AND COALESCE(custom_name_is_placeholder, 0) = 0
+               THEN custom_name
              ELSE COALESCE(?, custom_name)
+           END,
+           custom_name_is_placeholder = CASE
+             WHEN session_id <> provider_session_id
+               AND custom_name IS NOT NULL
+               AND COALESCE(custom_name_is_placeholder, 0) = 0
+               THEN custom_name_is_placeholder
+             WHEN ? IS NOT NULL THEN 0
+             ELSE custom_name_is_placeholder
            END
          WHERE session_id = ?`
       ).run(
@@ -129,6 +154,7 @@ export const sessionsDb = {
         updatedAtValue,
         normalizedProjectPath,
         jsonlPath ?? null,
+        customName ?? null,
         customName ?? null,
         existing.session_id
       );
@@ -176,7 +202,10 @@ export const sessionsDb = {
    * `session_id` is the stable app-facing id, while `provider_session_id`
    * stays NULL until the provider runtime announces its own id and
    * `assignProviderSessionId` records the mapping. `customName` is derived
-   * from the first visible CloudCLI message by the sessions service.
+   * from the first visible CloudCLI message by the sessions service — it is
+   * only a guess, so the row starts with `custom_name_is_placeholder = 1`
+   * and a synchronizer is allowed to replace it once with the provider's own
+   * title (see `createSession`).
    */
   createAppSession(
     sessionId: string,
@@ -190,8 +219,8 @@ export const sessionsDb = {
     projectsDb.createProjectPath(normalizedProjectPath);
 
     db.prepare(
-      `INSERT INTO sessions (session_id, provider, provider_session_id, custom_name, project_path, jsonl_path, isArchived, created_at, updated_at)
-       VALUES (?, ?, NULL, ?, ?, NULL, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`
+      `INSERT INTO sessions (session_id, provider, provider_session_id, custom_name, custom_name_is_placeholder, project_path, jsonl_path, isArchived, created_at, updated_at)
+       VALUES (?, ?, NULL, ?, 1, ?, NULL, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`
     ).run(sessionId, provider, customName ?? null, normalizedProjectPath);
 
     return sessionId;
@@ -442,11 +471,18 @@ export const sessionsDb = {
     ).run(effort, sessionId);
   },
 
+  /**
+   * Sets `custom_name` directly and locks it (`custom_name_is_placeholder =
+   * 0`) so no synchronizer overwrites it again. Used both for an explicit
+   * user rename and for a synchronizer's one-time upgrade of an app-guessed
+   * placeholder (see the Codex synchronizer) — both cases mean the name is
+   * now final.
+   */
   updateSessionCustomName(sessionId: string, customName: string): void {
     const db = getConnection();
     db.prepare(
       `UPDATE sessions
-       SET custom_name = ?
+       SET custom_name = ?, custom_name_is_placeholder = 0
        WHERE session_id = ?`
     ).run(customName, sessionId);
   },
