@@ -457,6 +457,27 @@ const addSessionEffortColumn = (db: Database): void => {
   addColumnToTableIfNotExists(db, 'sessions', columnNames, 'effort', 'TEXT');
 };
 
+/**
+ * Adds `custom_name_is_placeholder`, which marks a `custom_name` set by
+ * `createAppSession` (the literal first words of the user's opening message)
+ * as still eligible for a synchronizer to replace with a real title. Existing
+ * rows default to 0 (locked) on purpose: a pre-migration name was already
+ * either a manual rename or whatever the old always-keep-it logic settled on,
+ * and re-opening it for sync would risk changing names nobody asked to change.
+ */
+const addSessionCustomNameIsPlaceholderColumn = (db: Database): void => {
+  const sessionsTableInfo = getTableInfo(db, 'sessions');
+  const columnNames = sessionsTableInfo.map((column) => column.name);
+
+  addColumnToTableIfNotExists(
+    db,
+    'sessions',
+    columnNames,
+    'custom_name_is_placeholder',
+    'BOOLEAN DEFAULT 0'
+  );
+};
+
 const ensureProjectsForSessionPaths = (db: Database): void => {
   if (!tableExists(db, 'sessions')) {
     return;
@@ -518,6 +539,7 @@ export const runMigrations = (db: Database) => {
     addProviderSessionIdMapping(db);
     addSessionModelColumn(db);
     addSessionEffortColumn(db);
+    addSessionCustomNameIsPlaceholderColumn(db);
     addForkedFromSessionIdColumn(db);
     ensureProjectsForSessionPaths(db);
     db.exec(SCHEDULED_MESSAGES_TABLE_SCHEMA_SQL);

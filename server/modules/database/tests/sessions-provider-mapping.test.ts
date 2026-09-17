@@ -66,7 +66,70 @@ test('app sessions get the provider id assigned without creating a duplicate row
     const row = sessionsDb.getSessionById('app-id-1');
     assert.equal(row?.provider_session_id, 'provider-xyz');
     assert.equal(row?.jsonl_path, '/fake/path/provider-xyz.jsonl');
-    assert.equal(row?.custom_name, 'Initial CloudCLI message');
+    // `custom_name` starts as a placeholder (the literal first message), so
+    // the synchronizer's first real title upgrades it — this is the Fase 5
+    // fix (17-septiembre-ux-sesiones-y-cuota.md): before it, this name was
+    // stuck on the literal first message forever.
+    assert.equal(row?.custom_name, 'Synced Name');
+    assert.equal(row?.custom_name_is_placeholder, 0);
+  });
+});
+
+test('a locked session name (already synced once, or renamed by the user) is never overwritten by a later sync', async () => {
+  await withIsolatedDatabase(() => {
+    sessionsDb.createAppSession('app-id-locked', 'claude', '/workspace/demo', 'Initial CloudCLI message');
+    sessionsDb.assignProviderSessionId('app-id-locked', 'provider-locked');
+
+    // First sync upgrades the placeholder and locks it (same as the test above).
+    sessionsDb.createSession(
+      'provider-locked',
+      'claude',
+      '/workspace/demo',
+      'First Real Title',
+      undefined,
+      undefined,
+      '/fake/path/provider-locked.jsonl',
+    );
+    assert.equal(sessionsDb.getSessionById('app-id-locked')?.custom_name, 'First Real Title');
+
+    // A later sync pass (e.g. the SDK's `last-prompt` fallback on the next
+    // turn) must not touch it again — only one upgrade, ever.
+    sessionsDb.createSession(
+      'provider-locked',
+      'claude',
+      '/workspace/demo',
+      'Second Turn Prompt',
+      undefined,
+      undefined,
+      '/fake/path/provider-locked.jsonl',
+    );
+
+    const row = sessionsDb.getSessionById('app-id-locked');
+    assert.equal(row?.custom_name, 'First Real Title');
+    assert.equal(row?.custom_name_is_placeholder, 0);
+  });
+});
+
+test('an explicit user rename locks the name against any later sync', async () => {
+  await withIsolatedDatabase(() => {
+    sessionsDb.createAppSession('app-id-renamed', 'claude', '/workspace/demo', 'Initial CloudCLI message');
+    sessionsDb.assignProviderSessionId('app-id-renamed', 'provider-renamed');
+
+    sessionsDb.updateSessionCustomName('app-id-renamed', 'User Chosen Name');
+    assert.equal(sessionsDb.getSessionById('app-id-renamed')?.custom_name_is_placeholder, 0);
+
+    sessionsDb.createSession(
+      'provider-renamed',
+      'claude',
+      '/workspace/demo',
+      'Synced Name',
+      undefined,
+      undefined,
+      '/fake/path/provider-renamed.jsonl',
+    );
+
+    const row = sessionsDb.getSessionById('app-id-renamed');
+    assert.equal(row?.custom_name, 'User Chosen Name');
   });
 });
 
