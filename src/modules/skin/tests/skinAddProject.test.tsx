@@ -3,6 +3,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { describe, expect, it, vi } from 'vitest';
 
 import { SkinSidebar } from '@/modules/skin';
+import { UiPreferencesProvider } from '@/shared/context/UiPreferencesContext';
 import type { Project } from '@/shared/types';
 
 /*
@@ -34,15 +35,17 @@ const project = {
 const renderSidebar = (onRefresh: () => void) =>
   render(
     <MemoryRouter>
-      <SkinSidebar
-        projects={[project]}
-        selectedProject={project}
-        selectedSession={null}
-        onProjectSelect={() => {}}
-        onSessionSelect={() => {}}
-        onNewSession={() => {}}
-        onRefresh={onRefresh}
-      />
+      <UiPreferencesProvider>
+        <SkinSidebar
+          projects={[project]}
+          selectedProject={project}
+          selectedSession={null}
+          onProjectSelect={() => {}}
+          onSessionSelect={() => {}}
+          onNewSession={() => {}}
+          onRefresh={onRefresh}
+        />
+      </UiPreferencesProvider>
     </MemoryRouter>,
   );
 

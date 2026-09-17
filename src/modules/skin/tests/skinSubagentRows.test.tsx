@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { SkinSidebar } from '@/modules/skin';
 import { resetSubagentStoreForTests, upsertSubagent } from '@/modules/skin/subagentStore';
 import { publishSessionBudget, resetSessionBudgetStoreForTests } from '@/modules/skin/sessionBudgetStore';
+import { UiPreferencesProvider } from '@/shared/context/UiPreferencesContext';
 import type { Project } from '@/shared/types';
 
 /*
@@ -46,16 +47,18 @@ const renderSidebar = (options: {
     : null;
   return render(
     <MemoryRouter>
-      <SkinSidebar
-        projects={[project]}
-        selectedProject={project}
-        selectedSession={(selected ?? null) as never}
-        activeSessions={options.activeSessions}
-        attentionSessionIds={options.attentionSessionIds}
-        onProjectSelect={() => {}}
-        onSessionSelect={vi.fn()}
-        onNewSession={() => {}}
-      />
+      <UiPreferencesProvider>
+        <SkinSidebar
+          projects={[project]}
+          selectedProject={project}
+          selectedSession={(selected ?? null) as never}
+          activeSessions={options.activeSessions}
+          attentionSessionIds={options.attentionSessionIds}
+          onProjectSelect={() => {}}
+          onSessionSelect={vi.fn()}
+          onNewSession={() => {}}
+        />
+      </UiPreferencesProvider>
     </MemoryRouter>,
   );
 };

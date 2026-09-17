@@ -1,9 +1,10 @@
 import fs from 'node:fs/promises';
+import os from 'node:os';
 import path from 'node:path';
 
 import { projectsDb, sessionsDb } from '@/modules/database/index.js';
 import { sessionSynchronizerService } from '@/modules/providers/index.js';
-import { WS_OPEN_STATE, connectedClients } from '@/modules/websocket/index.js';
+import { WS_OPEN_STATE, connectedClients, nombreTmux } from '@/modules/websocket/index.js';
 import type { RealtimeClientConnection } from '@/shared/types.js';
 import { AppError } from '@/shared/utils.js';
 
@@ -21,6 +22,9 @@ export type SessionSubagentSummary = {
   startedAt: string | null;
 };
 
+/** `null` cuando el registro de `sesiones.py` no tiene esta sesión — ausente, no una sesión sin tmux. */
+export type SessionTmuxInfo = { nombre: string; vivo: boolean } | null;
+
 type SessionSummary = {
   id: string;
   provider: string;
@@ -31,6 +35,7 @@ type SessionSummary = {
   subagentCount: number;
   /** Empty when `subagentCount` is 0 — no extra I/O beyond the one `readdir`. */
   subagents: SessionSubagentSummary[];
+  tmux: SessionTmuxInfo;
 };
 
 type SessionRepositoryRow = {
@@ -281,7 +286,80 @@ async function listSessionSubagents(jsonlPath: string | null | undefined): Promi
   return summaries.filter((summary): summary is SessionSubagentSummary => summary !== null);
 }
 
-async function mapSessionRowToSummary(row: SessionRepositoryRow): Promise<SessionSummary> {
+/** Una entrada de `~/.cache/aos/sesiones.json` — ver `.claude/bin/sesiones.py` del workspace. Solo los campos que este archivo consume. */
+type RegistroSesionEntry = {
+  nombre: string;
+  session_id: string | null;
+  estado: 'viva' | 'caida';
+};
+type RegistroSesiones = Record<string, RegistroSesionEntry>;
+
+/** Env override solo para tests — el archivo real vive siempre en `~/.cache/aos/sesiones.json`. */
+function rutaRegistroSesiones(): string {
+  return process.env.AOS_SESIONES_REGISTRO_PATH || path.join(os.homedir(), '.cache', 'aos', 'sesiones.json');
+}
+
+/** 5 s: barato de recalcular, y evita un `readFile` por cada fila de cada proyecto en la misma respuesta. */
+const REGISTRO_CACHE_MS = 5000;
+let registroCache: { data: RegistroSesiones; leidoEn: number } | null = null;
+
+async function leerRegistroSesiones(): Promise<RegistroSesiones> {
+  const ahora = Date.now();
+  if (registroCache && ahora - registroCache.leidoEn < REGISTRO_CACHE_MS) {
+    return registroCache.data;
+  }
+
+  try {
+    const raw = await fs.readFile(rutaRegistroSesiones(), 'utf8');
+    const data = JSON.parse(raw) as RegistroSesiones;
+    registroCache = { data, leidoEn: ahora };
+    return data;
+  } catch {
+    // Sin registro (Fase 1 no corrió en esta máquina, o `~/.cache/aos` no existe todavía):
+    // el campo `tmux` sale `null` para toda sesión, nunca un error para el sidebar.
+    registroCache = { data: {}, leidoEn: ahora };
+    return {};
+  }
+}
+
+/** Solo para tests: fuerza una relectura en la próxima llamada. */
+export function _resetRegistroSesionesCacheParaTests(): void {
+  registroCache = null;
+}
+
+/**
+ * Resuelve el estado tmux de una sesión: primero por `session_id` (lo que
+ * escribe `registro-sesion.sh` en `SessionStart`, exacto y sin adivinar),
+ * y si no hay match, por el nombre determinístico que ya usa
+ * `tmux-bridge.service.ts` para las sesiones nacidas en CloudCLI. Cuando dos
+ * entradas comparten `session_id` (el registro cae al `.jsonl` más nuevo del
+ * proyecto si el hook nunca corrió para esa sesión), gana la que está viva.
+ */
+export function resolverTmux(
+  sessionId: string,
+  projectPath: string,
+  registro: RegistroSesiones,
+): SessionTmuxInfo {
+  const porSessionId = Object.values(registro).filter((entry) => entry.session_id === sessionId);
+  const directo = porSessionId.find((entry) => entry.estado === 'viva') ?? porSessionId[0];
+  if (directo) {
+    return { nombre: directo.nombre, vivo: directo.estado === 'viva' };
+  }
+
+  const nombreEsperado = nombreTmux(projectPath, sessionId);
+  const porNombre = registro[nombreEsperado];
+  if (porNombre) {
+    return { nombre: porNombre.nombre, vivo: porNombre.estado === 'viva' };
+  }
+
+  return null;
+}
+
+async function mapSessionRowToSummary(
+  row: SessionRepositoryRow,
+  projectPath: string,
+  registro: RegistroSesiones,
+): Promise<SessionSummary> {
   const subagents = await listSessionSubagents(row.jsonl_path);
 
   return {
@@ -292,12 +370,14 @@ async function mapSessionRowToSummary(row: SessionRepositoryRow): Promise<Sessio
     lastActivity: row.updated_at ?? row.created_at ?? new Date().toISOString(),
     subagentCount: subagents.length,
     subagents,
+    tmux: resolverTmux(row.session_id, projectPath, registro),
   };
 }
 
 async function readProjectSessionsIncludingArchived(projectPath: string): Promise<ProjectSessionsPageResult> {
   const rows = sessionsDb.getSessionsByProjectPathIncludingArchived(projectPath) as SessionRepositoryRow[];
-  const sessions = await Promise.all(rows.map(mapSessionRowToSummary));
+  const registro = await leerRegistroSesiones();
+  const sessions = await Promise.all(rows.map((row) => mapSessionRowToSummary(row, projectPath, registro)));
 
   return {
     sessions,
@@ -320,7 +400,8 @@ async function readProjectSessionsPageByPath(
     pagination.offset,
   ) as SessionRepositoryRow[];
   const total = sessionsDb.countSessionsByProjectPath(projectPath);
-  const sessions = await Promise.all(rows.map(mapSessionRowToSummary));
+  const registro = await leerRegistroSesiones();
+  const sessions = await Promise.all(rows.map((row) => mapSessionRowToSummary(row, projectPath, registro)));
 
   return {
     sessions,

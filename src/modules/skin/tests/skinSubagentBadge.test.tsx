@@ -3,6 +3,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { describe, expect, it, vi } from 'vitest';
 
 import { SkinSidebar } from '@/modules/skin';
+import { UiPreferencesProvider } from '@/shared/context/UiPreferencesContext';
 import type { Project, ProjectSession } from '@/shared/types';
 
 /*
@@ -26,14 +27,16 @@ const renderSidebar = (session: Record<string, unknown>, onSessionSelect = vi.fn
   const project = buildProject(session);
   render(
     <MemoryRouter>
-      <SkinSidebar
-        projects={[project]}
-        selectedProject={project}
-        selectedSession={null}
-        onProjectSelect={() => {}}
-        onSessionSelect={onSessionSelect}
-        onNewSession={() => {}}
-      />
+      <UiPreferencesProvider>
+        <SkinSidebar
+          projects={[project]}
+          selectedProject={project}
+          selectedSession={null}
+          onProjectSelect={() => {}}
+          onSessionSelect={onSessionSelect}
+          onNewSession={() => {}}
+        />
+      </UiPreferencesProvider>
     </MemoryRouter>,
   );
   return { onSessionSelect };

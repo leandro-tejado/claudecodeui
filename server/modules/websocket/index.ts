@@ -1,4 +1,8 @@
 export { WS_OPEN_STATE, connectedClients } from './services/websocket-state.service.js';
+// Consumed by the projects module's session fetch (Fase 2, tmux badge): the
+// fallback lookup key when a sesiones.json registry entry lacks a matching
+// session_id.
+export { nombreTmux } from './services/shell-websocket.service.js';
 export { createWebSocketServer } from './services/websocket-server.service.js';
 export { chatRunRegistry } from './services/chat-run-registry.service.js';
 // Consumed by the providers module's sessions watcher, which announces the

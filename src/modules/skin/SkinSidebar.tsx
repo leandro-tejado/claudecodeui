@@ -16,6 +16,7 @@ import {
   Search,
   Settings,
   Star,
+  Terminal,
   Trash2,
   X,
 } from 'lucide-react';
@@ -25,6 +26,7 @@ import { useSubagents } from '@/modules/skin/subagentStore';
 import type { SubagentRow, SubagentStatus } from '@/modules/skin/subagentStore';
 import { useSessionBudgets } from '@/modules/skin/sessionBudgetStore';
 import { AMBER_AT, RED_AT } from '@/modules/skin/compactBarThresholds';
+import { useSetUiPreference, useUiPreferences } from '@/shared/context/UiPreferencesContext';
 import {
   browseFilesystemFolders,
   createProjectRequest,
@@ -80,9 +82,13 @@ type SkinSubagentSummary = {
   status: SkinSubagentStatus;
   startedAt: string | null;
 };
+/** Mismo shape que `SessionTmuxInfo` en `projects-with-sessions-fetch.service.ts` — no se importa desde ahí porque el server no expone su código al cliente. */
+type SkinSessionTmuxInfo = { nombre: string; vivo: boolean } | null;
+
 type SessionWithSubagents = ProjectSession & {
   subagentCount?: number;
   subagents?: SkinSubagentSummary[];
+  tmux?: SkinSessionTmuxInfo;
 };
 
 const getSubagentCount = (session: ProjectSession): number =>
@@ -90,6 +96,10 @@ const getSubagentCount = (session: ProjectSession): number =>
 
 const getSubagents = (session: ProjectSession): SkinSubagentSummary[] =>
   (session as SessionWithSubagents).subagents ?? [];
+
+/** `undefined` (campo ausente del payload) y `null` (el registro no tiene esta sesión) valen igual: sin dato. */
+const getTmux = (session: ProjectSession): SkinSessionTmuxInfo =>
+  (session as SessionWithSubagents).tmux ?? null;
 
 /*
  * Los subagentes VIVOS, que son otra cosa que los contados del servidor.
@@ -215,6 +225,8 @@ export function SkinSidebar({
   const [starOverride, setStarOverride] = useState<Map<string, boolean>>(new Map());
   const dragStateRef = useRef<{ startX: number; startWidth: number } | null>(null);
   const { sidebarCollapsed } = useSkinUi();
+  const { sidebarOnlyTmux } = useUiPreferences();
+  const setUiPreference = useSetUiPreference();
 
   /* Renombrar una sesión, en el lugar. `titleOverride` evita esperar a que el
      backend reindexe para ver el nombre nuevo en la fila. */
@@ -358,6 +370,30 @@ export function SkinSidebar({
     return grouped;
   }, [liveSubagents]);
 
+  /*
+   * Cuántas sesiones tienen tmux vivo, sobre el total. `conocido` distingue
+   * "el registro dice que no hay tmux" (todas en null porque la Fase 1 no
+   * corrió en esta máquina) de "hay 0 vivas": sin ese distingo, el filtro por
+   * defecto dejaría el sidebar vacío ante un registro ausente.
+   */
+  const tmuxStats = useMemo(() => {
+    let total = 0;
+    let vivas = 0;
+    let conocido = false;
+    for (const project of projects) {
+      for (const session of project.sessions ?? []) {
+        total += 1;
+        const tmux = getTmux(session);
+        if (tmux !== null) conocido = true;
+        if (tmux?.vivo) vivas += 1;
+      }
+    }
+    return { total, vivas, conocido };
+  }, [projects]);
+
+  const tmuxFilterActive = sidebarOnlyTmux && tmuxStats.conocido;
+  const ocultasPorTmux = tmuxFilterActive ? tmuxStats.total - tmuxStats.vivas : 0;
+
   /* Filtro y orden. Buscar mira el proyecto y también sus sesiones, así que
      escribir el tema de una conversación encuentra la carpeta donde vive. */
   const visibleProjects = useMemo(() => {
@@ -365,14 +401,18 @@ export function SkinSidebar({
 
     const matched = projects
       .map((project) => {
-        if (!needle) return { project, sessions: project.sessions ?? [] };
+        const baseSessions = tmuxFilterActive
+          ? (project.sessions ?? []).filter((session) => getTmux(session)?.vivo)
+          : project.sessions ?? [];
+
+        if (!needle) return { project, sessions: baseSessions };
 
         const projectHit = project.displayName?.toLowerCase().includes(needle);
-        const sessions = (project.sessions ?? []).filter((session) =>
+        const sessions = baseSessions.filter((session) =>
           sessionTitle(session).toLowerCase().includes(needle),
         );
         if (!projectHit && sessions.length === 0) return null;
-        return { project, sessions: projectHit ? project.sessions ?? [] : sessions };
+        return { project, sessions: projectHit ? baseSessions : sessions };
       })
       .filter((entry): entry is { project: Project; sessions: ProjectSession[] } => entry !== null);
 
@@ -381,7 +421,7 @@ export function SkinSidebar({
       if (starDelta !== 0) return starDelta;
       return (a.project.displayName || '').localeCompare(b.project.displayName || '');
     });
-  }, [projects, query, isStarred]);
+  }, [projects, query, isStarred, tmuxFilterActive]);
 
   const toggleExpanded = useCallback((projectId: string, isOpenNow: boolean) => {
     setOpenOverride((previous) => new Map(previous).set(projectId, !isOpenNow));
@@ -652,6 +692,29 @@ export function SkinSidebar({
           >
             <Search className="h-4 w-4" />
           </button>
+          {tmuxFilterActive && ocultasPorTmux > 0 && (
+            <span
+              className="flex-none px-0.5 text-muted-foreground"
+              style={{ fontSize: 'var(--skin-text-xs)' }}
+            >
+              {ocultasPorTmux} ocultas
+            </span>
+          )}
+          <button
+            type="button"
+            onClick={() => setUiPreference('sidebarOnlyTmux', !sidebarOnlyTmux)}
+            title={
+              sidebarOnlyTmux
+                ? 'Mostrando solo sesiones con tmux vivo — click para ver todas'
+                : 'Mostrando todas las sesiones — click para filtrar solo tmux'
+            }
+            aria-pressed={sidebarOnlyTmux}
+            className={`grid h-7 w-7 place-items-center rounded-md transition-colors hover:bg-accent hover:text-foreground ${
+              sidebarOnlyTmux ? 'bg-accent text-foreground' : 'text-muted-foreground'
+            }`}
+          >
+            <Terminal className="h-4 w-4" />
+          </button>
           <button
             type="button"
             onClick={() => {
@@ -895,6 +958,7 @@ export function SkinSidebar({
                     const title = titleOverride.get(session.id) ?? sessionTitle(session);
                     const subagentCount = getSubagentCount(session);
                     const subagents = getSubagents(session);
+                    const tmux = getTmux(session);
                     const isSubagentPopoverOpen = openSubagentSessionId === session.id;
                     const rowClass = `flex w-full items-center rounded-md transition-colors ${
                       isActive ? 'bg-primary/10 text-foreground' : 'text-muted-foreground hover:bg-accent/60'
@@ -1040,6 +1104,11 @@ export function SkinSidebar({
                               style={{ fontSize: 'var(--skin-text-xs)' }}
                             >
                               {subagentCount}
+                            </span>
+                          )}
+                          {tmux?.vivo && (
+                            <span title={`tmux: ${tmux.nombre}`} className="flex-none">
+                              <Terminal className="h-3 w-3 text-muted-foreground" />
                             </span>
                           )}
                           <span
