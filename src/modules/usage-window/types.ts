@@ -13,3 +13,39 @@ export type UsageWindowSnapshot = {
   fiveHour: UsageWindowReading | null;
   sevenDay: UsageWindowReading | null;
 };
+
+/** Mirror of `DetalleSesion` en server/modules/usage-window/services/usage-detalle.service.ts. */
+export type DetalleSesion = {
+  sid: string;
+  cwd: string;
+  llamadas: number;
+  usd: number;
+  pct: number;
+};
+
+/** Mirror of `DetallePorSkill` en el mismo servicio. */
+export type DetallePorSkill = {
+  skill: string;
+  usd: number;
+  pct: number;
+};
+
+/** Mirror of `UsageDetalle` en el mismo servicio. `null` cuando `consumo.py detalle` no corrió todavía. */
+export type UsageDetalle = {
+  ts: number;
+  ventanaInicio: string;
+  ventanaFin: string;
+  usdTotal: number;
+  llamadas: number;
+  topSesiones: DetalleSesion[];
+  pctSubagentes: number;
+  pctCtxAlto: number;
+  porSkill: DetallePorSkill[];
+};
+
+/** Mirror of `GobernadorEstado` en server/modules/system/services/gobernador.service.ts. */
+export type GobernadorEstado = {
+  color: 'verde' | 'ambar' | 'rojo';
+  pace: number | null;
+  motivo: string;
+};

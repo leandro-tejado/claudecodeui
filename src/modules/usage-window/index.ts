@@ -3,4 +3,11 @@ export { default as UsageWindowIndicator } from '@/modules/usage-window/UsageWin
 // cruzar módulos por el barril, y los dos anillos tienen que ser el mismo.
 export { CircleProgress } from '@/modules/usage-window/CircleProgress';
 export { useUsageWindow } from '@/modules/usage-window/useUsageWindow';
-export type { UsageWindowSnapshot } from '@/modules/usage-window/types';
+export { useUsageDetalle } from '@/modules/usage-window/useUsageDetalle';
+export type {
+  UsageWindowSnapshot,
+  UsageDetalle,
+  DetalleSesion,
+  DetallePorSkill,
+  GobernadorEstado,
+} from '@/modules/usage-window/types';

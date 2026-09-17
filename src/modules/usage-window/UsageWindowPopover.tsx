@@ -2,7 +2,19 @@ import { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 
 import { cn } from '@/shared/utils';
-import type { UsageWindowReading, UsageWindowSnapshot } from '@/modules/usage-window/types';
+import { useUsageDetalle } from '@/modules/usage-window/useUsageDetalle';
+import type { GobernadorEstado, UsageDetalle, UsageWindowReading, UsageWindowSnapshot } from '@/modules/usage-window/types';
+
+const COLOR_SEMAFORO: Record<GobernadorEstado['color'], string> = {
+  verde: 'text-emerald-500',
+  ambar: 'text-amber-500',
+  rojo: 'text-red-500',
+};
+
+function nombreSesion(cwd: string): string {
+  const partes = cwd.split('/').filter(Boolean);
+  return partes[partes.length - 1] ?? cwd;
+}
 
 /** A reading older than this reads as "sin dato" rather than a stale percentage. */
 const STALE_MS = 15 * 60 * 1000;
@@ -42,6 +54,7 @@ type Props = {
 
 export default function UsageWindowPopover({ snapshot, now, onClose, anchor, anchorEl }: Props) {
   const ref = useRef<HTMLDivElement>(null);
+  const { detalle, gobernador } = useUsageDetalle(true);
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -121,11 +134,70 @@ export default function UsageWindowPopover({ snapshot, now, onClose, anchor, anc
         </p>
       </div>
 
+      {gobernador && (
+        <div className="mt-3 border-t border-border/60 pt-2">
+          <div className="flex items-baseline justify-between gap-2">
+            <span className="text-xs font-medium text-muted-foreground">Ritmo del gobernador</span>
+            <span className={cn('text-xs font-semibold', COLOR_SEMAFORO[gobernador.color])}>
+              {gobernador.color}
+              {gobernador.pace !== null ? ` · ${Math.round(gobernador.pace)}%` : ''}
+            </span>
+          </div>
+          <p className="mt-0.5 text-xs text-muted-foreground">{gobernador.motivo}</p>
+        </div>
+      )}
+
+      <Contribuyendo detalle={detalle} />
+
       <p className="mt-3 border-t border-border/60 pt-2 text-[11px] leading-snug text-muted-foreground">
         Porcentaje real que reporta el SDK de Claude en cada turno, sin estimación local. Si no llegó
         una lectura nueva en los últimos 15 minutos, se muestra "sin dato" en vez de inventar un número.
       </p>
     </div>,
     document.body,
+  );
+}
+
+/** El bloque "qué está contribuyendo": top de sesiones, subagentes, contexto alto y skills. */
+function Contribuyendo({ detalle }: { detalle: UsageDetalle | null }) {
+  if (!detalle) return null;
+
+  return (
+    <div className="mt-3 border-t border-border/60 pt-2">
+      <div className="flex items-baseline justify-between gap-2">
+        <span className="text-xs font-medium text-muted-foreground">Qué está contribuyendo</span>
+        <span className="text-xs font-semibold">${detalle.usdTotal.toFixed(2)}</span>
+      </div>
+
+      {detalle.topSesiones.length > 0 && (
+        <ul className="mt-1 space-y-0.5">
+          {detalle.topSesiones.map((sesion) => (
+            <li key={sesion.sid} className="flex items-baseline justify-between gap-2 text-xs">
+              <span className="truncate text-muted-foreground" title={sesion.cwd}>
+                {nombreSesion(sesion.cwd)}
+              </span>
+              <span className="tabular-nums">{Math.round(sesion.pct)}%</span>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <p className="mt-1 text-xs text-muted-foreground">
+        Subagentes: {Math.round(detalle.pctSubagentes)}% · Contexto &gt;150K: {Math.round(detalle.pctCtxAlto)}%
+      </p>
+
+      {detalle.porSkill.length > 0 && (
+        <ul className="mt-1 space-y-0.5">
+          {detalle.porSkill.map((skill) => (
+            <li key={skill.skill} className="flex items-baseline justify-between gap-2 text-xs">
+              <span className="truncate text-muted-foreground" title={skill.skill}>
+                {skill.skill}
+              </span>
+              <span className="tabular-nums">{Math.round(skill.pct)}%</span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   );
 }
