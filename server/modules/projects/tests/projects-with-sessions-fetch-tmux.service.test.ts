@@ -173,6 +173,64 @@ test('an absent registry file reports tmux null without throwing', async () => {
   });
 });
 
+test('a session matched to the fixed orchestrator entry (fija: true) reports it', async () => {
+  await withTempProjectDirectory(async (projectDirectory) => {
+    await withIsolatedDatabase(async () => {
+      sessionsDb.createSession('session-tmux-f', 'claude', projectDirectory, 'Session F');
+
+      await withRegistro(
+        {
+          orquestador: {
+            nombre: 'orquestador',
+            session_id: 'session-tmux-f',
+            estado: 'viva',
+            fija: true,
+          },
+        },
+        async () => {
+          const projects = await getProjectsWithSessions({ skipSynchronization: true });
+          const session = projects[0]?.sessions.find((candidate) => candidate.id === 'session-tmux-f');
+
+          assert.ok(session, 'expected session-tmux-f to be present');
+          assert.deepEqual((session as { tmux: unknown }).tmux, {
+            nombre: 'orquestador',
+            vivo: true,
+            fija: true,
+          });
+        },
+      );
+    });
+  });
+});
+
+test('a non-fixed entry never carries the fija key (exact shape, not just falsy)', async () => {
+  await withTempProjectDirectory(async (projectDirectory) => {
+    await withIsolatedDatabase(async () => {
+      sessionsDb.createSession('session-tmux-g', 'claude', projectDirectory, 'Session G');
+
+      await withRegistro(
+        {
+          'cloudcli-normal': {
+            nombre: 'cloudcli-normal',
+            session_id: 'session-tmux-g',
+            estado: 'viva',
+          },
+        },
+        async () => {
+          const projects = await getProjectsWithSessions({ skipSynchronization: true });
+          const session = projects[0]?.sessions.find((candidate) => candidate.id === 'session-tmux-g');
+
+          assert.ok(session, 'expected session-tmux-g to be present');
+          assert.deepEqual((session as { tmux: unknown }).tmux, {
+            nombre: 'cloudcli-normal',
+            vivo: true,
+          });
+        },
+      );
+    });
+  });
+});
+
 test('a stale entry pointing at a dead tmux session (estado caida) reports vivo false', async () => {
   await withTempProjectDirectory(async (projectDirectory) => {
     await withIsolatedDatabase(async () => {

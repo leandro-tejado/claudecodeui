@@ -23,7 +23,7 @@ export type SessionSubagentSummary = {
 };
 
 /** `null` cuando el registro de `sesiones.py` no tiene esta sesión — ausente, no una sesión sin tmux. */
-export type SessionTmuxInfo = { nombre: string; vivo: boolean } | null;
+export type SessionTmuxInfo = { nombre: string; vivo: boolean; fija?: boolean } | null;
 
 type SessionSummary = {
   id: string;
@@ -291,6 +291,8 @@ type RegistroSesionEntry = {
   nombre: string;
   session_id: string | null;
   estado: 'viva' | 'caida';
+  /** `true` solo para la sesión orquestadora fija (`registro-sesion.sh`, 17-sep). Ausente en cualquier otra entrada. */
+  fija?: boolean;
 };
 type RegistroSesiones = Record<string, RegistroSesionEntry>;
 
@@ -343,13 +345,16 @@ export function resolverTmux(
   const porSessionId = Object.values(registro).filter((entry) => entry.session_id === sessionId);
   const directo = porSessionId.find((entry) => entry.estado === 'viva') ?? porSessionId[0];
   if (directo) {
-    return { nombre: directo.nombre, vivo: directo.estado === 'viva' };
+    // `fija` solo se agrega cuando es `true` — el resto de las entradas del
+    // registro nunca lo tienen, y los tests existentes comparan por igualdad
+    // estructural exacta contra `{ nombre, vivo }` sin esa clave.
+    return { nombre: directo.nombre, vivo: directo.estado === 'viva', ...(directo.fija === true && { fija: true }) };
   }
 
   const nombreEsperado = nombreTmux(projectPath, sessionId);
   const porNombre = registro[nombreEsperado];
   if (porNombre) {
-    return { nombre: porNombre.nombre, vivo: porNombre.estado === 'viva' };
+    return { nombre: porNombre.nombre, vivo: porNombre.estado === 'viva', ...(porNombre.fija === true && { fija: true }) };
   }
 
   return null;
