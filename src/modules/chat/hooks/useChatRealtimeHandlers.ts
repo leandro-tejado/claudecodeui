@@ -4,6 +4,7 @@ import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
 import type { ServerEvent,MarkSessionIdle,MarkSessionProcessing,PendingPermissionRequest,ProjectSession,LLMProvider,NormalizedMessage } from '@/shared/types';
 import { showCompletionTitleIndicator } from '@/modules/chat/utils/pageTitleNotification';
 import { playChatCompletionSound, playNotificationSound } from '@/shared/utils';
+import { publishSessionBudget } from '@/modules/skin';
 import type { SessionStore } from '@/modules/chat/hooks/useSessionStore';
 
 const isActionablePermissionRequest = (request: { toolName?: unknown } | null | undefined): boolean => {
@@ -348,6 +349,12 @@ export function useChatRealtimeHandlers({
             // other concurrently running sessions must not overwrite it.
             if (sid === activeViewSessionId) {
               setTokenBudget(msg.tokenBudget as Record<string, unknown>);
+            }
+            // The sidebar's per-row compaction dot needs every session's
+            // budget, not just the viewed one — published alongside the
+            // filtered call above, which stays untouched.
+            if (sid) {
+              publishSessionBudget(sid, msg.tokenBudget as Record<string, unknown>);
             }
           } else if (msg.text && sid) {
             onSessionProcessing?.(sid, {

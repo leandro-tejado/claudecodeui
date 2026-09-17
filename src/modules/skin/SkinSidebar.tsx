@@ -23,6 +23,8 @@ import {
 import { useSkinUi } from '@/modules/skin/skinUiStore';
 import { useSubagents } from '@/modules/skin/subagentStore';
 import type { SubagentRow, SubagentStatus } from '@/modules/skin/subagentStore';
+import { useSessionBudgets } from '@/modules/skin/sessionBudgetStore';
+import { AMBER_AT, RED_AT } from '@/modules/skin/compactBarThresholds';
 import {
   browseFilesystemFolders,
   createProjectRequest,
@@ -335,6 +337,15 @@ export function SkinSidebar({
    * trabajando.
    */
   const busySessions = activeSessions ?? EMPTY_SESSION_IDS;
+
+  /*
+   * El presupuesto de compactación no dibuja un punto propio: se pinta como
+   * un anillo exterior sobre el mismo `activityDot` (corriendo/atención/
+   * seleccionada). Un segundo circulito duplicaría la señal de estado; el
+   * anillo solo aparece a partir de `AMBER_AT` — por debajo no hay nada que
+   * avisar.
+   */
+  const sessionBudgets = useSessionBudgets();
 
   const liveSubagents = useSubagents();
   const liveBySession = useMemo(() => {
@@ -897,6 +908,20 @@ export function SkinSidebar({
                      * sin depender del color, que es lo único que se lee de
                      * reojo.
                      */
+                    const budget = sessionBudgets.get(session.id);
+                    const budgetPercent = budget?.compactAt
+                      ? Math.min(100, (budget.inputTokens / budget.compactAt) * 100)
+                      : 0;
+                    // Anillo exterior sobre el mismo punto, no un segundo
+                    // circulito: el punto ya dice corriendo/atención/quieto,
+                    // esto agrega si esa sesión está cerca de compactar.
+                    const budgetRingClass =
+                      budgetPercent >= RED_AT
+                        ? 'outline outline-2 outline-offset-1 outline-red-500'
+                        : budgetPercent >= AMBER_AT
+                          ? 'outline outline-2 outline-offset-1 outline-amber-500'
+                          : '';
+
                     const activityDot = (
                       <span
                         title={
@@ -904,9 +929,11 @@ export function SkinSidebar({
                             ? 'Corriendo ahora'
                             : attention.has(session.id)
                               ? 'Algo llegó mientras mirabas otra sesión'
-                              : undefined
+                              : budgetPercent >= AMBER_AT
+                                ? `${Math.round(budgetPercent)}% del presupuesto antes de compactar`
+                                : undefined
                         }
-                        className={`h-1.5 w-1.5 flex-none rounded-full ${
+                        className={`h-1.5 w-1.5 flex-none rounded-full ${budgetRingClass} ${
                           isRunning
                             ? 'animate-pulse bg-sky-500'
                             : attention.has(session.id)

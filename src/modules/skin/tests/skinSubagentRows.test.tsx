@@ -1,9 +1,10 @@
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { SkinSidebar } from '@/modules/skin';
 import { resetSubagentStoreForTests, upsertSubagent } from '@/modules/skin/subagentStore';
+import { publishSessionBudget, resetSessionBudgetStoreForTests } from '@/modules/skin/sessionBudgetStore';
 import type { Project } from '@/shared/types';
 
 /*
@@ -65,6 +66,7 @@ const dotOf = (container: HTMLElement, sessionId: string): Element | null =>
 
 afterEach(() => {
   resetSubagentStoreForTests();
+  resetSessionBudgetStoreForTests();
 });
 
 describe('filas hijas de subagentes vivos', () => {
@@ -180,6 +182,57 @@ describe('el cuarto estado del punto de actividad', () => {
     });
 
     expect(dotOf(container, 'ses-1')?.className).toContain('bg-emerald-500');
+  });
+});
+
+describe('el anillo de compactación', () => {
+  it('una sesión al 90% de su presupuesto muestra el tramo ámbar sin estar seleccionada', () => {
+    const { container } = renderSidebar({
+      sessions: [session('ses-1', 'Cerca de compactar')],
+    });
+    act(() => publishSessionBudget('ses-1', { inputTokens: 220_500, compactAt: 245_000 }));
+
+    expect(dotOf(container, 'ses-1')?.className).toContain('outline-amber-500');
+  });
+
+  it('arriba del 95% pasa a rojo', () => {
+    const { container } = renderSidebar({
+      sessions: [session('ses-1', 'Casi al tope')],
+    });
+    act(() => publishSessionBudget('ses-1', { inputTokens: 235_000, compactAt: 245_000 }));
+
+    expect(dotOf(container, 'ses-1')?.className).toContain('outline-red-500');
+  });
+
+  it('por debajo del tramo ámbar no dibuja el anillo', () => {
+    const { container } = renderSidebar({
+      sessions: [session('ses-1', 'Recién empezando')],
+    });
+    act(() => publishSessionBudget('ses-1', { inputTokens: 50_000, compactAt: 245_000 }));
+
+    const className = dotOf(container, 'ses-1')?.className ?? '';
+    expect(className).not.toContain('outline-amber-500');
+    expect(className).not.toContain('outline-red-500');
+  });
+
+  it('sin compactAt no dibuja el anillo, no inventa un 0%', () => {
+    const { container } = renderSidebar({
+      sessions: [session('ses-1', 'Sin umbral')],
+    });
+    act(() => publishSessionBudget('ses-1', { inputTokens: 220_500 }));
+
+    const className = dotOf(container, 'ses-1')?.className ?? '';
+    expect(className).not.toContain('outline-amber-500');
+    expect(className).not.toContain('outline-red-500');
+  });
+
+  it('sigue siendo un solo punto por fila, no dos', () => {
+    const { container } = renderSidebar({
+      sessions: [session('ses-1', 'Cerca de compactar')],
+    });
+    act(() => publishSessionBudget('ses-1', { inputTokens: 220_500, compactAt: 245_000 }));
+
+    expect(container.querySelectorAll(`a[href$="/ses-1"] span.rounded-full`)).toHaveLength(1);
   });
 });
 

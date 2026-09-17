@@ -11,3 +11,5 @@ export { default as SkinSubagentBridge } from '@/modules/skin/SkinSubagentBridge
 export { useSubagents } from '@/modules/skin/subagentStore';
 export type { SubagentRow, SubagentStatus } from '@/modules/skin/subagentStore';
 export { useSkinUi, toggleSidebarCollapsed, toggleFilesPanel } from '@/modules/skin/skinUiStore';
+export { publishSessionBudget } from '@/modules/skin/sessionBudgetStore';
+export type { SessionBudget } from '@/modules/skin/sessionBudgetStore';
