@@ -29,7 +29,7 @@ import {
 import { taskmasterRoutes } from './modules/taskmaster/index.js';
 import { commandsRoutes } from './modules/commands/index.js';
 import { settingsRoutes } from './modules/settings/index.js';
-import { createSystemModule } from './modules/system/index.js';
+import { createSystemModule, startRecursosBroadcast, stopRecursosBroadcast } from './modules/system/index.js';
 import { createAgentModule } from './modules/agent/index.js';
 import projectModuleRoutes from './modules/projects/projects.routes.js';
 import notificationRoutes from './modules/notifications/notifications.routes.js';
@@ -371,6 +371,9 @@ async function startServer() {
             // Sends anything that came due while the server was not running,
             // then keeps polling.
             initializeScheduledMessageDispatcher(providerRuntimeService);
+            // RAM/disco/sesiones para el header (Fase 3): la métrica cambia sola con
+            // el tiempo, así que el propio intervalo es el disparador, no un evento.
+            startRecursosBroadcast();
 
             // Start server-side plugin processes for enabled plugins
             startEnabledPluginServers().catch(err => {
@@ -380,6 +383,7 @@ async function startServer() {
 
         await closeSessionsWatcher();
         closeScheduledMessageDispatcher();
+        stopRecursosBroadcast();
         // Clean up plugin processes on shutdown
         const shutdownRuntimeServices = async () => {
             try {

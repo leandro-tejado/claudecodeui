@@ -11,13 +11,7 @@ function leerMeminfoReal(): string {
   return readFileSync('/proc/meminfo', 'utf8');
 }
 
-/**
- * % de RAM usada a partir de `/proc/meminfo`. Usa `MemAvailable` (no
- * `MemFree`) porque ese campo ya descuenta el cache/buffers reclamable, que
- * en un VPS de este tamaño es la mayor parte de la memoria "libre" en el
- * papel.
- */
-export function calcularPorcentajeRamUsada(meminfoTexto: string): number | null {
+function parsearMeminfo(meminfoTexto: string): { totalKb: number; disponibleKb: number } | null {
   const total = /^MemTotal:\s+(\d+)/m.exec(meminfoTexto);
   const disponible = /^MemAvailable:\s+(\d+)/m.exec(meminfoTexto);
   if (!total || !disponible) {
@@ -25,13 +19,48 @@ export function calcularPorcentajeRamUsada(meminfoTexto: string): number | null 
   }
 
   const totalKb = Number(total[1]);
-  const disponibleKb = Number(disponible[1]);
   if (!totalKb) {
     return null;
   }
 
-  const usadaKb = totalKb - disponibleKb;
-  return (usadaKb / totalKb) * 100;
+  return { totalKb, disponibleKb: Number(disponible[1]) };
+}
+
+/**
+ * % de RAM usada a partir de `/proc/meminfo`. Usa `MemAvailable` (no
+ * `MemFree`) porque ese campo ya descuenta el cache/buffers reclamable, que
+ * en un VPS de este tamaño es la mayor parte de la memoria "libre" en el
+ * papel.
+ */
+export function calcularPorcentajeRamUsada(meminfoTexto: string): number | null {
+  const parseado = parsearMeminfo(meminfoTexto);
+  if (!parseado) {
+    return null;
+  }
+  const usadaKb = parseado.totalKb - parseado.disponibleKb;
+  return (usadaKb / parseado.totalKb) * 100;
+}
+
+const KB_POR_GB = 1024 * 1024;
+
+export type MedicionRam = {
+  porcentajePct: number | null;
+  usadaGb: number | null;
+  totalGb: number | null;
+};
+
+/** Igual que `calcularPorcentajeRamUsada`, pero sin re-parsear para sumar los GB crudos que pide el popover de recursos (Fase 3). */
+export function medirRamDesdeTexto(meminfoTexto: string): MedicionRam {
+  const parseado = parsearMeminfo(meminfoTexto);
+  if (!parseado) {
+    return { porcentajePct: null, usadaGb: null, totalGb: null };
+  }
+  const usadaKb = parseado.totalKb - parseado.disponibleKb;
+  return {
+    porcentajePct: (usadaKb / parseado.totalKb) * 100,
+    usadaGb: usadaKb / KB_POR_GB,
+    totalGb: parseado.totalKb / KB_POR_GB,
+  };
 }
 
 export type EstaSobreElTechoOptions = {

@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { usePlugins, PluginIcon } from '@/modules/plugins';
 import SkinCompactBar from '@/modules/skin/SkinCompactBar';
 import SkinContextRing from '@/modules/skin/SkinContextRing';
+import SkinRecursos from '@/modules/skin/SkinRecursos';
 import { useRunningTabTitle } from '@/modules/skin/hooks/useRunningTabTitle';
 import { toggleFilesPanel, toggleSidebarCollapsed, useSkinUi } from '@/modules/skin/skinUiStore';
 import { UsageWindowIndicator } from '@/modules/usage-window';
@@ -198,6 +199,7 @@ export default function SkinHeader({
           <SkinContextRing />
           <SkinCompactBar />
           <UsageWindowIndicator />
+          <SkinRecursos />
         </div>
 
         {/* Tema: un clic, sin entrar a Ajustes. El control de tres estados
