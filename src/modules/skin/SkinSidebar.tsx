@@ -11,6 +11,7 @@ import {
   Folder,
   FolderPlus,
   Pencil,
+  Pin,
   Plus,
   RefreshCw,
   Search,
@@ -83,7 +84,7 @@ type SkinSubagentSummary = {
   startedAt: string | null;
 };
 /** Mismo shape que `SessionTmuxInfo` en `projects-with-sessions-fetch.service.ts` — no se importa desde ahí porque el server no expone su código al cliente. */
-type SkinSessionTmuxInfo = { nombre: string; vivo: boolean } | null;
+type SkinSessionTmuxInfo = { nombre: string; vivo: boolean; fija?: boolean } | null;
 
 type SessionWithSubagents = ProjectSession & {
   subagentCount?: number;
@@ -401,9 +402,15 @@ export function SkinSidebar({
 
     const matched = projects
       .map((project) => {
-        const baseSessions = tmuxFilterActive
+        const filtered = tmuxFilterActive
           ? (project.sessions ?? []).filter((session) => getTmux(session)?.vivo)
           : project.sessions ?? [];
+        // La sesión orquestadora fija (`tmux.fija`) siempre arriba de su
+        // proyecto — es una sola por máquina, no hace falta un sort estable
+        // más fino que "fija primero, el resto en su orden de siempre".
+        const baseSessions = [...filtered].sort(
+          (a, b) => Number(getTmux(b)?.fija === true) - Number(getTmux(a)?.fija === true),
+        );
 
         if (!needle) return { project, sessions: baseSessions };
 
@@ -986,26 +993,51 @@ export function SkinSidebar({
                           ? 'outline outline-2 outline-offset-1 outline-amber-500'
                           : '';
 
+                    /*
+                     * Un punto de 6px de color se pierde a simple vista entre
+                     * 19+ sesiones apiladas: dos tonos parecidos se confunden
+                     * de reojo. El chip que lo reemplaza sigue siendo círculo
+                     * —`span.rounded-full` es el selector con el que ya
+                     * navega el test de subagentes de la Fase 5 del 15-sep,
+                     * tocar la forma de raíz le rompe la fila bajo los pies—
+                     * pero crece, se satura y suma un halo (`ring`) propio de
+                     * cada estado, así que la lectura no depende de percibir
+                     * el matiz exacto de un puntito de seis píxeles. La
+                     * precedencia no cambia, solo el dibujo.
+                     */
+                    type SessionBadgeState = 'running' | 'attention' | 'selected' | 'idle';
+                    const sessionBadgeState: SessionBadgeState = isRunning
+                      ? 'running'
+                      : attention.has(session.id)
+                        ? 'attention'
+                        : isActive
+                          ? 'selected'
+                          : 'idle';
+                    const badgeShapeClass: Record<SessionBadgeState, string> = {
+                      running:
+                        'rounded-full bg-sky-500 animate-pulse ring-2 ring-sky-500/40 ring-offset-1 ring-offset-background',
+                      attention:
+                        'rounded-full bg-emerald-500 ring-2 ring-emerald-500/40 ring-offset-1 ring-offset-background',
+                      selected:
+                        'rounded-full bg-primary ring-2 ring-primary/40 ring-offset-1 ring-offset-background',
+                      idle: 'rounded-full bg-muted-foreground/60',
+                    };
+                    const badgeTitle: Partial<Record<SessionBadgeState, string>> = {
+                      running: 'Corriendo ahora',
+                      attention: 'Algo llegó mientras mirabas otra sesión',
+                    };
+
                     const activityDot = (
                       <span
+                        data-testid="session-status-badge"
+                        data-state={sessionBadgeState}
                         title={
-                          isRunning
-                            ? 'Corriendo ahora'
-                            : attention.has(session.id)
-                              ? 'Algo llegó mientras mirabas otra sesión'
-                              : budgetPercent >= AMBER_AT
-                                ? `${Math.round(budgetPercent)}% del presupuesto antes de compactar`
-                                : undefined
+                          badgeTitle[sessionBadgeState] ??
+                          (budgetPercent >= AMBER_AT
+                            ? `${Math.round(budgetPercent)}% del presupuesto antes de compactar`
+                            : undefined)
                         }
-                        className={`h-1.5 w-1.5 flex-none rounded-full ${budgetRingClass} ${
-                          isRunning
-                            ? 'animate-pulse bg-sky-500'
-                            : attention.has(session.id)
-                              ? 'bg-emerald-500 ring-2 ring-emerald-500/20'
-                              : isActive
-                                ? 'bg-primary'
-                                : 'bg-muted-foreground/60'
-                        }`}
+                        className={`h-2.5 w-2.5 flex-none ${badgeShapeClass[sessionBadgeState]} ${budgetRingClass}`}
                       />
                     );
 
@@ -1106,10 +1138,19 @@ export function SkinSidebar({
                               {subagentCount}
                             </span>
                           )}
-                          {tmux?.vivo && (
-                            <span title={`tmux: ${tmux.nombre}`} className="flex-none">
-                              <Terminal className="h-3 w-3 text-muted-foreground" />
+                          {tmux?.fija ? (
+                            <span
+                              title="Sesión orquestadora fija — siempre prendida"
+                              className="flex-none text-primary"
+                            >
+                              <Pin className="h-3 w-3 fill-current" />
                             </span>
+                          ) : (
+                            tmux?.vivo && (
+                              <span title={`tmux: ${tmux.nombre}`} className="flex-none">
+                                <Terminal className="h-3 w-3 text-muted-foreground" />
+                              </span>
+                            )
                           )}
                           <span
                             title={`Último turno escrito hace ${formatAge(session)}`}
