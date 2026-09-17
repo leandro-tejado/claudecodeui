@@ -24,6 +24,11 @@ const STALE_MS = 15 * 60 * 1000;
 /** How often the ring re-checks staleness on its own, without a new WS push. */
 const TICK_MS = 60 * 1000;
 
+/** Same formatting the label already used for `fiveHour.resetsAt`, reused for `sevenDay`. */
+function formatResetTime(epochMs: number): string {
+  return new Date(epochMs).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
 export default function UsageWindowIndicator() {
   const snapshot = useUsageWindow();
   const [open, setOpen] = useState(false);
@@ -45,16 +50,20 @@ export default function UsageWindowIndicator() {
   }, []);
 
   const fiveHour = snapshot?.fiveHour ?? null;
+  const sevenDay = snapshot?.sevenDay ?? null;
   const isFresh = fiveHour !== null && now - fiveHour.leidoEn <= STALE_MS;
 
+  // Igual que `fiveHour.resetsAt`: se agrega solo cuando el dato existe, nunca
+  // un valor inventado para la ventana semanal.
+  const sevenDayResetLabel =
+    sevenDay && sevenDay.resetsAt !== null ? ` · Semanal: se renueva a las ${formatResetTime(sevenDay.resetsAt)}` : '';
+
   const label =
-    isFresh && fiveHour
+    (isFresh && fiveHour
       ? `Ventana de 5 horas: ${Math.round(fiveHour.porcentaje)}% real${
-          fiveHour.resetsAt
-            ? `, se renueva a las ${new Date(fiveHour.resetsAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
-            : ''
+          fiveHour.resetsAt ? `, se renueva a las ${formatResetTime(fiveHour.resetsAt)}` : ''
         }`
-      : 'Ventana de 5 horas: sin dato';
+      : 'Ventana de 5 horas: sin dato') + sevenDayResetLabel;
 
   return (
     <div className="relative flex-shrink-0">
