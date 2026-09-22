@@ -3,7 +3,7 @@
 // so a rebuild + refresh always picks up the latest assets.
 // Bumping this purges everything the previous version accumulated: the
 // activate handler below deletes every cache whose name is not this one.
-const CACHE_NAME = 'claude-ui-v4';
+const CACHE_NAME = 'claude-ui-v5';
 const urlsToCache = [
   '/manifest.json'
 ];
@@ -16,6 +16,52 @@ self.addEventListener('install', event => {
   );
   self.skipWaiting();
 });
+
+// Hashed assets, fetched so that a flaky link cannot leave the app unusable.
+//
+// Two things were breaking here on a phone connected over a relay, where the
+// bundle arrives at tens of KB/s:
+//
+//   1. `response.clone()` tees a live network stream, and WebKit aborts the
+//      whole thing when one branch drains slower than the other — surfacing as
+//      "FetchEvent.respondWith received an error: TypeError: Load failed",
+//      which is how vendor-codemirror died mid-download. Reading the body once
+//      into a buffer and building both responses from it removes the tee.
+//   2. A single dropped request killed the import for good. A download cut
+//      halfway is worth retrying; a 404 is not, so only network failures do.
+async function serveAsset(request) {
+  const cached = await caches.match(request).catch(() => undefined);
+  if (cached) return cached;
+
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const response = await fetch(request);
+      // An honest HTTP error is an answer: hand it back instead of retrying.
+      if (!response || !response.ok) return response;
+
+      const buffer = await response.arrayBuffer();
+      const init = {
+        status: response.status,
+        statusText: response.statusText,
+        headers: new Headers(response.headers),
+      };
+
+      caches.open(CACHE_NAME)
+        .then(cache => cache.put(request, new Response(buffer, init)))
+        .catch(() => {}); /* a full cache is not a reason to fail the request */
+
+      return new Response(buffer, init);
+    } catch (error) {
+      // Backs off a little before trying again; the last failure falls through.
+      await new Promise(resolve => setTimeout(resolve, 400 * (attempt + 1)));
+    }
+  }
+
+  // A chunk that neither cache nor network can supply must still resolve.
+  // Rejecting here fails the import inside the app, which is how a whole view
+  // ends up not rendering at all.
+  return new Response('', { status: 503, statusText: 'Asset unavailable' });
+}
 
 // Fetch event — network-first for everything except hashed assets
 self.addEventListener('fetch', event => {
@@ -43,25 +89,7 @@ self.addEventListener('fetch', event => {
 
   // Hashed assets (JS/CSS in /assets/) — cache-first since filenames change per build
   if (url.includes('/assets/')) {
-    event.respondWith(
-      caches.match(event.request)
-        .catch(() => undefined)
-        .then(cached => cached || fetch(event.request).then(response => {
-          // Only a usable response is worth keeping: caching an error would
-          // pin a broken chunk for the life of the cache.
-          if (response && response.ok) {
-            const clone = response.clone();
-            caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
-          }
-          return response;
-        }).catch(() => new Response('', {
-          // A lazily-loaded chunk that neither cache nor network can supply
-          // must still resolve. Rejecting here fails the import inside the
-          // app, which is how a whole view ends up not rendering.
-          status: 503,
-          statusText: 'Asset unavailable',
-        })))
-    );
+    event.respondWith(serveAsset(event.request));
     return;
   }
 
