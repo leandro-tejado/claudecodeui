@@ -83,26 +83,37 @@
       its own storage, never navigates to the network on its own, and can go on
       serving a cached index.html that asks for a bundle a later build already
       deleted. The import 404s, React never mounts, and the result is a blank
-      screen with nothing on it to act on — which is exactly what happened on
-      the phone while the same URL worked everywhere else.
+      screen with nothing on it to act on.
 
       Two guards, in order:
         1. `updateViaCache: 'none'` plus an explicit `update()` on every load,
-           so sw.js itself is never served from the HTTP cache and a new worker
-           is picked up instead of the old one perpetuating itself.
-        2. A watchdog. If #root is still empty after the grace period, drop
-           every worker and cache and reload once. sessionStorage keeps that to
-           a single attempt, and a second failure says so in plain text with a
-           link to the full cleaner instead of leaving the page blank.
+           so sw.js itself is never served from the HTTP cache and an old worker
+           cannot perpetuate itself.
+        2. Recovery that reloads ONLY on a real asset error. The first version
+           of this reloaded on a timer, which is worse than the disease: the
+           main bundle is ~3 MB and takes seconds to even execute on a phone,
+           so a timed reload aborts a download that was going to succeed and
+           loops forever. A slow load is not a broken load, and only a failed
+           request proves the difference. The timer that remains never reloads
+           — past the deadline it just explains itself, and only once the
+           network has been quiet, so a bundle still arriving is left alone.
     -->
     <script>
       (function () {
         var FLAG = 'sw-blank-recovery';
-        var GRACE_MS = 12000;
+        var DEADLINE_MS = 45000;
+        var QUIET_MS = 8000;
+        var assetFailed = false;
 
-        function mounted() {
-          var root = document.getElementById('root');
-          return !!root && root.childElementCount > 0;
+        function root() { return document.getElementById('root'); }
+        function mounted() { var el = root(); return !!el && el.childElementCount > 0; }
+
+        function flag(value) {
+          try {
+            if (value === null) { sessionStorage.removeItem(FLAG); return null; }
+            if (value !== undefined) { sessionStorage.setItem(FLAG, value); return value; }
+            return sessionStorage.getItem(FLAG);
+          } catch (error) { return null; } /* private mode: nothing to read or keep */
         }
 
         function wipeAndReload() {
@@ -122,16 +133,30 @@
           Promise.all(jobs).then(function () { location.reload(); }, function () { location.reload(); });
         }
 
-        function showFallback() {
-          var root = document.getElementById('root');
-          if (!root || root.childElementCount > 0) return;
-          root.innerHTML =
+        function explain(detail) {
+          var el = root();
+          if (!el || el.childElementCount > 0) return;
+          el.innerHTML =
             '<div style="font-family:system-ui,-apple-system,sans-serif;max-width:32rem;margin:15vh auto;padding:0 1.5rem;line-height:1.6">' +
-            '<h1 style="font-size:1.25rem;margin:0 0 .5rem">La app no cargó</h1>' +
-            '<p style="margin:0 0 1rem;opacity:.75">Ya se limpió la caché una vez y sigue sin montar. El limpiador completo borra service workers y caches de este origen.</p>' +
-            '<p><a href="/clear-cache.html" style="color:#2563eb">Abrir el limpiador de caché</a></p>' +
+            '<h1 style="font-size:1.25rem;margin:0 0 .5rem">La app no terminó de cargar</h1>' +
+            '<p style="margin:0 0 1rem;opacity:.75">' + detail + '</p>' +
+            '<p><a href="/diag.html" style="color:#2563eb">Abrir el diagnóstico</a>' +
+            ' · <a href="/clear-cache.html" style="color:#2563eb">Limpiar caché</a></p>' +
             '</div>';
         }
+
+        // A script or stylesheet that failed outright is the one signal worth
+        // acting on: that is the stale-bundle case, and a clean reload fixes it.
+        window.addEventListener('error', function (event) {
+          var el = event.target;
+          if (!el || !el.tagName) return;
+          var url = el.src || el.href || '';
+          if (url.indexOf('/assets/') === -1) return;
+          assetFailed = true;
+          if (flag()) { explain('Un archivo de la app no se pudo cargar y limpiar la caché no alcanzó.'); return; }
+          flag(String(Date.now()));
+          wipeAndReload();
+        }, true);
 
         if ('serviceWorker' in navigator) {
           window.addEventListener('load', function () {
@@ -143,19 +168,26 @@
           });
         }
 
-        window.addEventListener('load', function () {
-          setTimeout(function () {
-            if (mounted()) {
-              try { sessionStorage.removeItem(FLAG); } catch (error) { /* private mode */ }
-              return;
-            }
-            var tried = null;
-            try { tried = sessionStorage.getItem(FLAG); } catch (error) { /* private mode */ }
-            if (tried) { showFallback(); return; }
-            try { sessionStorage.setItem(FLAG, String(Date.now())); } catch (error) { /* private mode */ }
-            wipeAndReload();
-          }, GRACE_MS);
-        });
+        function lastNetworkActivity() {
+          if (!window.performance || !performance.getEntriesByType) return 0;
+          var entries = performance.getEntriesByType('resource');
+          var last = 0;
+          for (var i = 0; i < entries.length; i++) {
+            var end = entries[i].responseEnd || entries[i].startTime;
+            if (end > last) last = end;
+          }
+          return last;
+        }
+
+        function check() {
+          if (mounted()) { flag(null); return; }
+          if (assetFailed) return; /* the error handler owns this case */
+          var quiet = performance.now() - lastNetworkActivity();
+          if (quiet < QUIET_MS) { setTimeout(check, 5000); return; } /* still arriving */
+          explain('Los archivos terminaron de bajar pero la interfaz no montó. El diagnóstico dice cuál falló.');
+        }
+
+        setTimeout(check, DEADLINE_MS);
       })();
     </script>
   </body>

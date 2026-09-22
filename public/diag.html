@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Diagnóstico — LT Space</title>
+<style>
+  body { font-family: -apple-system, system-ui, sans-serif; margin: 0; padding: 16px; line-height: 1.5; font-size: 15px; }
+  h1 { font-size: 1.15rem; margin: 0 0 12px; }
+  .row { padding: 8px 10px; border-radius: 8px; background: #f2f2f2; margin-bottom: 6px; word-break: break-all; }
+  .ok { background: #e6f6e9; } .bad { background: #fdecec; } .warn { background: #fdf4e3; }
+  code { font-family: ui-monospace, Menlo, monospace; font-size: .85em; }
+  button { font-size: 16px; padding: 10px 16px; border: 0; border-radius: 8px; background: #2563eb; color: #fff; }
+</style>
+</head>
+<body>
+<h1>Diagnóstico — LT Space</h1>
+<div id="out"></div>
+<p><button onclick="location.reload()">Volver a correr</button></p>
+<div id="root" style="display:none"></div>
+<script>
+(function () {
+  var out = document.getElementById('out');
+  var errors = [];
+  window.addEventListener('error', function (e) {
+    errors.push(e.message + (e.filename ? ' @ ' + e.filename.replace(location.origin, '') : ''));
+  }, true);
+  window.addEventListener('unhandledrejection', function (e) {
+    errors.push('promise: ' + (e.reason && e.reason.message ? e.reason.message : String(e.reason)));
+  });
+
+  function line(text, cls) {
+    var div = document.createElement('div');
+    div.className = 'row ' + (cls || '');
+    div.innerHTML = text;
+    out.appendChild(div);
+    return div;
+  }
+
+  line('<b>Modo:</b> ' + (navigator.standalone ? 'app instalada (standalone)' : 'Safari normal') +
+       '<br><b>Origen:</b> <code>' + location.origin + '</code>' +
+       '<br><b>UA:</b> <code>' + navigator.userAgent + '</code>');
+
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then(function (regs) {
+      if (!regs.length) { line('<b>Service workers:</b> ninguno registrado', 'ok'); return; }
+      regs.forEach(function (r) {
+        var w = r.active || r.waiting || r.installing;
+        line('<b>Service worker:</b> <code>' + (w ? w.scriptURL : '?') + '</code> — estado ' + (w ? w.state : '?'), 'warn');
+      });
+    });
+  }
+
+  if (window.caches) {
+    caches.keys().then(function (names) {
+      line('<b>Caches:</b> ' + (names.length ? names.join(', ') : 'ninguna'), names.length ? 'warn' : 'ok');
+    });
+  }
+
+  // Leer el index del servidor y probar cada asset que declara.
+  var t0 = Date.now();
+  fetch('/?diag=' + t0, { cache: 'no-store' })
+    .then(function (r) { return r.text(); })
+    .then(function (html) {
+      line('<b>index.html:</b> ' + html.length + ' bytes en ' + (Date.now() - t0) + ' ms', 'ok');
+      var assets = (html.match(/\/assets\/[A-Za-z0-9._-]+\.(js|css)/g) || []).filter(function (v, i, a) { return a.indexOf(v) === i; });
+      if (!assets.length) { line('El index no declara assets — eso ya es el problema', 'bad'); return; }
+      var chain = Promise.resolve();
+      assets.forEach(function (path) {
+        chain = chain.then(function () {
+          var t = Date.now();
+          return fetch(path, { cache: 'no-store' })
+            .then(function (r) { return r.arrayBuffer().then(function (b) { return { status: r.status, size: b.byteLength }; }); })
+            .then(function (res) {
+              var ms = Date.now() - t;
+              var kbs = res.size ? Math.round(res.size / 1024 / (ms / 1000)) : 0;
+              line('<code>' + path + '</code><br>' + res.status + ' · ' + Math.round(res.size / 1024) + ' KB · ' +
+                   ms + ' ms · ' + kbs + ' KB/s', res.status === 200 && res.size > 0 ? 'ok' : 'bad');
+            })
+            .catch(function (err) { line('<code>' + path + '</code><br>FALLÓ: ' + err.message, 'bad'); });
+        });
+      });
+      return chain.then(function () {
+        var main = assets.filter(function (p) { return /\/assets\/index-.*\.js$/.test(p); })[0];
+        if (!main) return;
+        var t = Date.now();
+        line('Ejecutando el bundle principal…');
+        return import(main).then(function () {
+          line('<b>El bundle se ejecutó sin excepción</b> (' + (Date.now() - t) + ' ms)', 'ok');
+        }).catch(function (err) {
+          line('<b>El bundle falló al ejecutarse:</b><br><code>' + (err && err.message ? err.message : String(err)) + '</code>', 'bad');
+        });
+      });
+    })
+    .catch(function (err) { line('No se pudo leer el index: ' + err.message, 'bad'); })
+    .then(function () {
+      setTimeout(function () {
+        line('<b>Errores capturados:</b> ' + (errors.length ? '<br><code>' + errors.join('</code><br><code>') + '</code>' : 'ninguno'),
+             errors.length ? 'bad' : 'ok');
+      }, 1500);
+    });
+})();
+</script>
+</body>
+</html>
