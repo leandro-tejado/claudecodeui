@@ -205,6 +205,51 @@ app.use('/api/voice', authenticateToken, voiceRoutes);
 // Serve public files (like api-docs.html)
 app.use(express.static(path.join(APP_ROOT, 'public')));
 
+// Precompressed assets, before express.static gets a say.
+//
+// The link to a phone on a Tailscale relay runs at tens of KB/s, and the client
+// is ~4.4 MB of uncompressed JavaScript: at that rate a chunk gets cut before
+// it lands, and the app never mounts. `scripts/precompress.mjs` writes a .br
+// and a .gz next to every built asset, and this hands them over when the client
+// says it can take them. Nothing is compressed per request.
+const PRECOMPRESSED_TYPES: Record<string, string> = {
+    '.js': 'application/javascript; charset=UTF-8',
+    '.css': 'text/css; charset=UTF-8',
+    '.svg': 'image/svg+xml',
+    '.json': 'application/json; charset=UTF-8',
+};
+
+app.use((req: Request, res: Response, next: NextFunction) => {
+    if (req.method !== 'GET' && req.method !== 'HEAD') return next();
+
+    const contentType = PRECOMPRESSED_TYPES[path.extname(req.path)];
+    if (!contentType) return next();
+
+    // Normalise before touching the disk: a path that climbs out of dist/ is
+    // not a file we are willing to look for, let alone serve.
+    const segments = path.normalize(decodeURIComponent(req.path)).split(path.sep);
+    const relative = segments.filter(Boolean).join(path.sep);
+    const distRoot = path.join(APP_ROOT, 'dist');
+    const target = path.join(distRoot, relative);
+    if (!target.startsWith(distRoot + path.sep)) return next();
+
+    const accepted = String(req.headers['accept-encoding'] || '');
+    const encodings: Array<[string, string]> = [['br', '.br'], ['gzip', '.gz']];
+
+    for (const [encoding, suffix] of encodings) {
+        if (!accepted.includes(encoding)) continue;
+        if (!fs.existsSync(target + suffix)) continue;
+
+        res.setHeader('Content-Type', contentType);
+        res.setHeader('Content-Encoding', encoding);
+        res.setHeader('Vary', 'Accept-Encoding');
+        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+        return res.sendFile(target + suffix);
+    }
+
+    return next();
+});
+
 // Static files served after API routes
 // Add cache control: HTML files should not be cached, but assets can be cached
 app.use(express.static(path.join(APP_ROOT, 'dist'), {
