@@ -8,7 +8,7 @@ import { cn } from '@/shared/utils';
 import type { ProjectSession, RecentConversationListItem, SessionRowActions } from '@/shared/types';
 import { formatCompactAge } from '@/modules/sidebar/utils/sidebarProjectFormatting';
 import SessionOptions from '@/modules/sidebar/SessionOptions';
-import { ReorderList } from '@/modules/sidebar/ReorderList';
+import { LazyReorderList as ReorderList } from '@/modules/sidebar/LazyReorderList';
 
 const CLAVE_ORDEN = 'cloudcli-orden-recientes';
 

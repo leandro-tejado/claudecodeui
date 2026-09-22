@@ -5,7 +5,7 @@ import type { TFunction } from 'i18next';
 import { Button } from '@/shared/ui';
 import type { LLMProvider, Project, ProjectSession, SessionWithProvider } from '@/shared/types';
 import SidebarSessionItem from '@/modules/sidebar/SidebarSessionItem';
-import { ReorderList } from '@/modules/sidebar/ReorderList';
+import { LazyReorderList as ReorderList } from '@/modules/sidebar/LazyReorderList';
 import { useCompactSidebar } from '@/modules/sidebar/hooks/useCompactSidebar';
 
 /** Orden manual por proyecto — cada proyecto arrastra sus propias sesiones. */

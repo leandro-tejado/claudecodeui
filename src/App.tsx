@@ -10,6 +10,7 @@ import { BrowserNotificationsProvider } from '@/modules/notifications';
 import { PluginsProvider } from '@/modules/plugins';
 import { ProjectWorkspaceRoute } from '@/modules/project-workspace';
 import { i18n } from '@/modules/i18n';
+import PrefetchHeavyChunks from '@/PrefetchHeavyChunks';
 
 const DEPLOYMENT_ASSET_DIRECTORIES = new Set(['assets', 'static', 'icons', 'images']);
 
@@ -124,6 +125,7 @@ export default function App() {
               <TasksSettingsProvider>
                 <TaskMasterProvider>
                 <ProtectedRoute>
+                  <PrefetchHeavyChunks />
                   <Router basename={routerBasename}>
                     <Routes>
                       <Route path="/" element={<ProjectWorkspaceRoute />} />

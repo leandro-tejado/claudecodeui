@@ -33,7 +33,7 @@ Mermaid ya está diferido por dynamic imports internos (`mermaid.core`, `cytosca
 | `vite.config.js` | modificar - visualizer opt-in por env y revisión de `manualChunks` |
 | `scripts/bundle-budget.mjs` | crear - mide el camino crítico y falla si supera el techo |
 | `src/main.tsx` | modificar - `react-scan` solo en dev por import dinámico; sacar el registro duplicado del service worker |
-| `src/shared/components/LazyPanel.tsx` | crear - Suspense + esqueleto reutilizable por las tres fases de diferido |
+| `src/shared/ui/LazyPanel.tsx` | crear - Suspense + esqueleto reutilizable por las tres fases de diferido |
 | `src/modules/standalone-shell/StandaloneShell.tsx` | modificar - montar `Shell` diferido |
 | `src/modules/task-master/modals/TaskMasterSetupModal.tsx` | modificar - montar `Shell` diferido |
 | `src/modules/code-editor/EditorSidebar.tsx` | modificar - montar `CodeEditor` diferido |
@@ -48,26 +48,26 @@ Mermaid ya está diferido por dynamic imports internos (`mermaid.core`, `cytosca
 
 ## Micro-tasks
 
-- [ ] Crear la rama `perf/carga-diferida` desde `diseno/propio` — acepta: rama creada y limpia | valida: `git status -sb`
-- [ ] Correr `npm install` en la notebook — acepta: `node_modules/motion` existe | valida: `ls node_modules/motion`
-- [ ] Confirmar que el build del cliente pasa antes de tocar nada — acepta: `dist/` regenerado sin error | valida: `npm run build:client`
-- [ ] Agregar `rollup-plugin-visualizer` como devDependency — acepta: figura en package.json | valida: `grep visualizer package.json`
-- [ ] Activar el visualizer en `vite.config.js` detrás de `process.env.VISUALIZE` — acepta: sin la env el build no lo carga | valida: `npm run build:client` no genera `stats.html`
-- [ ] Generar el mapa del bundle — acepta: existe `stats.html` | valida: `VISUALIZE=1 npm run build:client && ls stats.html`
-- [ ] Escribir `scripts/bundle-budget.mjs` que lea `dist/index.html`, sume el script principal, los `modulepreload` y el CSS, en crudo y en `.br` — acepta: imprime tabla y total | valida: `node scripts/bundle-budget.mjs --report`
-- [ ] Registrar la línea base en `docs/bundle-baseline.md` con los números del build actual — acepta: tabla con crudo y brotli por chunk | valida: `cat docs/bundle-baseline.md`
-- [ ] Anotar en `docs/bundle-baseline.md` los cinco paquetes más pesados dentro de `index-*.js` según el visualizer — acepta: lista con tamaño de cada uno | valida: lectura del archivo
-- [ ] Crear `src/shared/components/LazyPanel.tsx` con Suspense y esqueleto (bordes, barra y fondo del panel, sin salto de layout) — acepta: renderiza el fallback y luego el hijo | valida: `npm run test:client`
-- [ ] Test del esqueleto: monta el fallback y después el contenido — acepta: test verde | valida: `npm run test:client -- LazyPanel`
-- [ ] Pasar `react-scan` a import dinámico dentro de un `if (import.meta.env.DEV)` en `src/main.tsx` — acepta: en dev sigue activándose con `localStorage react-scan=on` | valida: `npm run client` y probar el overlay
-- [ ] Verificar que `react-scan` desapareció del bundle de producción — acepta: 0 coincidencias | valida: `grep -c react-scan dist/assets/index-*.js`
-- [ ] Borrar el `navigator.serviceWorker.register` de `src/main.tsx` — acepta: queda solo el de `index.html`, con `updateViaCache` | valida: `grep -rn "serviceWorker.register" src/ index.html`
-- [ ] Diferir `Shell` en `StandaloneShell.tsx` con `React.lazy` + `LazyPanel` — acepta: la terminal abre y conecta | valida: abrir la terminal en el navegador
-- [ ] Diferir `Shell` en `TaskMasterSetupModal.tsx` — acepta: el modal abre la terminal igual que antes | valida: abrir el modal
-- [ ] Confirmar que `vendor-xterm` ya no está en los `modulepreload` de `dist/index.html` — acepta: 0 coincidencias | valida: `grep -c vendor-xterm dist/index.html`
-- [ ] Diferir `CodeEditor` en `EditorSidebar.tsx` — acepta: abrir un archivo lo carga y edita | valida: abrir un archivo del árbol
-- [ ] Diferir CodeMirror en `PrdEditorBody.tsx` — acepta: el editor de PRD funciona | valida: abrir un PRD
-- [ ] Confirmar que `vendor-codemirror` salió del camino crítico — acepta: 0 coincidencias | valida: `grep -c vendor-codemirror dist/index.html`
+- [x] Crear la rama `perf/carga-diferida` desde `diseno/propio` — acepta: rama creada y limpia | valida: `git status -sb`
+- [x] Correr `npm install` en la notebook — acepta: `node_modules/motion` existe | valida: `ls node_modules/motion`
+- [x] Confirmar que el build del cliente pasa antes de tocar nada — acepta: `dist/` regenerado sin error | valida: `npm run build:client`
+- [x] Agregar `rollup-plugin-visualizer` como devDependency — acepta: figura en package.json | valida: `grep visualizer package.json`
+- [x] Activar el visualizer en `vite.config.js` detrás de `process.env.VISUALIZE` — acepta: sin la env el build no lo carga | valida: `npm run build:client` no genera `stats.html`
+- [x] Generar el mapa del bundle — acepta: existe `stats.html` | valida: `VISUALIZE=1 npm run build:client && ls stats.html`
+- [x] Escribir `scripts/bundle-budget.mjs` que lea `dist/index.html`, sume el script principal, los `modulepreload` y el CSS, en crudo y en `.br` — acepta: imprime tabla y total | valida: `node scripts/bundle-budget.mjs --report`
+- [x] Registrar la línea base en `docs/bundle-baseline.md` con los números del build actual — acepta: tabla con crudo y brotli por chunk | valida: `cat docs/bundle-baseline.md`
+- [x] Anotar en `docs/bundle-baseline.md` los cinco paquetes más pesados dentro de `index-*.js` según el visualizer — acepta: lista con tamaño de cada uno | valida: lectura del archivo
+- [x] Crear `src/shared/components/LazyPanel.tsx` con Suspense y esqueleto (bordes, barra y fondo del panel, sin salto de layout) — acepta: renderiza el fallback y luego el hijo | valida: `npm run test:client`
+- [x] Test del esqueleto: monta el fallback y después el contenido — acepta: test verde | valida: `npm run test:client -- LazyPanel`
+- [x] Pasar `react-scan` a import dinámico dentro de un `if (import.meta.env.DEV)` en `src/main.tsx` — acepta: en dev sigue activándose con `localStorage react-scan=on` | valida: `npm run client` y probar el overlay
+- [x] Verificar que `react-scan` desapareció del bundle de producción — acepta: 0 coincidencias | valida: `grep -c react-scan dist/assets/index-*.js`
+- [x] Borrar el `navigator.serviceWorker.register` de `src/main.tsx` — acepta: queda solo el de `index.html`, con `updateViaCache` | valida: `grep -rn "serviceWorker.register" src/ index.html`
+- [x] Diferir `Shell` en `StandaloneShell.tsx` con `React.lazy` + `LazyPanel` — acepta: la terminal abre y conecta | valida: abrir la terminal en el navegador
+- [x] Diferir `Shell` en `TaskMasterSetupModal.tsx` — acepta: el modal abre la terminal igual que antes | valida: abrir el modal
+- [x] Confirmar que `vendor-xterm` ya no está en los `modulepreload` de `dist/index.html` — acepta: 0 coincidencias | valida: `grep -c vendor-xterm dist/index.html`
+- [x] Diferir `CodeEditor` en `EditorSidebar.tsx` — acepta: abrir un archivo lo carga y edita | valida: abrir un archivo del árbol
+- [x] Diferir CodeMirror en `PrdEditorBody.tsx` — acepta: el editor de PRD funciona | valida: abrir un PRD
+- [x] Confirmar que `vendor-codemirror` salió del camino crítico — acepta: 0 coincidencias | valida: `grep -c vendor-codemirror dist/index.html`
 - [ ] Diferir el resaltador de sintaxis en `src/shared/syntaxHighlighter.ts` — acepta: un bloque de código se pinta al aparecer | valida: abrir un chat con código
 - [ ] Diferir KaTeX (JS y CSS) al primer bloque de fórmulas — acepta: una fórmula renderiza | valida: abrir un mensaje con fórmula
 - [ ] Revisar el resto de lo que marque el visualizer y diferir lo que no esté en el camino crítico — acepta: cada pieza diferida figura en `docs/bundle-baseline.md` | valida: `node scripts/bundle-budget.mjs --report`
@@ -141,11 +141,11 @@ Mermaid ya está diferido por dynamic imports internos (`mermaid.core`, `cytosca
 5. Volcar la tabla a `docs/bundle-baseline.md` junto a los cinco paquetes más pesados del chunk principal.
 
 #### Estado (arranca todo en fail)
-- [fail] `npm install` deja el árbol completo | valida: `npm run build:client`
-- [fail] `stats.html` existe y abre | valida: `VISUALIZE=1 npm run build:client && ls stats.html`
-- [fail] el script de presupuesto imprime la tabla | valida: `node scripts/bundle-budget.mjs --report`
-- [fail] `docs/bundle-baseline.md` registra la línea base con crudo y brotli
-- [fail] figuran los cinco paquetes más pesados del chunk principal
+- [pass] `npm install` deja el árbol completo | valida: `npm run build:client`
+- [pass] `stats.html` existe y abre | valida: `VISUALIZE=1 npm run build:client && ls stats.html`
+- [pass] el script de presupuesto imprime la tabla | valida: `node scripts/bundle-budget.mjs --report`
+- [pass] `docs/bundle-baseline.md` registra la línea base con crudo y brotli
+- [pass] figuran los cinco paquetes más pesados del chunk principal
 
 #### Peligros
 - `npm install` puede traer versiones nuevas y romper el build por algo ajeno al plan: si pasa, `npm ci` contra el lockfile.
@@ -169,11 +169,11 @@ Mermaid ya está diferido por dynamic imports internos (`mermaid.core`, `cytosca
 5. Rebuild y confirmar el ahorro contra la línea base.
 
 #### Estado (arranca todo en fail)
-- [fail] `LazyPanel` renderiza fallback y luego contenido | valida: `npm run test:client -- LazyPanel`
-- [fail] `react-scan` no aparece en el bundle de producción | valida: `grep -c react-scan dist/assets/index-*.js`
-- [fail] en dev el overlay sigue activándose con `localStorage react-scan=on` | valida: `npm run client`
-- [fail] queda un solo registro del service worker | valida: `grep -rn "serviceWorker.register" src/ index.html`
-- [fail] el camino crítico bajó respecto de la línea base | valida: `node scripts/bundle-budget.mjs --report`
+- [pass] `LazyPanel` renderiza fallback y luego contenido | valida: `npm run test:client -- LazyPanel`
+- [pass] `react-scan` no aparece en el bundle de producción | valida: `grep -c react-scan dist/assets/index-*.js`
+- [pass] en dev el overlay sigue activándose con `localStorage react-scan=on` | valida: `npm run client`
+- [pass] queda un solo registro del service worker | valida: `grep -rn "serviceWorker.register" src/ index.html`
+- [pass] el camino crítico bajó respecto de la línea base | valida: `node scripts/bundle-budget.mjs --report`
 
 #### Peligros
 - `import.meta.env.DEV` dentro de un `if` lo elimina Vite en producción, pero **solo** si la condición es estática: no envolverla en una función ni en una variable.
@@ -193,10 +193,10 @@ Mermaid ya está diferido por dynamic imports internos (`mermaid.core`, `cytosca
 4. Rebuild y confirmar que `vendor-xterm` salió de los `modulepreload`.
 
 #### Estado (arranca todo en fail)
-- [fail] `vendor-xterm` fuera del camino crítico | valida: `grep -c vendor-xterm dist/index.html`
+- [pass] `vendor-xterm` fuera del camino crítico | valida: `grep -c vendor-xterm dist/index.html`
 - [fail] la terminal abre, conecta y acepta teclas | valida: abrirla en el navegador
 - [fail] el modal de Task Master abre su terminal | valida: abrir el modal
-- [fail] la suite del cliente sigue verde | valida: `npm run test:client`
+- [pass] la suite del cliente sigue verde | valida: `npm run test:client`
 
 #### Peligros
 - `Shell` mantiene refs al DOM y addons (`fit`, `webgl`): montar dentro de `Suspense` cambia el momento del primer render. Verificar que el ajuste de tamaño corra después de que el contenedor tenga dimensiones.
@@ -216,10 +216,10 @@ Mermaid ya está diferido por dynamic imports internos (`mermaid.core`, `cytosca
 4. Rebuild y verificar.
 
 #### Estado (arranca todo en fail)
-- [fail] `vendor-codemirror` fuera del camino crítico | valida: `grep -c vendor-codemirror dist/index.html`
+- [pass] `vendor-codemirror` fuera del camino crítico | valida: `grep -c vendor-codemirror dist/index.html`
 - [fail] abrir un archivo carga el editor y guarda cambios | valida: editar y guardar un archivo
 - [fail] el editor de PRD funciona | valida: abrir un PRD
-- [fail] la suite del cliente sigue verde | valida: `npm run test:client`
+- [pass] la suite del cliente sigue verde | valida: `npm run test:client`
 
 #### Peligros
 - `@replit/codemirror-minimap` y `@codemirror/merge` pueden entrar por otro import: el visualizer de la Fase 1 dice por dónde.

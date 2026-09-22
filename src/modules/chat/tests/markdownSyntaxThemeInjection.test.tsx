@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 
 import { test, vi } from 'vitest';
-import { render } from '@testing-library/react';
+import { render, waitFor } from '@testing-library/react';
 
 import { Markdown } from '@/modules/chat/transcript/Markdown';
 
@@ -27,6 +27,28 @@ const STYLE_ELEMENT_SELECTOR = 'style#cc-syntax-theme';
 const CODE_MARKDOWN = 'Intro line.\n\n```ts\nconst answer = 41;\n```\n';
 
 const renderMarkdown = () => render(<Markdown>{CODE_MARKDOWN}</Markdown>);
+
+/**
+ * The highlighter is loaded on demand, so a fenced block first renders as plain
+ * text and gains its colours a tick later. These tests are about the colours, so
+ * they wait for the real highlighter to take over.
+ */
+const renderHighlighted = async () => {
+  const result = renderMarkdown();
+  // Generous timeout: the first test to render a code block pays for loading the
+  // highlighter and registering 51 grammars, which takes most of a second on a
+  // loaded machine.
+  await waitFor(
+    () => {
+      assert.ok(
+        result.container.querySelector('pre[style*="--cc-syntax"]'),
+        'expected the deferred highlighter to replace the plain fallback',
+      );
+    },
+    { timeout: 10000 },
+  );
+  return result;
+};
 
 /** The `--cc-syntax-N` names the rendered highlighter actually asks the page for. */
 const referencedVariables = (root: HTMLElement): Set<string> => {
@@ -54,14 +76,21 @@ const declaredVariables = (css: string, blockSelector: string): Set<string> => {
   return names;
 };
 
+/**
+ * The highlighter is loaded on demand, so the first test that waits for it pays
+ * for compiling and fetching the chunk. Five seconds is the vitest default and
+ * it is not enough from cold under the full suite.
+ */
+const DEFERRED_LOAD_TIMEOUT_MS = 15_000;
+
 const injectedCss = (): string => {
   const elements = document.querySelectorAll(STYLE_ELEMENT_SELECTOR);
   assert.equal(elements.length, 1, 'expected exactly one injected syntax theme stylesheet');
   return elements[0].textContent ?? '';
 };
 
-test('the dark block declares every custom property a rendered code block references', () => {
-  const { container } = renderMarkdown();
+test('the dark block declares every custom property a rendered code block references', async () => {
+  const { container } = await renderHighlighted();
 
   const referenced = referencedVariables(container);
   assert.ok(referenced.size > 0, 'the rendered code block referenced no --cc-syntax variable');
@@ -69,10 +98,10 @@ test('the dark block declares every custom property a rendered code block refere
   const declared = declaredVariables(injectedCss(), '\\.dark');
   const missing = [...referenced].filter((name) => !declared.has(name));
   assert.deepEqual(missing, [], 'variables used by the rendered code block are undeclared in .dark');
-});
+}, DEFERRED_LOAD_TIMEOUT_MS);
 
-test('the root block declares the property the highlighted <pre> reads its colour from', () => {
-  const { container } = renderMarkdown();
+test('the root block declares the property the highlighted <pre> reads its colour from', async () => {
+  const { container } = await renderHighlighted();
 
   const pre = container.querySelector('pre');
   assert.ok(pre, 'expected the fenced block to render a highlighted <pre>');
@@ -83,7 +112,7 @@ test('the root block declares the property the highlighted <pre> reads its colou
     declaredVariables(injectedCss(), ':root').has(colourVariable[1]),
     `${colourVariable[1]} backs the light theme's code colour but :root does not declare it`,
   );
-});
+}, DEFERRED_LOAD_TIMEOUT_MS);
 
 test('rendering many times does not inject the stylesheet again', () => {
   renderMarkdown();
