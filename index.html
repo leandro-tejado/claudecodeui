@@ -76,19 +76,87 @@
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
     
-    <!-- Service Worker Registration -->
+    <!--
+      Service worker registration, and the escape hatch for when it goes wrong.
+
+      A stale worker is not hypothetical here: an installed iOS web app keeps
+      its own storage, never navigates to the network on its own, and can go on
+      serving a cached index.html that asks for a bundle a later build already
+      deleted. The import 404s, React never mounts, and the result is a blank
+      screen with nothing on it to act on — which is exactly what happened on
+      the phone while the same URL worked everywhere else.
+
+      Two guards, in order:
+        1. `updateViaCache: 'none'` plus an explicit `update()` on every load,
+           so sw.js itself is never served from the HTTP cache and a new worker
+           is picked up instead of the old one perpetuating itself.
+        2. A watchdog. If #root is still empty after the grace period, drop
+           every worker and cache and reload once. sessionStorage keeps that to
+           a single attempt, and a second failure says so in plain text with a
+           link to the full cleaner instead of leaving the page blank.
+    -->
     <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js')
-            .then(registration => {
-              console.log('SW registered: ', registration);
-            })
-            .catch(registrationError => {
-              console.log('SW registration failed: ', registrationError);
-            });
+      (function () {
+        var FLAG = 'sw-blank-recovery';
+        var GRACE_MS = 12000;
+
+        function mounted() {
+          var root = document.getElementById('root');
+          return !!root && root.childElementCount > 0;
+        }
+
+        function wipeAndReload() {
+          var jobs = [];
+          if ('serviceWorker' in navigator) {
+            jobs.push(navigator.serviceWorker.getRegistrations().then(function (regs) {
+              return Promise.all(regs.map(function (reg) { return reg.unregister(); }));
+            }).catch(function () {}));
+          }
+          if (window.caches) {
+            jobs.push(caches.keys().then(function (names) {
+              return Promise.all(names.map(function (name) { return caches.delete(name); }));
+            }).catch(function () {}));
+          }
+          // Reload either way: a cleanup that failed still leaves a reload as
+          // the best available move, and hanging here would keep the blank page.
+          Promise.all(jobs).then(function () { location.reload(); }, function () { location.reload(); });
+        }
+
+        function showFallback() {
+          var root = document.getElementById('root');
+          if (!root || root.childElementCount > 0) return;
+          root.innerHTML =
+            '<div style="font-family:system-ui,-apple-system,sans-serif;max-width:32rem;margin:15vh auto;padding:0 1.5rem;line-height:1.6">' +
+            '<h1 style="font-size:1.25rem;margin:0 0 .5rem">La app no cargó</h1>' +
+            '<p style="margin:0 0 1rem;opacity:.75">Ya se limpió la caché una vez y sigue sin montar. El limpiador completo borra service workers y caches de este origen.</p>' +
+            '<p><a href="/clear-cache.html" style="color:#2563eb">Abrir el limpiador de caché</a></p>' +
+            '</div>';
+        }
+
+        if ('serviceWorker' in navigator) {
+          window.addEventListener('load', function () {
+            navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' })
+              .then(function (registration) { registration.update(); })
+              .catch(function (registrationError) {
+                console.log('SW registration failed: ', registrationError);
+              });
+          });
+        }
+
+        window.addEventListener('load', function () {
+          setTimeout(function () {
+            if (mounted()) {
+              try { sessionStorage.removeItem(FLAG); } catch (error) { /* private mode */ }
+              return;
+            }
+            var tried = null;
+            try { tried = sessionStorage.getItem(FLAG); } catch (error) { /* private mode */ }
+            if (tried) { showFallback(); return; }
+            try { sessionStorage.setItem(FLAG, String(Date.now())); } catch (error) { /* private mode */ }
+            wipeAndReload();
+          }, GRACE_MS);
         });
-      }
+      })();
     </script>
   </body>
 </html>
