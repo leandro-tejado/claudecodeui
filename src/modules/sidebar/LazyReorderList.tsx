@@ -1,3 +1,4 @@
+import { retryImport } from '@/shared/lazyWithRetry';
 import { Suspense, lazy, type ComponentType } from 'react';
 
 import type { ReorderListProps } from '@/modules/sidebar/ReorderList';
@@ -16,7 +17,7 @@ import { cn } from '@/shared/utils';
 export const preloadReorderList = () => import('@/modules/sidebar/ReorderList');
 
 const ReorderList = lazy(() =>
-  preloadReorderList().then(module => ({
+  retryImport(preloadReorderList).then(module => ({
     default: module.ReorderList as ComponentType<ReorderListProps<unknown>>,
   })),
 );

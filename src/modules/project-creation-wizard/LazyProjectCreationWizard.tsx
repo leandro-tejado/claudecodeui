@@ -1,3 +1,4 @@
+import { retryImport } from '@/shared/lazyWithRetry';
 import { lazy, Suspense, type ComponentProps } from 'react';
 
 import type ProjectCreationWizardImpl from '@/modules/project-creation-wizard/ProjectCreationWizard';
@@ -7,7 +8,7 @@ import type ProjectCreationWizardImpl from '@/modules/project-creation-wizard/Pr
  *
  * A modal reached from a button, not something the app needs to start.
  */
-const ProjectCreationWizard = lazy(() => import('@/modules/project-creation-wizard/ProjectCreationWizard'));
+const ProjectCreationWizard = lazy(() => retryImport(() => import('@/modules/project-creation-wizard/ProjectCreationWizard')));
 
 export function LazyProjectCreationWizard(props: ComponentProps<typeof ProjectCreationWizardImpl>) {
   return (

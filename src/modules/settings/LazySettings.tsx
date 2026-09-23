@@ -1,3 +1,4 @@
+import { retryImport } from '@/shared/lazyWithRetry';
 import { lazy, Suspense, type ComponentProps } from 'react';
 
 import type SettingsImpl from '@/modules/settings/Settings';
@@ -14,7 +15,7 @@ import type SettingsImpl from '@/modules/settings/Settings';
 /** Exposed through the module barrel so the app can warm this chunk while idle. */
 export const preloadSettings = () => import('@/modules/settings/Settings');
 
-const Settings = lazy(preloadSettings);
+const Settings = lazy(() => retryImport(preloadSettings));
 
 export function LazySettings(props: ComponentProps<typeof SettingsImpl>) {
   return (

@@ -1,3 +1,4 @@
+import { retryImport } from '@/shared/lazyWithRetry';
 import { lazy, Suspense, type ComponentProps } from 'react';
 
 import type GitPanelImpl from '@/modules/git-panel/GitPanel';
@@ -10,7 +11,7 @@ import type GitPanelImpl from '@/modules/git-panel/GitPanel';
 /** Exposed through the module barrel so the app can warm this chunk while idle. */
 export const preloadGitPanel = () => import('@/modules/git-panel/GitPanel');
 
-const GitPanel = lazy(preloadGitPanel);
+const GitPanel = lazy(() => retryImport(preloadGitPanel));
 
 export function LazyGitPanel(props: ComponentProps<typeof GitPanelImpl>) {
   return (

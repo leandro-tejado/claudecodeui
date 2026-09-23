@@ -2,6 +2,7 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 
 import App from '@/App'
+import AppErrorBoundary from '@/AppErrorBoundary'
 import { loadSavedLanguage } from '@/modules/i18n'
 import '@/index.css'
 
@@ -36,7 +37,9 @@ if (!rootElement) {
 void loadSavedLanguage().then(() => {
   ReactDOM.createRoot(rootElement).render(
     <React.StrictMode>
-      <App />
+      <AppErrorBoundary>
+        <App />
+      </AppErrorBoundary>
     </React.StrictMode>,
   )
 })

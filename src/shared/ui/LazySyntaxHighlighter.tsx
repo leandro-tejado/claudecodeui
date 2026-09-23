@@ -1,6 +1,7 @@
 import * as React from 'react';
 
 import type { SyntaxHighlighter as SyntaxHighlighterImpl } from '@/shared/syntaxHighlighter';
+import { retryImport } from '@/shared/lazyWithRetry';
 
 type HighlighterProps = React.ComponentProps<typeof SyntaxHighlighterImpl>;
 
@@ -14,7 +15,7 @@ type HighlighterProps = React.ComponentProps<typeof SyntaxHighlighterImpl>;
  * works throughout.
  */
 const Highlighter = React.lazy(async () => {
-  const { SyntaxHighlighter } = await import('@/shared/syntaxHighlighter');
+  const { SyntaxHighlighter } = await retryImport(() => import('@/shared/syntaxHighlighter'));
   return { default: SyntaxHighlighter as React.ComponentType<HighlighterProps> };
 });
 

@@ -1,3 +1,4 @@
+import { retryImport } from '@/shared/lazyWithRetry';
 import { lazy, Suspense, type ComponentProps } from 'react';
 
 import type TaskMasterPanelImpl from '@/modules/task-master/TaskMasterPanel';
@@ -9,7 +10,7 @@ import type TaskMasterPanelImpl from '@/modules/task-master/TaskMasterPanel';
  * App and the sidebar read task state on the first render, so deferring them
  * would defer the app itself.
  */
-const TaskMasterPanel = lazy(() => import('@/modules/task-master/TaskMasterPanel'));
+const TaskMasterPanel = lazy(() => retryImport(() => import('@/modules/task-master/TaskMasterPanel')));
 
 export function LazyTaskMasterPanel(props: ComponentProps<typeof TaskMasterPanelImpl>) {
   return (

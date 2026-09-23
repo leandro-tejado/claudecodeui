@@ -1,3 +1,4 @@
+import { retryImport } from '@/shared/lazyWithRetry';
 import { lazy, type ComponentProps } from 'react';
 
 import type ShellImpl from '@/modules/shell/Shell';
@@ -14,7 +15,7 @@ import { LazyPanel } from '@/shared/ui/LazyPanel';
 /** Exposed through the module barrel so the app can warm this chunk while idle. */
 export const preloadShell = () => import('@/modules/shell/Shell');
 
-const Shell = lazy(preloadShell);
+const Shell = lazy(() => retryImport(preloadShell));
 
 export function LazyShell(props: ComponentProps<typeof ShellImpl>) {
   return (

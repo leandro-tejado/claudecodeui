@@ -1,3 +1,4 @@
+import { retryImport } from '@/shared/lazyWithRetry';
 import { Suspense, lazy, type ComponentProps } from 'react';
 
 import type { ShiningText as ShiningTextImpl } from '@/modules/chat/composer/ShiningText';
@@ -11,7 +12,9 @@ import { cn } from '@/shared/utils';
  * once the animation library arrives.
  */
 const ShiningText = lazy(() =>
-  import('@/modules/chat/composer/ShiningText').then(module => ({ default: module.ShiningText })),
+  retryImport(() => import('@/modules/chat/composer/ShiningText')).then(module => ({
+    default: module.ShiningText,
+  })),
 );
 
 export function LazyShiningText(props: ComponentProps<typeof ShiningTextImpl>) {
