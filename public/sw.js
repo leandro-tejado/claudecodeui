@@ -3,7 +3,7 @@
 // so a rebuild + refresh always picks up the latest assets.
 // Bumping this purges everything the previous version accumulated: the
 // activate handler below deletes every cache whose name is not this one.
-const CACHE_NAME = 'claude-ui-v5';
+const CACHE_NAME = 'claude-ui-v7';
 const urlsToCache = [
   '/manifest.json'
 ];

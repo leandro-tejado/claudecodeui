@@ -2,6 +2,7 @@ import { createRequire } from 'node:module'
 import { fileURLToPath, URL } from 'node:url'
 import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
+import { visualizer } from 'rollup-plugin-visualizer'
 import { getConnectableHost, normalizeLoopbackHost } from './shared/networkHosts.js'
 
 // The client shows the installed package version so it can be compared against the
@@ -25,7 +26,14 @@ export default defineConfig(({ mode }) => {
   const serverPort = env.SERVER_PORT || env.PORT || 3001
 
   return {
-    plugins: [react()],
+    // The bundle map is a diagnostic, not part of a normal build: it inflates the
+    // output and would ship the module graph to production. VISUALIZE=1 opts in.
+    plugins: [
+      react(),
+      ...(process.env.VISUALIZE
+        ? [visualizer({ filename: 'stats.html', gzipSize: true, brotliSize: true })]
+        : [])
+    ],
     define: {
       __APP_VERSION__: JSON.stringify(pkg.version)
     },
@@ -64,19 +72,19 @@ export default defineConfig(({ mode }) => {
       chunkSizeWarningLimit: 1000,
       rollupOptions: {
         output: {
+          // Only React is pinned to a chunk of its own, and only because it is a
+          // genuine dependency of the first render: splitting it out lets it be
+          // cached across releases instead of riding along in the entry hash.
+          //
+          // CodeMirror and xterm used to be pinned here too. That split the files
+          // without deferring anything — the app imported both statically, so both
+          // stayed in the critical path — and worse, Rollup elected the CodeMirror
+          // chunk as the shared one, so the entry pulled 644 KB in to reach three
+          // symbols, one of them Vite's own preload helper. Now that the editor and
+          // the terminal are loaded on demand, Rollup derives those chunks from the
+          // dynamic imports and they land off the critical path on their own.
           manualChunks: {
-            'vendor-react': ['react', 'react-dom', 'react-router-dom'],
-            'vendor-codemirror': [
-              '@uiw/react-codemirror',
-              '@codemirror/lang-css',
-              '@codemirror/lang-html',
-              '@codemirror/lang-javascript',
-              '@codemirror/lang-json',
-              '@codemirror/lang-markdown',
-              '@codemirror/lang-python',
-              '@codemirror/theme-one-dark'
-            ],
-            'vendor-xterm': ['@xterm/xterm', '@xterm/addon-fit', '@xterm/addon-clipboard', '@xterm/addon-webgl']
+            'vendor-react': ['react', 'react-dom', 'react-router-dom']
           }
         }
       }

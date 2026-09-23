@@ -2,15 +2,14 @@ import React, { memo, useMemo, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkBreaks from 'remark-breaks';
 import remarkGfm from 'remark-gfm';
-import remarkMath from 'remark-math';
-import rehypeKatex from 'rehype-katex';
 import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { useTranslation } from 'react-i18next';
 
 import { MermaidDiagram } from '@/modules/code-editor';
 import { normalizeInlineCodeFences } from '@/modules/chat/utils/chatFormatting';
 import { copyTextToClipboard } from '@/shared/utils';
-import { SyntaxHighlighter } from '@/shared/syntaxHighlighter';
+import { useMathPlugins } from '@/shared/useMathPlugins';
+import { LazySyntaxHighlighter as SyntaxHighlighter } from '@/shared/ui/LazySyntaxHighlighter';
 import { usePaletteOps } from '@/modules/command-palette';
 import { buildSyntaxTheme } from '@/modules/chat/utils/syntaxHighlightTheme';
 import type { PrismStyleSheet } from '@/modules/chat/utils/syntaxHighlightTheme';
@@ -252,20 +251,23 @@ function MarkdownBodyRenderer({ children, breaks = false }: Omit<MarkdownProps, 
   // render, and almost no assistant message contains math. Only wire the two
   // plugins up when the text has a delimiter they could act on.
   const hasMath = useMemo(() => MATH_DELIMITER.test(content), [content]);
+  // The plugins arrive a tick after the first message with math renders; until
+  // then `math` is null and the text shows its delimiters, as it did before.
+  const math = useMathPlugins(hasMath);
   const remarkPlugins = useMemo(
     () => {
       const plugins: unknown[] = [remarkGfm];
-      if (hasMath) {
-        plugins.push([remarkMath, { singleDollarTextMath: false }]);
+      if (math) {
+        plugins.push([math.remarkMath, { singleDollarTextMath: false }]);
       }
       if (breaks) {
         plugins.push(remarkBreaks);
       }
       return plugins as any;
     },
-    [breaks, hasMath],
+    [breaks, math],
   );
-  const rehypePlugins = useMemo(() => (hasMath ? [rehypeKatex] : EMPTY_PLUGINS), [hasMath]);
+  const rehypePlugins = useMemo(() => (math ? [math.rehypeKatex] : EMPTY_PLUGINS), [math]);
   const { openFileInEditor } = usePaletteOps();
 
   const components = useMemo(

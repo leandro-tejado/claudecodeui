@@ -1,11 +1,10 @@
 import { useMemo } from 'react';
 import type { Components } from 'react-markdown';
 import ReactMarkdown from 'react-markdown';
-import rehypeKatex from 'rehype-katex';
 import remarkGfm from 'remark-gfm';
-import remarkMath from 'remark-math';
 
 import MarkdownCodeBlock from '@/modules/code-editor/markdown/MarkdownCodeBlock';
+import { useMathPlugins } from '@/shared/useMathPlugins';
 
 type MarkdownPreviewProps = {
   content: string;
@@ -42,8 +41,14 @@ const markdownPreviewComponents: Components = {
 
 /** Used by the prd-editor module, and by CodeEditorSurface inside code-editor, to render markdown source as formatted preview output. */
 export default function MarkdownPreview({ content }: MarkdownPreviewProps) {
-  const remarkPlugins = useMemo(() => [remarkGfm, [remarkMath, { singleDollarTextMath: false }]] as any, []);
-  const rehypePlugins = useMemo(() => [rehypeKatex], []);
+  // Always enabled here: a PRD preview is opened deliberately, so the wait for
+  // KaTeX is paid by someone who asked for the document, not by every visitor.
+  const math = useMathPlugins(true);
+  const remarkPlugins = useMemo(
+    () => (math ? [remarkGfm, [math.remarkMath, { singleDollarTextMath: false }]] : [remarkGfm]) as any,
+    [math],
+  );
+  const rehypePlugins = useMemo(() => (math ? [math.rehypeKatex] : []), [math]);
 
   return (
     <ReactMarkdown

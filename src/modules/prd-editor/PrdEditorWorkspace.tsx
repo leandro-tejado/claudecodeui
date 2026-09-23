@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { cn } from '@/shared/utils';
 import { ensurePrdExtension } from '@/modules/prd-editor/utils/fileName';
 import GenerateTasksModal from '@/modules/prd-editor/modals/GenerateTasksModal';
-import PrdEditorBody from '@/modules/prd-editor/PrdEditorBody';
+import { LazyPrdEditorBody as PrdEditorBody } from '@/modules/prd-editor/LazyPrdEditorBody';
 import PrdEditorFooter from '@/modules/prd-editor/PrdEditorFooter';
 import PrdEditorHeader from '@/modules/prd-editor/PrdEditorHeader';
 

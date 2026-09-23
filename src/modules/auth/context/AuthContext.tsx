@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { useTranslation } from 'react-i18next';
 import type { ReactNode } from 'react';
 
+import { apiErrorText } from '@/shared/apiErrorText';
 import { IS_PLATFORM } from '@/shared/utils';
 import { api } from '@/shared/api';
 import { AUTH_SESSION_EXPIRED_EVENT, AUTH_TOKEN_REFRESHED_EVENT, getAuthTokenRefreshDelay, isValidRefreshedToken, storeAuthToken } from '@/shared/authToken';
@@ -54,8 +55,10 @@ type OnboardingStatusPayload = {
 };
 
 type ApiErrorPayload = {
-  error?: string;
-  message?: string;
+  // The server sends `{ code, message }` here, not a string. Typing it as
+  // `unknown` keeps the lie from compiling again.
+  error?: unknown;
+  message?: unknown;
 };
 
 type AuthContextValue = {
@@ -88,7 +91,7 @@ function resolveApiErrorMessage(payload: ApiErrorPayload | null, fallback: strin
     return fallback;
   }
 
-  return payload.error ?? payload.message ?? fallback;
+  return apiErrorText(payload.error) ?? apiErrorText(payload.message) ?? fallback;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);

@@ -38,6 +38,14 @@ function loadServiceWorker({ cacheHit = null as unknown, cacheThrows = false } =
     },
     fetch: () => Promise.reject(new Error('network down')),
     Response,
+    Headers,
+    // serveAsset backs off between its retries. The sandbox has no timers of its
+    // own, and a real delay would only make these tests slow, so the wait resolves
+    // on the next tick.
+    setTimeout: (callback: () => void) => {
+      queueMicrotask(callback);
+      return 0;
+    },
   };
 
   runInContext(readFileSync('public/sw.js', 'utf8'), createContext(sandbox));

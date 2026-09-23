@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import type { SessionActivity } from '@/shared/types';
-import { ShiningText } from '@/modules/chat/composer/ShiningText';
+import { LazyShiningText as ShiningText } from '@/modules/chat/composer/LazyShiningText';
 
 type ActivityIndicatorProps = {
   activity: SessionActivity | null;
