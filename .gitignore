@@ -152,3 +152,7 @@ electron/*.tar.gz
 
 # bundle map, generado con VISUALIZE=1 npm run build:client
 stats.html
+
+# Test fixtures created beside the tests (cleaned up by the tests; kept out of the tree if a run is killed)
+server/**/tests/read-only-roots-fixture-*/
+server/**/tests/file-tree-outside-*/

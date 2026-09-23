@@ -93,7 +93,7 @@ function SkinSubagentBridge({ sessionId, messages }: SkinSubagentBridgeProps) {
       // turno no emite `tool_result` — el `task_notification` con el mismo
       // `toolUseId` cierra la fila igual.
       if (message.isTaskNotification) {
-        closeSubagent(toolUseId, message.taskStatus === 'failed' ? 'failed' : 'completed');
+        closeSubagent(toolUseId, message.taskNotificationStatus === 'failed' ? 'failed' : 'completed');
       }
     }
   }, [sessionId, messages]);

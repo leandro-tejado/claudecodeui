@@ -32,7 +32,7 @@ const notification = (overrides: Partial<ChatMessage> & { toolId: string }): Cha
   content: 'Background task update',
   timestamp: '2026-09-15T12:05:00.000Z',
   isTaskNotification: true,
-  taskStatus: 'completed',
+  taskNotificationStatus: 'completed',
   ...overrides,
 });
 
@@ -103,7 +103,7 @@ test('a task_notification closes an async Task with no tool_result', () => {
         sessionId="session-1"
         messages={[
           taskMessage({ toolId: 'task-async' }),
-          notification({ toolId: 'task-async', taskStatus: 'completed' }),
+          notification({ toolId: 'task-async', taskNotificationStatus: 'completed' }),
         ]}
       />,
     );
