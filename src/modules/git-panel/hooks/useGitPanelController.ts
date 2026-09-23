@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { api } from '@/shared/api';
+import { apiErrorText } from '@/shared/apiErrorText';
 import type { FileOpenHandler, GitApiErrorResponse, GitCommitSummary, GitDiffMap, GitOperationResponse, GitPanelView, GitRemoteStatus, GitStatusResponse, Project } from '@/shared/types';
 import { getAllChangedFiles } from '@/modules/git-panel/utils/gitPanelUtils';
 import { useSelectedProvider } from '@/modules/git-panel/hooks/useSelectedProvider';
@@ -201,8 +202,10 @@ export function useGitPanelController({
           console.error('Git status error:', data.error);
         }
         setGitStatus({
-          error: data.error,
-          details: data.details,
+          // The API answers with `{ code, message }`; rendering that object as a
+          // React child throws error #31 and takes the whole tree down with it.
+          error: apiErrorText(data.error) ?? 'Git operation failed',
+          details: apiErrorText(data.details) ?? undefined,
           notGitRepository: data.notGitRepository,
         });
         setCurrentBranch('');
