@@ -305,6 +305,13 @@ export type ChatMessage = {
   replacesAnchorId?: string;
   isThinking?: boolean;
   isStreaming?: boolean;
+  /**
+   * A tmux-bridge assistant reply that just arrived live, mirrored from
+   * `NormalizedMessage.isLiveText`. Gates the typewriter reveal for a message
+   * that landed whole (tmux carries no deltas) the same way `isStreaming`
+   * gates it for the SDK path's real streamed growth.
+   */
+  isLiveText?: boolean;
   isToolUse?: boolean;
   toolName?: string;
   toolInput?: unknown;
@@ -433,6 +440,17 @@ export type NormalizedMessage = {
    * when the cut was made, so this is where those rows begin.
    */
   replacesAfterRowCount?: number;
+  /**
+   * Stamped by `appendRealtime` on a `text`/assistant row that just arrived
+   * over the tmux bridge, while the session's history has not caught up to
+   * it yet. Never sent by the backend and never persisted — it drives the
+   * one-shot typewriter reveal for a message that lands as a single complete
+   * block (tmux has no deltas), same purpose `isStreaming` serves for the
+   * SDK path's real `stream_delta` growth. Once a server refresh loads the
+   * same row, the copy that flows into `merged` is the unstamped one from
+   * `serverMessages`.
+   */
+  isLiveText?: boolean;
   sessionId: string;
   timestamp: string;
   provider: LLMProvider;

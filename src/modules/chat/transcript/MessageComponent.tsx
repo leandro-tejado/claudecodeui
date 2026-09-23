@@ -339,6 +339,12 @@ const MessageComponent = memo(({ message, prevMessage, createDiff, onFileOpen, s
                     <StreamingMarkdown
                       content={content}
                       isStreaming={Boolean(message.isStreaming)}
+                      revelar={Boolean(message.isStreaming || message.isLiveText)}
+                      // A tmux reply lands whole (no deltas) so it starts its
+                      // reveal at 0; the SDK placeholder already holds real
+                      // accumulated text the first time it renders, so only
+                      // its later growth animates in.
+                      arrancarVacio={Boolean(message.isLiveText)}
                       className="prose prose-sm prose-gray max-w-none font-serif dark:prose-invert"
                     />
                   ) : (

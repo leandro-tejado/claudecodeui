@@ -292,6 +292,14 @@ function mapCliOptionsToSDK(options = {}) {
 
   sdkOptions.settingSources = ['project', 'user', 'local'];
 
+  // Without this the SDK only emits complete `assistant` messages — one chunk
+  // with the whole reply. With it, `query()` also yields `stream_event`
+  // messages wrapping Anthropic's raw content_block_delta/stop events, which
+  // is what lets the chat show text arriving as it is written instead of
+  // landing all at once. Measured on the VPS spike (see the app-optimum-mkt
+  // streaming plan, Fase 1): first delta at ~3.3s, well before the full reply.
+  sdkOptions.includePartialMessages = true;
+
   // The SDK resumes with the provider-native session id, never the app id.
   // `resumeFromScratch` is set when the very first prompt of a conversation was
   // edited: there is nothing before it to resume through, so the turn has to
@@ -403,6 +411,33 @@ function transformMessage(sdkMessage) {
  */
 export function isSubagentPromptEcho(message) {
   return Boolean(message?.parentToolUseId) && message.role === 'user' && message.kind === 'text';
+}
+
+/**
+ * Unwraps a partial-assistant `stream_event` message into the raw Anthropic
+ * event the session normalizer already understands (content_block_delta,
+ * content_block_stop, ...), or `null` when the event should not reach the
+ * normalizer at all.
+ *
+ * Two things get filtered here rather than in the normalizer itself:
+ * - Anything that is not a `stream_event` (assistant/result/system/...) —
+ *   those already have their own normalizer branch and go through unwrapped.
+ * - Subagent partials, which carry `parent_tool_use_id`. The main thread only
+ *   ever shows the Agent tool card for a subagent, never its streamed text —
+ *   same rule `isSubagentPromptEcho` applies to the subagent's complete
+ *   messages — so its deltas are dropped here instead of reaching the client
+ *   as an orphan `stream_delta` with no bubble to attach to.
+ * @param {Object|null} sdkMessage - raw message from the query() async generator
+ * @returns {Object|null} The inner Anthropic stream event, or null to skip
+ */
+function resolvePartialStreamEvent(sdkMessage) {
+  if (!sdkMessage || sdkMessage.type !== 'stream_event') {
+    return null;
+  }
+  if (sdkMessage.parent_tool_use_id) {
+    return null;
+  }
+  return sdkMessage.event || null;
 }
 
 function readNumber(value) {
@@ -1010,8 +1045,16 @@ async function queryClaudeSDK(command, options = {}, ws, context) {
       const transformedMessage = transformMessage(message);
       const sid = capturedSessionId || sessionId || null;
 
-      // Use adapter to normalize SDK events into NormalizedMessage[]
-      const normalized = context.normalizeMessage(transformedMessage, sid);
+      // Partial assistant messages (text/thinking deltas, tool_use starts)
+      // arrive wrapped in a `stream_event` envelope; the normalizer only knows
+      // the inner Anthropic event shape. Everything else goes through as before.
+      let normalized;
+      if (message.type === 'stream_event') {
+        const partialEvent = resolvePartialStreamEvent(message);
+        normalized = partialEvent ? context.normalizeMessage(partialEvent, sid) : [];
+      } else {
+        normalized = context.normalizeMessage(transformedMessage, sid);
+      }
       for (const msg of normalized) {
         // Preserve parentToolUseId from SDK wrapper for subagent tool grouping
         if (transformedMessage.parentToolUseId && !msg.parentToolUseId) {
@@ -1290,5 +1333,7 @@ export {
   reconnectSessionWriter,
   extractTokenBudget,
   extractCumulativeTokenBudget,
-  extractCompactBoundaryTokenBudget
+  extractCompactBoundaryTokenBudget,
+  resolvePartialStreamEvent,
+  mapCliOptionsToSDK
 };

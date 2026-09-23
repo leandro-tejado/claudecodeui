@@ -243,6 +243,7 @@ export function normalizedToChatMessages(messages: NormalizedMessage[]): ChatMes
             content: text,
             timestamp: msg.timestamp,
             memoryCitations: msg.memoryCitations,
+            isLiveText: msg.isLiveText,
             ...sharedMetadata,
           });
         }

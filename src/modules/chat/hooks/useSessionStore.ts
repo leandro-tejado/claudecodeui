@@ -774,7 +774,16 @@ export function useSessionStore() {
       withId.sessionId === sessionId
         ? withId
         : { ...withId, sessionId };
-    let updated = [...slot.realtimeMessages, normalizedMessage];
+    // tmux has no deltas — the bridge only writes a message once it is
+    // complete — so this is the one signal MessageComponent has to tell a
+    // reply that just arrived apart from one loaded from history, which is
+    // what lets it play the typewriter reveal only for the former.
+    const withLiveTextFlag = slot.runsInTmux
+      && normalizedMessage.kind === 'text'
+      && normalizedMessage.role === 'assistant'
+      ? { ...normalizedMessage, isLiveText: true }
+      : normalizedMessage;
+    let updated = [...slot.realtimeMessages, withLiveTextFlag];
     if (updated.length > MAX_REALTIME_MESSAGES) {
       updated = updated.slice(-MAX_REALTIME_MESSAGES);
     }

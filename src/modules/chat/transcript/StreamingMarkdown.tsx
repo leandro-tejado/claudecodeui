@@ -2,12 +2,30 @@ import { useMemo } from 'react';
 
 import { MarkdownBody } from '@/modules/chat/transcript/Markdown';
 import { splitStreamingMarkdown } from '@/modules/chat/utils/streamingMarkdown';
+import { useRevelado } from '@/modules/chat/utils/revelado';
 
 type StreamingMarkdownProps = {
   content: string;
   /** False once the reply is complete, which stops the splitting. */
   isStreaming: boolean;
   className?: string;
+  /**
+   * Paces `content` in through the typewriter reveal instead of showing every
+   * character the instant it lands, and shows a blinking cursor while it is
+   * still catching up. Off by default — history and the finished reply have
+   * nothing to reveal — so only a message just arrived live (`isStreaming` in
+   * the SDK chat, or a tmux reply flagged `isLiveText`) turns it on.
+   */
+  revelar?: boolean;
+  /**
+   * Only meaningful while `revelar` is on: true starts the reveal at 0 (a
+   * tmux reply, which lands as one complete block with nothing shown yet);
+   * false starts already caught up to `content` at mount and only animates
+   * growth after that (the SDK placeholder, which already holds real
+   * accumulated text the first time it renders). Defaults to true, matching
+   * `useRevelado`.
+   */
+  arrancarVacio?: boolean;
 };
 
 /**
@@ -48,16 +66,28 @@ export default function StreamingMarkdown({
   content,
   isStreaming,
   className,
+  revelar = false,
+  arrancarVacio = true,
 }: StreamingMarkdownProps) {
+  const revelado = useRevelado(content, revelar, arrancarVacio);
+  const visible = revelar ? revelado : content;
+  const revelando = revelar && visible.length < content.length;
+
   const { settled, pending } = useMemo(
-    () => (isStreaming ? splitStreamingMarkdown(content) : { settled: content, pending: '' }),
-    [content, isStreaming],
+    () => (isStreaming ? splitStreamingMarkdown(visible) : { settled: visible, pending: '' }),
+    [visible, isStreaming],
   );
 
   return (
     <div className={className}>
       {settled && <MarkdownBody>{settled}</MarkdownBody>}
       {pending && <MarkdownBody>{pending}</MarkdownBody>}
+      {revelando && (
+        <span
+          aria-hidden
+          className="ml-0.5 inline-block h-4 w-[2px] translate-y-0.5 animate-pulse bg-current align-text-bottom"
+        />
+      )}
     </div>
   );
 }
