@@ -102,7 +102,17 @@ async function withRun(
   }
 }
 
-const settle = () => new Promise((resolve) => { setTimeout(resolve, 300); });
+// A fixed wall-clock delay races the event loop: under load (this machine,
+// several test files running at once) the scripted generator's queued
+// message can still be unprocessed after any fixed timeout. Draining ticks
+// instead — enough rounds of `setImmediate` for the generator's `wake()`
+// promise and the resulting `for await` iteration to run — waits for the
+// actual work rather than betting on how long it takes.
+const settle = async () => {
+  for (let i = 0; i < 200; i += 1) {
+    await new Promise((resolve) => { setImmediate(resolve); });
+  }
+};
 
 const init = () => ({ type: 'system', subtype: 'init', session_id: NATIVE_ID });
 const toolUse = (id: string, name: string, input: Record<string, unknown>) => ({
