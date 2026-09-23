@@ -40,6 +40,12 @@ type UseChatRealtimeHandlersArgs = {
   onWebSocketReconnect?: () => void;
   requestLatestMessages: (sessionId: string, allowNetwork?: boolean) => Promise<void>;
   sessionStore: SessionStore;
+  /**
+   * Fired once per `complete` of the currently viewed session, success or
+   * not — the Salidas panel's cue to re-list `.informes/` (an aborted run
+   * can still have written a partial output worth showing).
+   */
+  onTurnComplete?: (sessionId: string) => void;
 };
 
 /* ------------------------------------------------------------------ */
@@ -73,6 +79,7 @@ export function useChatRealtimeHandlers({
   onWebSocketReconnect,
   requestLatestMessages,
   sessionStore,
+  onTurnComplete,
 }: UseChatRealtimeHandlersArgs) {
   // Session switches can send `chat.subscribe` before this effect has a chance
   // to rebind the websocket listener. Read the visible session id from a ref
@@ -271,6 +278,7 @@ export function useChatRealtimeHandlers({
           if (sid === activeViewSessionId) {
             pendingPermissionRequestsRef.current = [];
             setPendingPermissionRequests([]);
+            if (sid) onTurnComplete?.(sid);
           }
 
           if (msg.aborted) {

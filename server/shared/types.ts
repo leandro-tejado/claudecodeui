@@ -1212,6 +1212,90 @@ export type FileTreeServices = {
 };
 
 // ---------------------------
+//----------------- SALIDAS MODULE CONTRACTS ------------
+/**
+ * Output category the whitelist maps a filename extension to.
+ *
+ * Mirrors the whitelist agreed for the sibling `servidor-code` Fase 5 (plan
+ * `23-septiembre-streaming-respuesta-claude.md`): the same five buckets, same
+ * extensions. Anything outside the map — `.env`, dotfiles, no extension — is
+ * never listed or served.
+ */
+export type SalidaTipo = 'html' | 'pdf' | 'imagen' | 'tabla' | 'texto';
+
+/**
+ * One entry the Salidas panel can render.
+ *
+ * `id` is the bare filename inside `.informes/` — never a path — so it can be
+ * embedded straight into the `GET .../salidas/:id` URL and re-validated there.
+ */
+export type SalidaInfo = {
+  id: string;
+  tipo: SalidaTipo;
+  bytes: number;
+  ts: string;
+};
+
+/**
+ * Complete binary payload for one served output.
+ *
+ * Routes set `Content-Type`/`Content-Length` from `mime`/`bytes` and pipe
+ * `stream`; they never read the file themselves.
+ */
+export type SalidaContenido = {
+  tipo: SalidaTipo;
+  mime: string;
+  bytes: number;
+  stream: Readable;
+};
+
+/**
+ * Minimal filesystem capability injected into the Salidas service.
+ *
+ * Narrower than File Tree's: Salidas only ever lists one directory, stats one
+ * file at a time, and streams it — it never writes, renames, or deletes.
+ */
+export type SalidasFileSystem = {
+  readDirectory(directoryPath: string): Promise<string[]>;
+  stat(filePath: string): Promise<{ size: number; mtime: Date; isFile(): boolean }>;
+  createReadStream(filePath: string): Readable;
+};
+
+/**
+ * Project lookup boundary consumed by Salidas workflows.
+ *
+ * Same shape as File Tree's `FileTreeProjectGateway` — both resolve a DB
+ * project id to its filesystem root without importing the Database module
+ * directly — kept as a separate type so the two modules can diverge later.
+ */
+export type SalidasProjectGateway = {
+  getProjectPathById(projectId: string): string | null | Promise<string | null>;
+};
+
+/** Logger boundary for expected Salidas diagnostics. */
+export type SalidasLogger = {
+  error(message: string, error?: unknown): void;
+};
+
+/** Required production dependencies for the Salidas application service. */
+export type SalidasServiceDependencies = {
+  fileSystem: SalidasFileSystem;
+  projects: SalidasProjectGateway;
+  logger: SalidasLogger;
+};
+
+/**
+ * Complete Salidas application-service surface consumed by HTTP routes.
+ *
+ * Routes parse transport inputs and call these two methods; they never touch
+ * the filesystem or the Database module themselves.
+ */
+export type SalidasServices = {
+  listarSalidas(projectId: string): Promise<SalidaInfo[]>;
+  obtenerSalida(projectId: string, id: string): Promise<SalidaContenido>;
+};
+
+// ---------------------------
 //----------------- VOICE MODULE CONTRACTS ------------
 /**
  * Per-request voice settings parsed from authenticated HTTP headers.

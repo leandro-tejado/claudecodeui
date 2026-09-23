@@ -784,6 +784,21 @@ type FileTreeItemType = 'file' | 'directory';
 
 // ---------------------------
 
+//----------------- SALIDAS PANEL ------------
+
+/** The output category the server's whitelist mapped a filename extension to; drives which preview `PanelSalidas` renders. */
+export type SalidaTipo = 'html' | 'pdf' | 'imagen' | 'tabla' | 'texto';
+
+/** One entry from `GET /api/projects/:projectId/salidas` — a file the agent left in `.informes/`. */
+export type SalidaInfo = {
+  id: string;
+  tipo: SalidaTipo;
+  bytes: number;
+  ts: string;
+};
+
+// ---------------------------
+
 //----------------- GIT PANEL ------------
 
 /** The old/new text of a single edit, handed to the code editor so it can open a file focused on that change. */

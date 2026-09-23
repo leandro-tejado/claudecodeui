@@ -149,6 +149,9 @@ export const sessionMessagesUrl = (
 const fileContentPath = (projectId: string, filePath: string) =>
   `/api/file-tree/projects/${projectId}/files/content${query({ path: filePath })}`;
 
+const salidaContentPath = (projectId: string, id: string) =>
+  `/api/projects/${encodeURIComponent(projectId)}/salidas/${encodeURIComponent(id)}`;
+
 const pluginAssetPath = (pluginName: string, assetFile: string) =>
   `/api/plugins/${encodeURIComponent(pluginName)}/assets/${encodeURIComponent(assetFile)}`;
 
@@ -281,6 +284,18 @@ export const api = {
     get(`/api/file-tree/browse-filesystem${query({ path: dirPath })}`),
 
   createFolder: (folderPath: string) => post('/api/file-tree/create-folder', { path: folderPath }),
+
+  // Salidas panel: lists and previews `<proyecto>/.informes/`, the convention
+  // every fresh `claude` process (SDK and tmux) gets told about via the
+  // appended system prompt (see server/modules/salidas/salidas-convencion.ts).
+  salidas: {
+    list: (projectId: string) =>
+      get(`/api/projects/${encodeURIComponent(projectId)}/salidas`),
+    // Binary payload, needs the auth header — same blob pattern as
+    // `readFileBlob` for workspace files.
+    contentBlob: (projectId: string, id: string, options: ApiRequestOptions = {}) =>
+      get(salidaContentPath(projectId, id), options),
+  },
 
   // Git endpoints. The `project` param carries the DB projectId post-migration.
   git: {

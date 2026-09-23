@@ -7,6 +7,7 @@ import { promisify } from 'node:util';
 
 import { sessionsDb } from '@/modules/database/index.js';
 import { sessionsService } from '@/modules/providers/index.js';
+import { SALIDAS_SYSTEM_PROMPT_APPEND } from '@/modules/salidas/index.js';
 import { nombreTmux } from '@/modules/websocket/services/shell-websocket.service.js';
 import { connectedClients, WS_OPEN_STATE } from '@/modules/websocket/services/websocket-state.service.js';
 import type { AnyRecord, LLMProvider, NormalizedMessage } from '@/shared/types.js';
@@ -261,6 +262,14 @@ export async function asegurarSesionTmux(
   }
 
   const bypassFlag = ' --dangerously-skip-permissions';
+  // Single-quoted because the value is our own hardcoded constant (no
+  // apostrophes in it) rather than anything the caller supplied — same
+  // reasoning `bash -ic` already gets trusted with for `bypassFlag` above.
+  // Applies to every branch below: this function only ever runs on the
+  // "no pane yet" path (the early `hasSession` return above), so every
+  // `claude` invocation it can produce — including the `||` fallback — is a
+  // brand-new process, never a message sent into an already-open pane.
+  const appendSystemPromptFlag = ` --append-system-prompt '${SALIDAS_SYSTEM_PROMPT_APPEND}'`;
   const resumeId =
     providerSessionId && SAFE_PROVIDER_SESSION_ID_PATTERN.test(providerSessionId)
       ? providerSessionId
@@ -268,11 +277,11 @@ export async function asegurarSesionTmux(
 
   let claudeCommand: string;
   if (resumeId) {
-    claudeCommand = `claude --resume "${resumeId}"${bypassFlag} || claude${bypassFlag}`;
+    claudeCommand = `claude --resume "${resumeId}"${bypassFlag}${appendSystemPromptFlag} || claude${bypassFlag}${appendSystemPromptFlag}`;
   } else if (SAFE_PROVIDER_SESSION_ID_PATTERN.test(appSessionId)) {
-    claudeCommand = `claude --session-id "${appSessionId}"${bypassFlag} || claude${bypassFlag}`;
+    claudeCommand = `claude --session-id "${appSessionId}"${bypassFlag}${appendSystemPromptFlag} || claude${bypassFlag}${appendSystemPromptFlag}`;
   } else {
-    claudeCommand = `claude${bypassFlag}`;
+    claudeCommand = `claude${bypassFlag}${appendSystemPromptFlag}`;
   }
 
   await dependencies.asegurarConfianzaProyecto(cwd);

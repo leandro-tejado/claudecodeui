@@ -34,6 +34,7 @@ import {
   resolveClaudeContextWindow
 } from '@/modules/providers/services/provider-token-usage.service.js';
 import { resolveClaudeCodeExecutablePath } from '@/shared/claude-cli-path.js';
+import { SALIDAS_SYSTEM_PROMPT_APPEND } from '@/modules/salidas/index.js';
 import {
   createNotificationEvent,
   notifyBackgroundWorkCompleted,
@@ -285,9 +286,15 @@ function mapCliOptionsToSDK(options = {}) {
     options.effortModels || CLAUDE_PREDEFINED_MODELS,
   ));
 
+  // `append` extends the preset system prompt without replacing it — the SDK
+  // sends both the built-in Claude Code prompt and this line. Kept as one
+  // shared constant (salidas-convencion.ts) with the tmux pane's
+  // `--append-system-prompt` (tmux-bridge.service.ts): both are the only two
+  // places a fresh `claude` process starts in this app.
   sdkOptions.systemPrompt = {
     type: 'preset',
-    preset: 'claude_code'
+    preset: 'claude_code',
+    append: SALIDAS_SYSTEM_PROMPT_APPEND
   };
 
   sdkOptions.settingSources = ['project', 'user', 'local'];

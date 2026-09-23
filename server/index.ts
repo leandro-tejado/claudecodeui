@@ -51,6 +51,7 @@ import {
 import browserUseRoutes from './modules/browser-use/browser-use.routes.js';
 import { assetsRoutes } from './modules/assets/index.js';
 import { fileTreeRoutes } from './modules/file-tree/index.js';
+import { salidasRoutes } from './modules/salidas/index.js';
 import { worktreesRoutes } from './modules/worktrees/index.js';
 import browserUseMcpRoutes from './modules/browser-use/browser-use-mcp.routes.js';
 import { browserUseService } from './modules/browser-use/browser-use.service.js';
@@ -156,6 +157,12 @@ app.use('/api/file-tree', authenticateToken, fileTreeRoutes);
 
 // Projects API Routes (protected)
 app.use('/api/projects', authenticateToken, projectModuleRoutes);
+
+// Salidas API Routes (protected) — lists/serves <proyecto>/.informes/, mounted
+// on the same prefix as Projects above (a second router layer, not a merge:
+// its only routes are `:projectId/salidas[...]`, which projectModuleRoutes
+// does not define).
+app.use('/api/projects', authenticateToken, salidasRoutes);
 
 // Chat attachment upload/serving (global ~/.cloudcli/assets store, protected)
 app.use('/api/assets', authenticateToken, assetsRoutes);

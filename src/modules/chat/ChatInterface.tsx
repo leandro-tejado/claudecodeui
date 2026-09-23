@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ArrowDownIcon } from 'lucide-react';
 
@@ -26,6 +26,7 @@ import {
 import ChatMessagesPane from '@/modules/chat/transcript/ChatMessagesPane';
 import ChatComposer from '@/modules/chat/composer/ChatComposer';
 import CommandResultModal from '@/modules/chat/modals/CommandResultModal';
+import PanelSalidas from '@/modules/chat/panel-salidas/PanelSalidas';
 import { SkinSubagentBridge } from '@/modules/skin';
 
 type ChatInterfaceProps = {
@@ -81,6 +82,12 @@ function ChatInterface({
   const sessionStore = useSessionStore();
   const streamTimerRef = useRef<number | null>(null);
   const accumulatedStreamRef = useRef('');
+  // Bumped on every `complete` of the viewed session — the Salidas panel's
+  // cue (besides its own refresh button) to re-list `.informes/`.
+  const [salidasRefreshSignal, setSalidasRefreshSignal] = useState(0);
+  const bumpSalidasRefresh = useCallback(() => {
+    setSalidasRefreshSignal((value) => value + 1);
+  }, []);
   // When each session's `chat.subscribe` was last sent; idle acks older than
   // a later local request are discarded as stale.
   const statusCheckSentAtRef = useRef(new Map<string, number>());
@@ -293,6 +300,7 @@ function ChatInterface({
     onWebSocketReconnect: handleWebSocketReconnect,
     requestLatestMessages,
     sessionStore,
+    onTurnComplete: bumpSalidasRefresh,
   });
 
   useEffect(() => {
@@ -419,7 +427,8 @@ function ChatInterface({
 
   return (
     <PermissionContext.Provider value={permissionContextValue}>
-      <div className="flex h-full min-h-0 flex-col">
+      <div className="flex h-full min-h-0">
+      <div className="flex h-full min-h-0 min-w-0 flex-1 flex-col">
         <SkinSubagentBridge sessionId={currentSessionId} messages={chatMessages} />
         <ChatMessagesPane
           scrollContainerRef={scrollContainerRef}
@@ -562,6 +571,9 @@ function ChatInterface({
           sendByCtrlEnter={sendByCtrlEnter}
         />
         </div>
+      </div>
+
+      <PanelSalidas projectId={selectedProject?.projectId ?? null} refreshSignal={salidasRefreshSignal} />
       </div>
 
       <CommandResultModal

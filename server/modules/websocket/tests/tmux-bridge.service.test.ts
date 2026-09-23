@@ -17,6 +17,7 @@ import {
   leerUltimaFilaCruda,
   tieneSesionTmux,
 } from '@/modules/websocket/services/tmux-bridge.service.js';
+import { SALIDAS_SYSTEM_PROMPT_APPEND } from '@/modules/salidas/index.js';
 
 // Mock por defecto para las pruebas de `asegurarSesionTmux` que no ejercen
 // `asegurarConfianzaProyecto`: nunca debe tocar el `~/.claude.json` real de
@@ -282,7 +283,42 @@ test('asegurarSesionTmux: un appSessionId fuera de charset se descarta en vez de
   const claudeCommand = comandoRecibido?.[2] ?? '';
   assert.ok(!claudeCommand.includes('rm -rf'));
   assert.ok(!claudeCommand.includes('--session-id'));
-  assert.equal(claudeCommand, 'claude --dangerously-skip-permissions');
+  assert.equal(
+    claudeCommand,
+    "claude --dangerously-skip-permissions --append-system-prompt 'Los entregables (informes, PDFs, imagenes, CSV) se guardan en .informes/ con nombre descriptivo; lo que quede ahi aparece en el panel Salidas.'",
+  );
+});
+
+test('asegurarSesionTmux: cada rama del comando lleva la convencion de .informes/ via --append-system-prompt', async () => {
+  const capturarComando = async (
+    providerSessionId: string | null,
+    appSessionId: string,
+  ): Promise<string> => {
+    let comandoRecibido: string[] | null = null;
+    await asegurarSesionTmux('fase7-test-append', '/tmp/proyecto', providerSessionId, appSessionId, {
+      hasSession: () => false,
+      asegurarConfianzaProyecto: confianzaNoop,
+      crearSesionDetached: async (_nombre, _cwd, comandoArgv) => {
+        comandoRecibido = comandoArgv;
+      },
+    });
+    return comandoRecibido?.[2] ?? '';
+  };
+
+  const comandoResume = await capturarComando('abc-123', APP_SESSION_ID);
+  const comandoSessionId = await capturarComando(null, APP_SESSION_ID);
+  const comandoSinNada = await capturarComando(null, '"; rm -rf ~ #');
+
+  for (const comando of [comandoResume, comandoSessionId, comandoSinNada]) {
+    assert.ok(comando.includes(SALIDAS_SYSTEM_PROMPT_APPEND), comando);
+    // The flag rides both sides of the `||` fallback, never just the first
+    // attempt — a resume that fails still spawns a fresh `claude` process.
+    assert.equal(
+      comando.split('--append-system-prompt').length - 1,
+      comando.includes('||') ? 2 : 1,
+      comando,
+    );
+  }
 });
 
 test('asegurarSesionTmux: rechaza un cwd vacio en vez de abrir la pane en cualquier lado', async () => {
