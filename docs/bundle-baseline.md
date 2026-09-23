@@ -64,4 +64,45 @@ todos con `import` estático. Un usuario baja diez juegos de traducciones que nu
 
 ## Después
 
-[Completar al cerrar la Fase 7.]
+Medido el 22 de septiembre de 2026 sobre el commit `e040e81b`, con el mismo script.
+
+| Archivo | Crudo | Brotli |
+|---|---:|---:|
+| `index-hGO6Hrpt.js` | 1.183.670 B | 270.921 B |
+| `index-BUWjjL27.css` | 177.451 B | 21.273 B |
+| `vendor-react-svtQNdUt.js` | 161.240 B | 46.098 B |
+| **Total** | **1.522.361 B** | **338.292 B** |
+
+Tres archivos en vez de cinco, y un solo `modulepreload` en vez de tres.
+
+| | Antes | Después | Reducción |
+|---|---:|---:|---:|
+| Crudo | 4.561.075 B | 1.522.361 B | **−66,6%** |
+| Brotli (lo que viaja) | 1.043.168 B | 338.292 B | **−67,5%** |
+
+Los tres bytes brotli son los que devuelve el servidor del VPS, verificados con
+`curl -sI -H 'Accept-Encoding: br'`: coinciden exactamente con la medición local.
+
+### El 70% no se alcanzó, y por qué
+
+El techo del presupuesto quedó en **1.700.000 B**, no en los 1.366.416 B que fijaba el objetivo
+del 70%. Lo que falta para llegar no es peso diferible: es la primera pantalla.
+
+Dentro del chunk de entrada quedan `src/modules/chat` (519 KB) y `src/modules/sidebar` (195 KB),
+que son literalmente lo que se ve al abrir; `micromark` (107 KB), que parsea cada mensaje;
+`tailwind-merge` (88), `dompurify` (82), `i18next` (78) y `lucide-react` (72), todos usados desde
+el primer render; y `react-dropzone` + `file-selector` (105 KB juntos), que viven dentro de un
+hook del compositor y no salen sin reescribirlo. A eso se suman 173 KB de CSS de Tailwind, que
+el plan excluyó del alcance a propósito.
+
+Diferir cualquiera de esos empeora el primer render en lugar de mejorarlo: cambia bytes por un
+esqueleto en la pantalla que el usuario está mirando. El techo se fijó en 1,7 MB —un 12% de aire
+sobre lo medido— para que un cambio legítimo no rompa el build, pero sí lo rompa un import
+estático olvidado que vuelva a arrastrar un módulo pesado.
+
+### Qué quedó fuera del camino crítico
+
+`mermaid` (593 KB), `katex` (588), `refractor` + `react-syntax-highlighter` (359), `motion` (390),
+CodeMirror, xterm, `jszip` y los 10 idiomas que no se están usando. Todos siguen en `dist/`: se
+bajan cuando hacen falta, y `PrefetchHeavyChunks` adelanta los más probables en tiempo ocioso
+una vez pasado el login.

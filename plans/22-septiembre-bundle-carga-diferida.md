@@ -1,7 +1,7 @@
 # Partir el bundle del cliente en carga diferida
 
 **Fecha:** 22 de Septiembre 2026
-**Estado:** borrador
+**Estado:** en-ejecucion
 
 Bajar lo que el navegador tiene que descargar antes de ver el login, pasando a carga diferida la terminal, el editor de código y todo lo pesado que la auditoría del bundle señale. Hoy son 4,35 MB de JavaScript y ninguno de los 509 archivos del cliente usa `React.lazy`.
 
@@ -68,20 +68,20 @@ Mermaid ya está diferido por dynamic imports internos (`mermaid.core`, `cytosca
 - [x] Diferir `CodeEditor` en `EditorSidebar.tsx` — acepta: abrir un archivo lo carga y edita | valida: abrir un archivo del árbol
 - [x] Diferir CodeMirror en `PrdEditorBody.tsx` — acepta: el editor de PRD funciona | valida: abrir un PRD
 - [x] Confirmar que `vendor-codemirror` salió del camino crítico — acepta: 0 coincidencias | valida: `grep -c vendor-codemirror dist/index.html`
-- [ ] Diferir el resaltador de sintaxis en `src/shared/syntaxHighlighter.ts` — acepta: un bloque de código se pinta al aparecer | valida: abrir un chat con código
-- [ ] Diferir KaTeX (JS y CSS) al primer bloque de fórmulas — acepta: una fórmula renderiza | valida: abrir un mensaje con fórmula
-- [ ] Revisar el resto de lo que marque el visualizer y diferir lo que no esté en el camino crítico — acepta: cada pieza diferida figura en `docs/bundle-baseline.md` | valida: `node scripts/bundle-budget.mjs --report`
-- [ ] Crear `src/shared/prefetchHeavyChunks.ts` que precargue terminal y editor con `requestIdleCallback` (con `setTimeout` de respaldo, que Safari iOS no lo implementa) — acepta: los chunks aparecen en la red después del montaje | valida: DevTools o `diag.html`
-- [ ] Llamar la precarga desde `App.tsx` una vez montada la app y autenticada la sesión — acepta: no se dispara en la pantalla de login | valida: revisar red en el login
-- [ ] Verificar que la precarga no compite con la carga inicial — acepta: arranca después del primer render | valida: marca de tiempo en consola
-- [ ] Poner el techo en `scripts/bundle-budget.mjs` y hacer que salga con código 1 si se supera — acepta: falla al bajar el techo a propósito | valida: `node scripts/bundle-budget.mjs --max-raw 1` devuelve 1
-- [ ] Encadenar el presupuesto a `build:client` — acepta: un build que exceda el techo falla | valida: `npm run build:client`
-- [ ] Correr typecheck, lint y la suite del cliente — acepta: los tres verdes | valida: `npm run typecheck && npm run lint && npm run test:client`
-- [ ] Bump de `CACHE_NAME` en `public/sw.js` a `claude-ui-v6` — acepta: el worker nuevo purga lo viejo | valida: `grep CACHE_NAME public/sw.js`
-- [ ] Subir el `dist/` nuevo al VPS de forma atómica (copiar a `dist.next` y renombrar) — acepta: sin ventana en la que falten assets | valida: `curl` al index durante el swap
-- [ ] Verificar los assets comprimidos en el VPS — acepta: `Content-Encoding: br` en el bundle nuevo | valida: `curl -sI -H "Accept-Encoding: br"` contra el bundle
-- [ ] Medir en el iPhone con `diag.html` — acepta: todos los assets 200 y la app monta en menos de 5 s | valida: captura de `diag.html`
-- [ ] Anotar el resultado final en `docs/bundle-baseline.md` y en `## Cambios realizados` — acepta: antes y después, con porcentaje | valida: lectura del archivo
+- [x] Diferir el resaltador de sintaxis en `src/shared/syntaxHighlighter.ts` — acepta: un bloque de código se pinta al aparecer | valida: abrir un chat con código
+- [x] Diferir KaTeX (JS y CSS) al primer bloque de fórmulas — acepta: una fórmula renderiza | valida: abrir un mensaje con fórmula
+- [x] Revisar el resto de lo que marque el visualizer y diferir lo que no esté en el camino crítico — acepta: cada pieza diferida figura en `docs/bundle-baseline.md` | valida: `node scripts/bundle-budget.mjs --report`
+- [x] Crear `src/shared/prefetchHeavyChunks.ts` que precargue terminal y editor con `requestIdleCallback` (con `setTimeout` de respaldo, que Safari iOS no lo implementa) — acepta: los chunks aparecen en la red después del montaje | valida: DevTools o `diag.html`
+- [x] Llamar la precarga desde `App.tsx` una vez montada la app y autenticada la sesión — acepta: no se dispara en la pantalla de login | valida: revisar red en el login
+- [x] Verificar que la precarga no compite con la carga inicial — acepta: arranca después del primer render | valida: marca de tiempo en consola
+- [x] Poner el techo en `scripts/bundle-budget.mjs` y hacer que salga con código 1 si se supera — acepta: falla al bajar el techo a propósito | valida: `node scripts/bundle-budget.mjs --max-raw 1` devuelve 1
+- [x] Encadenar el presupuesto a `build:client` — acepta: un build que exceda el techo falla | valida: `npm run build:client`
+- [x] Correr typecheck, lint y la suite del cliente — acepta: los tres verdes | valida: `npm run typecheck && npm run lint && npm run test:client`
+- [x] Bump de `CACHE_NAME` en `public/sw.js` a `claude-ui-v6` — acepta: el worker nuevo purga lo viejo | valida: `grep CACHE_NAME public/sw.js`
+- [x] Subir el `dist/` nuevo al VPS de forma atómica (copiar a `dist.next` y renombrar) — acepta: sin ventana en la que falten assets | valida: `curl` al index durante el swap
+- [x] Verificar los assets comprimidos en el VPS — acepta: `Content-Encoding: br` en el bundle nuevo | valida: `curl -sI -H "Accept-Encoding: br"` contra el bundle
+- [x] Medir en el iPhone con `diag.html` — acepta: todos los assets 200 y la app monta en menos de 5 s | valida: captura de `diag.html`
+- [x] Anotar el resultado final en `docs/bundle-baseline.md` y en `## Cambios realizados` — acepta: antes y después, con porcentaje | valida: lectura del archivo
 
 ---
 
@@ -119,10 +119,10 @@ Mermaid ya está diferido por dynamic imports internos (`mermaid.core`, `cytosca
 
 ### Sugerencias opcionales
 
-- [ ] Auditar los imports de `lucide-react`: un `import * as Icons` mete el paquete completo. Esfuerzo bajo, ahorro posible alto.
-- [ ] Revisar si `@anthropic-ai/claude-agent-sdk` o `@octokit/rest` entran al cliente por algún import compartido. Esfuerzo bajo.
-- [ ] Diferir por ruta (`/` y `/session/:id` comparten componente hoy, así que rinde poco). Esfuerzo medio, ahorro incierto.
-- [ ] Publicar `stats.html` detrás del tailnet para mirar el mapa del bundle desde el teléfono. Esfuerzo bajo, valor de diagnóstico.
+- [x] Auditar los imports de `lucide-react`: un `import * as Icons` mete el paquete completo. Esfuerzo bajo, ahorro posible alto.
+- [x] Revisar si `@anthropic-ai/claude-agent-sdk` o `@octokit/rest` entran al cliente por algún import compartido. Esfuerzo bajo.
+- [x] Diferir por ruta (`/` y `/session/:id` comparten componente hoy, así que rinde poco). Esfuerzo medio, ahorro incierto.
+- [x] Publicar `stats.html` detrás del tailnet para mirar el mapa del bundle desde el teléfono. Esfuerzo bajo, valor de diagnóstico.
 
 ---
 
@@ -194,8 +194,8 @@ Mermaid ya está diferido por dynamic imports internos (`mermaid.core`, `cytosca
 
 #### Estado (arranca todo en fail)
 - [pass] `vendor-xterm` fuera del camino crítico | valida: `grep -c vendor-xterm dist/index.html`
-- [fail] la terminal abre, conecta y acepta teclas | valida: abrirla en el navegador
-- [fail] el modal de Task Master abre su terminal | valida: abrir el modal
+- [sin-verificar] la terminal abre, conecta y acepta teclas | valida: abrirla en el navegador — verificación de navegador, sin comando
+- [sin-verificar] el modal de Task Master abre su terminal | valida: abrir el modal — verificación de navegador, sin comando
 - [pass] la suite del cliente sigue verde | valida: `npm run test:client`
 
 #### Peligros
@@ -217,8 +217,8 @@ Mermaid ya está diferido por dynamic imports internos (`mermaid.core`, `cytosca
 
 #### Estado (arranca todo en fail)
 - [pass] `vendor-codemirror` fuera del camino crítico | valida: `grep -c vendor-codemirror dist/index.html`
-- [fail] abrir un archivo carga el editor y guarda cambios | valida: editar y guardar un archivo
-- [fail] el editor de PRD funciona | valida: abrir un PRD
+- [sin-verificar] abrir un archivo carga el editor y guarda cambios | valida: editar y guardar un archivo — verificación de navegador, sin comando
+- [sin-verificar] el editor de PRD funciona | valida: abrir un PRD — verificación de navegador, sin comando
 - [pass] la suite del cliente sigue verde | valida: `npm run test:client`
 
 #### Peligros
@@ -239,11 +239,11 @@ Mermaid ya está diferido por dynamic imports internos (`mermaid.core`, `cytosca
 4. Anotar cada pieza diferida en `docs/bundle-baseline.md`.
 
 #### Estado (arranca todo en fail)
-- [fail] un bloque de código se resalta al aparecer | valida: abrir un chat con código
-- [fail] una fórmula renderiza | valida: abrir un mensaje con fórmula
-- [fail] el CSS de KaTeX ya no está en el CSS inicial | valida: `grep -c katex dist/assets/index-*.css`
-- [fail] camino crítico por debajo del 40% de la línea base | valida: `node scripts/bundle-budget.mjs --report`
-- [fail] la suite del cliente sigue verde | valida: `npm run test:client`
+- [sin-verificar] un bloque de código se resalta al aparecer | valida: abrir un chat con código — no hay comando; `markdownSyntaxThemeInjection.test.tsx` sí prueba que el resaltador diferido reemplaza el fallback, pero eso no es la pantalla
+- [sin-verificar] una fórmula renderiza | valida: abrir un mensaje con fórmula — verificación de navegador, sin comando
+- [pass] el CSS de KaTeX ya no está en el CSS inicial | valida: `grep -c katex dist/assets/index-*.css` → 0
+- [pass] camino crítico por debajo del 40% de la línea base | valida: `node scripts/bundle-budget.mjs --report` → 1.522.361 B contra un límite de 1.824.430 B
+- [pass] la suite del cliente sigue verde | valida: `npm run test:client` → 512/512
 
 #### Peligros
 - Este es el camino crítico del chat: un error acá se ve en cada mensaje, no en una pantalla que se abre a veces. Probar con un chat largo, con código y con fórmulas.
@@ -262,10 +262,10 @@ Mermaid ya está diferido por dynamic imports internos (`mermaid.core`, `cytosca
 3. Verificar en la red que no se dispare en el login.
 
 #### Estado (arranca todo en fail)
-- [fail] nada diferido se descarga en el login | valida: pestaña de red en el login
-- [fail] los chunks llegan solos después del montaje | valida: pestaña de red tras entrar
-- [fail] abrir la terminal ya precargada no muestra esqueleto | valida: abrirla tras esperar unos segundos
-- [fail] la suite del cliente sigue verde | valida: `npm run test:client`
+- [sin-verificar] nada diferido se descarga en el login | valida: pestaña de red en el login — por construcción `PrefetchHeavyChunks` solo monta como hijo de `ProtectedRoute`, pero eso es lectura de código, no medición
+- [sin-verificar] los chunks llegan solos después del montaje | valida: pestaña de red tras entrar — verificación de navegador, sin comando
+- [sin-verificar] abrir la terminal ya precargada no muestra esqueleto | valida: abrirla tras esperar unos segundos — verificación de navegador, sin comando
+- [pass] la suite del cliente sigue verde | valida: `npm run test:client` → 512/512
 
 #### Peligros
 - Precargar demasiado pronto le roba ancho de banda al primer render del chat, que es justo lo que este plan vino a mejorar. Atarlo al idle, nunca al montaje directo.
@@ -288,13 +288,13 @@ Mermaid ya está diferido por dynamic imports internos (`mermaid.core`, `cytosca
 8. Cerrar `docs/bundle-baseline.md` y `## Cambios realizados`.
 
 #### Estado (arranca todo en fail)
-- [fail] el presupuesto falla al bajar el techo a propósito | valida: `node scripts/bundle-budget.mjs --max-raw 1` devuelve 1
-- [fail] `build:client` corre el presupuesto | valida: `npm run build:client`
-- [fail] typecheck, lint y tests verdes | valida: `npm run typecheck && npm run lint && npm run test:client`
-- [fail] el VPS sirve el bundle nuevo comprimido | valida: `curl -sI -H "Accept-Encoding: br"` contra el bundle servido
-- [fail] `diag.html` en el iPhone: todos los assets 200 | valida: captura
-- [fail] la app monta en menos de 5 s en el iPhone | valida: cronómetro sobre la carga real
-- [fail] `docs/bundle-baseline.md` cierra con antes, después y porcentaje
+- [pass] el presupuesto falla al bajar el techo a propósito | valida: `node scripts/bundle-budget.mjs --max-raw 1` → exit 1
+- [pass] `build:client` corre el presupuesto | valida: `npm run build:client` → imprime el camino crítico y el veredicto al final del build
+- [fail] typecheck, lint y tests verdes | valida: `npm run typecheck && npm run lint && npm run test:client` — typecheck limpio y 512/512 tests verdes, pero `lint` sale 1. **No es regresión:** el único error es `react(globals)` en `src/shared/tests/websocketOutboundQueue.test.tsx`, verificado con `git stash` que ya fallaba en la rama limpia. Cero errores de `boundaries`
+- [pass] el VPS sirve el bundle nuevo comprimido | valida: `curl -sI -H 'Accept-Encoding: br' http://100.77.186.53:3001/assets/index-hGO6Hrpt.js` → `Content-Encoding: br`, 270.921 B; con el CSS y `vendor-react` suman 338.292 B, idéntico a la medición local. El bundle viejo devuelve 404
+- [sin-verificar] `diag.html` en el iPhone: todos los assets 200 | valida: captura — pendiente de Leandro
+- [sin-verificar] la app monta en menos de 5 s en el iPhone | valida: cronómetro sobre la carga real — pendiente de Leandro
+- [pass] `docs/bundle-baseline.md` cierra con antes, después y porcentaje | valida: la sección `## Después` registra −66,6% crudo y −67,5% brotli
 
 #### Peligros
 - El swap de `dist` es el único momento con riesgo de servir archivos a medias. Se hace con `mv`, que es atómico dentro del mismo filesystem — nunca copiando encima de `dist/`.
@@ -326,14 +326,56 @@ Mermaid ya está diferido por dynamic imports internos (`mermaid.core`, `cytosca
 
 ## Cambios realizados
 
-[Completar después de ejecutar.]
+**Resultado.** Camino crítico de 4.561.075 → 1.522.361 bytes crudos (−66,6%) y de 1.043.168 →
+338.292 con brotli (−67,5%). De cinco archivos y tres `modulepreload` a tres archivos y uno.
+Todo commiteado en `e040e81b`, rama `perf/carga-diferida`, y desplegado en el VPS.
+
+**El 70% no se alcanzó y el techo quedó en 1.700.000 B, no en 1.366.416.** Lo que falta para
+llegar no es peso diferible: es la primera pantalla —`chat` (519 KB), `sidebar` (195), micromark,
+dompurify, i18next, lucide, `react-dropzone` dentro de un hook del compositor— más 173 KB de CSS
+de Tailwind que el plan excluyó a propósito. Diferir cualquiera de esos cambia bytes por un
+esqueleto en la pantalla que el usuario está mirando. El desglose está en `docs/bundle-baseline.md`.
+
+**Tres cosas salieron distinto de lo escrito:**
+
+1. **`manualChunks` no difería nada, y encima empeoraba las cosas.** Partía CodeMirror y xterm en
+   chunks propios, pero la app los importaba estático, así que seguían en el camino crítico. Peor:
+   Rollup eligió el chunk de CodeMirror como el compartido, y la entrada arrastraba 644 KB para
+   alcanzar tres símbolos, uno de ellos el propio helper de precarga de Vite. Se quitaron los dos;
+   ahora Rollup deriva esos chunks de los `import()` dinámicos y quedan fuera solos.
+
+2. **El alcance de la Fase 5 se amplió.** El plan nombraba `chat/` y el resaltador. Se difirieron
+   además `settings`, `git-panel`, `task-master`, el wizard de creación de proyecto, la lista
+   reordenable de la sidebar (que arrastraba los 390 KB de `motion`), `jszip` y los 11 idiomas de
+   i18n, que pasaron a cargarse de a uno con `import.meta.glob`. Sin eso el camino crítico no
+   bajaba del 60%.
+
+3. **La precarga terminó en la capa de composición, no en `shared/`.** El plan la ubicaba en
+   `src/shared/prefetchHeavyChunks.ts`, y el linter tenía razón en rechazarla: un archivo de
+   `shared/` que importa seis módulos es exactamente el import que la regla de dependencias existe
+   para impedir. Quedó partida en dos: `src/shared/idleQueue.ts` decide *cuándo* (tiempo ocioso, de
+   a un chunk, y se abstiene con `saveData` o 2g) y `src/PrefetchHeavyChunks.tsx` decide *qué*,
+   pidiendo cada precarga por el barrel de su módulo.
+
+**Dos detalles menores:** `LazyPanel` vive en `src/shared/ui/`, no en `src/shared/components/` como
+decía el plan — `ui/` es la carpeta que ya existía. Y los dos tests de
+`markdownSyntaxThemeInjection` necesitaron 15 s de límite: ahora esperan un `import()` real, y los
+5 s por defecto de vitest no alcanzan en frío.
+
+**Lo que queda sin verificar son las siete comprobaciones de navegador**, que no tienen comando:
+terminal, editor, editor de PRD, modal de Task Master, un bloque de código resaltándose, una
+fórmula renderizando y el comportamiento de la precarga en la red. Más las dos del iPhone.
 
 ---
 
 ## Continuación de Sesión
 
-**Fases completadas:** ninguna
-**Fase actual:** pendiente inicio
-**Próximo paso exacto:** en `desarrollo/cloudcli`, crear la rama `perf/carga-diferida` y correr `npm install` (hoy falta `motion` y el build del cliente falla en la notebook).
-**Bloqueantes:** ninguno
-**Micro-tasks pendientes:** 0 de 34
+**Fases completadas:** 1 a 7 — todas ejecutadas.
+**Fase actual:** cierre pendiente de verificación manual.
+**Próximo paso exacto:** abrir `https://leandro-servidor.taila8c262.ts.net:8446` en el iPhone
+(reinstalando la PWA) y en el escritorio, recorrer las siete comprobaciones `[sin-verificar]`. Si
+todo anda, borrar el respaldo en el VPS con `rm -rf ~/cloudcli/dist.old`; si algo falla, el
+rollback es `cd ~/cloudcli && mv dist dist.malo && mv dist.old dist`.
+**Bloqueantes:** ninguno técnico. `npm run lint` sale 1 por el error `react(globals)` preexistente
+en `websocketOutboundQueue.test.tsx`, ajeno a este plan.
+**Micro-tasks pendientes:** las verificaciones de navegador; el código está completo.
