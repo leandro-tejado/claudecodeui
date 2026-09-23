@@ -56,13 +56,20 @@ export const userDb = {
   },
 
   /**
-   * Looks up an active user by username.
+   * Looks up an active user by username, ignoring case.
    * Returns the full row (including password hash) for auth verification.
+   *
+   * `COLLATE NOCASE` is not a convenience: iOS Safari capitalises the first
+   * letter of a text input, so a phone sends `Leandrotejado` for an account
+   * created as `leandrotejado`. A case-sensitive match finds nothing and the
+   * caller reports invalid credentials, which reads as a wrong password and
+   * sends whoever is looking at it after the wrong problem. This is a
+   * single-user system; a username that differs only in case is the same one.
    */
   getUserByUsername(username: string): UserRow | undefined {
     const db = getConnection();
     return db
-      .prepare('SELECT * FROM users WHERE username = ? AND is_active = 1')
+      .prepare('SELECT * FROM users WHERE username = ? COLLATE NOCASE AND is_active = 1')
       .get(username) as UserRow | undefined;
   },
 

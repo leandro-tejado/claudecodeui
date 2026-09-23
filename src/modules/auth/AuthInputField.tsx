@@ -22,6 +22,12 @@ type AuthInputFieldProps = {
  * Renders a `<label>` / `<input>` pair and forwards browser autofill hints
  * (`name`, `autoComplete`) so that password managers can identify and fill
  * the field correctly. Password fields gain a show/hide visibility toggle.
+ *
+ * Autocapitalisation, autocorrection and spellcheck are off on every field.
+ * iOS Safari capitalises the first letter of a text input by default, which
+ * silently turned `leandrotejado` into `Leandrotejado` on the way to a
+ * case-sensitive login and looked, from the phone, like a wrong password.
+ * A credential is typed exactly as it is, never as prose.
  */
 export default function AuthInputField({
   id,
@@ -55,6 +61,9 @@ export default function AuthInputField({
           type={resolvedType}
           name={name ?? id}
           autoComplete={autoComplete}
+          autoCapitalize="none"
+          autoCorrect="off"
+          spellCheck={false}
           value={value}
           onChange={(event) => onChange(event.target.value)}
           className={`w-full rounded-xl border border-border bg-background/60 py-2.5 text-foreground shadow-sm transition-colors placeholder:text-muted-foreground/60 hover:border-foreground/20 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30 disabled:cursor-not-allowed disabled:opacity-60 ${
