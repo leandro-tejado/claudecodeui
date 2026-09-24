@@ -231,6 +231,110 @@ test('a non-fixed entry never carries the fija key (exact shape, not just falsy)
   });
 });
 
+test('the fija session survives pagination: it reaches the sidebar even when 20 more recent sessions push it off the default page', async () => {
+  await withTempProjectDirectory(async (projectDirectory) => {
+    await withIsolatedDatabase(async () => {
+      // La fija es la más VIEJA del proyecto: si la paginación normal
+      // mandara, quedaría en la página 2 y el sidebar nunca la vería.
+      await sessionsDb.createSession(
+        'session-fija-paginada',
+        'claude',
+        projectDirectory,
+        'Orquestador',
+        '2020-01-01T00:00:00.000Z',
+        '2020-01-01T00:00:00.000Z',
+      );
+      for (let i = 0; i < 20; i += 1) {
+        await sessionsDb.createSession(
+          `session-reciente-${i}`,
+          'claude',
+          projectDirectory,
+          `Reciente ${i}`,
+          new Date(Date.now() - i * 1000).toISOString(),
+          new Date(Date.now() - i * 1000).toISOString(),
+        );
+      }
+
+      await withRegistro(
+        {
+          orquestador: {
+            nombre: 'orquestador',
+            session_id: 'session-fija-paginada',
+            estado: 'viva',
+            fija: true,
+          },
+        },
+        async () => {
+          const projects = await getProjectsWithSessions({ skipSynchronization: true });
+          const project = projects[0];
+          assert.ok(project, 'expected the project to exist');
+
+          const fija = project.sessions.find((candidate) => candidate.id === 'session-fija-paginada');
+          assert.ok(fija, 'la sesión fija tiene que llegar en la primera página aunque sea la más vieja');
+          assert.deepEqual((fija as { tmux: unknown }).tmux, {
+            nombre: 'orquestador',
+            vivo: true,
+            fija: true,
+          });
+          assert.equal(project.sessions[0]?.id, 'session-fija-paginada', 'va primera en el payload');
+
+          // 21 sesiones reales en total: la paginación real no se rompe por
+          // la inyección — sigue reflejando que hay más para pedir.
+          assert.equal(project.sessionMeta.total, 21);
+          assert.equal(project.sessionMeta.hasMore, true);
+        },
+      );
+    });
+  });
+});
+
+test('the fija session is never duplicated on a later page', async () => {
+  await withTempProjectDirectory(async (projectDirectory) => {
+    await withIsolatedDatabase(async () => {
+      await sessionsDb.createSession(
+        'session-fija-pagina2',
+        'claude',
+        projectDirectory,
+        'Orquestador',
+        '2020-01-01T00:00:00.000Z',
+        '2020-01-01T00:00:00.000Z',
+      );
+      for (let i = 0; i < 20; i += 1) {
+        await sessionsDb.createSession(
+          `session-reciente-p2-${i}`,
+          'claude',
+          projectDirectory,
+          `Reciente ${i}`,
+          new Date(Date.now() - i * 1000).toISOString(),
+          new Date(Date.now() - i * 1000).toISOString(),
+        );
+      }
+
+      await withRegistro(
+        {
+          orquestador: {
+            nombre: 'orquestador',
+            session_id: 'session-fija-pagina2',
+            estado: 'viva',
+            fija: true,
+          },
+        },
+        async () => {
+          const secondPageProjects = await getProjectsWithSessions({
+            skipSynchronization: true,
+            sessionsLimit: 20,
+            sessionsOffset: 20,
+          });
+          const secondPageSessions = secondPageProjects[0]?.sessions ?? [];
+
+          const matches = secondPageSessions.filter((candidate) => candidate.id === 'session-fija-pagina2');
+          assert.equal(matches.length, 1, 'la fija aparece una sola vez, en su lugar natural de la página 2');
+        },
+      );
+    });
+  });
+});
+
 test('a stale entry pointing at a dead tmux session (estado caida) reports vivo false', async () => {
   await withTempProjectDirectory(async (projectDirectory) => {
     await withIsolatedDatabase(async () => {

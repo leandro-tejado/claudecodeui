@@ -330,6 +330,19 @@ export function _resetRegistroSesionesCacheParaTests(): void {
 }
 
 /**
+ * El `session_id` de la sesión orquestadora fija, si el registro tiene una
+ * entrada `fija: true` con `session_id`. `null` si no hay ninguna (registro
+ * ausente, o ninguna entrada marcada — el caso de cualquier máquina que no
+ * corrió la Fase 3 de `17-septiembre-ux-sesiones-y-cuota.md`).
+ */
+function sessionIdFijaDelRegistro(registro: RegistroSesiones): string | null {
+  for (const entry of Object.values(registro)) {
+    if (entry.fija === true && entry.session_id) return entry.session_id;
+  }
+  return null;
+}
+
+/**
  * Resuelve el estado tmux de una sesión: primero por `session_id` (lo que
  * escribe `registro-sesion.sh` en `SessionStart`, exacto y sin adivinar),
  * y si no hay match, por el nombre determinístico que ya usa
@@ -406,11 +419,30 @@ async function readProjectSessionsPageByPath(
   ) as SessionRepositoryRow[];
   const total = sessionsDb.countSessionsByProjectPath(projectPath);
   const registro = await leerRegistroSesiones();
-  const sessions = await Promise.all(rows.map((row) => mapSessionRowToSummary(row, projectPath, registro)));
+
+  // La sesión orquestadora fija tiene que llegar al sidebar siempre, aunque
+  // esta página (ordenada por actividad más reciente) la haya dejado afuera
+  // — es una sesión que se abre poco y un proyecto activo la saca de los
+  // primeros `DEFAULT_PROJECT_SESSIONS_PAGE_SIZE` sin esfuerzo. Solo en la
+  // primera página, para no repetirla en cada "ver más sesiones".
+  let rowsConFija = rows;
+  if (pagination.offset === 0) {
+    const fijaSessionId = sessionIdFijaDelRegistro(registro);
+    if (fijaSessionId && !rows.some((row) => row.session_id === fijaSessionId)) {
+      const fijaRow = sessionsDb.getSessionById(fijaSessionId) as (SessionRepositoryRow & { project_path?: string | null }) | null;
+      if (fijaRow && fijaRow.project_path === projectPath) {
+        rowsConFija = [fijaRow, ...rows];
+      }
+    }
+  }
+
+  const sessions = await Promise.all(rowsConFija.map((row) => mapSessionRowToSummary(row, projectPath, registro)));
 
   return {
     sessions,
     total,
+    // La inyección de la fija no es una sesión "de más" a los ojos de la
+    // paginación: `hasMore` se calcula sobre `rows`, la página real.
     hasMore: pagination.offset + rows.length < total,
   };
 }
