@@ -86,11 +86,7 @@ export default function SetupForm() {
   );
 
   return (
-    <AuthScreenLayout
-      title={t('register.title')}
-      description={t('register.description')}
-      footerText={t('register.footerText')}
-    >
+    <AuthScreenLayout title={t('register.title')}>
       <form onSubmit={handleSubmit} className="space-y-4">
         <AuthInputField
           id="username"
