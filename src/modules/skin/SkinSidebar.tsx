@@ -19,6 +19,7 @@ import {
   Star,
   Terminal,
   Trash2,
+  Workflow,
   X,
 } from 'lucide-react';
 
@@ -394,6 +395,23 @@ export function SkinSidebar({
 
   const tmuxFilterActive = sidebarOnlyTmux && tmuxStats.conocido;
   const ocultasPorTmux = tmuxFilterActive ? tmuxStats.total - tmuxStats.vivas : 0;
+
+  /*
+   * La sesión orquestadora fija (23-sep, Fase 7 de
+   * `23-septiembre-limpieza-sesiones-vps.md`): una por máquina, casi nunca
+   * más de una. Se busca en `projects` entero — no en `visibleProjects` — a
+   * propósito: la entrada de arriba tiene que quedar "siempre visible" sin
+   * importar la búsqueda activa, el filtro de solo-tmux o qué proyecto está
+   * expandido. `projects-with-sessions-fetch.service.ts` ya garantiza que
+   * esa sesión viaja en la primera página aunque la paginación normal la
+   * hubiera dejado afuera.
+   */
+  const fijaEntry = useMemo(() => {
+    const match = projects
+      .flatMap((project) => (project.sessions ?? []).map((session) => ({ project, session })))
+      .find((entry) => getTmux(entry.session)?.fija === true);
+    return match ?? null;
+  }, [projects]);
 
   /* Filtro y orden. Buscar mira el proyecto y también sus sesiones, así que
      escribir el tema de una conversación encuentra la carpeta donde vive. */
@@ -865,6 +883,38 @@ export function SkinSidebar({
       {/* --- Lista --- */}
       {viewMode === 'active' && (
       <div className="flex-1 overflow-y-auto px-2 pb-2">
+        {/* --- Session Orquestadora: entrada fija, siempre arriba de todos
+             los proyectos, ajena a la búsqueda y al filtro de tmux. --- */}
+        {fijaEntry && (
+          <a
+            href={`${sessionHrefBase}/${fijaEntry.session.id}`}
+            data-testid="sidebar-session-orquestadora"
+            title="Session Orquestadora — sesión fija, siempre prendida"
+            className={`mb-1.5 flex items-center rounded-md border no-underline transition-colors ${
+              selectedSession?.id === fijaEntry.session.id
+                ? 'border-primary/40 bg-primary/10'
+                : 'border-primary/20 bg-primary/5 hover:bg-primary/10'
+            }`}
+            style={rowStyle}
+            onClick={(event) => {
+              if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+              event.preventDefault();
+              onSessionSelect(fijaEntry.session);
+            }}
+          >
+            <Workflow className="h-3.5 w-3.5 flex-none text-primary" />
+            <span className="min-w-0 flex-1 truncate font-semibold tracking-tight text-foreground">
+              Session Orquestadora
+            </span>
+            <span
+              className="flex-none rounded-full bg-primary/15 px-1.5 font-medium text-primary"
+              style={{ fontSize: 'var(--skin-text-xs)' }}
+            >
+              fija
+            </span>
+          </a>
+        )}
+
         {visibleProjects.length === 0 && (
           <p className="px-3 py-6 text-center text-muted-foreground" style={{ fontSize: 'var(--skin-text-sm)' }}>
             {query ? 'Nada coincide con la búsqueda.' : 'Todavía no hay proyectos.'}
