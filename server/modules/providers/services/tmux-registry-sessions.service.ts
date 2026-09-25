@@ -1,5 +1,6 @@
 import os from 'node:os';
 import path from 'node:path';
+import { readFileSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 
 import { sessionsDb } from '@/modules/database/index.js';
@@ -79,4 +80,59 @@ export async function sincronizarSesionesTmuxSinTranscript(): Promise<Sincroniza
 
   const podadas = sessionsDb.deletePendingTmuxSessionsExcept(vivas);
   return { indexadas, podadas };
+}
+
+// Mismo charset que `nombreTmux()` y que acepta tmux-bridge: un nombre fuera
+// de esto no llega nunca a un `tmux -t`.
+const NOMBRE_TMUX_PATTERN = /^[A-Za-z0-9_-]+$/;
+
+/**
+ * Nombre de la sesión de tmux viva que, según el registro, corre la sesión de
+ * Claude `sessionIds` (se prueba cada id: el de la app y el del provider).
+ *
+ * Es lo que conecta el chat con los panes que CloudCLI no creó —`orquestar.py`,
+ * `ct`—, cuyo nombre no es el determinístico de `nombreTmux()`. Síncrono a
+ * propósito: lo usa `chat.subscribe`, que responde sin await, y el registro
+ * pesa unos pocos KB. Solo responde qué dice el registro: que el pane siga
+ * vivo lo confirma quien llama, con `tmux has-session`.
+ */
+export function buscarPaneTmuxRegistrado(sessionIds: Array<string | null | undefined>): string | null {
+  const buscados = new Set(sessionIds.filter((id): id is string => typeof id === 'string' && id.length > 0));
+  if (buscados.size === 0) {
+    return null;
+  }
+
+  let registro: Record<string, RegistroEntry>;
+  try {
+    const data = JSON.parse(readFileSync(rutaRegistroSesionesTmux(), 'utf8')) as unknown;
+    if (!data || typeof data !== 'object') {
+      return null;
+    }
+    registro = data as Record<string, RegistroEntry>;
+  } catch {
+    return null;
+  }
+
+  for (const [clave, entry] of Object.entries(registro)) {
+    if (entry.estado !== 'viva') continue;
+    if (typeof entry.session_id !== 'string' || !buscados.has(entry.session_id)) continue;
+    const nombre = typeof entry.nombre === 'string' && entry.nombre ? entry.nombre : clave;
+    if (NOMBRE_TMUX_PATTERN.test(nombre)) {
+      return nombre;
+    }
+  }
+  return null;
+}
+
+/**
+ * La fila que deja `createPendingTmuxSession` y que todavía no tiene
+ * transcript: no hay conversación que retomar por `--resume`, y el único
+ * camino para hablarle es el pane donde corre.
+ */
+export function esFilaTmuxSinTranscript(session: {
+  session_id: string;
+  provider_session_id: string | null;
+  jsonl_path: string | null;
+}): boolean {
+  return !session.jsonl_path && session.provider_session_id === session.session_id;
 }

@@ -6,7 +6,7 @@ import readline from 'node:readline';
 import { promisify } from 'node:util';
 
 import { sessionsDb } from '@/modules/database/index.js';
-import { sessionsService } from '@/modules/providers/index.js';
+import { buscarPaneTmuxRegistrado, sessionsService } from '@/modules/providers/index.js';
 import { SALIDAS_SYSTEM_PROMPT_APPEND } from '@/modules/salidas/index.js';
 import { nombreTmux } from '@/modules/websocket/services/shell-websocket.service.js';
 import { connectedClients, WS_OPEN_STATE } from '@/modules/websocket/services/websocket-state.service.js';
@@ -375,6 +375,49 @@ export function tieneSesionTmux(
   return dependencies.hasSession(nombreSesion);
 }
 
+type FilaSesionParaPane = {
+  session_id: string;
+  provider_session_id: string | null;
+  project_path: string | null;
+};
+
+export type PaneTmuxResuelto = {
+  nombre: string;
+  /**
+   * `true` cuando el pane no lo creó CloudCLI (`orquestar.py`, `ct`): su
+   * nombre sale del registro de tmux, no de `nombreTmux()`, y CloudCLI nunca
+   * lo abre ni lo recrea — solo le escribe.
+   */
+  externo: boolean;
+};
+
+/**
+ * El pane de tmux vivo donde corre esta sesión, si hay uno.
+ *
+ * Primero el nombre determinístico de los panes que abre CloudCLI; si no está
+ * vivo, el que el registro de tmux (`~/.cache/aos/sesiones.json`) asocia al
+ * `session_id`. Sin lo segundo, una sesión abierta por `orquestar.py` o `ct`
+ * se trataba como inerte: el chat caía a `chat.send`, que la retoma por SDK con
+ * `--resume` — un segundo proceso escribiendo el mismo transcript o, si el REPL
+ * todavía no recibió prompt, "No conversation found" (25-sep, `os-guia-1`).
+ */
+export function resolverPaneTmux(
+  session: FilaSesionParaPane,
+  dependencies: Pick<TmuxBridgeDependencies, 'hasSession'> = defaultDependencies,
+  buscarEnRegistro: typeof buscarPaneTmuxRegistrado = buscarPaneTmuxRegistrado,
+): PaneTmuxResuelto | null {
+  const propio = nombreTmux(session.project_path ?? '', session.session_id);
+  if (tieneSesionTmux(propio, dependencies)) {
+    return { nombre: propio, externo: false };
+  }
+
+  const registrado = buscarEnRegistro([session.provider_session_id, session.session_id]);
+  if (registrado && tieneSesionTmux(registrado, dependencies)) {
+    return { nombre: registrado, externo: true };
+  }
+  return null;
+}
+
 /**
  * Raw JSONL row shape this module cares about — the handful of fields that
  * decide whether a turn ended, not the full transcript row.
@@ -485,9 +528,43 @@ function obtenerOInicializarEstado(providerSessionId: string): EstadoSesionPuent
   return estado;
 }
 
+// Panes externos a los que el chat ya les mandó un prompt, por session id de
+// la app. A diferencia de los propios, un pane externo no se puentea solo por
+// estar vivo: el registro trae todas las sesiones de la máquina, y cada cambio
+// de sus transcripts se emitiría a todos los clientes aunque nadie las mire
+// desde el chat. En memoria, como el resto del estado: tras un reinicio el
+// turno en curso ya no se emite en vivo, pero el historial REST lo trae al
+// reabrir la sesión.
+const panesExternosPuenteados = new Map<string, string>();
+
+/**
+ * Marca un pane externo como puenteado antes de escribirle. Si la sesión ya
+ * tiene transcript, arranca el conteo en el historial actual: lo anterior al
+ * prompt no es de este turno y no se reemite.
+ */
+export async function puentearPaneExterno(
+  session: FilaSesionParaPane & { jsonl_path: string | null },
+  nombreSesion: string,
+): Promise<void> {
+  const yaPuenteado = panesExternosPuenteados.get(session.session_id) === nombreSesion;
+  panesExternosPuenteados.set(session.session_id, nombreSesion);
+  if (yaPuenteado || !session.jsonl_path || !session.provider_session_id) {
+    return;
+  }
+
+  const estado = obtenerOInicializarEstado(session.provider_session_id);
+  try {
+    const full = await sessionsService.fetchHistory(session.session_id, { limit: null, offset: 0 });
+    estado.ultimaCantidadEmitida = full.messages.length;
+  } catch {
+    // Sin historial legible se emite desde cero; el cliente deduplica por id.
+  }
+}
+
 /** Test-only: drops all in-memory bridge state between fixtures. */
 export function _resetEstadoParaTests(): void {
   estadosPorProviderSessionId.clear();
+  panesExternosPuenteados.clear();
 }
 
 function enviarATodosLosConectados(payload: AnyRecord): void {
@@ -505,7 +582,9 @@ function enviarATodosLosConectados(payload: AnyRecord): void {
  * No-ops immediately unless a live tmux session exists under this session's
  * deterministic name — that check (not a registration table) is the whole
  * definition of "this app session runs in tmux", so it survives a service
- * restart with nothing to reload. When it is bridged: pulls the cached full
+ * restart with nothing to reload. The one exception is an external pane
+ * (`orquestar.py`, `ct`): it is bridged only once the chat typed into it
+ * (`puentearPaneExterno`), see `panesExternosPuenteados`. When it is bridged: pulls the cached full
  * history (`sessionsService.fetchHistory`, which is the same
  * `session-history-cache`-backed reader the REST endpoint uses — no second
  * parse of the file), broadcasts whatever rows are new since the last poll,
@@ -520,8 +599,9 @@ export async function manejarActualizacionTranscript(providerSessionIdOEspacioAp
     return;
   }
 
-  const nombreSesion = nombreTmux(session.project_path ?? '', session.session_id);
-  if (!tieneSesionTmux(nombreSesion)) {
+  const nombrePropio = nombreTmux(session.project_path ?? '', session.session_id);
+  const nombreExterno = panesExternosPuenteados.get(session.session_id);
+  if (!tieneSesionTmux(nombrePropio) && !(nombreExterno && tieneSesionTmux(nombreExterno))) {
     return;
   }
 
@@ -558,6 +638,8 @@ export async function manejarActualizacionTranscript(providerSessionIdOEspacioAp
 export const tmuxBridgeService = {
   enviarPrompt,
   tieneSesionTmux,
+  resolverPaneTmux,
+  puentearPaneExterno,
   asegurarSesionTmux,
   esperarPrimerRender,
   esFinDeTurno,

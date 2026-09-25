@@ -15,6 +15,7 @@ import {
   esFinDeTurno,
   esperarPrimerRender,
   leerUltimaFilaCruda,
+  resolverPaneTmux,
   tieneSesionTmux,
 } from '@/modules/websocket/services/tmux-bridge.service.js';
 import { SALIDAS_SYSTEM_PROMPT_APPEND } from '@/modules/salidas/index.js';
@@ -536,4 +537,28 @@ test('defaultAsegurarConfianzaProyecto: idempotente en dos llamadas seguidas', a
   } finally {
     await rm(tempDirectory, { recursive: true, force: true });
   }
+});
+
+test('resolverPaneTmux: prefiere el pane propio de CloudCLI, y si no, el del registro de tmux', () => {
+  const session = {
+    session_id: '3f521bd6-e9e1-4529-a32a-221acef96a89',
+    provider_session_id: '3f521bd6-e9e1-4529-a32a-221acef96a89',
+    project_path: '/home/x/workspace',
+  };
+  const registro = () => 'os-guia-1';
+
+  // Solo el pane externo vive: es el caso de `orquestar.py` / `ct`.
+  const soloExterno = { hasSession: (nombre: string) => nombre === 'os-guia-1' };
+  assert.deepEqual(resolverPaneTmux(session, soloExterno, registro), { nombre: 'os-guia-1', externo: true });
+
+  // Los dos viven: gana el propio, que es el que CloudCLI sabe recrear.
+  const ambos = { hasSession: () => true };
+  const propio = resolverPaneTmux(session, ambos, registro);
+  assert.equal(propio?.externo, false);
+  assert.notEqual(propio?.nombre, 'os-guia-1');
+
+  // El registro lo nombra pero el pane ya murió: no hay a dónde escribir.
+  const ninguno = { hasSession: () => false };
+  assert.equal(resolverPaneTmux(session, ninguno, registro), null);
+  assert.equal(resolverPaneTmux(session, soloExterno, () => null), null);
 });

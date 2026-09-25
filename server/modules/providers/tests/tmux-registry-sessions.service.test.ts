@@ -6,7 +6,11 @@ import test from 'node:test';
 
 import { closeConnection, initializeDatabase, sessionsDb } from '@/modules/database/index.js';
 import { getProjectsWithSessions, invalidarRegistroSesiones } from '@/modules/projects/index.js';
-import { sincronizarSesionesTmuxSinTranscript } from '@/modules/providers/services/tmux-registry-sessions.service.js';
+import {
+  buscarPaneTmuxRegistrado,
+  esFilaTmuxSinTranscript,
+  sincronizarSesionesTmuxSinTranscript,
+} from '@/modules/providers/services/tmux-registry-sessions.service.js';
 
 /*
  * Bug del 25-sep: una sesión abierta por `orquestar.py` (o `ct`) que todavía
@@ -135,5 +139,44 @@ test('ignora entradas sin session_id válido o sin cwd absoluto', async () => {
       c: entrada({ cwd: 'relativo' }),
     });
     assert.deepEqual(await sincronizarSesionesTmuxSinTranscript(), { indexadas: [], podadas: 0 });
+  });
+});
+
+test('buscarPaneTmuxRegistrado: devuelve el nombre de tmux de la sesión viva, por cualquiera de sus ids', async () => {
+  await withEntorno(async (escribirRegistro) => {
+    await escribirRegistro({ 'os-guia-1': entrada() });
+    assert.equal(buscarPaneTmuxRegistrado([SESSION_ID]), 'os-guia-1');
+    assert.equal(buscarPaneTmuxRegistrado([null, 'otro-id', SESSION_ID]), 'os-guia-1');
+    assert.equal(buscarPaneTmuxRegistrado(['otro-id']), null);
+    assert.equal(buscarPaneTmuxRegistrado([]), null);
+  });
+});
+
+test('buscarPaneTmuxRegistrado: ignora entradas muertas y nombres fuera de charset', async () => {
+  await withEntorno(async (escribirRegistro) => {
+    await escribirRegistro({ 'os-guia-1': entrada({ estado: 'muerta' }) });
+    assert.equal(buscarPaneTmuxRegistrado([SESSION_ID]), null);
+
+    await escribirRegistro({ x: entrada({ nombre: 'os;rm -rf ~' }) });
+    assert.equal(buscarPaneTmuxRegistrado([SESSION_ID]), null);
+
+    await escribirRegistro(null);
+    assert.equal(buscarPaneTmuxRegistrado([SESSION_ID]), null);
+  });
+});
+
+test('esFilaTmuxSinTranscript: reconoce la fila pendiente y no la de una sesión nacida en CloudCLI', async () => {
+  await withEntorno(async (escribirRegistro) => {
+    await escribirRegistro({ 'os-guia-1': entrada() });
+    await sincronizarSesionesTmuxSinTranscript();
+    const pendiente = sessionsDb.getSessionById(SESSION_ID);
+    assert.ok(pendiente);
+    assert.equal(esFilaTmuxSinTranscript(pendiente), true);
+
+    const appId = '11111111-2222-3333-4444-555555555555';
+    sessionsDb.createAppSession(appId, 'claude', PROJECT_PATH, 'hola');
+    const deApp = sessionsDb.getSessionById(appId);
+    assert.ok(deApp);
+    assert.equal(esFilaTmuxSinTranscript(deApp), false);
   });
 });

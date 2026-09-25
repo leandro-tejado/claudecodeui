@@ -3,7 +3,7 @@ import path from 'node:path';
 import type { WebSocket } from 'ws';
 
 import { sessionsDb } from '@/modules/database/index.js';
-import { providerModelsService, sessionsService } from '@/modules/providers/index.js';
+import { esFilaTmuxSinTranscript, providerModelsService, sessionsService } from '@/modules/providers/index.js';
 import { chatRunRegistry } from '@/modules/websocket/services/chat-run-registry.service.js';
 import { nombreTmux } from '@/modules/websocket/services/shell-websocket.service.js';
 import { tmuxBridgeService } from '@/modules/websocket/services/tmux-bridge.service.js';
@@ -143,6 +143,9 @@ function readRequiredSessionId(data: AnyRecord): string | null {
   return sessionId.length > 0 ? sessionId : null;
 }
 
+const MENSAJE_TMUX_SESSION_GONE =
+  'Esta sesión corría en una terminal tmux que ya se cerró sin llegar a guardar ninguna conversación: no hay nada que retomar. Abrí una sesión nueva.';
+
 /**
  * Handles `chat.send`: resolves the session row (provider, project path, and
  * provider-native id all come from the database — never from the client),
@@ -159,6 +162,23 @@ async function handleChatSend(
     return;
   }
 
+  // A session running in a pane CloudCLI did not open (`orquestar.py`, `ct`)
+  // already has a live REPL writing its transcript: resuming it over the SDK
+  // would put a second process on the same file. A client that still thinks
+  // it is not tmux (subscribed before the pane showed up in the registry)
+  // gets its send typed into the pane instead.
+  if (resolved.provider === 'claude') {
+    const pane = tmuxBridgeService.resolverPaneTmux(resolved.session);
+    if (pane?.externo) {
+      await handleChatSendTmux(ws, data, dependencies);
+      return;
+    }
+    if (!pane && esFilaTmuxSinTranscript(resolved.session)) {
+      sendProtocolError(ws, 'TMUX_SESSION_GONE', MENSAJE_TMUX_SESSION_GONE, resolved.sessionId);
+      return;
+    }
+  }
+
   await dispatchRun(ws, userId, resolved.sessionId, resolved.session, data, dependencies);
 }
 
@@ -172,9 +192,10 @@ async function handleChatSend(
  * `chatRunRegistry` run to register: no runtime call is dispatched here, so
  * there is nothing for the registry's `run.writer` to attach to.
  *
- * The tmux session name is always computed server-side from the session row
- * (`project_path` + `session_id`, both from the DB) — never taken from the
- * client. A name the browser could pick would be a command injection vector
+ * The tmux session name is always resolved server-side — computed from the
+ * session row (`project_path` + `session_id`, both from the DB) or, for a pane
+ * CloudCLI did not open, looked up by `session_id` in the tmux registry — never
+ * taken from the client. A name the browser could pick would be a command injection vector
  * into `tmux send-keys -t <name>`.
  */
 async function handleChatSendTmux(
@@ -209,29 +230,45 @@ async function handleChatSendTmux(
     return;
   }
 
-  const nombreSesion = nombreTmux(session.project_path ?? '', session.session_id);
+  // A pane CloudCLI did not open (`orquestar.py`, `ct`) is only ever typed
+  // into: its name comes from the tmux registry, and asegurarSesionTmux would
+  // spawn a second `claude` under CloudCLI's own name if it looked dead.
+  const pane = tmuxBridgeService.resolverPaneTmux(session);
+  if (pane?.externo) {
+    await tmuxBridgeService.puentearPaneExterno(session, pane.nombre);
+  }
+  const nombreSesion = pane?.nombre ?? nombreTmux(session.project_path ?? '', session.session_id);
+
+  // A pending row from the tmux registry whose pane is gone never wrote a
+  // transcript: reopening it would start an unrelated `claude`.
+  if (!pane && esFilaTmuxSinTranscript(session)) {
+    sendProtocolError(ws, 'TMUX_SESSION_GONE', MENSAJE_TMUX_SESSION_GONE, sessionId);
+    return;
+  }
 
   // A brand-new session (or one whose pane died) has nothing to type into
   // yet. asegurarSesionTmux is idempotent and a no-op when the pane is
   // already alive, so this is safe to call on every send, not just the first.
-  try {
-    const creada = await tmuxBridgeService.asegurarSesionTmux(
-      nombreSesion,
-      session.project_path ?? '',
-      session.provider_session_id ?? null,
-      session.session_id
-    );
-    if (creada) {
-      // The pane exists the instant `tmux new-session` returns, but the
-      // `claude` process behind it does not start reading its terminal
-      // immediately — see esperarPrimerRender for the measured boot time.
-      await tmuxBridgeService.esperarPrimerRender(nombreSesion);
+  if (!pane?.externo) {
+    try {
+      const creada = await tmuxBridgeService.asegurarSesionTmux(
+        nombreSesion,
+        session.project_path ?? '',
+        session.provider_session_id ?? null,
+        session.session_id
+      );
+      if (creada) {
+        // The pane exists the instant `tmux new-session` returns, but the
+        // `claude` process behind it does not start reading its terminal
+        // immediately — see esperarPrimerRender for the measured boot time.
+        await tmuxBridgeService.esperarPrimerRender(nombreSesion);
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.error('[Chat] tmux-bridge could not open the pane', { sessionId, error: message });
+      sendProtocolError(ws, 'TMUX_SESSION_CREATE_FAILED', message, sessionId);
+      return;
     }
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    console.error('[Chat] tmux-bridge could not open the pane', { sessionId, error: message });
-    sendProtocolError(ws, 'TMUX_SESSION_CREATE_FAILED', message, sessionId);
-    return;
   }
 
   if (!tmuxBridgeService.tieneSesionTmux(nombreSesion)) {
@@ -653,9 +690,7 @@ function handleChatSubscribe(
     // restart` with nothing to reload: the flag is only ever a question, not
     // a row.
     const sessionRow = sessionsDb.getSessionById(sessionId);
-    const runsInTmux = sessionRow
-      ? tmuxBridgeService.tieneSesionTmux(nombreTmux(sessionRow.project_path ?? '', sessionRow.session_id))
-      : false;
+    const runsInTmux = sessionRow ? tmuxBridgeService.resolverPaneTmux(sessionRow) !== null : false;
 
     sendJson(ws, {
       kind: 'chat_subscribed',

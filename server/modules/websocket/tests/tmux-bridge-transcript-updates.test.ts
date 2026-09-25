@@ -14,6 +14,7 @@ import { connectedClients } from '@/modules/websocket/services/websocket-state.s
 import {
   _resetEstadoParaTests,
   manejarActualizacionTranscript,
+  puentearPaneExterno,
 } from '@/modules/websocket/services/tmux-bridge.service.js';
 import { nombreTmux } from '@/modules/websocket/services/shell-websocket.service.js';
 
@@ -154,6 +155,58 @@ test(
       } finally {
         connectedClients.delete(socket);
         await execFileAsync('tmux', ['kill-session', '-t', nombreSesion]).catch(() => undefined);
+        await rm(tempDirectory, { recursive: true, force: true });
+      }
+    });
+  },
+);
+
+test(
+  'un pane externo (orquestar.py, ct) solo se puentea despues de que el chat le escribio',
+  { concurrency: false },
+  async () => {
+    await withIsolatedDatabase(async () => {
+      _resetEstadoParaTests();
+      const tempDirectory = await mkdtemp(path.join(os.tmpdir(), 'tmux-bridge-fixture-'));
+      const projectPath = path.join(tempDirectory, 'project');
+      await mkdir(projectPath, { recursive: true });
+      const sessionId = `session-${randomUUID()}`;
+      const jsonlPath = path.join(tempDirectory, `${sessionId}.jsonl`);
+      const nombreExterno = `${PREFIX}externo-${randomUUID().slice(0, 8)}`;
+
+      const filaVieja = { type: 'user', uuid: 'u0', sessionId, message: { role: 'user', content: 'historial previo' } };
+      await writeFile(jsonlPath, `${JSON.stringify(filaVieja)}\n`, 'utf8');
+      sessionsDb.createSession(sessionId, 'claude', projectPath, undefined, undefined, undefined, jsonlPath);
+      const session = sessionsDb.getSessionById(sessionId);
+      assert.ok(session);
+
+      await execFileAsync('tmux', ['new-session', '-d', '-s', nombreExterno, 'cat']);
+      const { socket, received } = fakeClientSocket();
+      connectedClients.add(socket);
+      try {
+        // Vivo pero nunca escrito desde el chat: no se emite nada.
+        await manejarActualizacionTranscript(sessionId);
+        assert.equal(received.length, 0, 'un pane externo no puenteado no deberia emitir');
+
+        await puentearPaneExterno(session, nombreExterno);
+
+        const filaNueva = {
+          type: 'assistant',
+          uuid: 'a1',
+          sessionId,
+          message: { role: 'assistant', content: 'respuesta nueva', stop_reason: 'end_turn' },
+        };
+        await appendFile(jsonlPath, `${JSON.stringify(filaNueva)}\n`, 'utf8');
+        await manejarActualizacionTranscript(sessionId);
+
+        const textos = received
+          .filter((event) => (event as { kind?: string }).kind === 'text')
+          .map((event) => (event as { content?: string }).content);
+        assert.deepEqual(textos, ['respuesta nueva'], 'solo lo posterior al prompt, sin reemitir el historial');
+        assert.ok(received.some((event) => (event as { kind?: string }).kind === 'complete'));
+      } finally {
+        connectedClients.delete(socket);
+        await execFileAsync('tmux', ['kill-session', '-t', nombreExterno]).catch(() => undefined);
         await rm(tempDirectory, { recursive: true, force: true });
       }
     });
