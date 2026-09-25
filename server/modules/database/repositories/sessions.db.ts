@@ -227,6 +227,80 @@ export const sessionsDb = {
   },
 
   /**
+   * Indexa una sesión de Claude viva en tmux que todavía no escribió su
+   * transcript.
+   *
+   * Claude Code crea el `.jsonl` recién con el primer mensaje, y los
+   * synchronizers solo leen `.jsonl`: una sesión abierta fuera de CloudCLI
+   * (`orquestar.py`, `ct`) que todavía no recibió un prompt no tenía fila, y
+   * por lo tanto no existía para el sidebar. El `session_id` sale del registro
+   * de tmux (`~/.cache/aos/sesiones.json`), que lo conoce desde `SessionStart`.
+   *
+   * La fila queda con la forma que ningún otro camino produce —
+   * `provider_session_id = session_id`, `jsonl_path` NULL y el nombre como
+   * placeholder— y es lo que `deletePendingTmuxSessionsExcept` usa para
+   * reconocerla. Cuando aparece el transcript, `createSession` la encuentra por
+   * `provider_session_id`, completa `jsonl_path` y reemplaza el nombre por el
+   * título real (por eso el placeholder en 1: si no, el nombre de tmux quedaría
+   * bloqueado para siempre).
+   *
+   * No toca nada si ya hay una fila con ese id, sea como id propio o como id
+   * del provider — el caso de una sesión nacida en CloudCLI con `--session-id`.
+   */
+  createPendingTmuxSession(
+    sessionId: string,
+    projectPath: string,
+    customName: string,
+    createdAt?: string,
+  ): boolean {
+    const db = getConnection();
+    const existing = db
+      .prepare('SELECT 1 FROM sessions WHERE session_id = ? OR provider_session_id = ? LIMIT 1')
+      .get(sessionId, sessionId);
+    if (existing) {
+      return false;
+    }
+
+    const normalizedProjectPath = normalizeProjectPathForProvider('claude', projectPath);
+    const createdAtValue = normalizeTimestamp(createdAt);
+    projectsDb.ensureProjectPathExists(normalizedProjectPath);
+
+    db.prepare(
+      `INSERT INTO sessions (session_id, provider, provider_session_id, custom_name, custom_name_is_placeholder, project_path, jsonl_path, isArchived, created_at, updated_at)
+       VALUES (?, 'claude', ?, ?, 1, ?, NULL, 0, COALESCE(?, CURRENT_TIMESTAMP), COALESCE(?, CURRENT_TIMESTAMP))`
+    ).run(sessionId, sessionId, customName, normalizedProjectPath, createdAtValue, createdAtValue);
+
+    return true;
+  },
+
+  /**
+   * Borra las filas de `createPendingTmuxSession` cuya sesión ya no está viva
+   * en tmux y nunca llegó a escribir transcript: no hay nada que retomar, y
+   * sin esto quedarían para siempre como "Untitled" vacías.
+   */
+  deletePendingTmuxSessionsExcept(liveSessionIds: Iterable<string>): number {
+    const db = getConnection();
+    const live = new Set(liveSessionIds);
+    const pending = db
+      .prepare(
+        `SELECT session_id FROM sessions
+         WHERE provider = 'claude'
+           AND jsonl_path IS NULL
+           AND provider_session_id = session_id
+           AND custom_name_is_placeholder = 1`
+      )
+      .all() as Array<{ session_id: string }>;
+
+    const deleteRow = db.prepare('DELETE FROM sessions WHERE session_id = ?');
+    let deleted = 0;
+    for (const { session_id: sessionId } of pending) {
+      if (live.has(sessionId)) continue;
+      deleted += deleteRow.run(sessionId).changes;
+    }
+    return deleted;
+  },
+
+  /**
    * Inserts a session that already has its provider artifact on disk.
    *
    * Unlike `createAppSession` this writes `provider_session_id` and

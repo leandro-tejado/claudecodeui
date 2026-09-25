@@ -250,6 +250,8 @@ export type SessionUpsertedEvent = {
     summary: string;
     messageCount: number;
     lastActivity: string;
+    /** Mismo campo que el listado de `/api/projects`; `null` si el registro de tmux no conoce la sesión. */
+    tmux?: { nombre: string; vivo: boolean; fija?: boolean } | null;
   };
   project: SessionUpsertedProject | null;
   timestamp: string;

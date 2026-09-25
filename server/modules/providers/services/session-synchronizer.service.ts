@@ -3,12 +3,15 @@ import { access } from 'node:fs/promises';
 
 import { scanStateDb, sessionsDb } from '@/modules/database/index.js';
 import { providerRegistry } from '@/modules/providers/provider.registry.js';
+import { sincronizarSesionesTmuxSinTranscript } from '@/modules/providers/services/tmux-registry-sessions.service.js';
 import type { LLMProvider } from '@/shared/types.js';
 
 type SessionSynchronizeResult = {
   processedByProvider: Record<LLMProvider, number>;
   /** Indexed sessions dropped because their transcript file no longer exists. */
   prunedOrphans: number;
+  /** Sesiones vivas en tmux sin transcript todavía, indexadas desde el registro de tmux. */
+  tmuxSinTranscript: { indexadas: number; podadas: number };
   failures: string[];
 };
 
@@ -108,6 +111,10 @@ async function runSessionSynchronization(): Promise<SessionSynchronizeResult> {
   // not have re-indexed transcripts it would otherwise have re-created.
   const prunedOrphans = failures.length === 0 ? await pruneOrphanedSessions() : 0;
 
+  // Va después de los synchronizers a propósito: si el transcript apareció en
+  // esta misma pasada, la fila ya tiene `jsonl_path` y no se toca.
+  const tmux = await sincronizarSesionesTmuxSinTranscript();
+
   if (failures.length === 0) {
     scanStateDb.updateLastScannedAt(scanBoundary);
   } else {
@@ -119,6 +126,7 @@ async function runSessionSynchronization(): Promise<SessionSynchronizeResult> {
   return {
     processedByProvider,
     prunedOrphans,
+    tmuxSinTranscript: { indexadas: tmux.indexadas.length, podadas: tmux.podadas },
     failures,
   };
 }

@@ -324,9 +324,14 @@ async function leerRegistroSesiones(): Promise<RegistroSesiones> {
   }
 }
 
+/** Fuerza una relectura en la próxima llamada — el watcher del registro la usa cuando el archivo cambia. */
+export function invalidarRegistroSesiones(): void {
+  registroCache = null;
+}
+
 /** Solo para tests: fuerza una relectura en la próxima llamada. */
 export function _resetRegistroSesionesCacheParaTests(): void {
-  registroCache = null;
+  invalidarRegistroSesiones();
 }
 
 /**
@@ -371,6 +376,11 @@ export function resolverTmux(
   }
 
   return null;
+}
+
+/** `resolverTmux` contra el registro actual — para el `session_upserted`, que no pasa por el listado. */
+export async function resolverTmuxDeSesion(sessionId: string, projectPath: string): Promise<SessionTmuxInfo> {
+  return resolverTmux(sessionId, projectPath, await leerRegistroSesiones());
 }
 
 async function mapSessionRowToSummary(

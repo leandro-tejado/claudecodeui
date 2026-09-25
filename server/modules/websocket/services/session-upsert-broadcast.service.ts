@@ -1,7 +1,7 @@
 import path from 'node:path';
 
 import { projectsDb, sessionsDb } from '@/modules/database/index.js';
-import { generateDisplayName } from '@/modules/projects/index.js';
+import { generateDisplayName, resolverTmuxDeSesion } from '@/modules/projects/index.js';
 import { connectedClients, WS_OPEN_STATE } from '@/modules/websocket/services/websocket-state.service.js';
 import type { SessionUpsertedEvent } from '@/shared/types.js';
 
@@ -49,6 +49,12 @@ async function buildSessionUpsertedEvent(
       summary: row.custom_name || '',
       messageCount: 0,
       lastActivity: row.updated_at ?? row.created_at ?? new Date().toISOString(),
+      // Sin esto una sesión nueva llega sin `tmux` y el filtro "solo tmux
+      // vivo" del sidebar la cuenta como oculta hasta el próximo listado. El
+      // registro de tmux solo tiene sesiones de Claude.
+      tmux: row.provider === 'claude' && projectPath
+        ? await resolverTmuxDeSesion(row.session_id, projectPath)
+        : null,
     },
     project: project
       ? {

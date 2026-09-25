@@ -4,7 +4,12 @@ import { promises as fsPromises } from 'node:fs';
 
 import chokidar, { type FSWatcher } from 'chokidar';
 
+import { invalidarRegistroSesiones } from '@/modules/projects/index.js';
 import { sessionSynchronizerService } from '@/modules/providers/services/session-synchronizer.service.js';
+import {
+  rutaRegistroSesionesTmux,
+  sincronizarSesionesTmuxSinTranscript,
+} from '@/modules/providers/services/tmux-registry-sessions.service.js';
 import { broadcastSessionUpsertedBatch, tmuxBridgeService } from '@/modules/websocket/index.js';
 import { scheduleUsageWindowBroadcast } from '@/modules/usage-window/index.js';
 import type { LLMProvider } from '@/shared/types.js';
@@ -208,6 +213,32 @@ async function onUpdate(
 }
 
 /**
+ * El registro de tmux cambió: una sesión nueva sin transcript todavía no
+ * dispara ningún evento de `.jsonl`, así que este es el único aviso de que
+ * existe. Invalida el cache del listado para que el `session_upserted` salga
+ * con su `tmux` ya resuelto.
+ */
+async function onRegistroTmuxUpdate(filePath: string): Promise<void> {
+  if (path.resolve(filePath) !== path.resolve(rutaRegistroSesionesTmux())) {
+    return;
+  }
+
+  try {
+    invalidarRegistroSesiones();
+    const { indexadas, podadas } = await sincronizarSesionesTmuxSinTranscript();
+    if (indexadas.length > 0 || podadas > 0) {
+      console.log('Sesiones tmux sin transcript sincronizadas desde el registro', { indexadas, podadas });
+    }
+    for (const sessionId of indexadas) {
+      queuePendingWatcherUpdate('add', 'claude', sessionId);
+    }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error('Falló la sincronización del registro de tmux', { error: message });
+  }
+}
+
+/**
  * Starts provider filesystem watchers and performs initial DB synchronization.
  */
 export async function initializeSessionsWatcher(): Promise<void> {
@@ -255,6 +286,36 @@ export async function initializeSessionsWatcher(): Promise<void> {
         error: message,
       });
     }
+  }
+
+  // Se vigila el directorio, no el archivo: el registro se reescribe entero y
+  // puede no existir todavía en una máquina donde el hook nunca corrió.
+  const registroDirectory = path.dirname(rutaRegistroSesionesTmux());
+  try {
+    await fsPromises.mkdir(registroDirectory, { recursive: true });
+    const registroWatcher = chokidar.watch(registroDirectory, {
+      persistent: true,
+      ignoreInitial: true,
+      followSymlinks: false,
+      depth: 0,
+      usePolling: true,
+      interval: 3_000,
+    });
+    registroWatcher
+      .on('add', (filePath: string) => {
+        void onRegistroTmuxUpdate(filePath);
+      })
+      .on('change', (filePath: string) => {
+        void onRegistroTmuxUpdate(filePath);
+      })
+      .on('error', (error: unknown) => {
+        const message = error instanceof Error ? error.message : String(error);
+        console.error('Error en el watcher del registro de tmux', { error: message });
+      });
+    watchers.push(registroWatcher);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error('No se pudo vigilar el registro de tmux', { registroDirectory, error: message });
   }
 }
 

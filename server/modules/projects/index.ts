@@ -1,6 +1,8 @@
 export {
   generateDisplayName,
   getProjectsWithSessions,
+  invalidarRegistroSesiones,
+  resolverTmuxDeSesion,
 } from './services/projects-with-sessions-fetch.service.js';
 export { updateProjectDisplayName } from './services/project-management.service.js';
 // createProject: used by the worktrees module to register a worktree directory as a switchable project.
