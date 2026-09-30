@@ -15,6 +15,7 @@ import type { Project, ProjectSession } from '@/shared/types';
  */
 
 const renameProject = vi.fn();
+const newSession = vi.fn();
 const toggleProjectStar = vi.fn();
 
 vi.mock('@/shared/api', () => ({
@@ -51,7 +52,7 @@ const renderSidebar = (projects: Project[], selectedSession: ProjectSession | nu
           selectedSession={selectedSession}
           onProjectSelect={() => {}}
           onSessionSelect={() => {}}
-          onNewSession={() => {}}
+          onNewSession={newSession}
           onProjectDelete={() => {}}
           onSessionDelete={() => {}}
         />
@@ -61,6 +62,7 @@ const renderSidebar = (projects: Project[], selectedSession: ProjectSession | nu
 
 beforeEach(() => {
   renameProject.mockReset().mockResolvedValue({ ok: true });
+  newSession.mockReset();
   toggleProjectStar.mockReset().mockResolvedValue({
     ok: true,
     json: async () => ({ isStarred: true }),
@@ -76,12 +78,25 @@ describe('SkinSidebar — acciones por clic derecho', () => {
     expect(screen.queryByTitle(/Renombrar/)).toBeNull();
   });
 
-  it('el clic derecho sobre un proyecto ofrece fijar, renombrar y quitar', () => {
+  it('el clic derecho sobre un proyecto ofrece nueva sesión, fijar, renombrar y quitar', () => {
     renderSidebar([buildProject('p1', 'Proyecto')]);
 
     fireEvent.contextMenu(screen.getByText('Proyecto'));
     const items = screen.getAllByRole('menuitem').map((item) => item.textContent);
-    expect(items).toEqual(['Fijar arriba', 'Renombrar', 'Quitar de la lista']);
+    expect(items).toEqual(['Nueva sesión', 'Fijar arriba', 'Renombrar', 'Quitar de la lista']);
+  });
+
+  it('"Nueva sesión" del menú abre una sesión en ese proyecto, como el botón "+ Nueva sesión"', () => {
+    const alfa = buildProject('a', 'Alfa');
+    const zeta = buildProject('z', 'Zeta');
+    renderSidebar([alfa, zeta]);
+
+    fireEvent.contextMenu(screen.getByText('Zeta'));
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Nueva sesión' }));
+
+    expect(newSession).toHaveBeenCalledTimes(1);
+    expect(newSession).toHaveBeenCalledWith(zeta);
+    expect(screen.queryByRole('menuitem')).toBeNull();
   });
 
   it('fijar sube el proyecto arriba de todo', async () => {

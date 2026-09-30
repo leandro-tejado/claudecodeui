@@ -1430,6 +1430,12 @@ export function SkinSidebar({
           items={
             contextMenu.kind === 'project'
               ? ([
+                  // El mismo camino que el botón "+ Nueva sesión" del proyecto abierto.
+                  {
+                    label: 'Nueva sesión',
+                    icon: Plus,
+                    onSelect: () => onNewSession(contextMenu.project),
+                  },
                   {
                     label: isStarred(contextMenu.project) ? 'Desfijar' : 'Fijar arriba',
                     icon: isStarred(contextMenu.project) ? PinOff : Pin,
