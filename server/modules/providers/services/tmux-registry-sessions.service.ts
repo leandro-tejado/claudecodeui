@@ -1,7 +1,9 @@
 import os from 'node:os';
 import path from 'node:path';
+import { execFile } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
+import { promisify } from 'node:util';
 
 import { sessionsDb } from '@/modules/database/index.js';
 
@@ -47,7 +49,62 @@ export type SincronizacionTmuxResult = {
   podadas: number;
 };
 
-export async function sincronizarSesionesTmuxSinTranscript(): Promise<SincronizacionTmuxResult> {
+const execFileAsync = promisify(execFile);
+
+// Mismo charset que `nombreTmux()` y que acepta tmux-bridge: un nombre fuera
+// de esto no llega nunca a un `tmux -t`.
+const NOMBRE_TMUX_PATTERN = /^[A-Za-z0-9_-]+$/;
+
+/**
+ * Directorio del pane de tmux `nombre`, o `null` si no existe o no responde.
+ * `=nombre:` fuerza el match exacto, igual que en tmux-bridge.
+ */
+async function defaultCwdDePane(nombre: string): Promise<string | null> {
+  try {
+    const { stdout } = await execFileAsync(
+      'tmux',
+      ['display-message', '-p', '-t', `=${nombre}:`, '#{pane_current_path}'],
+      { timeout: 2_000 },
+    );
+    const cwd = stdout.trim();
+    return cwd && path.isAbsolute(cwd) ? cwd : null;
+  } catch {
+    return null;
+  }
+}
+
+export type SincronizacionTmuxDeps = {
+  /** Solo para tests: resuelve el cwd de un pane sin tocar tmux. */
+  cwdDePane?: (nombre: string) => Promise<string | null>;
+};
+
+/**
+ * Bug del 30-sep: `registro-sesion.sh` escribe la entrada en `SessionStart`
+ * con `nombre` y `session_id` pero sin `cwd`, que recién completa
+ * `sesiones.py` (ciclo de 10 min u `orquestar.py listar`). Mientras tanto la
+ * sesión no llegaba al sidebar. Si falta, se lo pide al pane vivo.
+ */
+async function resolverCwd(
+  entry: RegistroEntry,
+  nombre: string,
+  cwdDePane: (nombre: string) => Promise<string | null>,
+): Promise<string | null> {
+  if (typeof entry.cwd === 'string' && path.isAbsolute(entry.cwd)) {
+    return entry.cwd;
+  }
+  if (entry.cwd !== undefined && entry.cwd !== null && entry.cwd !== '') {
+    // Un cwd presente pero inválido es un registro raro: no se adivina.
+    return null;
+  }
+  if (!NOMBRE_TMUX_PATTERN.test(nombre)) {
+    return null;
+  }
+  return cwdDePane(nombre);
+}
+
+export async function sincronizarSesionesTmuxSinTranscript(
+  { cwdDePane = defaultCwdDePane }: SincronizacionTmuxDeps = {},
+): Promise<SincronizacionTmuxResult> {
   const registro = await leerRegistro();
   if (!registro) {
     // Sin registro legible no se poda: se leería como "murieron todas".
@@ -60,16 +117,22 @@ export async function sincronizarSesionesTmuxSinTranscript(): Promise<Sincroniza
   for (const [clave, entry] of Object.entries(registro)) {
     if (entry.estado !== 'viva') continue;
     if (typeof entry.session_id !== 'string' || !SESSION_ID_PATTERN.test(entry.session_id)) continue;
-    if (typeof entry.cwd !== 'string' || !path.isAbsolute(entry.cwd)) continue;
-
-    vivas.push(entry.session_id);
     const nombre = typeof entry.nombre === 'string' && entry.nombre ? entry.nombre : clave;
+    // Viva según el registro alcanza para no podarla, aunque el cwd no se
+    // resuelva en esta pasada (un `tmux` que no respondió a tiempo).
+    vivas.push(entry.session_id);
+    if (entry.cwd === undefined && sessionsDb.getSessionById(entry.session_id)) {
+      // Ya indexada: no hace falta preguntarle a tmux en cada pasada.
+      continue;
+    }
+    const cwd = await resolverCwd(entry, nombre, cwdDePane);
+    if (!cwd) continue;
     const creada = typeof entry.creada === 'number' && entry.creada > 0
       ? new Date(entry.creada * 1000).toISOString()
       : undefined;
 
     try {
-      if (sessionsDb.createPendingTmuxSession(entry.session_id, entry.cwd, nombre, creada)) {
+      if (sessionsDb.createPendingTmuxSession(entry.session_id, cwd, nombre, creada)) {
         indexadas.push(entry.session_id);
       }
     } catch (error) {
@@ -81,10 +144,6 @@ export async function sincronizarSesionesTmuxSinTranscript(): Promise<Sincroniza
   const podadas = sessionsDb.deletePendingTmuxSessionsExcept(vivas);
   return { indexadas, podadas };
 }
-
-// Mismo charset que `nombreTmux()` y que acepta tmux-bridge: un nombre fuera
-// de esto no llega nunca a un `tmux -t`.
-const NOMBRE_TMUX_PATTERN = /^[A-Za-z0-9_-]+$/;
 
 /**
  * Nombre de la sesión de tmux viva que, según el registro, corre la sesión de

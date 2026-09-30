@@ -142,6 +142,58 @@ test('ignora entradas sin session_id válido o sin cwd absoluto', async () => {
   });
 });
 
+test('una entrada recién escrita por el hook, sin cwd, se indexa con el cwd del pane vivo', async () => {
+  await withEntorno(async (escribirRegistro) => {
+    const { cwd: _omitido, ...sinCwd } = entrada();
+    await escribirRegistro({ 'os-guia-1': sinCwd });
+
+    const consultados: string[] = [];
+    const cwdDePane = async (nombre: string) => {
+      consultados.push(nombre);
+      return PROJECT_PATH;
+    };
+    assert.deepEqual(await sincronizarSesionesTmuxSinTranscript({ cwdDePane }), { indexadas: [SESSION_ID], podadas: 0 });
+    assert.deepEqual(consultados, ['os-guia-1']);
+    assert.equal(sessionsDb.getSessionById(SESSION_ID)?.project_path, PROJECT_PATH);
+
+    // Ya indexada: la segunda pasada no vuelve a preguntarle a tmux.
+    assert.deepEqual(await sincronizarSesionesTmuxSinTranscript({ cwdDePane }), { indexadas: [], podadas: 0 });
+    assert.deepEqual(consultados, ['os-guia-1']);
+  });
+});
+
+test('sin cwd y sin pane que responda no se indexa, pero tampoco se poda una fila viva', async () => {
+  await withEntorno(async (escribirRegistro) => {
+    await escribirRegistro({ 'os-guia-1': entrada() });
+    await sincronizarSesionesTmuxSinTranscript();
+
+    const { cwd: _omitido, ...sinCwd } = entrada();
+    const otroId = '22222222-3333-4444-5555-666666666666';
+    await escribirRegistro({
+      'os-guia-1': sinCwd,
+      'os-guia-2': { ...sinCwd, nombre: 'os-guia-2', session_id: otroId },
+    });
+    const sinPane = async () => null;
+    assert.deepEqual(await sincronizarSesionesTmuxSinTranscript({ cwdDePane: sinPane }), { indexadas: [], podadas: 0 });
+    assert.ok(sessionsDb.getSessionById(SESSION_ID));
+    assert.ok(!sessionsDb.getSessionById(otroId));
+  });
+});
+
+test('sin cwd, un nombre fuera de charset no llega nunca a tmux', async () => {
+  await withEntorno(async (escribirRegistro) => {
+    const { cwd: _omitido, ...sinCwd } = entrada({ nombre: 'os;rm -rf ~' });
+    await escribirRegistro({ x: sinCwd });
+    let llamadas = 0;
+    const cwdDePane = async () => {
+      llamadas += 1;
+      return PROJECT_PATH;
+    };
+    assert.deepEqual(await sincronizarSesionesTmuxSinTranscript({ cwdDePane }), { indexadas: [], podadas: 0 });
+    assert.equal(llamadas, 0);
+  });
+});
+
 test('buscarPaneTmuxRegistrado: devuelve el nombre de tmux de la sesión viva, por cualquiera de sus ids', async () => {
   await withEntorno(async (escribirRegistro) => {
     await escribirRegistro({ 'os-guia-1': entrada() });
