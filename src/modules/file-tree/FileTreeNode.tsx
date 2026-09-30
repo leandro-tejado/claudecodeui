@@ -1,10 +1,10 @@
 import type { DragEvent, ReactNode, RefObject } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ChevronRight, Folder, FolderOpen, Upload } from 'lucide-react';
+import { Folder, FolderOpen, Upload } from 'lucide-react';
 
 import { cn } from '@/shared/utils';
 import type { FileTreeNode as FileTreeNodeType, FileTreeViewMode } from '@/shared/types';
-import { Input } from '@/shared/ui';
+import { Input, TreeChevron, TreeCollapse, TreeItem } from '@/shared/ui';
 import FileContextMenu from '@/modules/file-tree/FileContextMenu';
 
 type FileTreeNodeProps = {
@@ -54,12 +54,7 @@ function TreeItemIcon({ item, isOpen, renderFileIcon }: TreeItemIconProps) {
   if (item.type === 'directory') {
     return (
       <span className="flex flex-shrink-0 items-center gap-0.5">
-        <ChevronRight
-          className={cn(
-            'w-3.5 h-3.5 text-muted-foreground/70 transition-transform duration-150',
-            isOpen && 'rotate-90',
-          )}
-        />
+        <TreeChevron open={isOpen} className="h-3.5 w-3.5 text-muted-foreground/70" />
         {isOpen ? (
           <FolderOpen className="h-4 w-4 flex-shrink-0 text-blue-500" />
         ) : (
@@ -243,7 +238,7 @@ export default function FileTreeNode({
         rowContent
       )}
 
-      {isDirectory && isOpen && hasChildren && (
+      <TreeCollapse open={isDirectory && isOpen && hasChildren}>
         <div className="relative">
           <span
             className="absolute bottom-0 top-0 border-l border-border/40"
@@ -251,37 +246,38 @@ export default function FileTreeNode({
             aria-hidden="true"
           />
           {item.children?.map((child) => (
-            <FileTreeNode
-              key={child.path}
-              item={child}
-              level={level + 1}
-              viewMode={viewMode}
-              expandedDirs={expandedDirs}
-              onItemClick={onItemClick}
-              renderFileIcon={renderFileIcon}
-              formatFileSize={formatFileSize}
-              formatRelativeTime={formatRelativeTime}
-              onRename={onRename}
-              onDelete={onDelete}
-              onNewFile={onNewFile}
-              onNewFolder={onNewFolder}
-              onCopyPath={onCopyPath}
-              onDownload={onDownload}
-              onUpload={onUpload}
-              onRefresh={onRefresh}
-              dropTarget={dropTarget}
-              onItemDragOver={onItemDragOver}
-              renamingItem={renamingItem}
-              renameValue={renameValue}
-              setRenameValue={setRenameValue}
-              handleConfirmRename={handleConfirmRename}
-              handleCancelRename={handleCancelRename}
-              renameInputRef={renameInputRef}
-              operationLoading={operationLoading}
-            />
+            <TreeItem key={child.path} level={level + 1}>
+              <FileTreeNode
+                item={child}
+                level={level + 1}
+                viewMode={viewMode}
+                expandedDirs={expandedDirs}
+                onItemClick={onItemClick}
+                renderFileIcon={renderFileIcon}
+                formatFileSize={formatFileSize}
+                formatRelativeTime={formatRelativeTime}
+                onRename={onRename}
+                onDelete={onDelete}
+                onNewFile={onNewFile}
+                onNewFolder={onNewFolder}
+                onCopyPath={onCopyPath}
+                onDownload={onDownload}
+                onUpload={onUpload}
+                onRefresh={onRefresh}
+                dropTarget={dropTarget}
+                onItemDragOver={onItemDragOver}
+                renamingItem={renamingItem}
+                renameValue={renameValue}
+                setRenameValue={setRenameValue}
+                handleConfirmRename={handleConfirmRename}
+                handleCancelRename={handleCancelRename}
+                renameInputRef={renameInputRef}
+                operationLoading={operationLoading}
+              />
+            </TreeItem>
           ))}
         </div>
-      )}
+      </TreeCollapse>
     </div>
   );
 }

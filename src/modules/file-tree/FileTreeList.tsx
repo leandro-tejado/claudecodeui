@@ -1,6 +1,7 @@
 import type { DragEvent, ReactNode, RefObject } from 'react';
 
 import type { FileTreeNode as FileTreeNodeType, FileTreeViewMode } from '@/shared/types';
+import { TreeItem, TreeRoot } from '@/shared/ui';
 import FileTreeNode from '@/modules/file-tree/FileTreeNode';
 
 type FileTreeListProps = {
@@ -60,37 +61,38 @@ export default function FileTreeList({
   operationLoading,
 }: FileTreeListProps) {
   return (
-    <div>
+    <TreeRoot>
       {items.map((item) => (
-        <FileTreeNode
-          key={item.path}
-          item={item}
-          level={0}
-          viewMode={viewMode}
-          expandedDirs={expandedDirs}
-          onItemClick={onItemClick}
-          renderFileIcon={renderFileIcon}
-          formatFileSize={formatFileSize}
-          formatRelativeTime={formatRelativeTime}
-          onRename={onRename}
-          onDelete={onDelete}
-          onNewFile={onNewFile}
-          onNewFolder={onNewFolder}
-          onCopyPath={onCopyPath}
-          onDownload={onDownload}
-          onUpload={onUpload}
-          onRefresh={onRefresh}
-          dropTarget={dropTarget}
-          onItemDragOver={onItemDragOver}
-          renamingItem={renamingItem}
-          renameValue={renameValue}
-          setRenameValue={setRenameValue}
-          handleConfirmRename={handleConfirmRename}
-          handleCancelRename={handleCancelRename}
-          renameInputRef={renameInputRef}
-          operationLoading={operationLoading}
-        />
+        <TreeItem key={item.path} level={0}>
+          <FileTreeNode
+            item={item}
+            level={0}
+            viewMode={viewMode}
+            expandedDirs={expandedDirs}
+            onItemClick={onItemClick}
+            renderFileIcon={renderFileIcon}
+            formatFileSize={formatFileSize}
+            formatRelativeTime={formatRelativeTime}
+            onRename={onRename}
+            onDelete={onDelete}
+            onNewFile={onNewFile}
+            onNewFolder={onNewFolder}
+            onCopyPath={onCopyPath}
+            onDownload={onDownload}
+            onUpload={onUpload}
+            onRefresh={onRefresh}
+            dropTarget={dropTarget}
+            onItemDragOver={onItemDragOver}
+            renamingItem={renamingItem}
+            renameValue={renameValue}
+            setRenameValue={setRenameValue}
+            handleConfirmRename={handleConfirmRename}
+            handleCancelRename={handleCancelRename}
+            renameInputRef={renameInputRef}
+            operationLoading={operationLoading}
+          />
+        </TreeItem>
       ))}
-    </div>
+    </TreeRoot>
   );
 }

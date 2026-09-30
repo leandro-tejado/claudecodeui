@@ -1,4 +1,4 @@
-import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { CSSProperties, MouseEvent as ReactMouseEvent } from 'react';
 import { useHref } from 'react-router-dom';
 import {
@@ -6,8 +6,6 @@ import {
   ArchiveRestore,
   Bot,
   Check,
-  ChevronDown,
-  ChevronRight,
   ExternalLink,
   Folder,
   FolderPlus,
@@ -40,7 +38,7 @@ import {
   getSuggestionRootPath,
 } from '@/modules/project-creation-wizard';
 import { api } from '@/shared/api';
-import { Dialog, DialogContent, DialogTitle } from '@/shared/ui';
+import { Dialog, DialogContent, DialogTitle, TreeChevron, TreeCollapse, TreeItem } from '@/shared/ui';
 import type {
   ArchivedProjectListItem,
   ArchivedSessionListItem,
@@ -1086,15 +1084,11 @@ export function SkinSidebar({
                     {total}
                   </span>
                 )}
-                {isOpen ? (
-                  <ChevronDown className="h-3.5 w-3.5 flex-none text-muted-foreground" />
-                ) : (
-                  <ChevronRight className="h-3.5 w-3.5 flex-none text-muted-foreground" />
-                )}
+                <TreeChevron open={isOpen} className="h-3.5 w-3.5 text-muted-foreground" />
               </div>
               )}
 
-              {isOpen && (
+              <TreeCollapse open={isOpen}>
                 <div className="ml-[11px] border-l border-border pl-2">
                   {/* Sin botón "Nueva sesión" por proyecto (30-sep, Leandro: molestaba
                       en cada carpeta abierta). Se crea con el clic derecho del
@@ -1193,7 +1187,8 @@ export function SkinSidebar({
                     // ocupan la fila entera.
                     if (isRenaming) {
                       return (
-                        <div key={session.id} className={rowClass} style={rowStyle}>
+                        <TreeItem key={session.id} level={1}>
+                        <div className={rowClass} style={rowStyle}>
                           {activityDot}
                           <input
                             value={renameValue}
@@ -1229,6 +1224,7 @@ export function SkinSidebar({
                             <X className="h-3.5 w-3.5" />
                           </button>
                         </div>
+                        </TreeItem>
                       );
                     }
 
@@ -1240,7 +1236,7 @@ export function SkinSidebar({
                      * ícono de tmux.
                      */
                     return (
-                      <Fragment key={session.id}>
+                      <TreeItem key={session.id} level={1}>
                       <div
                         className="relative"
                         ref={(node) => {
@@ -1410,7 +1406,7 @@ export function SkinSidebar({
                           ))}
                         </div>
                       )}
-                      </Fragment>
+                      </TreeItem>
                     );
                   })}
 
@@ -1425,7 +1421,7 @@ export function SkinSidebar({
                     </button>
                   )}
                 </div>
-              )}
+              </TreeCollapse>
             </div>
           );
         })}
