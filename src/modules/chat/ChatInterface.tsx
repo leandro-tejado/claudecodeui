@@ -30,6 +30,8 @@ import ChatComposer from '@/modules/chat/composer/ChatComposer';
 import CommandResultModal from '@/modules/chat/modals/CommandResultModal';
 import PanelSalidas from '@/modules/chat/panel-salidas/PanelSalidas';
 import { SkinSubagentBridge } from '@/modules/skin';
+import { flushAllStreamBuffers } from '@/modules/chat/utils/streamBuffers';
+import type { StreamBuffers } from '@/modules/chat/utils/streamBuffers';
 
 type ChatInterfaceProps = {
   isActive: boolean;
@@ -84,8 +86,7 @@ function ChatInterface({
   } = useSessionProtectionActions();
 
   const sessionStore = useSessionStore();
-  const streamTimerRef = useRef<number | null>(null);
-  const accumulatedStreamRef = useRef('');
+  const streamBuffersRef = useRef<StreamBuffers>(new Map());
   // Bumped on every `complete` of the viewed session — the Salidas panel's
   // cue (besides its own refresh button) to re-list `.informes/`.
   const [salidasRefreshSignal, setSalidasRefreshSignal] = useState(0);
@@ -100,13 +101,12 @@ function ChatInterface({
   // server replays only the events this client actually missed.
   const lastSeqRef = useRef(new Map<string, number>());
 
+  // Leaving a session must not drop what it is still streaming: the buffers
+  // are per session, so this only writes out what is pending. A reply that
+  // keeps arriving out of view is there, whole, on the way back.
   const resetStreamingState = useCallback(() => {
-    if (streamTimerRef.current) {
-      clearTimeout(streamTimerRef.current);
-      streamTimerRef.current = null;
-    }
-    accumulatedStreamRef.current = '';
-  }, []);
+    flushAllStreamBuffers(streamBuffersRef.current, sessionStore);
+  }, [sessionStore]);
 
   const {
     provider,
@@ -296,8 +296,7 @@ function ChatInterface({
     setTokenBudget,
     pendingPermissionRequests,
     setPendingPermissionRequests,
-    streamTimerRef,
-    accumulatedStreamRef,
+    streamBuffersRef,
     lastSeqRef,
     statusCheckSentAtRef,
     onSessionProcessing,
