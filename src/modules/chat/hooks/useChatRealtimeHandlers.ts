@@ -15,6 +15,9 @@ const isActionablePermissionRequest = (request: { toolName?: unknown } | null | 
   return request?.toolName !== 'ExitPlanMode' && request?.toolName !== 'exit_plan_mode';
 };
 
+// Protocol errors that answer a stop request, not a send.
+const NOT_ABOUT_A_SEND = new Set(['NO_ACTIVE_RUN', 'NO_SUCH_TASK', 'TASK_ID_REQUIRED']);
+
 const hasActionablePermissionRequests = (requests: Array<{ toolName?: unknown }> | null | undefined): boolean => {
   return Array.isArray(requests) && requests.some((request) => isActionablePermissionRequest(request));
 };
@@ -202,8 +205,27 @@ export function useChatRealtimeHandlers({
             // A refused stop request is not about the run: the task had
             // already settled, and idling here would drop a response in
             // flight on that session.
-            if (msg.code !== 'NO_SUCH_TASK' && msg.code !== 'TASK_ID_REQUIRED') {
+            // Nor is a refusal because a run is already going: that run is
+            // still working, and idling here hid it (30-sep).
+            if (
+              msg.code !== 'NO_SUCH_TASK'
+              && msg.code !== 'TASK_ID_REQUIRED'
+              && msg.code !== 'RUN_IN_PROGRESS'
+            ) {
               onSessionIdle?.(sid);
+            }
+            // The message this refusal was about says so on its echo. The
+            // server names it when it can; otherwise it is the newest one of
+            // this session still waiting for an answer.
+            if (!NOT_ABOUT_A_SEND.has(String(msg.code))) {
+              const failedId = typeof msg.clientMessageId === 'string'
+                ? msg.clientMessageId
+                : [...sessionStore.getMessages(sid)]
+                  .reverse()
+                  .find((message) => message.deliveryState === 'sending')?.id;
+              if (failedId) {
+                sessionStore.setDeliveryState(sid, failedId, 'failed');
+              }
             }
             sessionStore.appendRealtime(sid, {
               id: `protocol_error_${Date.now()}`,
@@ -213,6 +235,20 @@ export function useChatRealtimeHandlers({
               kind: 'error',
               content: String(msg.error || 'Request failed'),
             } as NormalizedMessage);
+          }
+          return;
+        }
+
+        case 'message_status': {
+          // The server's answer to a sent message: its run started (`sent`),
+          // or it waits for the run in progress to end (`queued`). A queued
+          // message leaving the queue starts the session's next turn.
+          if (!sid || typeof msg.clientMessageId !== 'string') return;
+          const status = msg.status === 'queued' ? 'queued' : msg.status === 'sent' ? 'sent' : null;
+          if (!status) return;
+          sessionStore.setDeliveryState(sid, msg.clientMessageId, status);
+          if (status === 'sent' && msg.fromQueue === true) {
+            onSessionProcessing?.(sid, { statusText: null, canInterrupt: true });
           }
           return;
         }

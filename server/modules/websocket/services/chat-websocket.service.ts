@@ -127,15 +127,127 @@ function sendProtocolError(
   ws: WebSocket,
   code: string,
   error: string,
-  sessionId?: string
+  sessionId?: string,
+  extra: AnyRecord = {},
 ): void {
   sendJson(ws, {
     kind: 'protocol_error',
     code,
     error,
     sessionId: sessionId ?? null,
+    ...extra,
     timestamp: new Date().toISOString(),
   });
+}
+
+// The id of the sender's optimistic echo (`local_…`). Only ever echoed back,
+// never used to look anything up, but still bounded.
+const CLIENT_MESSAGE_ID_PATTERN = /^local_[A-Za-z0-9_]{1,80}$/;
+
+function readClientMessageId(data: AnyRecord): string | null {
+  return typeof data.clientMessageId === 'string' && CLIENT_MESSAGE_ID_PATTERN.test(data.clientMessageId)
+    ? data.clientMessageId
+    : null;
+}
+
+/**
+ * Tells clients what became of a sent message: `sent` when its run started,
+ * `queued` while it waits for the run in progress. Sent to every connected
+ * client, like the tmux busy event: the sender may have reconnected on a new
+ * socket by the time a queued message leaves the queue, and a client without
+ * that echo ignores the frame.
+ */
+function broadcastMessageStatus(
+  sessionId: string,
+  clientMessageId: string,
+  status: 'sent' | 'queued',
+  extra: AnyRecord = {},
+): void {
+  const frame = JSON.stringify({
+    kind: 'message_status',
+    sessionId,
+    clientMessageId,
+    status,
+    ...extra,
+    timestamp: new Date().toISOString(),
+  });
+  connectedClients.forEach((client) => {
+    if (client.readyState === WS_OPEN_STATE) {
+      client.send(frame);
+    }
+  });
+}
+
+/**
+ * Messages sent while their session already had a run going, oldest first.
+ *
+ * Bug del 30-sep: those were refused with RUN_IN_PROGRESS, and the message
+ * was simply gone — three sends in a row, three errors, nothing queued. Now
+ * each waits here and starts its turn when the run in front of it ends.
+ * In memory on purpose: a restart ends every run anyway, and the composer's
+ * own durable queue (session_drafts) covers the message the client already
+ * knew to hold back.
+ */
+type PendingSend = {
+  ws: WebSocket;
+  userId: string | number | null;
+  data: AnyRecord;
+  dependencies: ChatWebSocketDependencies;
+};
+
+const pendingSends = new Map<string, PendingSend[]>();
+let unsubscribeSendQueueDrain: (() => void) | null = null;
+
+function enqueuePendingSend(sessionId: string, pending: PendingSend): number {
+  if (!unsubscribeSendQueueDrain) {
+    unsubscribeSendQueueDrain = chatRunRegistry.onRunCompleted(drainPendingSends);
+  }
+  const queue = pendingSends.get(sessionId) ?? [];
+  queue.push(pending);
+  pendingSends.set(sessionId, queue);
+  return queue.length;
+}
+
+/** Starts the next waiting message's turn, if the session is free. */
+function drainPendingSends(sessionId: string): void {
+  if (chatRunRegistry.isProcessing(sessionId)) {
+    return;
+  }
+  const queue = pendingSends.get(sessionId);
+  const next = queue?.shift();
+  if (!queue || !next) {
+    return;
+  }
+  if (queue.length === 0) {
+    pendingSends.delete(sessionId);
+  }
+
+  const ws = next.ws.readyState === WS_OPEN_STATE ? next.ws : null;
+  // Re-read: the session may have been deleted while the message waited.
+  const session = sessionsDb.getSessionById(sessionId);
+  if (!session) {
+    if (ws) {
+      sendProtocolError(ws, 'SESSION_NOT_FOUND', `Session "${sessionId}" was not found.`, sessionId, {
+        clientMessageId: readClientMessageId(next.data),
+      });
+    }
+    drainPendingSends(sessionId);
+    return;
+  }
+
+  void dispatchRun(ws, next.userId, sessionId, session, next.data, next.dependencies, {}, undefined, {
+    fromQueue: true,
+  }).catch((error: unknown) => {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error('[Chat] Queued message failed to start', { sessionId, error: message });
+  });
+}
+
+/** Test-only: forgets every waiting message. */
+export function _resetPendingSendsForTests(): void {
+  pendingSends.clear();
+  unsubscribeSendQueueDrain?.();
+  unsubscribeSendQueueDrain = null;
 }
 
 function readRequiredSessionId(data: AnyRecord): string | null {
@@ -177,6 +289,22 @@ async function handleChatSend(
       sendProtocolError(ws, 'TMUX_SESSION_GONE', MENSAJE_TMUX_SESSION_GONE, resolved.sessionId);
       return;
     }
+  }
+
+  // A run is going (or messages are already waiting for it): this one waits
+  // its turn instead of being refused.
+  const waiting = pendingSends.get(resolved.sessionId)?.length ?? 0;
+  if (chatRunRegistry.isProcessing(resolved.sessionId) || waiting > 0) {
+    const position = enqueuePendingSend(resolved.sessionId, { ws, userId, data, dependencies });
+    const clientMessageId = readClientMessageId(data);
+    if (clientMessageId) {
+      broadcastMessageStatus(resolved.sessionId, clientMessageId, 'queued', { position });
+    }
+    if (!chatRunRegistry.isProcessing(resolved.sessionId)) {
+      // Nothing is running to end and drain the queue: drain it now.
+      setImmediate(() => drainPendingSends(resolved.sessionId));
+    }
+    return;
   }
 
   await dispatchRun(ws, userId, resolved.sessionId, resolved.session, data, dependencies);
@@ -290,6 +418,11 @@ async function handleChatSendTmux(
     return;
   }
 
+  const clientMessageId = readClientMessageId(data);
+  if (clientMessageId) {
+    broadcastMessageStatus(sessionId, clientMessageId, 'sent');
+  }
+
   // No provider run was dispatched, so no `complete` will come from
   // `chatRunRegistry` either. Every connected client (this one included) is
   // told the session is busy now; `sessions-watcher.service.ts` is what
@@ -366,6 +499,7 @@ async function dispatchRun(
   dependencies: ChatWebSocketDependencies,
   extraRuntimeOptions: AnyRecord = {},
   beforeRun?: (run: NonNullable<ReturnType<typeof chatRunRegistry.startRun>>) => void | Promise<void>,
+  { fromQueue = false }: { fromQueue?: boolean } = {},
 ): Promise<{ started: boolean; error: string | null }> {
   const provider = session.provider as LLMProvider;
 
@@ -383,10 +517,16 @@ async function dispatchRun(
         ws,
         'RUN_IN_PROGRESS',
         `Session "${sessionId}" already has a run in progress.`,
-        sessionId
+        sessionId,
+        { clientMessageId: readClientMessageId(data) },
       );
     }
     return { started: false, error: 'A run is already in progress for this session.' };
+  }
+
+  const clientMessageId = readClientMessageId(data);
+  if (clientMessageId) {
+    broadcastMessageStatus(sessionId, clientMessageId, 'sent', fromQueue ? { fromQueue: true } : {});
   }
 
   const clientOptions = (data.options ?? {}) as AnyRecord;

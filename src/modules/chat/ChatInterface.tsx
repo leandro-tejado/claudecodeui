@@ -222,6 +222,7 @@ function ChatInterface({
     openAttachmentPicker,
     handleSubmit,
     queuedDraft,
+    isSubmitting,
     editQueuedDraft,
     deleteQueuedDraft,
     handleVoiceTranscript,
@@ -259,6 +260,7 @@ function ChatInterface({
     sendMessage,
     sendByCtrlEnter,
     onSessionProcessing,
+    onSessionIdle,
     onSessionEstablished: handleSessionEstablished,
     onFileOpen,
     onShowSettings,
@@ -552,6 +554,7 @@ function ChatInterface({
           onSubmit={handleSubmit}
           isDragActive={isDragActive}
           queuedDraft={queuedDraft}
+          isSubmitting={isSubmitting}
           onEditQueuedDraft={editQueuedDraft}
           onDeleteQueuedDraft={deleteQueuedDraft}
           attachedFiles={attachedFiles}

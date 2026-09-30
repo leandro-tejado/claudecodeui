@@ -10,7 +10,7 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
 
 import { api } from '@/shared/api';
-import type { LLMProvider, NormalizedMessage } from '@/shared/types';
+import type { LLMProvider, MessageDeliveryState, NormalizedMessage } from '@/shared/types';
 import { removeOptimisticUserEchoes } from '@/modules/chat/utils/sessionMessageReconciliation';
 import {
   hasReachedCachedTailTimeBoundary,
@@ -349,7 +349,26 @@ function pruneRealtimeSupersededByServer(
   });
 }
 
+/**
+ * A message waiting for the current run to end is not part of that run yet:
+ * it sits below everything, where the run's reply keeps growing above it,
+ * the same place Claude Code shows a queued prompt.
+ */
+function pinQueuedEchoesLast(merged: NormalizedMessage[]): NormalizedMessage[] {
+  if (!merged.some((message) => message.deliveryState === 'queued')) {
+    return merged;
+  }
+  return [
+    ...merged.filter((message) => message.deliveryState !== 'queued'),
+    ...merged.filter((message) => message.deliveryState === 'queued'),
+  ];
+}
+
 function computeMerged(server: NormalizedMessage[], realtime: NormalizedMessage[]): NormalizedMessage[] {
+  return pinQueuedEchoesLast(computeMergedInOrder(server, realtime));
+}
+
+function computeMergedInOrder(server: NormalizedMessage[], realtime: NormalizedMessage[]): NormalizedMessage[] {
   if (realtime.length === 0) {
     return dedupeAdjacentAssistantEchoes(server);
   }
@@ -793,6 +812,38 @@ export function useSessionStore() {
   }, [getSlot, notify]);
 
   /**
+   * Updates the delivery state of a sent message's local echo. A message that
+   * leaves the queue goes after the reply it waited for: its turn starts now.
+   */
+  const setDeliveryState = useCallback((
+    sessionId: string,
+    clientMessageId: string,
+    state: MessageDeliveryState,
+    patch: Partial<Pick<NormalizedMessage, 'images' | 'files'>> = {},
+  ) => {
+    const slot = storeRef.current.get(sessionId);
+    if (!slot) return false;
+    const idx = slot.realtimeMessages.findIndex((message) => message.id === clientMessageId);
+    if (idx < 0) return false;
+    const previous = slot.realtimeMessages[idx];
+    const leavesQueue = previous.deliveryState === 'queued' && state === 'sent';
+    const next: NormalizedMessage = {
+      ...previous,
+      ...patch,
+      deliveryState: state,
+      ...(leavesQueue ? { timestamp: new Date().toISOString() } : {}),
+    };
+    // Moved as well as re-stamped: live rows keep insertion order when there
+    // is no persisted history to sort them against.
+    slot.realtimeMessages = leavesQueue
+      ? [...slot.realtimeMessages.slice(0, idx), ...slot.realtimeMessages.slice(idx + 1), next]
+      : slot.realtimeMessages.map((message, index) => (index === idx ? next : message));
+    recomputeMergedIfNeeded(slot);
+    notify(sessionId);
+    return true;
+  }, [notify]);
+
+  /**
    * Refreshes only the persisted tail and stitches it onto the contiguous
    * cached suffix. Large turns request a small offset bridge rather than the
    * whole transcript, and the final state is applied atomically.
@@ -916,6 +967,7 @@ export function useSessionStore() {
     fetchFromServer,
     fetchMore,
     appendRealtime,
+    setDeliveryState,
     truncateAt,
     refreshLatestFromServer,
     setActiveSession,
@@ -927,7 +979,7 @@ export function useSessionStore() {
     runsInTmux,
     setRunsInTmux,
   }), [
-    fetchFromServer, fetchMore, appendRealtime, truncateAt, refreshLatestFromServer,
+    fetchFromServer, fetchMore, appendRealtime, setDeliveryState, truncateAt, refreshLatestFromServer,
     setActiveSession, isStale, updateStreaming, finalizeStreaming,
     getMessages, getSessionSlot, runsInTmux, setRunsInTmux,
   ]);

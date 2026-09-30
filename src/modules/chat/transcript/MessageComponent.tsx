@@ -2,7 +2,7 @@ import { memo, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { GitBranchIcon, PencilIcon } from 'lucide-react';
 
-import type { ChatMessage, ClaudePermissionSuggestion, PermissionGrantResult, LLMProvider,DiffLine,Project } from '@/shared/types';
+import type { ChatMessage, ClaudePermissionSuggestion, PermissionGrantResult, LLMProvider,DiffLine,Project, MessageDeliveryState } from '@/shared/types';
 import { formatUsageLimitText, stripProposedPlanEnvelope } from '@/modules/chat/utils/chatFormatting';
 import { ToolRenderer, ToolErrorDisplay, SubagentPanel, WorkflowPanel, shouldHideToolResult } from '@/modules/chat/tools';
 import { LLMProviderLogo } from '@/shared/ui';
@@ -46,6 +46,33 @@ const COPY_HIDDEN_TOOL_NAMES = new Set(['Bash', 'Edit', 'Write', 'ApplyPatch']);
  * Rendered by chat's ChatMessagesPane and ToolGroupContainer to draw one
  * transcript entry — user turn, assistant turn, or a tool call and its result.
  */
+const DELIVERY_LABEL_DEFAULTS: Record<MessageDeliveryState, string> = {
+  sending: 'Sending…',
+  sent: 'Sent',
+  queued: 'Queued · sends when the current reply ends',
+  failed: 'Not sent',
+};
+
+/**
+ * What happened to a message this client just sent, next to its time: the
+ * user never has to guess whether a send went through. Persisted rows carry
+ * no state and show nothing here.
+ */
+function DeliveryLabel({ state }: { state?: MessageDeliveryState }) {
+  const { t } = useTranslation('chat');
+  if (!state) return null;
+  return (
+    <span
+      data-testid="message-delivery-state"
+      data-state={state}
+      className={state === 'failed' ? 'text-destructive' : state === 'queued' ? 'text-primary/80' : undefined}
+    >
+      {t(`message.delivery.${state}`, { defaultValue: DELIVERY_LABEL_DEFAULTS[state] })}
+      {' ·'}
+    </span>
+  );
+}
+
 const MessageComponent = memo(({ message, prevMessage, createDiff, onFileOpen, showRawParameters, showThinking, selectedProject, provider, onEditMessage, onForkFromMessage }: MessageComponentProps) => {
   const { t } = useTranslation('chat');
   const isGrouped = prevMessage && prevMessage.type === message.type &&
@@ -145,12 +172,14 @@ const MessageComponent = memo(({ message, prevMessage, createDiff, onFileOpen, s
                   {shouldShowUserCopyControl && (
                     <MessageCopyControl content={userCopyContent} messageType="user" />
                   )}
+                  <DeliveryLabel state={message.deliveryState} />
                   <span>{formattedTime}</span>
                 </div>
               </div>
             ) : (
               /* Attachment-only turn: no text bubble, but the timestamp still shows */
               <div className="flex items-center justify-end gap-1 text-xs text-muted-foreground">
+                <DeliveryLabel state={message.deliveryState} />
                 <span>{formattedTime}</span>
               </div>
             )}

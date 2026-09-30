@@ -429,6 +429,8 @@ export function normalizedToChatMessages(messages: NormalizedMessage[]): ChatMes
               images,
               files,
               ...sharedMetadata,
+              // Only the local echo carries these; persisted rows never do.
+              ...(msg.deliveryState ? { deliveryState: msg.deliveryState, clientMessageId: msg.id } : {}),
             });
           }
         } else {

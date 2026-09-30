@@ -14,6 +14,10 @@ const POLL_INTERVAL_MS = 30_000;
 
 let pollTimer: ReturnType<typeof setInterval> | null = null;
 let dispatchInFlight = false;
+let unsubscribeRunCompleted: (() => void) | null = null;
+// A run ended while a pass was already going, so that pass may have looked
+// before it did: one more pass when it finishes.
+let passRequestedAfterRun = false;
 
 type StoredQueuedMessage = {
   content: string;
@@ -169,6 +173,14 @@ export function initializeScheduledMessageDispatcher(runtime: ProviderRuntimeGat
     return;
   }
 
+  const finishPass = () => {
+    dispatchInFlight = false;
+    if (passRequestedAfterRun) {
+      passRequestedAfterRun = false;
+      dispatchAfterRun();
+    }
+  };
+
   const poll = () => {
     // A pass that overruns the interval must not be started again underneath
     // itself; the claim is transactional but the runs are not.
@@ -182,12 +194,27 @@ export function initializeScheduledMessageDispatcher(runtime: ProviderRuntimeGat
         const message = error instanceof Error ? error.message : String(error);
         console.error('[ScheduledMessages] Dispatch pass failed', { error: message });
       })
-      .finally(() => {
-        dispatchInFlight = false;
-      });
+      .finally(finishPass);
   };
 
   pollTimer = setInterval(poll, POLL_INTERVAL_MS);
+  // A queued turn waits for its session's run to end, not for the next poll:
+  // up to half a minute of an idle session with the message still pending
+  // read as "it did not send". The poll stays as the net for anything missed.
+  const dispatchAfterRun = () => {
+    if (dispatchInFlight) {
+      passRequestedAfterRun = true;
+      return;
+    }
+    dispatchInFlight = true;
+    void dispatchQueuedMessages(runtime)
+      .catch((error: unknown) => {
+        const message = error instanceof Error ? error.message : String(error);
+        console.error('[ScheduledMessages] Queued dispatch after run completion failed', { error: message });
+      })
+      .finally(finishPass);
+  };
+  unsubscribeRunCompleted = chatRunRegistry.onRunCompleted(dispatchAfterRun);
   // Never keep the process alive just to poll for scheduled messages.
   pollTimer.unref?.();
 
@@ -200,4 +227,7 @@ export function closeScheduledMessageDispatcher(): void {
     clearInterval(pollTimer);
     pollTimer = null;
   }
+  unsubscribeRunCompleted?.();
+  unsubscribeRunCompleted = null;
+  passRequestedAfterRun = false;
 }

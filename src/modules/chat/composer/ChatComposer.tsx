@@ -72,6 +72,8 @@ type ChatComposerProps = {
   onSubmit: (event: FormEvent<HTMLFormElement> | MouseEvent<HTMLButtonElement> | TouchEvent<HTMLButtonElement>) => void;
   isDragActive: boolean;
   queuedDraft: QueuedDraft | null;
+  /** A send is between its click and its websocket frame (or just after it): the button is inert. */
+  isSubmitting?: boolean;
   /** Set while the composer is replacing an already-sent message. */
   isEditingSentMessage: boolean;
   onCancelEditMessage: () => void;
@@ -147,6 +149,7 @@ export default function ChatComposer({
   onSubmit,
   isDragActive,
   queuedDraft,
+  isSubmitting = false,
   isEditingSentMessage,
   onCancelEditMessage,
   scheduledMessages,
@@ -512,7 +515,9 @@ export default function ChatComposer({
                       : undefined
               }
               disabled={
-                isLoading
+                isSubmitting && !canQueueDraft
+                  ? true
+                  : isLoading
                   ? false
                   : isRecording
                     ? false
@@ -524,7 +529,7 @@ export default function ChatComposer({
               title={submitAriaLabel}
               className="h-10 w-10 sm:h-10 sm:w-10"
             >
-              {isTranscribing ? (
+              {isTranscribing || (isSubmitting && !canQueueDraft) ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : canQueueDraft ? (
                 <ArrowUpIcon className="h-4 w-4" />

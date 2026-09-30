@@ -15,7 +15,7 @@ import { useTranslation } from 'react-i18next';
 import { api } from '@/shared/api';
 import { PROVIDER_PERMISSION_PREFERENCE_KEYS } from '@/shared/constants';
 import { readUserPreference } from '@/shared/userSettings';
-import type { CommandModalPayload, CostCommandData, HelpCommandData, MarkSessionProcessing, ModelCommandData, QueuedDraft, SessionActivityMap, StatusCommandData,QueuedSendOptions,ChatAttachment,ChatMessage,PendingPermissionRequest,PermissionMode,SessionEstablishedContext,Project,ProjectSession,LLMProvider,SlashCommand } from '@/shared/types';
+import type { CommandModalPayload, CostCommandData, HelpCommandData, MarkSessionIdle, MarkSessionProcessing, ModelCommandData, QueuedDraft, SessionActivityMap, StatusCommandData,QueuedSendOptions,ChatAttachment,ChatMessage,PendingPermissionRequest,PermissionMode,SessionEstablishedContext,Project,ProjectSession,LLMProvider,SlashCommand } from '@/shared/types';
 import { grantClaudeToolPermission } from '@/modules/chat/utils/chatPermissions';
 import {
   clearQueuedMessage,
@@ -32,6 +32,7 @@ import { useFileMentions } from '@/modules/chat/hooks/useFileMentions';
 import { useInputHistory } from '@/modules/chat/hooks/useInputHistory';
 import { useSlashCommands } from '@/modules/chat/hooks/useSlashCommands';
 import type { SessionStore } from '@/modules/chat/hooks/useSessionStore';
+import { chatMessageToNormalized } from '@/modules/chat/hooks/useChatSessionState';
 
 type UseChatComposerStateArgs = {
   selectedProject: Project | null;
@@ -54,6 +55,8 @@ type UseChatComposerStateArgs = {
   sendMessage: (message: unknown) => void;
   sendByCtrlEnter?: boolean;
   onSessionProcessing?: MarkSessionProcessing;
+  /** Clears the busy mark a send set when that send never went out. */
+  onSessionIdle?: MarkSessionIdle;
   /**
    * Invoked with the freshly allocated session id when the user sends the
    * first message of a brand-new conversation. The backend allocates the id
@@ -95,6 +98,8 @@ const createFakeSubmitEvent = () => {
 };
 
 const MAX_ATTACHMENT_COUNT = 10;
+/** How long the send button stays inert after a send, so a second click cannot land on the Stop it turns into. */
+const SUBMIT_SETTLE_MS = 800;
 const MAX_ATTACHMENT_SIZE = 10 * 1024 * 1024;
 
 const isImageAttachment = (attachment: ChatAttachment) => {
@@ -186,6 +191,7 @@ export function useChatComposerState({
   sendMessage,
   sendByCtrlEnter,
   onSessionProcessing,
+  onSessionIdle,
   onSessionEstablished,
   onFileOpen,
   onShowSettings,
@@ -315,6 +321,15 @@ export function useChatComposerState({
   // while `queuedDraft` still holds the old session's draft; the persistence
   // effect must not write across that gap.
   const queuedDraftSessionRef = useRef<string | null>(sessionKey);
+  // The card on screen right now, read by a queued send whose upload
+  // finishes later to tell whether the card was edited or deleted meanwhile.
+  const queuedDraftRef = useRef<QueuedDraft | null>(queuedDraft);
+  queuedDraftRef.current = queuedDraft;
+  // A send between its click and its websocket frame (uploading files,
+  // allocating a new session). A second submit in that window is a new
+  // message and queues; it must never start a second send of its own.
+  const submitInFlightRef = useRef(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleBuiltInCommand = useCallback(
     (result: CommandExecutionResult) => {
@@ -688,7 +703,14 @@ export function useChatComposerState({
       // A turn is already in flight: stash this message instead of sending it.
       // Upload attached files now so the queued record contains durable image
       // descriptors that can be sent even if another session is open later.
-      if (isLoading) {
+      // A brand-new chat still allocating its session has nowhere to queue
+      // a second message yet; it stays in the composer, untouched, until the
+      // first one is out.
+      if (!isLoading && submitInFlightRef.current && !sessionKey && !queuedSubmission) {
+        return;
+      }
+
+      if (isLoading || submitInFlightRef.current) {
         // A run can restart in the tiny gap between scheduling and flushing a
         // queued submission. Put the same durable draft back without uploading
         // its files again.
@@ -700,50 +722,26 @@ export function useChatComposerState({
 
         const queuedOptions = buildSendOptions(currentInput);
         const queuedSessionKey = sessionKey;
-        let uploadedAttachments: unknown[] = [];
-        try {
-          uploadedAttachments = await uploadAttachmentFiles(currentAttachments);
-        } catch (error) {
-          const message = error instanceof Error ? error.message : 'Unknown error';
-          console.error('Queued file upload failed:', error);
-          addMessage({
-            type: 'error',
-            content: `Failed to upload files: ${message}`,
-            timestamp: new Date(),
-          });
-          return;
-        }
+        const needsUpload = currentAttachments.length > 0;
 
-        const durableDraft: QueuedDraft = {
-          content: currentInput,
-          attachments: currentAttachments,
-          uploadedAttachments,
-          options: queuedOptions,
-        };
-        if (queuedSessionKey) {
-          // Write the claim ticket synchronously after upload; this closes the
-          // gap before React's persistence effect runs.
-          writeQueuedMessage(queuedSessionKey, {
-            content: durableDraft.content,
-            options: durableDraft.options,
-            attachments: durableDraft.uploadedAttachments,
-          });
-        }
-
-        // Recorded under the session the message was queued FOR, and before
-        // the session-switch return below — the queued text must be
-        // recallable even when it dispatches without this composer.
+        // Recorded under the session the message was queued FOR — the queued
+        // text must be recallable even when it dispatches without this
+        // composer.
         recordSentMessage(currentInput, queuedSessionKey);
 
-        // The server owns dispatch after persistence. If the user changed
-        // sessions during upload, the durable record is already enough; do
-        // not attach its UI card to the newly opened composer.
-        if (queuedSessionKey && sessionKeyRef.current !== queuedSessionKey) {
-          return;
-        }
-
+        // The card goes up before the upload, not after: the upload is the
+        // slow part, and until the card shows nothing says the message is
+        // waiting to go.
+        const provisionalDraft: QueuedDraft = {
+          content: currentInput,
+          attachments: currentAttachments,
+          uploadedAttachments: [],
+          options: queuedOptions,
+          ...(needsUpload ? { uploading: true } : {}),
+        };
         queuedDraftSessionRef.current = queuedSessionKey;
-        setQueuedDraft(durableDraft);
+        queuedDraftRef.current = provisionalDraft;
+        setQueuedDraft(provisionalDraft);
         setInput('');
         inputValueRef.current = '';
         setAttachedFiles([]);
@@ -756,6 +754,64 @@ export function useChatComposerState({
         if (draftScopeRef.current) {
           writeDraftText(draftScopeRef.current, '');
         }
+
+        let uploadedAttachments: unknown[] = [];
+        if (needsUpload) {
+          try {
+            uploadedAttachments = await uploadAttachmentFiles(currentAttachments);
+          } catch (error) {
+            const message = error instanceof Error ? error.message : 'Unknown error';
+            console.error('Queued file upload failed:', error);
+            if (queuedDraftRef.current === provisionalDraft) {
+              queuedDraftRef.current = null;
+              setQueuedDraft(null);
+            }
+            if (!inputValueRef.current.trim()) {
+              setInput(currentInput);
+              inputValueRef.current = currentInput;
+              setAttachedFiles(currentAttachments);
+            }
+            addMessage({
+              type: 'error',
+              content: `Failed to upload files: ${message}`,
+              timestamp: new Date(),
+            });
+            return;
+          }
+        }
+
+        const stillQueuedHere = queuedDraftRef.current === provisionalDraft;
+        const leftTheSession = Boolean(queuedSessionKey) && sessionKeyRef.current !== queuedSessionKey;
+        // Edited or deleted from the card while its files uploaded: that was
+        // the user's last word on it.
+        if (!stillQueuedHere && !leftTheSession) {
+          return;
+        }
+
+        const durableDraft: QueuedDraft = {
+          content: currentInput,
+          attachments: currentAttachments,
+          uploadedAttachments,
+          options: queuedOptions,
+        };
+        if (queuedSessionKey) {
+          // Write the claim ticket synchronously; this closes the gap before
+          // React's persistence effect runs.
+          writeQueuedMessage(queuedSessionKey, {
+            content: durableDraft.content,
+            options: durableDraft.options,
+            attachments: durableDraft.uploadedAttachments,
+          });
+        }
+
+        // The server owns dispatch after persistence. If the user changed
+        // sessions during upload, the durable record is already enough; do
+        // not attach its UI card to the newly opened composer.
+        if (leftTheSession) {
+          return;
+        }
+        queuedDraftRef.current = durableDraft;
+        setQueuedDraft(durableDraft);
         return;
       }
 
@@ -795,87 +851,23 @@ export function useChatComposerState({
       }
 
       const messageContent = currentInput;
-
-      let uploadedAttachments = previouslyUploadedAttachments;
-      if (uploadedAttachments.length === 0 && currentAttachments.length > 0) {
-        try {
-          uploadedAttachments = await uploadAttachmentFiles(currentAttachments);
-        } catch (error) {
-          const message = error instanceof Error ? error.message : 'Unknown error';
-          console.error('File upload failed:', error);
-          addMessage({
-            type: 'error',
-            content: `Failed to upload files: ${message}`,
-            timestamp: new Date(),
-          });
-          return;
-        }
-      }
-
       const resolvedProjectPath = selectedProject.fullPath || selectedProject.path || '';
       const sessionSummary = getNotificationSessionSummary(selectedSession, currentInput);
+      const sendOptions = queuedSubmission?.options ?? buildSendOptions(messageContent);
+      const replacedAnchorId = editingAnchorId;
 
       // The conversation always has a stable backend-allocated session id
-      // BEFORE the first websocket send: brand-new chats allocate one here
+      // BEFORE the first websocket send: brand-new chats allocate one below
       // via the session gateway. There is no client-visible session-id
       // handoff later — this id stays valid for the conversation's lifetime.
       let targetSessionId = selectedSession?.id || currentSessionId || null;
-      if (!targetSessionId) {
-        let createdSessionName = sessionSummary;
-        try {
-          const response = await api.providers.createSession({
-            provider,
-            projectPath: resolvedProjectPath,
-            initialMessage: messageContent,
-          });
-          if (!response.ok) {
-            throw new Error(`Failed to create session (${response.status})`);
-          }
-          const body = await response.json();
-          targetSessionId = body?.data?.sessionId || null;
-          // A blank server name would leave the session unlabeled, so the local
-          // summary stays the fallback unless a real name comes back.
-          const returnedSessionName = typeof body?.data?.sessionName === 'string'
-            ? body.data.sessionName.trim()
-            : '';
-          if (returnedSessionName) {
-            createdSessionName = returnedSessionName;
-          }
-        } catch (error) {
-          const message = error instanceof Error ? error.message : 'Unknown error';
-          console.error('Session creation failed:', error);
-          addMessage({
-            type: 'error',
-            content: `Failed to start a new session: ${message}`,
-            timestamp: new Date(),
-          });
-          return;
-        }
-
-        if (!targetSessionId) {
-          addMessage({
-            type: 'error',
-            content: 'Failed to start a new session: no session id returned.',
-            timestamp: new Date(),
-          });
-          return;
-        }
-
-        onSessionEstablished?.(targetSessionId, {
-          provider,
-          project: selectedProject,
-          summary: createdSessionName,
-        });
-        // Paso 7: una sesion nueva nace en modo tmux — stream-json queda de
-        // respaldo (se activa solo si un protocol_error TMUX_* lo revierte).
-        sessionStore.setRunsInTmux(targetSessionId, true);
-      }
 
       // A new turn replaces the CLI process a session's background work runs
       // under: the agents, workflows and commands it still has going are
       // stopped, or finish where nothing is listening. Sending is the user's
-      // call, but not one to make for them.
-      const backgroundActivity = processingSessionsRef.current?.get(targetSessionId);
+      // call, but not one to make for them. Asked before anything is shown or
+      // cleared, so saying no leaves the composer exactly as it was.
+      const backgroundActivity = targetSessionId ? processingSessionsRef.current?.get(targetSessionId) : undefined;
       if (backgroundActivity?.background) {
         const work = ownBackgroundTasks(backgroundActivity.tasks ?? [])
           .map((task) => `• ${describeBackgroundTask(task, t)}`)
@@ -889,73 +881,188 @@ export function useChatComposerState({
         }
       }
 
-      const attachmentRecords = uploadedAttachments as ChatAttachment[];
+      // Bug del 30-sep: the echo, the busy indicator and the cleared input
+      // used to wait for the attachment upload. For those seconds nothing on
+      // screen said the message had gone, every further click started another
+      // send, and once the button turned into Stop the clicks aborted the run
+      // they had just started. Now the message is on screen, marked
+      // "sending", before anything is awaited.
+      const clientMessageId = `local_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+      const previouslyUploadedRecords = previouslyUploadedAttachments as ChatAttachment[];
       const userMessage: ChatMessage = {
         type: 'user',
         content: currentInput,
-        images: attachmentRecords.filter(isImageAttachment),
-        files: attachmentRecords.filter((attachment) => !isImageAttachment(attachment)),
+        images: previouslyUploadedRecords.filter(isImageAttachment),
+        files: previouslyUploadedRecords.filter((attachment) => !isImageAttachment(attachment)),
         timestamp: new Date(),
+        deliveryState: 'sending',
+        clientMessageId,
         // Tags this echo as the replacement, so the truncation the server
         // broadcasts a moment later cuts the turns being replaced without
         // taking the message the user just sent with them.
-        ...(editingAnchorId ? { replacesAnchorId: editingAnchorId } : {}),
+        ...(replacedAnchorId ? { replacesAnchorId: replacedAnchorId } : {}),
       };
-
       addMessage(userMessage);
-      // Mark this request as processing in the per-session activity map (the
-      // single source of truth the indicator derives from). The id is always
-      // concrete at this point — no pending placeholder exists anymore.
-      onSessionProcessing?.(targetSessionId, {
-        statusText: null,
-        canInterrupt: true,
-      });
+      if (targetSessionId) {
+        // Mark this request as processing in the per-session activity map
+        // (the single source of truth the indicator derives from).
+        onSessionProcessing?.(targetSessionId, {
+          statusText: null,
+          canInterrupt: true,
+        });
+      }
 
       setIsUserScrolledUp(false);
       setTimeout(() => scrollToBottom(), 100);
 
-      // One message shape for every provider. The backend resolves the
-      // provider, project path, and provider-native resume id from the
-      // session row; `options` only carries composer-level preferences.
-      // Paso 6: chat.send-tmux solo para sesiones en modo tmux, y solo si no
-      // hay edicion ni adjuntos — ese canal no soporta ninguna de las dos cosas.
-      const useTmux =
-        !editingAnchorId &&
-        uploadedAttachments.length === 0 &&
-        sessionStore.runsInTmux(targetSessionId);
-      sendMessage({
-        // Replacing an already-sent message is its own frame: it changes the
-        // shape of the conversation, so it gets validated separately and can
-        // report why it was refused.
-        type: editingAnchorId ? 'chat.edit-send' : useTmux ? 'chat.send-tmux' : 'chat.send',
-        sessionId: targetSessionId,
-        ...(editingAnchorId ? { anchorId: editingAnchorId } : {}),
-        content: messageContent,
-        options: {
-          ...(queuedSubmission?.options ?? buildSendOptions(messageContent)),
-          attachments: uploadedAttachments,
-        },
-      });
-      setEditingAnchorId(null);
-
-      // Recorded under the (possibly just-allocated) session id, so the first
-      // message of a new chat lands in the history of the session the user is
-      // navigated to. Queued drafts were recorded when they were queued; the
-      // consecutive-duplicate check keeps this second call a no-op.
-      recordSentMessage(currentInput, targetSessionId);
+      // Recorded under the session it is sent to; a brand-new chat records it
+      // again once its id exists (the consecutive-duplicate check keeps that
+      // a no-op for sessions that already had one).
+      recordSentMessage(currentInput, targetSessionId ?? undefined);
       setInput('');
       inputValueRef.current = '';
       resetCommandMenuState();
       setAttachedFiles([]);
       setFileErrors(new Map());
       setIsTextareaExpanded(false);
-
+      setEditingAnchorId(null);
       if (textareaRef.current) {
         textareaRef.current.style.height = 'auto';
       }
-
       if (draftScopeRef.current) {
         writeDraftText(draftScopeRef.current, '');
+      }
+
+      submitInFlightRef.current = true;
+      setIsSubmitting(true);
+
+      // A send that could not go out gives the text back — unless the user
+      // has already started typing the next one — and says so on the echo.
+      const failSend = (sessionIdForEcho: string | null, errorContent: string) => {
+        if (sessionIdForEcho) {
+          sessionStore.setDeliveryState(sessionIdForEcho, clientMessageId, 'failed');
+          onSessionIdle?.(sessionIdForEcho);
+        } else {
+          addMessage({ ...userMessage, deliveryState: 'failed' });
+        }
+        if (!inputValueRef.current.trim()) {
+          setInput(currentInput);
+          inputValueRef.current = currentInput;
+          setAttachedFiles(currentAttachments);
+        }
+        addMessage({
+          type: 'error',
+          content: errorContent,
+          timestamp: new Date(),
+        });
+      };
+
+      try {
+        let uploadedAttachments = previouslyUploadedAttachments;
+        if (uploadedAttachments.length === 0 && currentAttachments.length > 0) {
+          try {
+            uploadedAttachments = await uploadAttachmentFiles(currentAttachments);
+          } catch (error) {
+            const message = error instanceof Error ? error.message : 'Unknown error';
+            console.error('File upload failed:', error);
+            failSend(targetSessionId, `Failed to upload files: ${message}`);
+            return;
+          }
+        }
+
+        const attachmentRecords = uploadedAttachments as ChatAttachment[];
+        const images = attachmentRecords.filter(isImageAttachment);
+        const files = attachmentRecords.filter((attachment) => !isImageAttachment(attachment));
+
+        if (!targetSessionId) {
+          let createdSessionName = sessionSummary;
+          try {
+            const response = await api.providers.createSession({
+              provider,
+              projectPath: resolvedProjectPath,
+              initialMessage: messageContent,
+            });
+            if (!response.ok) {
+              throw new Error(`Failed to create session (${response.status})`);
+            }
+            const body = await response.json();
+            targetSessionId = body?.data?.sessionId || null;
+            // A blank server name would leave the session unlabeled, so the local
+            // summary stays the fallback unless a real name comes back.
+            const returnedSessionName = typeof body?.data?.sessionName === 'string'
+              ? body.data.sessionName.trim()
+              : '';
+            if (returnedSessionName) {
+              createdSessionName = returnedSessionName;
+            }
+          } catch (error) {
+            const message = error instanceof Error ? error.message : 'Unknown error';
+            console.error('Session creation failed:', error);
+            failSend(null, `Failed to start a new session: ${message}`);
+            return;
+          }
+
+          if (!targetSessionId) {
+            failSend(null, 'Failed to start a new session: no session id returned.');
+            return;
+          }
+
+          onSessionEstablished?.(targetSessionId, {
+            provider,
+            project: selectedProject,
+            summary: createdSessionName,
+          });
+          // Paso 7: una sesion nueva nace en modo tmux — stream-json queda de
+          // respaldo (se activa solo si un protocol_error TMUX_* lo revierte).
+          sessionStore.setRunsInTmux(targetSessionId, true);
+          // The echo shown so far had no session to live in; from here on it
+          // is a row of this one, so the server's acknowledgement finds it.
+          const echo = chatMessageToNormalized({ ...userMessage, images, files }, targetSessionId, provider);
+          if (echo) {
+            sessionStore.appendRealtime(targetSessionId, echo);
+          }
+          onSessionProcessing?.(targetSessionId, {
+            statusText: null,
+            canInterrupt: true,
+          });
+          recordSentMessage(currentInput, targetSessionId);
+        } else if (attachmentRecords.length > 0) {
+          sessionStore.setDeliveryState(targetSessionId, clientMessageId, 'sending', {
+            images: images.length > 0 ? images : undefined,
+            files: files.length > 0 ? files : undefined,
+          });
+        }
+
+        // One message shape for every provider. The backend resolves the
+        // provider, project path, and provider-native resume id from the
+        // session row; `options` only carries composer-level preferences.
+        // Paso 6: chat.send-tmux solo para sesiones en modo tmux, y solo si no
+        // hay edicion ni adjuntos — ese canal no soporta ninguna de las dos cosas.
+        const useTmux =
+          !replacedAnchorId &&
+          uploadedAttachments.length === 0 &&
+          sessionStore.runsInTmux(targetSessionId);
+        sendMessage({
+          // Replacing an already-sent message is its own frame: it changes the
+          // shape of the conversation, so it gets validated separately and can
+          // report why it was refused.
+          type: replacedAnchorId ? 'chat.edit-send' : useTmux ? 'chat.send-tmux' : 'chat.send',
+          sessionId: targetSessionId,
+          ...(replacedAnchorId ? { anchorId: replacedAnchorId } : {}),
+          content: messageContent,
+          // Echoed back in `message_status`, which is what moves the echo
+          // from "sending" to "sent" or "queued".
+          clientMessageId,
+          options: {
+            ...sendOptions,
+            attachments: uploadedAttachments,
+          },
+        });
+      } finally {
+        submitInFlightRef.current = false;
+        // The button stays inert a moment longer: the Stop it turns into
+        // would otherwise sit right under a second, impatient click.
+        window.setTimeout(() => setIsSubmitting(false), SUBMIT_SETTLE_MS);
       }
     },
     [
@@ -967,6 +1074,7 @@ export function useChatComposerState({
       executeCommand,
       isLoading,
       onSessionProcessing,
+      onSessionIdle,
       onSessionEstablished,
       provider,
       recordSentMessage,
@@ -975,6 +1083,7 @@ export function useChatComposerState({
       selectedProject,
       sendMessage,
       sessionKey,
+      sessionStore,
       addMessage,
       setIsUserScrolledUp,
       slashCommands,
@@ -1075,6 +1184,10 @@ export function useChatComposerState({
   // effect skip that commit instead of writing/clearing across sessions.
   useEffect(() => {
     if (!sessionKey || queuedDraftSessionRef.current !== sessionKey) {
+      return;
+    }
+    // Its files are not uploaded yet; the send that queued it persists it.
+    if (queuedDraft?.uploading) {
       return;
     }
     if (
@@ -1334,6 +1447,7 @@ export function useChatComposerState({
     openAttachmentPicker: open,
     handleSubmit,
     queuedDraft,
+    isSubmitting,
     editQueuedDraft,
     deleteQueuedDraft,
     handleVoiceTranscript,

@@ -134,12 +134,17 @@ function captureScrollRestoreState(container: HTMLDivElement): ScrollRestoreStat
 /*  Helper: Convert a ChatMessage to a NormalizedMessage for the store */
 /* ------------------------------------------------------------------ */
 
-function chatMessageToNormalized(
+export function chatMessageToNormalized(
   msg: ChatMessage,
   sessionId: string,
   provider: LLMProvider,
 ): NormalizedMessage | null {
-  const id = `local_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+  // A sent message brings its own id: the server echoes it back in
+  // `message_status`, and that is how the echo's delivery state is updated.
+  // It keeps the `local_` prefix the echo reconciliation relies on.
+  const id = typeof msg.clientMessageId === 'string' && msg.clientMessageId.startsWith('local_')
+    ? msg.clientMessageId
+    : `local_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
   const ts = msg.timestamp instanceof Date
     ? msg.timestamp.toISOString()
     : typeof msg.timestamp === 'number'
@@ -182,6 +187,7 @@ function chatMessageToNormalized(
     // Survives the truncation that follows an edit, which clears every other
     // live row.
     replacesAnchorId: msg.replacesAnchorId,
+    deliveryState: msg.type === 'user' ? msg.deliveryState : undefined,
   } as NormalizedMessage;
 }
 

@@ -69,6 +69,26 @@ const runs = new Map<string, ChatRun>();
 let retainCompletedRun: (appSessionId: string) => boolean = () => false;
 
 /**
+ * Told the moment a run's terminal `complete` has gone out: a message that
+ * waited for the session to be free can start its turn now. Fired on the next
+ * tick, so every client has the `complete` before the next run's first frame.
+ */
+const runCompletedListeners = new Set<(appSessionId: string) => void>();
+
+function notifyRunCompleted(appSessionId: string): void {
+  setImmediate(() => {
+    for (const listener of runCompletedListeners) {
+      try {
+        listener(appSessionId);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        console.error('[ChatRunRegistry] Run-completed listener failed', { appSessionId, error: message });
+      }
+    }
+  });
+}
+
+/**
  * Schedules one run's eviction. The timer is bound to the run it was armed
  * for: a later run can take the session's slot while this one's retention —
  * re-armed for as long as the guard holds — is still pending, and firing on
@@ -124,6 +144,7 @@ function decorateAndRecordEvent(run: ChatRun, message: NormalizedMessage): Norma
     run.status = 'completed';
     run.completedAt = Date.now();
     evictRunLater(run);
+    notifyRunCompleted(run.appSessionId);
   }
 
   run.events.push(outbound);
@@ -182,6 +203,14 @@ export const chatRunRegistry = {
   /** Installs the check that keeps a completed run registered while its session still has background work. */
   setRetentionGuard(guard: (appSessionId: string) => boolean): void {
     retainCompletedRun = guard;
+  },
+
+  /** Subscribes to runs ending; returns the unsubscribe. */
+  onRunCompleted(listener: (appSessionId: string) => void): () => void {
+    runCompletedListeners.add(listener);
+    return () => {
+      runCompletedListeners.delete(listener);
+    };
   },
 
   /**

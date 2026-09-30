@@ -349,6 +349,8 @@ export type SubagentInfo = {
 };
 
 /** One rendered entry in a chat transcript — user turn, assistant turn, tool call and result, local command output, or subagent container — and the shape the chat message list and message components consume. */
+export type MessageDeliveryState = 'sending' | 'queued' | 'sent' | 'failed';
+
 export type ChatMessage = {
   type: string;
   content?: string;
@@ -368,6 +370,15 @@ export type ChatMessage = {
    * already-sent one, naming the anchor it replaces. Local to this client.
    */
   replacesAnchorId?: string;
+  /**
+   * Delivery state of the optimistic echo of a message this client sent:
+   * `sending` until the server acknowledges it, `queued` while it waits for
+   * the session's current run to end, `sent` once its run started, `failed`
+   * if it never went out. Local to this client; absent on persisted rows.
+   */
+  deliveryState?: MessageDeliveryState;
+  /** Id of the optimistic echo, echoed back by the server in `message_status`. */
+  clientMessageId?: string;
   isThinking?: boolean;
   isStreaming?: boolean;
   /**
@@ -516,6 +527,8 @@ export type NormalizedMessage = {
    * when the cut was made, so this is where those rows begin.
    */
   replacesAfterRowCount?: number;
+  /** See `ChatMessage.deliveryState`. Only on the local echo of a sent message. */
+  deliveryState?: MessageDeliveryState;
   /**
    * Stamped by `appendRealtime` on a `text`/assistant row that just arrived
    * over the tmux bridge, while the session's history has not caught up to
@@ -776,6 +789,11 @@ export type QueuedDraft = {
    * permission settings while another session is being viewed.
    */
   options?: QueuedSendOptions;
+  /**
+   * The card is on screen but its files are still uploading: nothing is
+   * persisted for the server to dispatch until they are.
+   */
+  uploading?: boolean;
 };
 
 /** Viewport-relative placement box (right/bottom offsets plus max height and width) computed for a composer popover so the model and permission menus stay inside the window. */
