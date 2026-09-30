@@ -751,6 +751,7 @@ export function useProjectsState({
         && event.kind !== 'permission_resolved'
         && event.kind !== 'permission_cancelled'
         && event.kind !== 'websocket_reconnected'
+        && event.kind !== 'tmux_prompt_error'
       ) {
         markSessionAttention(eventSessionId);
       }

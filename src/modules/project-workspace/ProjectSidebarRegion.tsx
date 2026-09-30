@@ -6,7 +6,7 @@ import type {
 import { useTranslation } from 'react-i18next';
 
 import { useProjectSidebarState } from '@/modules/project-workspace/context/ProjectsStateContext';
-import { SkinSidebar as Sidebar } from '@/modules/skin';
+import { SkinSidebar as Sidebar, useTmuxPromptsFeed } from '@/modules/skin';
 import { useBusySessionIdSet } from '@/shared/context/SessionProtectionContext';
 import type { ProjectWorkspaceShellProps } from '@/shared/types';
 
@@ -19,6 +19,9 @@ function ProjectSidebarRegion({
   // Las sesiones con una corrida en vuelo. El hook vive acá, donde el provider
   // ya está montado; el sidebar las recibe como dato, no como dependencia.
   const activeSessions = useBusySessionIdSet();
+  // Las preguntas de permiso de los panes de tmux: el sidebar y el chat las
+  // leen del mismo store, que se alimenta una sola vez, acá.
+  useTmuxPromptsFeed();
 
   const handleBackdropClick = useCallback((event: ReactMouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();

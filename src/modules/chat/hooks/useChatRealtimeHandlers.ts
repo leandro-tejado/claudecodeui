@@ -258,6 +258,11 @@ export function useChatRealtimeHandlers({
         case 'loading_progress':
           return;
 
+        // Questions a tmux pane is waiting on — owned by useTmuxPromptsFeed.
+        case 'tmux_prompts':
+        case 'tmux_prompt_error':
+          return;
+
         default:
           break;
       }

@@ -17,3 +17,6 @@ export type { ProviderRuntimeGateway } from './services/chat-websocket.service.j
 // session has no in-process run to stream from, so the watcher is what tells
 // this service a new transcript row may have landed.
 export { tmuxBridgeService } from './services/tmux-bridge.service.js';
+// Las preguntas de permiso de los panes de tmux (30-sep): el servidor las
+// arranca y las frena junto con el resto de los vigías.
+export { iniciarVigiaPromptsTmux, detenerVigiaPromptsTmux } from './services/tmux-prompt.service.js';

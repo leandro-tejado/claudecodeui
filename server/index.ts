@@ -15,7 +15,12 @@ import {
     initializeSessionsWatcher,
     providerRuntimeService,
 } from '@/modules/providers/index.js';
-import { chatRunRegistry, createWebSocketServer } from '@/modules/websocket/index.js';
+import {
+    chatRunRegistry,
+    createWebSocketServer,
+    detenerVigiaPromptsTmux,
+    iniciarVigiaPromptsTmux,
+} from '@/modules/websocket/index.js';
 
 import { getConnectableHost } from '../shared/networkHosts.js';
 
@@ -430,6 +435,9 @@ async function startServer() {
             // RAM/disco/sesiones para el header (Fase 3): la métrica cambia sola con
             // el tiempo, así que el propio intervalo es el disparador, no un evento.
             startRecursosBroadcast();
+            // Las preguntas de permiso de los panes de tmux: no dejan rastro en
+            // el transcript, así que se leen de la pantalla cada 2 s.
+            iniciarVigiaPromptsTmux();
 
             // Start server-side plugin processes for enabled plugins
             startEnabledPluginServers().catch(err => {
@@ -440,6 +448,7 @@ async function startServer() {
         await closeSessionsWatcher();
         closeScheduledMessageDispatcher();
         stopRecursosBroadcast();
+        detenerVigiaPromptsTmux();
         // Clean up plugin processes on shutdown
         const shutdownRuntimeServices = async () => {
             try {

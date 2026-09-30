@@ -29,7 +29,8 @@ import ChatMessagesPane from '@/modules/chat/transcript/ChatMessagesPane';
 import ChatComposer from '@/modules/chat/composer/ChatComposer';
 import CommandResultModal from '@/modules/chat/modals/CommandResultModal';
 import PanelSalidas from '@/modules/chat/panel-salidas/PanelSalidas';
-import { SkinSubagentBridge } from '@/modules/skin';
+import { SkinSubagentBridge, useTmuxPrompts } from '@/modules/skin';
+import type { TmuxPrompt } from '@/modules/skin';
 import { flushAllStreamBuffers } from '@/modules/chat/utils/streamBuffers';
 import type { StreamBuffers } from '@/modules/chat/utils/streamBuffers';
 
@@ -390,6 +391,24 @@ function ChatInterface({
     projectId: selectedProject?.projectId ?? null,
   }), [selectedProject?.projectId]);
 
+  // Las preguntas que el pane de tmux de esta sesión le está haciendo a la
+  // persona; contestarlas teclea la opción en el pane.
+  const { prompts: allTmuxPrompts, errors: tmuxPromptErrors } = useTmuxPrompts();
+  const viewedSessionId = currentSessionId || selectedSession?.id || null;
+  const tmuxPrompts = useMemo(
+    () => allTmuxPrompts.filter((prompt) => prompt.sessionId === viewedSessionId),
+    [allTmuxPrompts, viewedSessionId],
+  );
+  const handleAnswerTmuxPrompt = useCallback((prompt: TmuxPrompt, optionIndex: number) => {
+    sendMessage({
+      type: 'chat.tmux-prompt-response',
+      sessionId: prompt.sessionId,
+      pane: prompt.pane,
+      promptId: prompt.id,
+      opcion: optionIndex,
+    });
+  }, [sendMessage]);
+
   // Lets a workflow card fetch its agents' timelines for this session.
   const transcriptSessionValue = useMemo(() => ({ sessionId: currentSessionId }), [currentSessionId]);
 
@@ -526,6 +545,9 @@ function ChatInterface({
           pendingPermissionRequests={pendingPermissionRequests}
           handlePermissionDecision={handlePermissionDecision}
           handleGrantToolPermission={handleGrantToolPermission}
+          tmuxPrompts={tmuxPrompts}
+          tmuxPromptErrors={tmuxPromptErrors}
+          onAnswerTmuxPrompt={handleAnswerTmuxPrompt}
           activity={sessionActivity}
           isLoading={isProcessing}
           onAbortSession={handleAbortSession}

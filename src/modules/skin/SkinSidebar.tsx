@@ -31,6 +31,7 @@ import { useSkinUi } from '@/modules/skin/skinUiStore';
 import { useSubagents } from '@/modules/skin/subagentStore';
 import type { SubagentRow, SubagentStatus } from '@/modules/skin/subagentStore';
 import { useSessionBudgets } from '@/modules/skin/sessionBudgetStore';
+import { useTmuxPrompts } from '@/modules/skin/tmuxPromptStore';
 import { AMBER_AT, RED_AT } from '@/modules/skin/compactBarThresholds';
 import { useSetUiPreference, useUiPreferences } from '@/shared/context/UiPreferencesContext';
 import {
@@ -429,6 +430,20 @@ export function SkinSidebar({
    * avisar.
    */
   const sessionBudgets = useSessionBudgets();
+
+  /*
+   * Las sesiones frenadas en una pregunta de permiso de su pane de tmux
+   * ("Do you want to proceed?"). Es lo único que no avanza sin la persona:
+   * `optimumads-guia-1` estuvo casi 10 h así el 30-sep sin que nada lo dijera.
+   */
+  const { prompts: tmuxPrompts } = useTmuxPrompts();
+  const waitingPrompt = useMemo(() => {
+    const bySession = new Map<string, string>();
+    tmuxPrompts.forEach((prompt) => {
+      if (!bySession.has(prompt.sessionId)) bySession.set(prompt.sessionId, prompt.pregunta);
+    });
+    return bySession;
+  }, [tmuxPrompts]);
 
   const liveSubagents = useSubagents();
   const liveBySession = useMemo(() => {
@@ -1137,8 +1152,13 @@ export function SkinSidebar({
                      * el matiz exacto de un puntito de seis píxeles. La
                      * precedencia no cambia, solo el dibujo.
                      */
-                    type SessionBadgeState = 'running' | 'attention' | 'selected' | 'idle';
-                    const sessionBadgeState: SessionBadgeState = isRunning
+                    // Esperando respuesta gana sobre todo: es la única que
+                    // no sigue sola.
+                    const waitingQuestion = waitingPrompt.get(session.id);
+                    type SessionBadgeState = 'waiting' | 'running' | 'attention' | 'selected' | 'idle';
+                    const sessionBadgeState: SessionBadgeState = waitingQuestion !== undefined
+                      ? 'waiting'
+                      : isRunning
                       ? 'running'
                       : attention.has(session.id)
                         ? 'attention'
@@ -1146,6 +1166,8 @@ export function SkinSidebar({
                           ? 'selected'
                           : 'idle';
                     const badgeShapeClass: Record<SessionBadgeState, string> = {
+                      waiting:
+                        'rounded-full bg-amber-500 animate-pulse ring-2 ring-amber-500/50 ring-offset-1 ring-offset-background',
                       running:
                         'rounded-full bg-sky-500 animate-pulse ring-2 ring-sky-500/40 ring-offset-1 ring-offset-background',
                       attention:
@@ -1155,6 +1177,7 @@ export function SkinSidebar({
                       idle: 'rounded-full bg-muted-foreground/60',
                     };
                     const badgeTitle: Partial<Record<SessionBadgeState, string>> = {
+                      waiting: `Esperando respuesta: ${waitingQuestion ?? ''}`,
                       running: 'Corriendo ahora',
                       attention: 'Algo llegó mientras mirabas otra sesión',
                     };
@@ -1257,6 +1280,16 @@ export function SkinSidebar({
                         >
                           {activityDot}
                           <span className="min-w-0 flex-1 truncate">{title}</span>
+                          {waitingQuestion !== undefined && (
+                            <span
+                              data-testid="session-waiting-answer"
+                              title={waitingQuestion}
+                              className="flex-none whitespace-nowrap rounded-full bg-amber-500/15 px-1.5 font-medium text-amber-700 dark:text-amber-300"
+                              style={{ fontSize: 'var(--skin-text-xs)' }}
+                            >
+                              esperando respuesta
+                            </span>
+                          )}
                           {subagentCount > 0 && (
                             // Un `<span>` con rol de botón, no un `<button>`: el
                             // comentario de arriba explica por qué nada

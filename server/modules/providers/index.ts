@@ -15,4 +15,4 @@ export { closeSessionsWatcher } from './services/sessions-watcher.service.js';
 
 // Registro de tmux: lo usa el chat del módulo websocket para escribirle a
 // sesiones que corren en un pane que CloudCLI no abrió (orquestar.py, ct).
-export { buscarPaneTmuxRegistrado, esFilaTmuxSinTranscript } from './services/tmux-registry-sessions.service.js';
+export { buscarPaneTmuxRegistrado, esFilaTmuxSinTranscript, rutaRegistroSesionesTmux } from './services/tmux-registry-sessions.service.js';

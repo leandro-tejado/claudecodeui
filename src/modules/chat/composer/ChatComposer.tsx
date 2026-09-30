@@ -30,6 +30,8 @@ import ActivityIndicator from '@/modules/chat/composer/ActivityIndicator';
 import ComposerAttachment from '@/modules/chat/composer/ComposerAttachment';
 import VoiceInputButton from '@/modules/chat/composer/VoiceInputButton';
 import PermissionRequestsBanner from '@/modules/chat/composer/PermissionRequestsBanner';
+import TmuxPromptBanner from '@/modules/chat/composer/TmuxPromptBanner';
+import type { TmuxPrompt } from '@/modules/skin';
 import { SkinContextMeterBridge as TokenUsageSummary } from '@/modules/skin';
 import QueuedMessageCard from '@/modules/chat/composer/QueuedMessageCard';
 import { ScheduleMessagePopover } from '@/modules/chat/composer/ScheduleMessagePopover';
@@ -42,6 +44,9 @@ type MentionableFile = {
   path: string;
 };
 
+const EMPTY_TMUX_PROMPTS: TmuxPrompt[] = [];
+const EMPTY_TMUX_PROMPT_ERRORS: ReadonlyMap<string, { promptId: string; error: string }> = new Map();
+
 type ChatComposerProps = {
   pendingPermissionRequests: PendingPermissionRequest[];
   handlePermissionDecision: (
@@ -49,6 +54,10 @@ type ChatComposerProps = {
     decision: { allow?: boolean; message?: string; rememberEntry?: string | null; updatedInput?: unknown },
   ) => void;
   handleGrantToolPermission: (suggestion: { entry: string; toolName: string }) => { success: boolean };
+  /** Preguntas de permiso abiertas en el pane de tmux de esta sesión. */
+  tmuxPrompts?: TmuxPrompt[];
+  tmuxPromptErrors?: ReadonlyMap<string, { promptId: string; error: string }>;
+  onAnswerTmuxPrompt?: (prompt: TmuxPrompt, optionIndex: number) => void;
   activity: SessionActivity | null;
   isLoading: boolean;
   onAbortSession: () => void;
@@ -124,6 +133,9 @@ type ChatComposerProps = {
  */
 export default function ChatComposer({
   pendingPermissionRequests,
+  tmuxPrompts = EMPTY_TMUX_PROMPTS,
+  tmuxPromptErrors = EMPTY_TMUX_PROMPT_ERRORS,
+  onAnswerTmuxPrompt,
   handlePermissionDecision,
   handleGrantToolPermission,
   activity,
@@ -251,7 +263,7 @@ export default function ChatComposer({
   );
 
   // Hide the thinking/status bar while any permission request is pending
-  const hasPendingPermissions = pendingPermissionRequests.length > 0;
+  const hasPendingPermissions = pendingPermissionRequests.length > 0 || tmuxPrompts.length > 0;
   const hasActivityIndicator = Boolean(activity && !hasPendingPermissions);
 
   const hasQueuedDraft = Boolean(queuedDraft);
@@ -286,6 +298,12 @@ export default function ChatComposer({
             handlePermissionDecision={handlePermissionDecision}
             handleGrantToolPermission={handleGrantToolPermission}
           />
+        </div>
+      )}
+
+      {tmuxPrompts.length > 0 && onAnswerTmuxPrompt && (
+        <div className="mx-auto mb-3 max-w-[54.25rem]">
+          <TmuxPromptBanner prompts={tmuxPrompts} errors={tmuxPromptErrors} onAnswer={onAnswerTmuxPrompt} />
         </div>
       )}
 

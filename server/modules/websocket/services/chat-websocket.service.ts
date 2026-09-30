@@ -7,6 +7,11 @@ import { esFilaTmuxSinTranscript, providerModelsService, sessionsService } from 
 import { chatRunRegistry } from '@/modules/websocket/services/chat-run-registry.service.js';
 import { nombreTmux } from '@/modules/websocket/services/shell-websocket.service.js';
 import { tmuxBridgeService } from '@/modules/websocket/services/tmux-bridge.service.js';
+import {
+  mensajePromptsTmux,
+  responderPromptTmux,
+  revisarPromptsTmux,
+} from '@/modules/websocket/services/tmux-prompt.service.js';
 import { connectedClients, WS_OPEN_STATE } from '@/modules/websocket/services/websocket-state.service.js';
 import {
   getGlobalImageAssetsDir,
@@ -873,6 +878,57 @@ function handlePermissionResponse(data: AnyRecord, dependencies: ChatWebSocketDe
 }
 
 /**
+ * Handles `chat.tmux-prompts`: the prompts tmux panes are waiting on right
+ * now. A client asks once its listener is up (and again after a reconnect),
+ * so a snapshot pushed at connection time can never land before anyone
+ * listens. Reads the panes first: while nobody was connected the watcher was
+ * not looking.
+ */
+async function handleTmuxPromptsRequest(ws: WebSocket): Promise<void> {
+  await revisarPromptsTmux();
+  sendJson(ws, mensajePromptsTmux());
+}
+
+/**
+ * Handles `chat.tmux-prompt-response`: types the chosen option into the pane
+ * that is waiting on it. A failure goes back as its own `tmux_prompt_error`
+ * frame, not as `protocol_error`: that one would drop the session out of
+ * tmux mode and idle it, and neither is true here.
+ */
+async function handleTmuxPromptResponse(ws: WebSocket, data: AnyRecord): Promise<void> {
+  const sessionId = typeof data.sessionId === 'string' ? data.sessionId : '';
+  const pane = typeof data.pane === 'string' ? data.pane : '';
+  const promptId = typeof data.promptId === 'string' ? data.promptId : '';
+  const opcion = typeof data.opcion === 'number' ? data.opcion : -1;
+
+  const resultado = await responderPromptTmux(
+    { sessionId, pane, promptId, opcion },
+    {
+      // Bridged before the key goes in, so the rows the answer unblocks
+      // stream into the chat — same as a prompt typed from the chat.
+      antesDeEnviar: async () => {
+        const session = sessionsDb.getSessionById(sessionId);
+        if (session && pane !== nombreTmux(session.project_path ?? '', session.session_id)) {
+          await tmuxBridgeService.puentearPaneExterno(session, pane);
+        }
+      },
+    },
+  );
+
+  if (!resultado.ok) {
+    sendJson(ws, {
+      kind: 'tmux_prompt_error',
+      sessionId,
+      pane,
+      promptId,
+      code: resultado.codigo,
+      error: resultado.mensaje,
+      timestamp: new Date().toISOString(),
+    });
+  }
+}
+
+/**
  * Handles authenticated chat websocket messages used by the main chat panel.
  *
  * Inbound protocol (client to server):
@@ -881,6 +937,8 @@ function handlePermissionResponse(data: AnyRecord, dependencies: ChatWebSocketDe
  * - `chat.stop-task`           { sessionId, taskId }
  * - `chat.subscribe`           { sessions: [{ sessionId, lastSeq? }] }
  * - `chat.permission-response` { requestId, allow, updatedInput?, message?, rememberEntry? }
+ * - `chat.tmux-prompts`        {}
+ * - `chat.tmux-prompt-response` { sessionId, pane, promptId, opcion }
  *
  * Outbound protocol (server to client): every frame is `kind`-based — either
  * a provider `NormalizedMessage` (with `seq`) or a gateway event
@@ -993,6 +1051,12 @@ export function handleChatConnection(
           return;
         case 'chat.permission-response':
           handlePermissionResponse(data, dependencies);
+          return;
+        case 'chat.tmux-prompts':
+          await handleTmuxPromptsRequest(ws);
+          return;
+        case 'chat.tmux-prompt-response':
+          await handleTmuxPromptResponse(ws, data);
           return;
         default:
           sendProtocolError(ws, 'UNKNOWN_MESSAGE_TYPE', `Unknown message type "${messageType}".`);
