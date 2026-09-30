@@ -363,8 +363,37 @@ export async function enviarPrompt(
   const esMultilinea = texto.includes('\n');
   const payload = esMultilinea ? `${BRACKETED_PASTE_START}${texto}${BRACKETED_PASTE_END}` : texto;
 
-  await dependencies.sendKeysLiteral(nombreSesion, payload);
+  for (const tramo of partirParaSendKeys(payload)) {
+    await dependencies.sendKeysLiteral(nombreSesion, tramo);
+  }
   await dependencies.sendEnter(nombreSesion);
+}
+
+// tmux rechaza con "command too long" un comando de más de ~16 KB (medido el
+// 30-sep: 16.000 bytes pasan, 20.000 no). Un prompt largo pegado en el chat
+// -el del 30-sep traía un componente entero y pesaba más de 20 KB- se perdía
+// entero. Cada tramo va en su propio `send-keys`, en orden y dentro del mismo
+// envoltorio de pegado, así que al pane le llega lo mismo que si fuera uno.
+const MAX_BYTES_POR_SEND_KEYS = 8000;
+
+/** Parte el texto en tramos de hasta `maxBytes` en UTF-8, sin cortar un carácter por la mitad. */
+export function partirParaSendKeys(texto: string, maxBytes = MAX_BYTES_POR_SEND_KEYS): string[] {
+  if (Buffer.byteLength(texto, 'utf8') <= maxBytes) return [texto];
+  const tramos: string[] = [];
+  let actual = '';
+  let bytes = 0;
+  for (const caracter of texto) {
+    const largo = Buffer.byteLength(caracter, 'utf8');
+    if (bytes + largo > maxBytes && actual) {
+      tramos.push(actual);
+      actual = '';
+      bytes = 0;
+    }
+    actual += caracter;
+    bytes += largo;
+  }
+  if (actual) tramos.push(actual);
+  return tramos;
 }
 
 /** True when a tmux session with exactly this name is alive right now. */

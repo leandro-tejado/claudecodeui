@@ -15,6 +15,7 @@ import {
   esFinDeTurno,
   esperarPrimerRender,
   leerUltimaFilaCruda,
+  partirParaSendKeys,
   resolverPaneTmux,
   tieneSesionTmux,
 } from '@/modules/websocket/services/tmux-bridge.service.js';
@@ -86,6 +87,45 @@ test('un prompt de varias lineas no se manda cortado', async () => {
   } finally {
     await matarSesionDePrueba(nombre);
   }
+});
+
+test('un prompt de más de 16 KB llega entero: tmux lo rechazaba con "command too long"', async () => {
+  // 30-sep: un prompt de más de 20 KB pegado en el chat se perdió entero.
+  const nombre = nombreDePrueba();
+  const directorio = await mkdtemp(path.join(os.tmpdir(), 'tmux-largo-'));
+  const archivo = path.join(directorio, 'recibido.txt');
+  await execFileAsync('tmux', ['new-session', '-d', '-s', nombre, `cat > ${archivo}`]);
+  try {
+    const lineas = Array.from({ length: 320 }, (_, indice) => `línea ${String(indice).padStart(3, '0')} · ${'ñandú '.repeat(10).trim()}`);
+    const texto = lineas.join('\n');
+    assert.ok(Buffer.byteLength(texto, 'utf8') > 20_000);
+
+    await enviarPrompt(nombre, texto);
+
+    let recibido = '';
+    for (let intento = 0; intento < 40; intento += 1) {
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      recibido = await readFile(archivo, 'utf8').catch(() => '');
+      if (recibido.includes('línea 319')) break;
+    }
+    const sinEnvoltorio = recibido.replace(/\x1b\[20[01]~/g, '').replace(/\r/g, '');
+    assert.equal(sinEnvoltorio.trimEnd(), texto);
+  } finally {
+    await matarSesionDePrueba(nombre);
+    await rm(directorio, { recursive: true, force: true });
+  }
+});
+
+test('partirParaSendKeys no pasa del límite ni corta un carácter de varios bytes', () => {
+  const texto = 'añ😀'.repeat(3000);
+  const tramos = partirParaSendKeys(texto, 1000);
+  assert.ok(tramos.length > 1);
+  assert.equal(tramos.join(''), texto);
+  for (const tramo of tramos) {
+    assert.ok(Buffer.byteLength(tramo, 'utf8') <= 1000);
+    assert.ok(!/[\ud800-\udbff]$/.test(tramo), 'no termina en medio de un par sustituto');
+  }
+  assert.deepEqual(partirParaSendKeys('corto'), ['corto']);
 });
 
 test('el texto del usuario nunca se interpola en la linea de comando', async () => {
