@@ -8,7 +8,9 @@ import { chatRunRegistry } from '@/modules/websocket/services/chat-run-registry.
 import { nombreTmux } from '@/modules/websocket/services/shell-websocket.service.js';
 import { tmuxBridgeService } from '@/modules/websocket/services/tmux-bridge.service.js';
 import {
+  esperarQueSeDespeje,
   mensajePromptsTmux,
+  paneTienePrompt,
   responderPromptTmux,
   revisarPromptsTmux,
 } from '@/modules/websocket/services/tmux-prompt.service.js';
@@ -414,18 +416,72 @@ async function handleChatSendTmux(
     return;
   }
 
+  // Bug del 30-sep: una pregunta de AskUserQuestion se contestó sola con la
+  // opción "(Recommended)". El texto de un mensaje no entra en ese diálogo,
+  // pero el `Enter` que lo cierra elige la opción del cursor. Con una
+  // pregunta abierta —o mensajes ya esperando delante— el mensaje espera a
+  // que la persona conteste, y recién entonces se teclea.
+  const clientMessageId = readClientMessageId(data);
+  if (colasTmux.has(nombreSesion) || await paneTienePrompt(nombreSesion)) {
+    if (clientMessageId) {
+      broadcastMessageStatus(sessionId, clientMessageId, 'queued', { reason: 'tmux_prompt' });
+    }
+    encolarEnPane(nombreSesion, async () => {
+      const vivo = await esperarQueSeDespeje(nombreSesion, {
+        sigueVivo: () => tmuxBridgeService.tieneSesionTmux(nombreSesion),
+      });
+      if (!vivo) {
+        if (ws.readyState === WS_OPEN_STATE) {
+          sendProtocolError(ws, 'TMUX_SESSION_NOT_FOUND', `La sesion de tmux de "${sessionId}" se cerro antes de poder mandar el mensaje.`, sessionId);
+        }
+        return;
+      }
+      await teclearEnPane(ws, sessionId, nombreSesion, content, clientMessageId, { fromQueue: true });
+    });
+    return;
+  }
+
+  await teclearEnPane(ws, sessionId, nombreSesion, content, clientMessageId);
+}
+
+// Por pane: los mensajes que esperan a que se conteste una pregunta abierta,
+// encadenados para que salgan en el orden en que llegaron.
+const colasTmux = new Map<string, Promise<void>>();
+
+function encolarEnPane(pane: string, tarea: () => Promise<void>): void {
+  const turno = (colasTmux.get(pane) ?? Promise.resolve())
+    .then(tarea)
+    .catch((error: unknown) => {
+      console.error('[Chat] Queued tmux message failed', { pane, error: error instanceof Error ? error.message : error });
+    });
+  colasTmux.set(pane, turno);
+  void turno.then(() => {
+    if (colasTmux.get(pane) === turno) colasTmux.delete(pane);
+  });
+}
+
+/** Teclea el mensaje en el pane y avisa a todos que la sesión quedó ocupada. */
+async function teclearEnPane(
+  ws: WebSocket,
+  sessionId: string,
+  nombreSesion: string,
+  content: string,
+  clientMessageId: string | null,
+  { fromQueue = false }: { fromQueue?: boolean } = {},
+): Promise<void> {
   try {
     await tmuxBridgeService.enviarPrompt(nombreSesion, content);
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     console.error('[Chat] tmux-bridge send failed', { sessionId, error: message });
-    sendProtocolError(ws, 'TMUX_SEND_FAILED', message, sessionId);
+    if (ws.readyState === WS_OPEN_STATE) {
+      sendProtocolError(ws, 'TMUX_SEND_FAILED', message, sessionId);
+    }
     return;
   }
 
-  const clientMessageId = readClientMessageId(data);
   if (clientMessageId) {
-    broadcastMessageStatus(sessionId, clientMessageId, 'sent');
+    broadcastMessageStatus(sessionId, clientMessageId, 'sent', fromQueue ? { fromQueue: true } : {});
   }
 
   // No provider run was dispatched, so no `complete` will come from
@@ -900,9 +956,10 @@ async function handleTmuxPromptResponse(ws: WebSocket, data: AnyRecord): Promise
   const pane = typeof data.pane === 'string' ? data.pane : '';
   const promptId = typeof data.promptId === 'string' ? data.promptId : '';
   const opcion = typeof data.opcion === 'number' ? data.opcion : -1;
+  const texto = typeof data.texto === 'string' ? data.texto : undefined;
 
   const resultado = await responderPromptTmux(
-    { sessionId, pane, promptId, opcion },
+    { sessionId, pane, promptId, opcion, texto },
     {
       // Bridged before the key goes in, so the rows the answer unblocks
       // stream into the chat — same as a prompt typed from the chat.
@@ -938,7 +995,7 @@ async function handleTmuxPromptResponse(ws: WebSocket, data: AnyRecord): Promise
  * - `chat.subscribe`           { sessions: [{ sessionId, lastSeq? }] }
  * - `chat.permission-response` { requestId, allow, updatedInput?, message?, rememberEntry? }
  * - `chat.tmux-prompts`        {}
- * - `chat.tmux-prompt-response` { sessionId, pane, promptId, opcion }
+ * - `chat.tmux-prompt-response` { sessionId, pane, promptId, opcion, texto? }
  *
  * Outbound protocol (server to client): every frame is `kind`-based — either
  * a provider `NormalizedMessage` (with `seq`) or a gateway event

@@ -66,4 +66,38 @@ describe('chat: la pregunta pendiente con sus botones', () => {
     act(() => { publishTmuxPrompts([]); });
     expect(screen.queryByTestId('tmux-prompt')).toBeNull();
   });
+
+  it('AskUserQuestion: las opciones son botones y "Type something." es un campo que manda lo escrito', async () => {
+    await loadLanguage('es');
+    await i18n.changeLanguage('es');
+    const onAnswer = vi.fn();
+    const ask: TmuxPrompt = {
+      ...PROMPT,
+      id: 'huella-ask',
+      pregunta: 'Which color do you prefer?',
+      detalle: '☐ Color',
+      opciones: [
+        { indice: 0, numero: 1, etiqueta: 'Rojo (Recommended)\nRed color option' },
+        { indice: 1, numero: 2, etiqueta: 'Azul\nBlue color option' },
+        { indice: 2, numero: 3, etiqueta: 'Type something.', libre: true },
+        { indice: 3, numero: 4, etiqueta: 'Chat about this' },
+      ],
+    };
+    const Harness = () => {
+      const { prompts, errors } = useTmuxPrompts();
+      return <TmuxPromptBanner prompts={prompts} errors={errors} onAnswer={onAnswer} />;
+    };
+    render(<Harness />);
+    act(() => { publishTmuxPrompts([ask]); });
+
+    expect(screen.getByRole('button', { name: '1. Rojo (Recommended)' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /Type something/ })).toBeNull();
+    const send = screen.getByRole('button', { name: 'Responder' });
+    expect(send).toHaveProperty('disabled', true);
+
+    fireEvent.change(screen.getByLabelText('Escribí tu respuesta'), { target: { value: '  Verde  ' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Responder' }));
+    expect(onAnswer).toHaveBeenCalledWith(ask, 2, 'Verde');
+    expect(screen.getByRole('button', { name: 'Enviando…' })).toHaveProperty('disabled', true);
+  });
 });

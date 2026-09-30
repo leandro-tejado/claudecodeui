@@ -86,7 +86,7 @@ describe('SkinSidebar — acciones por clic derecho', () => {
     expect(items).toEqual(['Nueva sesión', 'Fijar arriba', 'Renombrar', 'Quitar de la lista']);
   });
 
-  it('"Nueva sesión" del menú abre una sesión en ese proyecto, como el botón "+ Nueva sesión"', () => {
+  it('"Nueva sesión" del menú abre una sesión en ese proyecto, como el `+` de la cabecera', () => {
     const alfa = buildProject('a', 'Alfa');
     const zeta = buildProject('z', 'Zeta');
     renderSidebar([alfa, zeta]);

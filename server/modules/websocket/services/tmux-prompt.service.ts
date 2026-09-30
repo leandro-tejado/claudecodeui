@@ -27,6 +27,8 @@ export type OpcionPromptTmux = {
   /** El número que Claude Code dibuja delante ("1. Yes"); `null` en los diálogos sin numerar. */
   numero: number | null;
   etiqueta: string;
+  /** La opción de AskUserQuestion que pide escribir la respuesta ("Type something."). */
+  libre?: boolean;
 };
 
 export type PromptTmux = {
@@ -54,7 +56,26 @@ const PIE = /\bEsc to cancel\b/;
 const REGLA = /^\s*─{8,}\s*$/;
 const MARCA = '❯';
 const OPCION_NUMERADA = /^(\d+)\.\s+(.*)$/;
+// Las pestañas de AskUserQuestion: " ☐ Color", o "←  ☐ Fruta  ☐ Dia  ✔ Submit  →" si son varias.
+const PESTANAS = /^\s*←?\s*[☐☒✔]/;
+const PESTANAS_VARIAS = /^\s*←.*[☐☒✔].*→\s*$/;
 const MAX_LINEAS_DETALLE = 60;
+const MAX_LINEAS_PREGUNTA = 4;
+// Elegirla abre un campo de texto en el lugar de la opción: se teclea ahí y `Enter` lo manda.
+const OPCION_LIBRE = /^Type something\.?$/;
+
+function sinMarca(linea: string): string {
+  const recortada = linea.trim();
+  return recortada.startsWith(MARCA) ? recortada.slice(MARCA.length).trim() : recortada;
+}
+
+/** Una línea del bloque de opciones: la del cursor, una numerada, o la continuación sangrada de una. */
+function esLineaDeOpciones(linea: string): boolean {
+  if (!linea.trim()) return false;
+  return linea.trimStart().startsWith(MARCA)
+    || OPCION_NUMERADA.test(sinMarca(linea))
+    || /^\s{3,}\S/.test(linea);
+}
 
 // Mismo charset que acepta tmux-bridge: un nombre fuera de esto no llega a `tmux -t`.
 const NOMBRE_TMUX_PATTERN = /^[A-Za-z0-9_-]+$/;
@@ -93,38 +114,63 @@ function limpiarLineaDetalle(linea: string): string {
  *
  *      Esc to cancel · Tab to amend
  *
+ * Y la de AskUserQuestion, que el 30-sep se contestó sola porque este
+ * detector no la reconocía y un mensaje del chat le mandó el `Enter`:
+ *
+ *     ────────────────────────
+ *     ←  ☐ Fruta  ☐ Dia  ✔ Submit  →
+ *     Which fruit?
+ *     ❯ 1. Manzana (Recommended)
+ *          Apple option
+ *       2. Pera
+ *          Pear option
+ *       3. Type something.
+ *     ────────────────────────
+ *       4. Chat about this
+ *     Enter to select · Tab/Arrow keys to navigate · Esc to cancel
+ *
  * El pie tiene que ser la última línea con texto: si el diálogo quedó arriba
- * en el scrollback y abajo hay otra cosa, ya no está esperando.
+ * en el scrollback y abajo hay otra cosa, ya no está esperando. La única
+ * pantalla sin pie es la de confirmar un AskUserQuestion de varias preguntas
+ * ("Ready to submit your answers?"); esa se reconoce por las pestañas.
  */
 export function detectarPromptTmux(pantalla: string): PromptTmux | null {
   const lineas = pantalla.replace(/\r/g, '').split('\n').map((linea) => linea.replace(/\s+$/, ''));
 
   let fin = lineas.length - 1;
   while (fin >= 0 && !lineas[fin].trim()) fin -= 1;
-  if (fin < 0 || !PIE.test(lineas[fin])) return null;
+  if (fin < 0) return null;
+  // La última pantalla de un AskUserQuestion de varias preguntas ("Ready to
+  // submit your answers?") no tiene pie: ahí la marca del diálogo son las
+  // pestañas de arriba, que se revisan más abajo.
+  const conPie = PIE.test(lineas[fin]);
 
-  let cursor = fin - 1;
+  let cursor = conPie ? fin - 1 : fin;
   while (cursor >= 0 && !lineas[cursor].trim()) cursor -= 1;
 
-  // Las opciones: la línea con `❯` y las de su bloque, que van con sangría de
-  // tres espacios o más. La pregunta de arriba lleva uno solo, y ahí corta.
+  // Las opciones: la línea con `❯`, las numeradas y las continuaciones con
+  // sangría de tres espacios o más. La pregunta de arriba no es ninguna de
+  // esas, y ahí corta. AskUserQuestion separa su última opción ("Chat about
+  // this") con una raya: se salta si arriba siguen las opciones.
   const bloque: string[] = [];
   while (cursor >= 0) {
     const linea = lineas[cursor];
-    if (!linea.trim()) break;
-    if (!linea.trimStart().startsWith(MARCA) && !/^\s{3,}\S/.test(linea)) break;
+    if (REGLA.test(linea) && bloque.length > 0 && esLineaDeOpciones(lineas[cursor - 1] ?? '')) {
+      cursor -= 1;
+      continue;
+    }
+    if (!esLineaDeOpciones(linea)) break;
     bloque.unshift(linea);
     cursor -= 1;
   }
   if (bloque.length < 2) return null;
 
-  const numeradas = bloque.some((linea) => OPCION_NUMERADA.test(linea.trim().replace(MARCA, '').trim()));
+  const numeradas = bloque.some((linea) => OPCION_NUMERADA.test(sinMarca(linea)));
   const opciones: OpcionPromptTmux[] = [];
   let seleccionada = -1;
   for (const linea of bloque) {
-    const recortada = linea.trim();
-    const marcada = recortada.startsWith(MARCA);
-    const texto = marcada ? recortada.slice(MARCA.length).trim() : recortada;
+    const marcada = linea.trim().startsWith(MARCA);
+    const texto = sinMarca(linea);
     const numerada = numeradas ? OPCION_NUMERADA.exec(texto) : null;
 
     if (numeradas && !numerada) {
@@ -144,15 +190,32 @@ export function detectarPromptTmux(pantalla: string): PromptTmux | null {
       indice: opciones.length,
       numero: numerada ? Number(numerada[1]) : null,
       etiqueta: numerada ? numerada[2].trim() : texto,
+      ...(numerada && OPCION_LIBRE.test(numerada[2].trim()) ? { libre: true } : {}),
     });
   }
 
   if (opciones.length < 2 || seleccionada === -1) return null;
   if (numeradas && opciones.some((opcion, indice) => opcion.numero !== indice + 1)) return null;
 
-  // Lo de arriba de las opciones, hasta la regla horizontal que abre el diálogo.
+  // La pregunta va pegada arriba de las opciones, y puede ocupar varios
+  // renglones si es larga (las de AskUserQuestion). Corta en la línea en
+  // blanco, la raya o las pestañas de AskUserQuestion.
+  const renglonesPregunta: string[] = [];
+  while (
+    cursor >= 0
+    && renglonesPregunta.length < MAX_LINEAS_PREGUNTA
+    && lineas[cursor].trim()
+    && !REGLA.test(lineas[cursor])
+    && !PESTANAS.test(lineas[cursor])
+  ) {
+    renglonesPregunta.unshift(limpiarLineaDetalle(lineas[cursor]));
+    cursor -= 1;
+  }
+
+  // Lo de arriba, hasta la regla horizontal que abre el diálogo.
   let inicio = cursor;
   while (inicio >= 0 && cursor - inicio < MAX_LINEAS_DETALLE && !REGLA.test(lineas[inicio])) inicio -= 1;
+  if (!conPie && !lineas.slice(inicio + 1, cursor + 1).some((linea) => PESTANAS_VARIAS.test(linea))) return null;
   const region = lineas
     .slice(inicio + 1, cursor + 1)
     .map(limpiarLineaDetalle);
@@ -162,7 +225,9 @@ export function detectarPromptTmux(pantalla: string): PromptTmux | null {
   let pregunta = '';
   let cuerpo = region;
   const ultima = region[region.length - 1] ?? '';
-  if (ultima.endsWith('?')) {
+  if (renglonesPregunta.length > 0) {
+    pregunta = renglonesPregunta.join(' ');
+  } else if (ultima.endsWith('?')) {
     pregunta = ultima;
     cuerpo = region.slice(0, -1);
     while (cuerpo.length > 0 && !cuerpo[cuerpo.length - 1]) cuerpo.pop();
@@ -180,17 +245,30 @@ export function detectarPromptTmux(pantalla: string): PromptTmux | null {
 
 export type TeclasTmux =
   | { tipo: 'literal'; texto: string }
-  | { tipo: 'teclas'; teclas: string[] };
+  | { tipo: 'teclas'; teclas: string[] }
+  | { tipo: 'libre'; numero: string; texto: string };
+
+const MAX_TEXTO_LIBRE = 2000;
 
 /**
  * Qué teclear para elegir una opción. Probado el 30-sep contra un `claude`
  * real en un pane descartable: en un diálogo numerado el dígito elige esa
  * opción de una, esté donde esté el cursor; en uno sin numerar (el de
  * confianza) las flechas mueven el cursor y `Enter` confirma, y llegan bien
- * aunque vayan juntas en un solo `send-keys`.
+ * aunque vayan juntas en un solo `send-keys`. La opción libre de
+ * AskUserQuestion ("Type something.") es el dígito, que abre el campo, el
+ * texto y `Enter`; el texto va en un solo renglón porque un salto de línea
+ * sería un `Enter` a mitad de camino.
  */
-export function teclasParaOpcion(prompt: PromptTmux, indice: number): TeclasTmux {
+export function teclasParaOpcion(prompt: PromptTmux, indice: number, texto = ''): TeclasTmux {
   const opcion = prompt.opciones[indice];
+  if (opcion.libre && opcion.numero !== null && opcion.numero <= 9) {
+    return {
+      tipo: 'libre',
+      numero: String(opcion.numero),
+      texto: texto.replace(/\s*[\r\n]+\s*/g, ' ').trim().slice(0, MAX_TEXTO_LIBRE),
+    };
+  }
   if (opcion.numero !== null && opcion.numero <= 9) {
     return { tipo: 'literal', texto: String(opcion.numero) };
   }
@@ -249,9 +327,16 @@ export const dependenciasVigiaPorDefecto: VigiaPromptsDependencias = {
   enviarTeclas: async (nombre, teclas) => {
     // Como en tmux-bridge: argv por `execFile`, nunca un shell; `-l --` para
     // que el dígito vaya literal.
+    const destino = targetExacto(nombre);
+    if (teclas.tipo === 'libre') {
+      await execFileAsync('tmux', ['send-keys', '-t', destino, '-l', '--', teclas.numero], { timeout: 2000 });
+      await execFileAsync('tmux', ['send-keys', '-t', destino, '-l', '--', teclas.texto], { timeout: 2000 });
+      await execFileAsync('tmux', ['send-keys', '-t', destino, 'Enter'], { timeout: 2000 });
+      return;
+    }
     const argv = teclas.tipo === 'literal'
-      ? ['send-keys', '-t', targetExacto(nombre), '-l', '--', teclas.texto]
-      : ['send-keys', '-t', targetExacto(nombre), ...teclas.teclas];
+      ? ['send-keys', '-t', destino, '-l', '--', teclas.texto]
+      : ['send-keys', '-t', destino, ...teclas.teclas];
     await execFileAsync('tmux', argv, { timeout: 2000 });
   },
   emitir: (payload) => {
@@ -381,7 +466,7 @@ export type RespuestaPromptTmux =
  * contestaron desde la terminal, o es otra pregunta— no se manda nada.
  */
 export async function responderPromptTmux(
-  entrada: { sessionId: string; pane: string; promptId: string; opcion: number },
+  entrada: { sessionId: string; pane: string; promptId: string; opcion: number; texto?: string },
   opciones: { antesDeEnviar?: () => Promise<void> } = {},
   dependencias: VigiaPromptsDependencias = dependenciasVigiaPorDefecto,
 ): Promise<RespuestaPromptTmux> {
@@ -408,10 +493,14 @@ export async function responderPromptTmux(
   if (!Number.isInteger(entrada.opcion) || entrada.opcion < 0 || entrada.opcion >= actual.opciones.length) {
     return { ok: false, codigo: 'TMUX_PROMPT_BAD_OPTION', mensaje: 'Esa opción no existe en la pregunta.' };
   }
+  const teclas = teclasParaOpcion(actual, entrada.opcion, entrada.texto ?? '');
+  if (teclas.tipo === 'libre' && !teclas.texto) {
+    return { ok: false, codigo: 'TMUX_PROMPT_BAD_OPTION', mensaje: 'Escribí la respuesta antes de mandarla.' };
+  }
 
   try {
     await opciones.antesDeEnviar?.();
-    await dependencias.enviarTeclas(entrada.pane, teclasParaOpcion(actual, entrada.opcion));
+    await dependencias.enviarTeclas(entrada.pane, teclas);
   } catch (error) {
     return {
       ok: false,
@@ -423,6 +512,39 @@ export async function responderPromptTmux(
   // Que todos vean el prompt resuelto sin esperar la próxima vuelta.
   setTimeout(() => { void revisarPromptsTmux(dependencias); }, 400).unref?.();
   return { ok: true };
+}
+
+/**
+ * Si el pane tiene ahora mismo una pregunta abierta. Uno que no se puede leer
+ * cuenta como sin pregunta: el `send-keys` que venga después dará el error.
+ */
+export async function paneTienePrompt(
+  pane: string,
+  dependencias: Pick<VigiaPromptsDependencias, 'capturarPane'> = dependenciasVigiaPorDefecto,
+): Promise<boolean> {
+  try {
+    return detectarPromptTmux(await dependencias.capturarPane(pane)) !== null;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Espera a que el pane no tenga ninguna pregunta abierta. Devuelve `false` si
+ * el pane se murió mientras tanto. Sin límite de tiempo a propósito: la
+ * pregunta la contesta una persona, y puede tardar horas.
+ */
+export async function esperarQueSeDespeje(
+  pane: string,
+  opciones: { sigueVivo: () => boolean; intervaloMs?: number },
+  dependencias: Pick<VigiaPromptsDependencias, 'capturarPane'> = dependenciasVigiaPorDefecto,
+): Promise<boolean> {
+  const intervaloMs = opciones.intervaloMs ?? 1500;
+  while (opciones.sigueVivo()) {
+    if (!(await paneTienePrompt(pane, dependencias))) return true;
+    await new Promise((resolve) => { setTimeout(resolve, intervaloMs); });
+  }
+  return false;
 }
 
 /** Solo para tests. */

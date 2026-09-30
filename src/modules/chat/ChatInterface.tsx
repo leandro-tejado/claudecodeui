@@ -399,13 +399,14 @@ function ChatInterface({
     () => allTmuxPrompts.filter((prompt) => prompt.sessionId === viewedSessionId),
     [allTmuxPrompts, viewedSessionId],
   );
-  const handleAnswerTmuxPrompt = useCallback((prompt: TmuxPrompt, optionIndex: number) => {
+  const handleAnswerTmuxPrompt = useCallback((prompt: TmuxPrompt, optionIndex: number, text?: string) => {
     sendMessage({
       type: 'chat.tmux-prompt-response',
       sessionId: prompt.sessionId,
       pane: prompt.pane,
       promptId: prompt.id,
       opcion: optionIndex,
+      ...(text !== undefined ? { texto: text } : {}),
     });
   }, [sendMessage]);
 

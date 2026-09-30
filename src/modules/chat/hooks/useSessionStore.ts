@@ -314,7 +314,7 @@ function pruneRealtimeSupersededByServer(
   }
 
   const serverIds = new Set(serverMessages.map((message) => message.id));
-  const reconciledRealtimeMessages = removeOptimisticUserEchoes(serverMessages, realtimeMessages);
+  const reconciledRealtimeMessages = retireOptimisticUserEchoes(serverMessages, realtimeMessages);
 
   return reconciledRealtimeMessages.filter((message) => {
     if (serverIds.has(message.id)) {
@@ -350,6 +350,27 @@ function pruneRealtimeSupersededByServer(
 }
 
 /**
+ * Retires each optimistic user echo once its turn is in the transcript —
+ * whether it came back with the history or live. A tmux session gets its user
+ * row live: the bridge reads it off the transcript the moment `claude` writes
+ * it and pushes it over the socket, long before any history refresh. Matched
+ * only against the server's history, the echo and that row both showed until
+ * the end of the turn (30-sep: "aparece duplicado y después se arregla").
+ */
+function retireOptimisticUserEchoes(
+  server: NormalizedMessage[],
+  realtime: NormalizedMessage[],
+): NormalizedMessage[] {
+  const liveTranscriptRows = realtime.filter(
+    (message) => typeof message.id !== 'string' || !message.id.startsWith('local_'),
+  );
+  return removeOptimisticUserEchoes(
+    liveTranscriptRows.length > 0 ? [...server, ...liveTranscriptRows] : server,
+    realtime,
+  );
+}
+
+/**
  * A message waiting for the current run to end is not part of that run yet:
  * it sits below everything, where the run's reply keeps growing above it,
  * the same place Claude Code shows a queued prompt.
@@ -372,12 +393,12 @@ function computeMergedInOrder(server: NormalizedMessage[], realtime: NormalizedM
   if (realtime.length === 0) {
     return dedupeAdjacentAssistantEchoes(server);
   }
+  const reconciledRealtime = retireOptimisticUserEchoes(server, realtime);
   if (server.length === 0) {
-    return dedupeAdjacentAssistantEchoes(realtime);
+    return dedupeAdjacentAssistantEchoes(reconciledRealtime);
   }
 
   const serverIds = new Set(server.map((message) => message.id));
-  const reconciledRealtime = removeOptimisticUserEchoes(server, realtime);
   const extra = reconciledRealtime.filter((message) => {
     if (serverIds.has(message.id)) {
       return false;

@@ -57,7 +57,7 @@ type ChatComposerProps = {
   /** Preguntas de permiso abiertas en el pane de tmux de esta sesión. */
   tmuxPrompts?: TmuxPrompt[];
   tmuxPromptErrors?: ReadonlyMap<string, { promptId: string; error: string }>;
-  onAnswerTmuxPrompt?: (prompt: TmuxPrompt, optionIndex: number) => void;
+  onAnswerTmuxPrompt?: (prompt: TmuxPrompt, optionIndex: number, text?: string) => void;
   activity: SessionActivity | null;
   isLoading: boolean;
   onAbortSession: () => void;

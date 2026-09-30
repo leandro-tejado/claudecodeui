@@ -4,6 +4,8 @@ import test from 'node:test';
 import {
   _resetPromptsTmuxParaTests,
   detectarPromptTmux,
+  esperarQueSeDespeje,
+  paneTienePrompt,
   promptsTmuxPendientes,
   responderPromptTmux,
   revisarPromptsTmux,
@@ -146,6 +148,81 @@ test('una opción que no entra en un renglón sigue siendo una sola opción', ()
   assert.equal(prompt?.pregunta, 'Allow this read outside the working directories?');
   assert.equal(prompt?.opciones.length, 3);
   assert.match(prompt?.opciones[1].etiqueta ?? '', /no\/entra\/\nen\/un\/solo\/renglon during this session$/);
+});
+
+const ASK_USER_QUESTION = [
+  '● Te pregunto antes de seguir.',
+  '',
+  REGLA,
+  ' ☐ Color',
+  'Which color do you prefer?',
+  '❯ 1. Rojo (Recommended)',
+  '     Red color option',
+  '  2. Azul',
+  '     Blue color option',
+  '  3. Type something.',
+  REGLA,
+  '  4. Chat about this',
+  'Enter to select · ↑/↓ to navigate · Esc to cancel',
+].join('\n');
+
+const ASK_USER_QUESTION_VARIAS = [
+  REGLA,
+  '←  ☐ Fruta  ☐ Dia  ✔ Submit  →',
+  'Before I refactor the module, which of the two approaches do you want me to take',
+  'for the storage layer?',
+  '❯ 1. Manzana (Recommended)',
+  '     Apple option',
+  '  2. Pera',
+  '     Pear option',
+  '  3. Type something.',
+  REGLA,
+  '  4. Chat about this',
+  'Enter to select · Tab/Arrow keys to navigate · Esc to cancel',
+].join('\n');
+
+test('AskUserQuestion: la raya antes de "Chat about this" no corta las opciones, y las descripciones van con la suya', () => {
+  const prompt = detectarPromptTmux(ASK_USER_QUESTION);
+  assert.ok(prompt);
+  assert.equal(prompt.pregunta, 'Which color do you prefer?');
+  assert.deepEqual(prompt.opciones.map((opcion) => [opcion.numero, opcion.etiqueta]), [
+    [1, 'Rojo (Recommended)\nRed color option'],
+    [2, 'Azul\nBlue color option'],
+    [3, 'Type something.'],
+    [4, 'Chat about this'],
+  ]);
+  assert.equal(prompt.seleccionada, 0);
+  assert.equal(prompt.detalle, '☐ Color');
+  assert.deepEqual(teclasParaOpcion(prompt, 1), { tipo: 'literal', texto: '2' });
+});
+
+test('AskUserQuestion: una pregunta larga en dos renglones llega entera, sin las pestañas', () => {
+  const prompt = detectarPromptTmux(ASK_USER_QUESTION_VARIAS);
+  assert.equal(
+    prompt?.pregunta,
+    'Before I refactor the module, which of the two approaches do you want me to take for the storage layer?',
+  );
+  assert.equal(prompt?.opciones.length, 4);
+  assert.equal(prompt?.detalle, '←  ☐ Fruta  ☐ Dia  ✔ Submit  →');
+});
+
+test('un mensaje del chat espera a que se conteste la pregunta, y no espera a un pane muerto', async () => {
+  const pantallas = [ASK_USER_QUESTION, ASK_USER_QUESTION, EN_REPOSO];
+  let lecturas = 0;
+  const deps = { capturarPane: async () => pantallas[Math.min(lecturas++, pantallas.length - 1)] };
+
+  assert.equal(await paneTienePrompt('demo', { capturarPane: async () => ASK_USER_QUESTION }), true);
+  assert.equal(await paneTienePrompt('demo', { capturarPane: async () => EN_REPOSO }), false);
+  assert.equal(await paneTienePrompt('demo', { capturarPane: async () => { throw new Error('no existe'); } }), false);
+
+  assert.equal(await esperarQueSeDespeje('demo', { sigueVivo: () => true, intervaloMs: 1 }, deps), true);
+  assert.equal(lecturas, 3, 'sigue mirando mientras la pregunta está abierta');
+
+  let vivo = true;
+  const muerto = esperarQueSeDespeje('demo', { sigueVivo: () => vivo, intervaloMs: 1 }, {
+    capturarPane: async () => { vivo = false; return ASK_USER_QUESTION; },
+  });
+  assert.equal(await muerto, false);
 });
 
 test('un pane en reposo, uno trabajando o uno con el diálogo ya tapado no esperan respuesta', () => {
@@ -300,5 +377,55 @@ test('no se le teclea a un pane que no está esperando por esa sesión', async (
   );
   assert.equal(!fueraDeRango.ok && fueraDeRango.codigo, 'TMUX_PROMPT_BAD_OPTION');
   assert.deepEqual(enviadas, []);
+  _resetPromptsTmuxParaTests();
+});
+
+const ASK_USER_QUESTION_SUBMIT = [
+  REGLA,
+  '←  ☒ Fruta  ☒ Dia  ✔ Submit  →',
+  '',
+  'Review your answers',
+  '',
+  ' ● Which fruit?',
+  '   → Pera',
+  ' ● Which day?',
+  '   → Miercoles',
+  '',
+  'Ready to submit your answers?',
+  '',
+  '❯ 1. Submit answers',
+  '  2. Cancel',
+  '',
+  '',
+].join('\n');
+
+test('AskUserQuestion: la pantalla de confirmar, que no tiene pie, también espera respuesta', () => {
+  const prompt = detectarPromptTmux(ASK_USER_QUESTION_SUBMIT);
+  assert.equal(prompt?.pregunta, 'Ready to submit your answers?');
+  assert.deepEqual(prompt?.opciones.map((opcion) => opcion.etiqueta), ['Submit answers', 'Cancel']);
+  assert.match(prompt?.detalle ?? '', /Which day\?\n→ Miercoles/);
+  // Sin pie y sin pestañas no es un diálogo: es una lista cualquiera que quedó al final.
+  assert.equal(detectarPromptTmux(ASK_USER_QUESTION_SUBMIT.replace('←  ☒ Fruta  ☒ Dia  ✔ Submit  →', 'Resumen')), null);
+});
+
+test('AskUserQuestion: "Type something." se contesta con el dígito, el texto en un renglón y Enter', async () => {
+  const prompt = detectarPromptTmux(ASK_USER_QUESTION)!;
+  assert.equal(prompt.opciones[2].libre, true);
+  assert.equal(prompt.opciones[0].libre, undefined);
+  assert.deepEqual(teclasParaOpcion(prompt, 2, 'Verde,\nmás bien oscuro'), { tipo: 'libre', numero: '3', texto: 'Verde, más bien oscuro' });
+
+  _resetPromptsTmuxParaTests();
+  const { deps, enviadas, pantallas } = fake();
+  pantallas.set('demo-guia-1', ASK_USER_QUESTION);
+  await revisarPromptsTmux(deps);
+  const [pendiente] = promptsTmuxPendientes();
+
+  const vacia = await responderPromptTmux({ sessionId: 'app-1', pane: 'demo-guia-1', promptId: pendiente.id, opcion: 2, texto: '  ' }, {}, deps);
+  assert.equal(!vacia.ok && vacia.codigo, 'TMUX_PROMPT_BAD_OPTION');
+  assert.deepEqual(enviadas, []);
+
+  const ok = await responderPromptTmux({ sessionId: 'app-1', pane: 'demo-guia-1', promptId: pendiente.id, opcion: 2, texto: 'Verde' }, {}, deps);
+  assert.deepEqual(ok, { ok: true });
+  assert.deepEqual(enviadas, [{ pane: 'demo-guia-1', teclas: { tipo: 'libre', numero: '3', texto: 'Verde' } }]);
   _resetPromptsTmuxParaTests();
 });

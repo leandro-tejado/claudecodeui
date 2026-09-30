@@ -22,7 +22,7 @@ export type TmuxPrompt = {
   pane: string;
   pregunta: string;
   detalle: string;
-  opciones: Array<{ indice: number; numero: number | null; etiqueta: string }>;
+  opciones: Array<{ indice: number; numero: number | null; etiqueta: string; libre?: boolean }>;
   seleccionada: number;
   desde: string;
 };

@@ -1096,16 +1096,9 @@ export function SkinSidebar({
 
               {isOpen && (
                 <div className="ml-[11px] border-l border-border pl-2">
-                  <button
-                    type="button"
-                    onClick={() => onNewSession(project)}
-                    className="mb-0.5 flex w-full items-center rounded-md font-medium text-primary transition-colors hover:bg-primary/10"
-                    style={rowStyle}
-                  >
-                    <Plus className="h-3 w-3 flex-none" />
-                    Nueva sesión
-                  </button>
-
+                  {/* Sin botón "Nueva sesión" por proyecto (30-sep, Leandro: molestaba
+                      en cada carpeta abierta). Se crea con el clic derecho del
+                      proyecto o con el `+` de la cabecera. */}
                   {sessions.map((session) => {
                     const isActive = selectedSession?.id === session.id;
                     const isRenaming = renamingId === session.id;

@@ -14,7 +14,7 @@ import {
 type TmuxPromptBannerProps = {
   prompts: TmuxPrompt[];
   errors: ReadonlyMap<string, { promptId: string; error: string }>;
-  onAnswer: (prompt: TmuxPrompt, optionIndex: number) => void;
+  onAnswer: (prompt: TmuxPrompt, optionIndex: number, text?: string) => void;
 };
 
 const formatTime = (iso: string): string => {
@@ -30,12 +30,17 @@ const formatTime = (iso: string): string => {
  * antes que la pregunta siga siendo la misma). Mientras el pane no la saca de
  * pantalla, la tarjeta queda con "Enviando…"; si el servidor la rechaza,
  * vuelve a estar disponible con el motivo.
+ *
+ * La opción libre de AskUserQuestion ("Type something.") no es un botón sino
+ * un campo: la respuesta se escribe acá y el servidor la teclea en el pane.
  */
 export default function TmuxPromptBanner({ prompts, errors, onAnswer }: TmuxPromptBannerProps) {
   const { t } = useTranslation('chat');
   // promptId -> la opción mandada y el error que había en ese momento. Sigue
   // "enviando" hasta que el prompt se va o llega un error nuevo.
   const [answering, setAnswering] = useState<Map<string, { option: number; errorAtSend: unknown }>>(new Map());
+  // promptId -> lo escrito en su opción libre.
+  const [drafts, setDrafts] = useState<Map<string, string>>(new Map());
 
   if (prompts.length === 0) {
     return null;
@@ -77,6 +82,41 @@ export default function TmuxPromptBanner({ prompts, errors, onAnswer }: TmuxProm
 
             <ConfirmationActions className="flex-wrap">
               {prompt.opciones.map((option) => {
+                const answer = () => {
+                  setAnswering((previous) => new Map(previous).set(prompt.id, { option: option.indice, errorAtSend: error }));
+                  if (option.libre) onAnswer(prompt, option.indice, (drafts.get(prompt.id) ?? '').trim());
+                  else onAnswer(prompt, option.indice);
+                };
+
+                if (option.libre) {
+                  const draft = drafts.get(prompt.id) ?? '';
+                  return (
+                    <form
+                      key={option.indice}
+                      className="flex min-w-[14rem] flex-1 items-center gap-2"
+                      onSubmit={(event) => {
+                        event.preventDefault();
+                        if (draft.trim() && sentOption === undefined) answer();
+                      }}
+                    >
+                      <input
+                        value={draft}
+                        onChange={(event) => {
+                          const { value } = event.target;
+                          setDrafts((previous) => new Map(previous).set(prompt.id, value));
+                        }}
+                        disabled={sentOption !== undefined}
+                        placeholder={t('tmuxPrompt.freeTextPlaceholder')}
+                        aria-label={t('tmuxPrompt.freeTextPlaceholder')}
+                        className="h-8 min-w-0 flex-1 rounded-md border border-border bg-background px-2 text-sm text-foreground outline-none focus:border-primary"
+                      />
+                      <ConfirmationAction type="submit" variant="outline" disabled={!draft.trim() || sentOption !== undefined}>
+                        {sentOption === option.indice ? t('tmuxPrompt.sending') : t('tmuxPrompt.freeTextSend')}
+                      </ConfirmationAction>
+                    </form>
+                  );
+                }
+
                 const [firstLine] = option.etiqueta.split('\n');
                 const label = option.numero !== null ? `${option.numero}. ${firstLine}` : firstLine;
                 return (
@@ -85,10 +125,7 @@ export default function TmuxPromptBanner({ prompts, errors, onAnswer }: TmuxProm
                     variant={option.indice === 0 ? 'default' : 'outline'}
                     title={option.etiqueta}
                     disabled={sentOption !== undefined}
-                    onClick={() => {
-                      setAnswering((previous) => new Map(previous).set(prompt.id, { option: option.indice, errorAtSend: error }));
-                      onAnswer(prompt, option.indice);
-                    }}
+                    onClick={answer}
                   >
                     {sentOption === option.indice ? t('tmuxPrompt.sending') : label}
                   </ConfirmationAction>
