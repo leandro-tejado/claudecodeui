@@ -6,7 +6,6 @@ import { usePlugins, PluginIcon } from '@/modules/plugins';
 import SkinCompactBar from '@/modules/skin/SkinCompactBar';
 import SkinContextRing from '@/modules/skin/SkinContextRing';
 import SkinRecursos from '@/modules/skin/SkinRecursos';
-import { useRunningTabTitle } from '@/modules/skin/hooks/useRunningTabTitle';
 import { toggleFilesPanel, toggleSidebarCollapsed, useSkinUi } from '@/modules/skin/skinUiStore';
 import { UsageWindowIndicator } from '@/modules/usage-window';
 import { useTheme } from '@/shared/context/ThemeContext';
@@ -124,9 +123,6 @@ export default function SkinHeader({
   const { plugins } = usePlugins();
   const { isDarkMode, toggleDarkMode } = useTheme();
   const { filesPanelOpen } = useSkinUi();
-
-  // Un punto en el título mientras la sesión de esta pestaña esté corriendo.
-  useRunningTabTitle(selectedSession?.id ?? null);
 
   const tabs: BuiltInTab[] = [
     ...BASE_TABS,

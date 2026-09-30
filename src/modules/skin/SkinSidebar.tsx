@@ -8,21 +8,25 @@ import {
   Check,
   ChevronDown,
   ChevronRight,
+  ExternalLink,
   Folder,
   FolderPlus,
   Pencil,
   Pin,
+  PinOff,
   Plus,
   RefreshCw,
   Search,
   Settings,
-  Star,
   Terminal,
   Trash2,
   Workflow,
   X,
 } from 'lucide-react';
 
+import SkinContextMenu from '@/modules/skin/SkinContextMenu';
+import type { SkinContextMenuItem } from '@/modules/skin/SkinContextMenu';
+import { useTabTitle } from '@/modules/skin/hooks/useTabTitle';
 import { useSkinUi } from '@/modules/skin/skinUiStore';
 import { useSubagents } from '@/modules/skin/subagentStore';
 import type { SubagentRow, SubagentStatus } from '@/modules/skin/subagentStore';
@@ -67,6 +71,11 @@ const WIDTH_STORAGE_KEY = 'skin:sidebar-width';
 
 /** Lo que el usuario pidió archivar y todavía no confirmó. */
 type PendingArchive = { kind: 'project' | 'session'; id: string; name: string };
+
+/** La fila sobre la que se abrió el menú de clic derecho, y dónde. */
+type ContextMenuTarget =
+  | { kind: 'project'; project: Project; x: number; y: number }
+  | { kind: 'session'; session: ProjectSession; title: string; x: number; y: number };
 
 /**
  * Un subagente de una sesión, tal como lo arma
@@ -259,6 +268,66 @@ export function SkinSidebar({
     [renameValue],
   );
 
+  /* Renombrar un proyecto. Es sólo el nombre que se muestra
+     (`custom_project_name` en la base): la carpeta del disco no se toca. Vacío
+     vuelve al nombre de la carpeta, que es lo que hace el servidor con `''`. */
+  const [renamingProjectId, setRenamingProjectId] = useState<string | null>(null);
+  const [projectRenameValue, setProjectRenameValue] = useState('');
+  const [nameOverride, setNameOverride] = useState<Map<string, string>>(new Map());
+
+  const projectName = useCallback(
+    (project: Project) => nameOverride.get(project.projectId) ?? project.displayName ?? project.projectId,
+    [nameOverride],
+  );
+
+  const commitProjectRename = useCallback(
+    async (project: Project) => {
+      const trimmed = projectRenameValue.trim();
+      setRenamingProjectId(null);
+      if (trimmed === projectName(project)) return;
+
+      if (trimmed) setNameOverride((previous) => new Map(previous).set(project.projectId, trimmed));
+      const revert = () =>
+        setNameOverride((previous) => {
+          const next = new Map(previous);
+          next.delete(project.projectId);
+          return next;
+        });
+      try {
+        const response = await api.renameProject(project.projectId, trimmed);
+        if (!response.ok) throw new Error('rename failed');
+        // El nombre también lo muestra la cabecera del workspace, que lee el
+        // estado de arriba y no este override.
+        onRefresh?.();
+      } catch {
+        revert();
+      }
+    },
+    [onRefresh, projectName, projectRenameValue],
+  );
+
+  const [contextMenu, setContextMenu] = useState<ContextMenuTarget | null>(null);
+  const closeContextMenu = useCallback(() => setContextMenu(null), []);
+
+  /* Título de la pestaña. El nombre de tmux es el que se usa para moverse entre
+     sesiones (`ct <nombre>`), así que es el que va; sin tmux, el título de la
+     conversación. `selectedSession` puede ser una copia vieja sin el campo
+     `tmux`, por eso se busca la fila fresca en `projects`. */
+  const tabLabel = useMemo(() => {
+    if (!selectedSession) return selectedProject ? projectName(selectedProject) : null;
+    const fresh =
+      projects
+        .flatMap((project) => project.sessions ?? [])
+        .find((session) => session.id === selectedSession.id) ?? selectedSession;
+    return (
+      getTmux(fresh)?.nombre ||
+      titleOverride.get(selectedSession.id) ||
+      sessionTitle(fresh)
+    );
+  }, [projectName, projects, selectedProject, selectedSession, titleOverride]);
+
+  useTabTitle(tabLabel, Boolean(selectedSession && activeSessions?.has(selectedSession.id)));
+
   /* Apertura de proyectos.
    *
    * El proyecto seleccionado se abre solo: entrar a una sesión y no ver dónde
@@ -432,7 +501,7 @@ export function SkinSidebar({
 
         if (!needle) return { project, sessions: baseSessions };
 
-        const projectHit = project.displayName?.toLowerCase().includes(needle);
+        const projectHit = projectName(project).toLowerCase().includes(needle);
         const sessions = baseSessions.filter((session) =>
           sessionTitle(session).toLowerCase().includes(needle),
         );
@@ -444,9 +513,9 @@ export function SkinSidebar({
     return matched.sort((a, b) => {
       const starDelta = Number(isStarred(b.project)) - Number(isStarred(a.project));
       if (starDelta !== 0) return starDelta;
-      return (a.project.displayName || '').localeCompare(b.project.displayName || '');
+      return projectName(a.project).localeCompare(projectName(b.project));
     });
-  }, [projects, query, isStarred, tmuxFilterActive]);
+  }, [projects, query, isStarred, projectName, tmuxFilterActive]);
 
   const toggleExpanded = useCallback((projectId: string, isOpenNow: boolean) => {
     setOpenOverride((previous) => new Map(previous).set(projectId, !isOpenNow));
@@ -921,15 +990,61 @@ export function SkinSidebar({
           </p>
         )}
 
-        {visibleProjects.map(({ project, sessions }) => {
+        {visibleProjects.map(({ project, sessions }, index) => {
           const isCurrent = selectedProject?.projectId === project.projectId;
           const isOpen = openOverride.get(project.projectId) ?? isCurrent;
           const total = project.sessionMeta?.total ?? sessions.length;
+          const isPinned = isStarred(project);
+          // Los fijados van arriba (ver el sort de `visibleProjects`); una
+          // línea los separa del resto en vez de un ícono en cada fila.
+          const endsPinnedGroup =
+            !isPinned && index > 0 && isStarred(visibleProjects[index - 1].project);
 
           return (
             <div key={project.projectId} className="mb-0.5">
+              {endsPinnedGroup && <div className="mx-2 my-1.5 border-t border-border" />}
+              {renamingProjectId === project.projectId ? (
+                <div className="flex items-center rounded-md bg-accent" style={rowStyle}>
+                  <input
+                    value={projectRenameValue}
+                    autoFocus
+                    onFocus={(event) => event.target.select()}
+                    onChange={(event) => setProjectRenameValue(event.target.value)}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter') void commitProjectRename(project);
+                      if (event.key === 'Escape') setRenamingProjectId(null);
+                    }}
+                    onBlur={() => void commitProjectRename(project)}
+                    aria-label="Nombre del proyecto"
+                    className="min-w-0 flex-1 rounded border border-primary bg-background px-1 py-0 font-medium text-foreground outline-none"
+                    style={{ fontSize: 'var(--skin-text-sm)' }}
+                  />
+                  <button
+                    type="button"
+                    title="Guardar"
+                    onClick={() => void commitProjectRename(project)}
+                    className="flex-none text-muted-foreground hover:text-foreground"
+                  >
+                    <Check className="h-3.5 w-3.5" />
+                  </button>
+                  <button
+                    type="button"
+                    title="Cancelar"
+                    onMouseDown={(event) => {
+                      // mousedown y no click: el onBlur del input se dispara
+                      // antes y guardaría igual.
+                      event.preventDefault();
+                      setRenamingProjectId(null);
+                    }}
+                    className="flex-none text-muted-foreground hover:text-foreground"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              ) : (
               <div
-                className={`group flex cursor-pointer items-center rounded-md transition-colors ${
+                data-testid="sidebar-project-row"
+                className={`flex cursor-pointer items-center rounded-md transition-colors ${
                   isCurrent ? 'bg-accent' : 'hover:bg-accent/60'
                 }`}
                 style={rowStyle}
@@ -937,27 +1052,13 @@ export function SkinSidebar({
                   onProjectSelect(project);
                   toggleExpanded(project.projectId, isOpen);
                 }}
+                onContextMenu={(event) => {
+                  event.preventDefault();
+                  setContextMenu({ kind: 'project', project, x: event.clientX, y: event.clientY });
+                }}
               >
-                <button
-                  type="button"
-                  title={isStarred(project) ? 'Quitar de favoritos' : 'Marcar como favorito'}
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    void toggleStar(project);
-                  }}
-                  className="flex-none"
-                >
-                  <Star
-                    className={`h-3.5 w-3.5 transition-colors ${
-                      isStarred(project)
-                        ? 'fill-amber-500 text-amber-500'
-                        : 'text-muted-foreground hover:text-foreground'
-                    }`}
-                  />
-                </button>
-
                 <div className="min-w-0 flex-1">
-                  <div className="truncate font-medium tracking-tight">{project.displayName}</div>
+                  <div className="truncate font-medium tracking-tight">{projectName(project)}</div>
                   {isOpen && (
                     <div className="truncate text-muted-foreground" style={{ fontSize: 'var(--skin-text-xs)' }}>
                       {shortPath(project)}
@@ -966,29 +1067,9 @@ export function SkinSidebar({
                 </div>
 
                 {!isOpen && total > 0 && (
-                  <span
-                    className="flex-none text-muted-foreground transition-opacity group-hover:opacity-0"
-                    style={{ fontSize: 'var(--skin-text-xs)' }}
-                  >
+                  <span className="flex-none text-muted-foreground" style={{ fontSize: 'var(--skin-text-xs)' }}>
                     {total}
                   </span>
-                )}
-                {onProjectDelete && (
-                  <button
-                    type="button"
-                    title="Archivar proyecto"
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      setPendingArchive({
-                        kind: 'project',
-                        id: project.projectId,
-                        name: project.displayName || project.projectId,
-                      });
-                    }}
-                    className="flex-none text-muted-foreground opacity-0 transition-opacity hover:text-destructive group-hover:opacity-100"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </button>
                 )}
                 {isOpen ? (
                   <ChevronDown className="h-3.5 w-3.5 flex-none text-muted-foreground" />
@@ -996,9 +1077,10 @@ export function SkinSidebar({
                   <ChevronRight className="h-3.5 w-3.5 flex-none text-muted-foreground" />
                 )}
               </div>
+              )}
 
               {isOpen && (
-                <div className="ml-[19px] border-l border-border pl-2">
+                <div className="ml-[11px] border-l border-border pl-2">
                   <button
                     type="button"
                     onClick={() => onNewSession(project)}
@@ -1135,14 +1217,16 @@ export function SkinSidebar({
                     }
 
                     /*
-                     * La fila es un ancla, y los botones de acción son sus
-                     * hermanos: un `<button>` dentro de un `<a>` es HTML
-                     * inválido y el navegador reacomoda el DOM por su cuenta.
+                     * La fila es un ancla: un `<button>` dentro de un `<a>` es
+                     * HTML inválido y el navegador reacomoda el DOM por su
+                     * cuenta. Renombrar y archivar van por clic derecho
+                     * (`SkinContextMenu`); flotando sobre la fila tapaban el
+                     * ícono de tmux.
                      */
                     return (
                       <Fragment key={session.id}>
                       <div
-                        className="group relative"
+                        className="relative"
                         ref={(node) => {
                           if (node) subagentRowRefs.current.set(session.id, node);
                           else subagentRowRefs.current.delete(session.id);
@@ -1159,6 +1243,16 @@ export function SkinSidebar({
                             if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
                             event.preventDefault();
                             onSessionSelect(session);
+                          }}
+                          onContextMenu={(event) => {
+                            event.preventDefault();
+                            setContextMenu({
+                              kind: 'session',
+                              session,
+                              title,
+                              x: event.clientX,
+                              y: event.clientY,
+                            });
                           }}
                         >
                           {activityDot}
@@ -1204,7 +1298,7 @@ export function SkinSidebar({
                           )}
                           <span
                             title={`Último turno escrito hace ${formatAge(session)}`}
-                            className="flex-none text-muted-foreground transition-opacity group-hover:opacity-0"
+                            className="flex-none text-muted-foreground"
                             style={{ fontSize: 'var(--skin-text-xs)' }}
                           >
                             {formatAge(session)}
@@ -1254,33 +1348,6 @@ export function SkinSidebar({
                           </div>
                         )}
 
-                        <div className="absolute right-2 top-1/2 hidden -translate-y-1/2 items-center gap-1.5 group-hover:flex">
-                          <button
-                            type="button"
-                            title="Renombrar sesión"
-                            onClick={(event) => {
-                              event.stopPropagation();
-                              setRenameValue(title);
-                              setRenamingId(session.id);
-                            }}
-                            className="text-muted-foreground hover:text-foreground"
-                          >
-                            <Pencil className="h-3.5 w-3.5" />
-                          </button>
-                          {onSessionDelete && (
-                            <button
-                              type="button"
-                              title="Archivar sesión"
-                              onClick={(event) => {
-                                event.stopPropagation();
-                                setPendingArchive({ kind: 'session', id: session.id, name: title });
-                              }}
-                              className="text-muted-foreground hover:text-destructive"
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </button>
-                          )}
-                        </div>
                       </div>
 
                       {/*
@@ -1353,6 +1420,68 @@ export function SkinSidebar({
       </div>
       </div>
 
+      {/* --- Clic derecho sobre un proyecto o una sesión. --- */}
+      {contextMenu && (
+        <SkinContextMenu
+          x={contextMenu.x}
+          y={contextMenu.y}
+          onClose={closeContextMenu}
+          label={contextMenu.kind === 'project' ? 'Acciones del proyecto' : 'Acciones de la sesión'}
+          items={
+            contextMenu.kind === 'project'
+              ? ([
+                  {
+                    label: isStarred(contextMenu.project) ? 'Desfijar' : 'Fijar arriba',
+                    icon: isStarred(contextMenu.project) ? PinOff : Pin,
+                    onSelect: () => void toggleStar(contextMenu.project),
+                  },
+                  {
+                    label: 'Renombrar',
+                    icon: Pencil,
+                    onSelect: () => {
+                      setProjectRenameValue(projectName(contextMenu.project));
+                      setRenamingProjectId(contextMenu.project.projectId);
+                    },
+                  },
+                  onProjectDelete && {
+                    label: 'Quitar de la lista',
+                    icon: Trash2,
+                    destructive: true,
+                    onSelect: () =>
+                      setPendingArchive({
+                        kind: 'project',
+                        id: contextMenu.project.projectId,
+                        name: projectName(contextMenu.project),
+                      }),
+                  },
+                ].filter(Boolean) as SkinContextMenuItem[])
+              : ([
+                  {
+                    label: 'Abrir en pestaña nueva',
+                    icon: ExternalLink,
+                    onSelect: () =>
+                      window.open(`${sessionHrefBase}/${contextMenu.session.id}`, '_blank', 'noopener'),
+                  },
+                  {
+                    label: 'Renombrar',
+                    icon: Pencil,
+                    onSelect: () => {
+                      setRenameValue(contextMenu.title);
+                      setRenamingId(contextMenu.session.id);
+                    },
+                  },
+                  onSessionDelete && {
+                    label: 'Archivar sesión',
+                    icon: Trash2,
+                    destructive: true,
+                    onSelect: () =>
+                      setPendingArchive({ kind: 'session', id: contextMenu.session.id, name: contextMenu.title }),
+                  },
+                ].filter(Boolean) as SkinContextMenuItem[])
+          }
+        />
+      )}
+
       {/* --- Confirmación de archivado. Cancelar va primero en el DOM a
            propósito: DialogContent enfoca el primer botón al abrir, y ese foco
            no puede caer sobre el que archiva. --- */}
@@ -1364,14 +1493,17 @@ export function SkinSidebar({
       >
         <DialogContent className="max-w-sm p-5" style={{ fontSize: 'var(--skin-text)' }}>
           <DialogTitle>
-            {pendingArchive?.kind === 'project' ? 'Archivar proyecto' : 'Archivar sesión'}
+            {pendingArchive?.kind === 'project' ? 'Quitar proyecto' : 'Archivar sesión'}
           </DialogTitle>
           <div className="font-semibold tracking-tight">
-            {pendingArchive?.kind === 'project' ? '¿Archivar el proyecto?' : '¿Archivar la sesión?'}
+            {pendingArchive?.kind === 'project' ? '¿Quitar el proyecto de la lista?' : '¿Archivar la sesión?'}
           </div>
           <p className="mt-2 text-muted-foreground" style={{ fontSize: 'var(--skin-text-sm)' }}>
             <span className="font-medium text-foreground">{pendingArchive?.name}</span> sale de la lista
-            activa. No se borra: se restaura desde Archivados.
+            activa.{' '}
+            {pendingArchive?.kind === 'project'
+              ? 'La carpeta y sus sesiones no se tocan: se restaura desde Archivados.'
+              : 'No se borra: se restaura desde Archivados.'}
           </p>
           <div className="mt-5 flex justify-end gap-2">
             <button
@@ -1388,7 +1520,7 @@ export function SkinSidebar({
               className="rounded-md bg-foreground px-3 py-1.5 font-medium text-background transition-opacity hover:opacity-90"
               style={{ fontSize: 'var(--skin-text-sm)' }}
             >
-              Archivar
+              {pendingArchive?.kind === 'project' ? 'Quitar' : 'Archivar'}
             </button>
           </div>
         </DialogContent>
