@@ -9,6 +9,7 @@ import { sessionsDb } from '@/modules/database/index.js';
 import { buscarPaneTmuxRegistrado, sessionsService } from '@/modules/providers/index.js';
 import { SALIDAS_SYSTEM_PROMPT_APPEND } from '@/modules/salidas/index.js';
 import { nombreTmux } from '@/modules/websocket/services/shell-websocket.service.js';
+import { sinEntornoDeLaSesionPadre } from '@/modules/websocket/services/tmux-entorno.js';
 import { connectedClients, WS_OPEN_STATE } from '@/modules/websocket/services/websocket-state.service.js';
 import type { AnyRecord, LLMProvider, NormalizedMessage } from '@/shared/types.js';
 
@@ -186,7 +187,9 @@ async function defaultCrearSesionDetached(
     // `['-ic', 'echo $HOME']`, `bash` alone doing the parsing of its own `-c`
     // string). `cwd` never has to survive a shell quote because of that — it
     // travels as one argv element, same as the tmux session name.
-    await execFileAsync('tmux', ['new-session', '-d', '-s', nombreSesion, '-c', cwd, ...comandoArgv]);
+    // Sin el entorno de la sesión de Claude que haya arrancado el servidor de
+    // tmux: ver tmux-entorno.ts.
+    await execFileAsync('tmux', ['new-session', '-d', '-s', nombreSesion, '-c', cwd, ...sinEntornoDeLaSesionPadre(comandoArgv)]);
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     if (message.includes(`duplicate session: ${nombreSesion}`)) {

@@ -7,6 +7,7 @@ import path from 'node:path';
 import pty, { type IPty } from 'node-pty';
 import { WebSocket, type RawData } from 'ws';
 
+import { sinEntornoDeLaSesionPadre } from '@/modules/websocket/services/tmux-entorno.js';
 import { parseIncomingJsonObject, stripAnsiSequences } from '@/shared/utils.js';
 
 type ShellIncomingMessage = {
@@ -275,7 +276,9 @@ function wrapInTmuxSession(
   const sessionId = readString(message.sessionId) || null;
   const nombre = nombreTmux(projectPath, sessionId);
 
-  const innerShell = `bash -ic ${quoteForShell(command)}`;
+  // Sin el entorno de la sesión de Claude que haya arrancado el servidor de
+  // tmux: ver tmux-entorno.ts.
+  const innerShell = [...sinEntornoDeLaSesionPadre(['bash', '-ic']), quoteForShell(command)].join(' ');
   return `tmux new-session -A -s ${nombre} -c ${quoteForShell(resolvedCwd)} ${quoteForShell(innerShell)}`;
 }
 

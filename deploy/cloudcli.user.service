@@ -42,6 +42,15 @@ ExecStartPre=/bin/bash -c 'for i in $(seq 1 60); do ip -4 addr show tailscale0 2
 ExecStart=/home/leantejado/.local/node22/bin/node dist-server/server/index.js
 Restart=always
 RestartSec=5
+
+# Reiniciar mata solo el proceso de node, no todo el cgroup (30-sep-2026).
+# Con el default (control-group) un `systemctl --user restart cloudcli` se
+# llevaba puesto el servidor de tmux entero cuando lo habia arrancado este
+# servicio -la primera sesion de tmux que abre CloudCLI levanta el servidor, y
+# el servidor queda colgado de este cgroup-, y con el todas las sesiones:
+# las de `ct`, las del orquestador y las de `web`. Los panes son justamente lo
+# que tiene que sobrevivir al reinicio.
+KillMode=process
 StandardOutput=journal
 StandardError=journal
 SyslogIdentifier=cloudcli

@@ -93,6 +93,9 @@ test('an agent command is wrapped in an attach-or-create tmux session', () => {
   assert.ok(command.includes(nombreTmux(PROJECT_PATH, 'b1e7c0de-1111-2222-3333-444455556666')));
   assert.ok(command.includes(`-c '${PROJECT_PATH}'`));
   assert.ok(command.includes('claude'));
+  // Sin el entorno de la sesión de Claude que arrancó el servidor de tmux.
+  assert.ok(command.includes('env -u CLAUDECODE '));
+  assert.ok(command.includes('-u CLAUDE_CODE_ENTRYPOINT '));
 });
 
 test('a resumed session keeps its --resume flag inside the tmux wrapper', () => {
