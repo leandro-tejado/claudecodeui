@@ -11,7 +11,11 @@ import type { UsageWindowSnapshot } from '@/modules/usage-window/types';
  * nothing to fetch after the first render. A reconnect is the exception: frames
  * sent while the socket was down are gone, and the transport injects the
  * synthetic `websocket_reconnected` kind precisely so features can catch up
- * instead of sitting on a stale number.
+ * instead of sitting on a stale number. A tab coming back to the foreground is
+ * the other exception: a laptop closed for hours reconnects the socket fine,
+ * but the snapshot it kept from before holding no longer matches what
+ * `getUsageWindow()` would say right now (Fase 3, 05-oct) — so `visibilitychange`
+ * refetches too, same as the reconnect does.
  */
 export function useUsageWindow(): UsageWindowSnapshot | null {
   const [snapshot, setSnapshot] = useState<UsageWindowSnapshot | null>(null);
@@ -34,6 +38,11 @@ export function useUsageWindow(): UsageWindowSnapshot | null {
 
     void load();
 
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') void load();
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+
     const unsubscribe = subscribe((event) => {
       if (event?.kind === 'usage_window') {
         setSnapshot(event as unknown as UsageWindowSnapshot);
@@ -46,6 +55,7 @@ export function useUsageWindow(): UsageWindowSnapshot | null {
 
     return () => {
       cancelled = true;
+      document.removeEventListener('visibilitychange', onVisibility);
       unsubscribe();
     };
   }, [subscribe]);

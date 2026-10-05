@@ -116,33 +116,33 @@ export function buildSnapshot(): UsageWindowSnapshot {
 
 /**
  * Folds a `cuota.json` reading into `target` (the real module state by
- * default), so the indicator has something to show right after a restart
- * instead of sitting blank until the next `rate_limit_event`.
+ * default), keeping — per window — whichever reading is newer: the one
+ * already in `target`, or the one just read from the file.
  *
- * Never overwrites a window that already has a value — whether that value
- * got there from an earlier seed or from a real `rate_limit_event` — so a
- * live reading always wins and this stays safe to call on every
- * `getUsageWindow()` until something fills `target`. A reading older than
- * `REAL_DATA_STALE_MS` is treated the same as no reading: the caller decides
- * what "current" means, same rule the type's own doc comment states.
+ * Called on every `getUsageWindow()`, not just once at boot: `cuota.json`
+ * can change from under this process (the statusline script, another
+ * CloudCLI process, or this one after a restart), and the indicator has to
+ * notice without waiting for this process's own next `rate_limit_event`. A
+ * live reading already in memory still wins over a stale file read racing
+ * behind it, because that comparison is exactly "whose `leidoEn` is newer" —
+ * there is no separate staleness gate here any more. Staleness is a display
+ * decision now (how old a reading looks in the UI), not a reason to discard
+ * data that exists.
  *
  * Returns whether it changed anything, mirroring `recordRateLimitReading`.
  */
 export function seedDesdeArchivo(
   reading: CuotaFileReading | null,
-  now: number,
   target: EstadoVentanas = state,
 ): boolean {
   if (!reading) return false;
-  if (now - reading.ts > REAL_DATA_STALE_MS) return false;
-  if (target.fiveHour !== null || target.sevenDay !== null) return false;
 
   let changed = false;
-  if (reading.fiveHour) {
+  if (reading.fiveHour && reading.fiveHour.leidoEn > (target.fiveHour?.leidoEn ?? -Infinity)) {
     target.fiveHour = reading.fiveHour;
     changed = true;
   }
-  if (reading.sevenDay) {
+  if (reading.sevenDay && reading.sevenDay.leidoEn > (target.sevenDay?.leidoEn ?? -Infinity)) {
     target.sevenDay = reading.sevenDay;
     changed = true;
   }
@@ -151,20 +151,15 @@ export function seedDesdeArchivo(
 
 export type GetUsageWindowOptions = {
   leerCuotaFile?: () => CuotaFileReading | null;
-  ahora?: () => number;
 };
 
 /**
  * Kept async for its callers (the route and the broadcaster already `await`
- * it). Attempts the `cuota.json` seed first — only while both windows are
- * still `null`, so this costs a file read at most once per process, and
- * never once a real reading (seeded or live) has landed.
+ * it). Rereads `cuota.json` on every call — see `seedDesdeArchivo` — so a
+ * fresher write always reaches the indicator, whatever wrote it.
  */
 export async function getUsageWindow(options: GetUsageWindowOptions = {}): Promise<UsageWindowSnapshot> {
-  if (state.fiveHour === null && state.sevenDay === null) {
-    const leer = options.leerCuotaFile ?? leerCuotaFile;
-    const ahora = options.ahora ?? Date.now;
-    seedDesdeArchivo(leer(), ahora());
-  }
+  const leer = options.leerCuotaFile ?? leerCuotaFile;
+  seedDesdeArchivo(leer(), state);
   return buildSnapshot();
 }

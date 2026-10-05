@@ -1,4 +1,4 @@
-import { promises as fs, readFileSync } from 'node:fs';
+import { promises as fs, readFileSync, watch } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
@@ -143,4 +143,63 @@ export function leerCuotaFile(options: ReadCuotaFileOptions = {}): CuotaFileRead
 
 function toEpochMs(seconds: number | null): number | null {
   return seconds !== null ? seconds * 1000 : null;
+}
+
+/**
+ * Watches `cuota.json` for changes made by another process — the statusline
+ * script, or this same process on another port during the e2e suite — and
+ * calls `onChange` so the caller rereads the file (`scheduleUsageWindowBroadcast`
+ * in production).
+ *
+ * `fs.watch` targets `CUOTA_DIR`, not the file itself: `writeCuotaFile` (and
+ * the statusline) replace the file with a rename, and a watch on the file
+ * handle stops firing once that happens — the directory keeps reporting
+ * every rename inside it. Events for any other file in that directory are
+ * ignored. A burst of events for the same write (common with `rename`)
+ * coalesces into a single `onChange` 300 ms after the last one.
+ *
+ * Backed up by a 60 s poll, in case the platform never fires `fs.watch` at
+ * all (documented as unreliable on some network filesystems) — the same
+ * belt-and-suspenders shape `fs.watch`'s own Node docs recommend.
+ */
+let watcher: ReturnType<typeof watch> | null = null;
+let debounceTimer: NodeJS.Timeout | null = null;
+let pollTimer: NodeJS.Timeout | null = null;
+
+export function startCuotaFileWatch(onChange: () => void): void {
+  if (watcher || pollTimer) return;
+
+  const nombreArchivo = path.basename(CUOTA_FILE);
+  try {
+    watcher = watch(CUOTA_DIR, { persistent: false }, (_eventType, filename) => {
+      if (filename && filename !== nombreArchivo) return;
+      if (debounceTimer) clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        debounceTimer = null;
+        onChange();
+      }, 300);
+    });
+    watcher.on('error', (error) => {
+      console.error('usage-window: cuota.json watcher failed', { error });
+    });
+  } catch (error) {
+    // El directorio puede no existir todavía (primer arranque, sin
+    // statusline corrido nunca): el poll de respaldo de abajo alcanza igual.
+    console.error('usage-window: failed to watch cuota.json directory', { error });
+  }
+
+  pollTimer = setInterval(onChange, 60_000);
+}
+
+export function stopCuotaFileWatch(): void {
+  watcher?.close();
+  watcher = null;
+  if (debounceTimer) {
+    clearTimeout(debounceTimer);
+    debounceTimer = null;
+  }
+  if (pollTimer) {
+    clearInterval(pollTimer);
+    pollTimer = null;
+  }
 }

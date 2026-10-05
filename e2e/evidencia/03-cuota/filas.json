@@ -1,0 +1,230 @@
+[
+  {
+    "escenario": "cuota/sin-turnos",
+    "nombre": "la ventana de 5 h muestra el % con su antigüedad (\"hace N min\"), no \"sin dato\"",
+    "resultado": "pasa",
+    "evidencia": [
+      "cuota-sin-turnos/vieja-20min.png"
+    ],
+    "datos": {
+      "ok": true,
+      "ms": 7,
+      "ultima": "Ventana de 5 horas: 37% hace 20 min, se renueva a las 01:22 AM · Semanal: 21% hace 20 min, se renueva a las 10:22 PM"
+    },
+    "ms": 3219
+  },
+  {
+    "escenario": "cuota/sin-turnos",
+    "nombre": "la antigüedad reportada ronda los 20 min",
+    "resultado": "pasa",
+    "evidencia": [
+      "cuota-sin-turnos/frames-0.json"
+    ],
+    "datos": {
+      "etiqueta": "Ventana de 5 horas: 37% hace 20 min, se renueva a las 01:22 AM · Semanal: 21% hace 20 min, se renueva a las 10:22 PM"
+    },
+    "ms": 3219
+  },
+  {
+    "escenario": "cuota/sin-turnos",
+    "nombre": "la semanal también muestra % con antigüedad, no \"sin dato\"",
+    "resultado": "pasa",
+    "evidencia": [
+      "cuota-sin-turnos/frames-0.json"
+    ],
+    "datos": {
+      "etiqueta": "Ventana de 5 horas: 37% hace 20 min, se renueva a las 01:22 AM · Semanal: 21% hace 20 min, se renueva a las 10:22 PM"
+    },
+    "ms": 3219
+  },
+  {
+    "escenario": "cuota/sin-turnos",
+    "nombre": "no aparece \"sin dato\" en ningún lado habiendo una lectura (vieja) en el archivo",
+    "resultado": "pasa",
+    "evidencia": [
+      "cuota-sin-turnos/frames-0.json"
+    ],
+    "datos": {
+      "etiqueta": "Ventana de 5 horas: 37% hace 20 min, se renueva a las 01:22 AM · Semanal: 21% hace 20 min, se renueva a las 10:22 PM"
+    },
+    "ms": 3219
+  },
+  {
+    "escenario": "cuota/vieja",
+    "nombre": "la ventana de 5 h muestra \"ventana nueva\" en vez de un % inventado",
+    "resultado": "pasa",
+    "evidencia": [
+      "cuota-vieja/reseteada.png"
+    ],
+    "datos": {
+      "ok": true,
+      "ms": 9,
+      "ultima": "Ventana de 5 horas: ventana nueva (se renovó a las 10:18 PM) · Semanal: 30% real, se renueva a las 10:23 PM"
+    },
+    "ms": 2825
+  },
+  {
+    "escenario": "cuota/vieja",
+    "nombre": "no muestra el 97% de la ventana ya cerrada",
+    "resultado": "pasa",
+    "evidencia": [
+      "cuota-vieja/frames-0.json"
+    ],
+    "datos": {
+      "etiqueta": "Ventana de 5 horas: ventana nueva (se renovó a las 10:18 PM) · Semanal: 30% real, se renueva a las 10:23 PM"
+    },
+    "ms": 2825
+  },
+  {
+    "escenario": "cuota/vieja",
+    "nombre": "trae la hora en que se renovó",
+    "resultado": "pasa",
+    "evidencia": [
+      "cuota-vieja/frames-0.json"
+    ],
+    "datos": {
+      "etiqueta": "Ventana de 5 horas: ventana nueva (se renovó a las 10:18 PM) · Semanal: 30% real, se renueva a las 10:23 PM"
+    },
+    "ms": 2825
+  },
+  {
+    "escenario": "cuota/vieja",
+    "nombre": "la semanal, que no pasó su reset, sigue mostrando su % real",
+    "resultado": "pasa",
+    "evidencia": [
+      "cuota-vieja/frames-0.json"
+    ],
+    "datos": {
+      "etiqueta": "Ventana de 5 horas: ventana nueva (se renovó a las 10:18 PM) · Semanal: 30% real, se renueva a las 10:23 PM"
+    },
+    "ms": 2825
+  },
+  {
+    "escenario": "cuota/vieja",
+    "nombre": "no aparece \"sin dato\" en ningún lado (hay lectura para las dos ventanas)",
+    "resultado": "pasa",
+    "evidencia": [
+      "cuota-vieja/frames-0.json"
+    ],
+    "datos": {
+      "etiqueta": "Ventana de 5 horas: ventana nueva (se renovó a las 10:18 PM) · Semanal: 30% real, se renueva a las 10:23 PM"
+    },
+    "ms": 2825
+  },
+  {
+    "escenario": "cuota/header",
+    "nombre": "5 h muestra la lectura fresca del archivo (≤ 15 s, sin reiniciar)",
+    "resultado": "pasa",
+    "evidencia": [
+      "cuota-header/primera-lectura.png"
+    ],
+    "datos": {
+      "ok": true,
+      "ms": 10,
+      "ultima": "Ventana de 5 horas: 37% real, se renueva a las 01:23 AM · Semanal: 21% real, se renueva a las 10:23 PM"
+    },
+    "ms": 6182
+  },
+  {
+    "escenario": "cuota/header",
+    "nombre": "la semanal muestra % (no solo la hora de renovación)",
+    "resultado": "pasa",
+    "evidencia": [
+      "cuota-header/frames-0.json"
+    ],
+    "datos": {
+      "etiqueta": "Ventana de 5 horas: 37% real, se renueva a las 01:23 AM · Semanal: 21% real, se renueva a las 10:23 PM"
+    },
+    "ms": 6182
+  },
+  {
+    "escenario": "cuota/header",
+    "nombre": "el header sigue el cambio sin recargar (≤ 15 s)",
+    "resultado": "pasa",
+    "evidencia": [
+      "cuota-header/segunda-lectura.png"
+    ],
+    "datos": {
+      "ok": true,
+      "ms": 1545,
+      "ultima": "Ventana de 5 horas: 52% real, se renueva a las 01:23 AM · Semanal: 23% real, se renueva a las 10:23 PM"
+    },
+    "ms": 6182
+  },
+  {
+    "escenario": "cuota/header",
+    "nombre": "el detalle no dice \"sin dato\" en ninguna ventana",
+    "resultado": "pasa",
+    "evidencia": [
+      "cuota-header/detalle.png"
+    ],
+    "ms": 6182
+  },
+  {
+    "escenario": "cuota/header",
+    "nombre": "movil: el header muestra la cuota",
+    "resultado": "pasa",
+    "evidencia": [
+      "cuota-header/movil-header.png"
+    ],
+    "datos": {
+      "ok": true,
+      "ms": 5,
+      "ultima": "Ventana de 5 horas: 52% real, se renueva a las 01:23 AM · Semanal: 23% real, se renueva a las 10:23 PM"
+    },
+    "ms": 6182
+  },
+  {
+    "escenario": "cuota/en-vivo",
+    "nombre": "el header abre con la primera lectura del archivo",
+    "resultado": "pasa",
+    "evidencia": [
+      "cuota-en-vivo/primera-lectura.png"
+    ],
+    "datos": {
+      "ok": true,
+      "ms": 12,
+      "ultima": "Ventana de 5 horas: 41% real, se renueva a las 01:23 AM · Semanal: 22% real, se renueva a las 10:23 PM"
+    },
+    "ms": 3910
+  },
+  {
+    "escenario": "cuota/en-vivo",
+    "nombre": "el header sigue el cambio del archivo en ≤ 3 s, sin recargar",
+    "resultado": "pasa",
+    "evidencia": [
+      "cuota-en-vivo/segunda-lectura.png"
+    ],
+    "datos": {
+      "ok": true,
+      "ms": 1425,
+      "ultima": "Ventana de 5 horas: 52% real, se renueva a las 01:23 AM · Semanal: 23% real, se renueva a las 10:23 PM",
+      "msReales": 1425
+    },
+    "ms": 3910
+  },
+  {
+    "escenario": "cuota/en-vivo",
+    "nombre": "la semanal también se actualizó (23%)",
+    "resultado": "pasa",
+    "evidencia": [
+      "cuota-en-vivo/frames-0.json"
+    ],
+    "datos": {
+      "etiqueta": "Ventana de 5 horas: 52% real, se renueva a las 01:23 AM · Semanal: 23% real, se renueva a las 10:23 PM"
+    },
+    "ms": 3910
+  },
+  {
+    "escenario": "cuota/en-vivo",
+    "nombre": "el label no dice \"sin dato\" habiendo archivo",
+    "resultado": "pasa",
+    "evidencia": [
+      "cuota-en-vivo/frames-0.json"
+    ],
+    "datos": {
+      "etiqueta": "Ventana de 5 horas: 52% real, se renueva a las 01:23 AM · Semanal: 23% real, se renueva a las 10:23 PM"
+    },
+    "ms": 3910
+  }
+]

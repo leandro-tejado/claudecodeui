@@ -40,7 +40,12 @@ import { createAgentModule } from './modules/agent/index.js';
 import projectModuleRoutes from './modules/projects/projects.routes.js';
 import notificationRoutes from './modules/notifications/notifications.routes.js';
 import { userRoutes } from './modules/user/index.js';
-import { usageWindowRoutes } from './modules/usage-window/index.js';
+import {
+    usageWindowRoutes,
+    scheduleUsageWindowBroadcast,
+    startCuotaFileWatch,
+    stopCuotaFileWatch,
+} from './modules/usage-window/index.js';
 import {
     getPluginPort,
     pluginsRoutes,
@@ -439,6 +444,11 @@ async function startServer() {
             // RAM/disco/sesiones para el header (Fase 3): la métrica cambia sola con
             // el tiempo, así que el propio intervalo es el disparador, no un evento.
             startRecursosBroadcast();
+            // Fase 3 (cuota del header): `cuota.json` lo pueden reescribir otros
+            // procesos (statusline, otra instancia). El watcher nota el cambio
+            // y dispara un broadcast; el re-chequeo cada 60 s es el respaldo si
+            // `fs.watch` no dispara.
+            startCuotaFileWatch(scheduleUsageWindowBroadcast);
             // Limpieza de la barra: archiva lo inactivo cada hora. En `simular`
             // (el defecto, ver LIMPIEZA_MODO) solo deja una línea en el log.
             iniciarLimpieza();
@@ -455,6 +465,7 @@ async function startServer() {
         await closeSessionsWatcher();
         closeScheduledMessageDispatcher();
         stopRecursosBroadcast();
+        stopCuotaFileWatch();
         detenerLimpieza();
         detenerVigiaPromptsTmux();
         // Clean up plugin processes on shutdown
