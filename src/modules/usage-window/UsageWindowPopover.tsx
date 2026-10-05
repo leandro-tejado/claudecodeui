@@ -3,7 +3,8 @@ import { createPortal } from 'react-dom';
 
 import { cn } from '@/shared/utils';
 import { useUsageDetalle } from '@/modules/usage-window/useUsageDetalle';
-import type { GobernadorEstado, UsageDetalle, UsageWindowReading, UsageWindowSnapshot } from '@/modules/usage-window/types';
+import type { GobernadorEstado, UsageDetalle, UsageWindowSnapshot } from '@/modules/usage-window/types';
+import { evaluarVentana, formatResetTime, type EstadoVentana } from '@/modules/usage-window/estadoVentana';
 
 const COLOR_SEMAFORO: Record<GobernadorEstado['color'], string> = {
   verde: 'text-emerald-500',
@@ -16,14 +17,6 @@ function nombreSesion(cwd: string): string {
   return partes[partes.length - 1] ?? cwd;
 }
 
-/** A reading older than this reads as "sin dato" rather than a stale percentage. */
-const STALE_MS = 15 * 60 * 1000;
-
-/** Local wall-clock time. The API reports the reset in its own zone, which is not ours. */
-function localTime(epochMs: number): string {
-  return new Date(epochMs).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-}
-
 function remaining(resetsAt: number, now: number): string {
   const ms = resetsAt - now;
   if (ms <= 0) return 'ya';
@@ -32,13 +25,19 @@ function remaining(resetsAt: number, now: number): string {
   return `en ${Math.floor(mins / 60)} h ${mins % 60} min`;
 }
 
-function esFresca(reading: UsageWindowReading | null, now: number): reading is UsageWindowReading {
-  return reading !== null && now - reading.leidoEn <= STALE_MS;
+/** "~42%" con datos, "ventana nueva" pasado el reset, "sin dato" sin ninguna lectura — nunca "sin dato" habiendo una. */
+function textoPorcentaje(estado: EstadoVentana): string {
+  if (estado.tipo === 'dato') return `~${Math.round(estado.porcentaje)}%`;
+  if (estado.tipo === 'ventana-nueva') return 'ventana nueva';
+  return 'sin dato';
 }
 
-/** "real (hh:mm)" para una lectura fresca, "sin dato" pasados los 15 minutos. */
-function estadoDeLectura(reading: UsageWindowReading | null, now: number): string {
-  return esFresca(reading, now) ? `real (${localTime(reading.leidoEn)})` : 'sin dato';
+/** "real (hh:mm)" fresca, "hace N min (hh:mm)" vieja pero con dato, "ventana nueva..." pasado el reset, "sin dato" sin lectura. */
+function textoAntiguedad(estado: EstadoVentana): string {
+  if (estado.tipo === 'sin-dato') return 'sin dato';
+  if (estado.tipo === 'ventana-nueva') return `ventana nueva, se renovó a las ${formatResetTime(estado.resetsAt)}`;
+  const hora = formatResetTime(estado.leidoEn);
+  return estado.fresca ? `real (${hora})` : `hace ${estado.minutosAntiguedad} min (${hora})`;
 }
 
 type Props = {
@@ -77,10 +76,8 @@ export default function UsageWindowPopover({ snapshot, now, onClose, anchor, anc
     };
   }, [onClose, anchorEl]);
 
-  const fiveHour = snapshot?.fiveHour ?? null;
-  const sevenDay = snapshot?.sevenDay ?? null;
-  const fiveHourFresca = esFresca(fiveHour, now);
-  const sevenDayFresca = esFresca(sevenDay, now);
+  const estadoCinco = evaluarVentana(snapshot?.fiveHour ?? null, now);
+  const estadoSemanal = evaluarVentana(snapshot?.sevenDay ?? null, now);
 
   /*
    * Va en un portal, no como hijo del botón.
@@ -106,30 +103,33 @@ export default function UsageWindowPopover({ snapshot, now, onClose, anchor, anc
     >
       <div className="flex items-baseline justify-between gap-2">
         <span className="text-sm font-semibold">Ventana de 5 horas</span>
-        <span className={cn('text-sm font-semibold', fiveHourFresca && fiveHour.porcentaje >= 90 && 'text-red-500')}>
-          {fiveHourFresca ? `~${Math.round(fiveHour.porcentaje)}%` : 'sin dato'}
+        <span
+          className={cn(
+            'text-sm font-semibold',
+            estadoCinco.tipo === 'dato' && estadoCinco.porcentaje >= 90 && 'text-red-500',
+          )}
+        >
+          {textoPorcentaje(estadoCinco)}
         </span>
       </div>
 
-      <p className="mt-1 text-xs text-muted-foreground">{estadoDeLectura(fiveHour, now)}</p>
+      <p className="mt-1 text-xs text-muted-foreground">{textoAntiguedad(estadoCinco)}</p>
 
-      {fiveHourFresca && fiveHour.resetsAt !== null && (
+      {estadoCinco.tipo === 'dato' && estadoCinco.resetsAt !== null && (
         <p className="mt-0.5 text-xs text-muted-foreground">
-          Se renueva a las {localTime(fiveHour.resetsAt)} ({remaining(fiveHour.resetsAt, now)})
+          Se renueva a las {formatResetTime(estadoCinco.resetsAt)} ({remaining(estadoCinco.resetsAt, now)})
         </p>
       )}
 
       <div className="mt-3 border-t border-border/60 pt-2">
         <div className="flex items-baseline justify-between gap-2">
           <span className="text-xs font-medium text-muted-foreground">Ventana semanal (7 d)</span>
-          <span className="text-xs font-semibold">
-            {sevenDayFresca ? `~${Math.round(sevenDay.porcentaje)}%` : 'sin dato'}
-          </span>
+          <span className="text-xs font-semibold">{textoPorcentaje(estadoSemanal)}</span>
         </div>
         <p className="mt-0.5 text-xs text-muted-foreground">
-          {estadoDeLectura(sevenDay, now)}
-          {sevenDayFresca && sevenDay.resetsAt !== null
-            ? ` · se renueva a las ${localTime(sevenDay.resetsAt)} (${remaining(sevenDay.resetsAt, now)})`
+          {textoAntiguedad(estadoSemanal)}
+          {estadoSemanal.tipo === 'dato' && estadoSemanal.resetsAt !== null
+            ? ` · se renueva a las ${formatResetTime(estadoSemanal.resetsAt)} (${remaining(estadoSemanal.resetsAt, now)})`
             : ''}
         </p>
       </div>
@@ -150,8 +150,8 @@ export default function UsageWindowPopover({ snapshot, now, onClose, anchor, anc
       <Contribuyendo detalle={detalle} />
 
       <p className="mt-3 border-t border-border/60 pt-2 text-[11px] leading-snug text-muted-foreground">
-        Porcentaje real que reporta el SDK de Claude en cada turno, sin estimación local. Si no llegó
-        una lectura nueva en los últimos 15 minutos, se muestra "sin dato" en vez de inventar un número.
+        Porcentaje real que reporta el SDK de Claude en cada turno, sin estimación local. "Sin dato" es
+        no tener ninguna lectura todavía: una lectura vieja se sigue mostrando, con su antigüedad.
       </p>
     </div>,
     document.body,

@@ -4,29 +4,36 @@ import { cn } from '@/shared/utils';
 import { CircleProgress } from '@/modules/usage-window/CircleProgress';
 import UsageWindowPopover from '@/modules/usage-window/UsageWindowPopover';
 import { useUsageWindow } from '@/modules/usage-window/useUsageWindow';
+import { evaluarVentana, formatResetTime, type EstadoVentana } from '@/modules/usage-window/estadoVentana';
 
 /**
- * The five-hour window, as a ring in the workspace header.
+ * Las ventanas de 5 horas y semanal, como un anillo en el header.
  *
- * It exists because the API only mentions the limit once it has already refused
- * a request, so without this the first sign of trouble is work stopping. All the
- * behaviour lives in this module; `WorkspaceHeader` only mounts it, which is
- * what keeps the upstream file to a one-line diff.
+ * Existe porque la API solo avisa el límite una vez que ya rechazó un pedido,
+ * así que sin esto la primera señal de problema es el trabajo frenando. Todo
+ * el comportamiento vive en este módulo; `WorkspaceHeader` solo lo monta, que
+ * es lo que mantiene a un diff de una línea el archivo de arriba.
  *
- * The value it shows is the real percentage the SDK reports on `rate_limit_event`
- * — there is no local estimate to fall back on. A reading older than
- * `STALE_MS` is treated as no reading at all: the ring goes grey and says
- * "sin dato" rather than holding a number that may no longer be true.
+ * El valor que muestra es el porcentaje real que reporta el SDK — no hay una
+ * estimación local de respaldo. Pero una lectura vieja NO se trata como "sin
+ * dato": se sigue mostrando, con su antigüedad (`evaluarVentana`). "Sin dato"
+ * es únicamente el estado de no tener ninguna lectura; y cuando la ventana ya
+ * pasó su hora de reset se muestra "ventana nueva" en vez de un porcentaje
+ * que ya no describe la ventana actual.
  */
 
-/** A reading older than this is shown as "sin dato" instead of a stale number. */
-const STALE_MS = 15 * 60 * 1000;
-/** How often the ring re-checks staleness on its own, without a new WS push. */
+/** Cada cuánto el anillo revisa antigüedad por su cuenta, sin un push nuevo del WS. */
 const TICK_MS = 60 * 1000;
 
-/** Same formatting the label already used for `fiveHour.resetsAt`, reused for `sevenDay`. */
-function formatResetTime(epochMs: number): string {
-  return new Date(epochMs).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+function etiquetaVentana(nombre: string, estado: EstadoVentana): string {
+  if (estado.tipo === 'sin-dato') return `${nombre}: sin dato`;
+  if (estado.tipo === 'ventana-nueva') {
+    return `${nombre}: ventana nueva (se renovó a las ${formatResetTime(estado.resetsAt)})`;
+  }
+  const pct = `${Math.round(estado.porcentaje)}%`;
+  const antiguedad = estado.fresca ? 'real' : `hace ${estado.minutosAntiguedad} min`;
+  const reset = estado.resetsAt !== null ? `, se renueva a las ${formatResetTime(estado.resetsAt)}` : '';
+  return `${nombre}: ${pct} ${antiguedad}${reset}`;
 }
 
 export default function UsageWindowIndicator() {
@@ -49,21 +56,12 @@ export default function UsageWindowIndicator() {
     setOpen((value) => !value);
   }, []);
 
-  const fiveHour = snapshot?.fiveHour ?? null;
-  const sevenDay = snapshot?.sevenDay ?? null;
-  const isFresh = fiveHour !== null && now - fiveHour.leidoEn <= STALE_MS;
+  const estadoCincoHoras = evaluarVentana(snapshot?.fiveHour ?? null, now);
+  const estadoSemanal = evaluarVentana(snapshot?.sevenDay ?? null, now);
 
-  // Igual que `fiveHour.resetsAt`: se agrega solo cuando el dato existe, nunca
-  // un valor inventado para la ventana semanal.
-  const sevenDayResetLabel =
-    sevenDay && sevenDay.resetsAt !== null ? ` · Semanal: se renueva a las ${formatResetTime(sevenDay.resetsAt)}` : '';
-
-  const label =
-    (isFresh && fiveHour
-      ? `Ventana de 5 horas: ${Math.round(fiveHour.porcentaje)}% real${
-          fiveHour.resetsAt ? `, se renueva a las ${formatResetTime(fiveHour.resetsAt)}` : ''
-        }`
-      : 'Ventana de 5 horas: sin dato') + sevenDayResetLabel;
+  // Los dos valores, siempre: nunca se esconde la ventana semanal, aunque no
+  // tenga reset conocido o directamente no haya llegado ninguna lectura.
+  const label = `${etiquetaVentana('Ventana de 5 horas', estadoCincoHoras)} · ${etiquetaVentana('Semanal', estadoSemanal)}`;
 
   return (
     <div className="relative flex-shrink-0">
@@ -80,11 +78,22 @@ export default function UsageWindowIndicator() {
         )}
       >
         <span className="flex h-6 w-6 items-center justify-center">
-          {isFresh && fiveHour ? (
-            <CircleProgress value={fiveHour.porcentaje} maxValue={100} size={22} strokeWidth={2.5} />
+          {estadoCincoHoras.tipo === 'dato' ? (
+            <CircleProgress
+              value={estadoCincoHoras.porcentaje}
+              maxValue={100}
+              size={22}
+              strokeWidth={2.5}
+              // Una lectura vieja sigue siendo un dato real: se ve, pero sin
+              // la animación de entrada y en el color apagado de "esto ya no
+              // es lo último que sabemos", no en los colores de severidad.
+              disableAnimation={!estadoCincoHoras.fresca}
+              getColor={estadoCincoHoras.fresca ? undefined : () => 'stroke-muted-foreground/50'}
+            />
           ) : (
-            // Sin dato: anillo gris. Mostrar un número acá sería afirmar algo
-            // sobre la cuenta que no se puede sostener.
+            // Sin dato, o ventana ya reseteada: anillo neutro. Mostrar un
+            // número acá sería afirmar algo sobre la cuenta que no se puede
+            // sostener (el "no un porcentaje inventado" del plan).
             <CircleProgress
               value={0}
               maxValue={1}
@@ -98,12 +107,15 @@ export default function UsageWindowIndicator() {
         {/* El porcentaje en texto, con el mismo markup que el anillo de
             contexto: los dos indicadores tienen que leerse como un par, y en
             pantallas chicas los dos números se esconden a la vez. */}
-        {isFresh && fiveHour && (
+        {estadoCincoHoras.tipo === 'dato' && (
           <span
-            className="hidden tabular-nums text-muted-foreground sm:inline"
+            className={cn(
+              'hidden tabular-nums text-muted-foreground sm:inline',
+              !estadoCincoHoras.fresca && 'opacity-60',
+            )}
             style={{ fontSize: 'var(--skin-text-xs)' }}
           >
-            {Math.round(fiveHour.porcentaje)}%
+            {Math.round(estadoCincoHoras.porcentaje)}%
           </span>
         )}
       </button>
