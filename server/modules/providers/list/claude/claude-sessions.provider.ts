@@ -1054,6 +1054,24 @@ type ClaudeSessionsProviderOptions = {
 export class ClaudeSessionsProvider implements IProviderSessions {
   private readonly getLiveRunStartTime: LiveRunStartTimeProbe;
 
+  /**
+   * The Anthropic `message.id` of the assistant message currently streaming
+   * on the main thread, keyed by app session id. Captured at `message_start`
+   * so every `content_block_*` partial in between can stamp its
+   * `stream_delta`/`thinking_delta`/`activity`/`stream_end` with the same id
+   * the final complete `text`/`thinking` row carries (contract in
+   * `docs/architecture/protocolo-streaming.md`).
+   *
+   * Only ever written from a main-thread `message_start`/`message_stop` — a
+   * subagent's own `message_start` is dropped before it reaches the
+   * normalizer (`resolvePartialStreamEvent`), so a session with a running
+   * subagent never has this overwritten by it. Cleared at `message_stop`; an
+   * entry orphaned by a session that dies mid-stream is just stale until the
+   * next `message_start` for that session id overwrites it — sessions are few
+   * and long-lived enough that this is not worth a TTL sweep.
+   */
+  private readonly liveMessageIds = new Map<string, string>();
+
   constructor({ getLiveRunStartTime = getClaudeSDKSessionStartTime }: ClaudeSessionsProviderOptions = {}) {
     this.getLiveRunStartTime = getLiveRunStartTime;
   }
@@ -1091,11 +1109,61 @@ export class ClaudeSessionsProvider implements IProviderSessions {
       return [];
     }
 
-    if (raw.type === 'content_block_delta' && raw.delta?.text) {
-      return [createNormalizedMessage({ kind: 'stream_delta', content: raw.delta.text, sessionId, provider: PROVIDER })];
+    // The six live partial-stream events (protocolo-streaming.md). `message_start`
+    // and `message_stop` only maintain `liveMessageIds` and emit nothing; the
+    // rest stamp every event with that message's id plus the block's `index`
+    // so the client can key a row by `(messageId, blockIndex)` instead of only
+    // ever appending.
+    if (raw.type === 'message_start') {
+      const messageId = readOptionalString(readObjectRecord(raw.message)?.id);
+      if (sessionId && messageId) {
+        this.liveMessageIds.set(sessionId, messageId);
+      }
+      return [];
+    }
+    if (raw.type === 'message_stop') {
+      if (sessionId) {
+        this.liveMessageIds.delete(sessionId);
+      }
+      return [];
+    }
+    if (raw.type === 'content_block_start') {
+      const block = readObjectRecord(raw.content_block);
+      const blockIndex = typeof raw.index === 'number' ? raw.index : 0;
+      const messageId = (sessionId && this.liveMessageIds.get(sessionId)) || undefined;
+      // Only `thinking`/`tool_use` blocks raise an `activity` — a `text`
+      // block's first `stream_delta` is itself the "text started" signal.
+      if (block?.type === 'thinking' || block?.type === 'redacted_thinking') {
+        return [createNormalizedMessage({
+          kind: 'activity', sessionId, provider: PROVIDER, activityKind: 'thinking', messageId, blockIndex,
+        })];
+      }
+      if (block?.type === 'tool_use') {
+        return [createNormalizedMessage({
+          kind: 'activity', sessionId, provider: PROVIDER, activityKind: 'tool',
+          toolName: readOptionalString(block?.name), messageId, blockIndex,
+        })];
+      }
+      return [];
+    }
+    if (raw.type === 'content_block_delta') {
+      const delta = readObjectRecord(raw.delta);
+      const blockIndex = typeof raw.index === 'number' ? raw.index : 0;
+      const messageId = (sessionId && this.liveMessageIds.get(sessionId)) || undefined;
+      if (delta?.type === 'text_delta' && typeof delta.text === 'string') {
+        return [createNormalizedMessage({ kind: 'stream_delta', content: delta.text, sessionId, provider: PROVIDER, messageId, blockIndex })];
+      }
+      if (delta?.type === 'thinking_delta' && typeof delta.thinking === 'string') {
+        return [createNormalizedMessage({ kind: 'thinking_delta', content: delta.thinking, sessionId, provider: PROVIDER, messageId, blockIndex })];
+      }
+      // `input_json_delta` (streamed tool input), `signature_delta`,
+      // `citations_delta`: nothing downstream reads these yet.
+      return [];
     }
     if (raw.type === 'content_block_stop') {
-      return [createNormalizedMessage({ kind: 'stream_end', sessionId, provider: PROVIDER })];
+      const blockIndex = typeof raw.index === 'number' ? raw.index : 0;
+      const messageId = (sessionId && this.liveMessageIds.get(sessionId)) || undefined;
+      return [createNormalizedMessage({ kind: 'stream_end', sessionId, provider: PROVIDER, messageId, blockIndex })];
     }
 
     const messages: NormalizedMessage[] = [];
@@ -1416,6 +1484,11 @@ export class ClaudeSessionsProvider implements IProviderSessions {
 
     if (raw.message?.role === 'assistant' && raw.message?.content) {
       if (Array.isArray(raw.message.content)) {
+        // The live partial stream's `message.id` — the same id `message_start`
+        // captured into `liveMessageIds` for this turn's deltas — so the final
+        // row carries the identity pair a client replaces a streamed row by
+        // instead of appending another one (protocolo-streaming.md).
+        const messageId = readOptionalString(raw.message.id);
         let partIndex = 0;
         for (const part of raw.message.content) {
           if (part.type === 'text' && part.text) {
@@ -1427,6 +1500,8 @@ export class ClaudeSessionsProvider implements IProviderSessions {
               kind: 'text',
               role: 'assistant',
               content: part.text,
+              messageId,
+              blockIndex: partIndex,
             }));
           } else if (part.type === 'tool_use') {
             messages.push(createNormalizedMessage({
@@ -1438,6 +1513,8 @@ export class ClaudeSessionsProvider implements IProviderSessions {
               toolName: part.name,
               toolInput: part.input,
               toolId: part.id,
+              messageId,
+              blockIndex: partIndex,
             }));
           } else if (part.type === 'thinking' && part.thinking) {
             messages.push(createNormalizedMessage({
@@ -1447,6 +1524,8 @@ export class ClaudeSessionsProvider implements IProviderSessions {
               provider: PROVIDER,
               kind: 'thinking',
               content: part.thinking,
+              messageId,
+              blockIndex: partIndex,
             }));
           }
           partIndex++;
