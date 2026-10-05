@@ -11,7 +11,8 @@ import path from 'node:path';
  */
 
 export const HORAS_INACTIVIDAD = 72;
-export const PISO_PROYECTOS = 3;
+/** Tope de proyectos visibles, sin contar los fijados ni el de la sesión fija. */
+export const TOPE_PROYECTOS = 3;
 export const MINUTOS_HEADLESS_TERMINADA = 10;
 
 const HORA_MS = 60 * 60 * 1000;
@@ -57,7 +58,7 @@ export type SesionFija = {
   cwd: string | null;
 };
 
-export type MotivoExento = 'fijado' | 'sesion-fija' | 'piso';
+export type MotivoExento = 'fijado' | 'sesion-fija' | 'tope';
 
 export type TmuxAsignada = {
   nombre: string;
@@ -84,7 +85,7 @@ export type SesionSeleccionada = {
 
 export type PlanLimpieza = {
   ahora: number;
-  /** Proyectos que por inactividad serían candidatos y una excepción los salva. */
+  /** Proyectos que se quedan a la vista: fijados, el de la sesión fija y los del tope. */
   exentos: Array<{ projectId: string; projectPath: string; motivo: MotivoExento }>;
   proyectos: ProyectoCandidato[];
   /** Sesiones a archivar de proyectos que se quedan (o sin proyecto). */
@@ -150,15 +151,6 @@ export function seleccionarLimpieza(
     if (previa === undefined || sesion.updatedAtMs > previa) ultimaActividad.set(sesion.projectPath, sesion.updatedAtMs);
   }
 
-  // El piso: los N proyectos con actividad más reciente. Sin actividad, al
-  // fondo; el empate se resuelve por ruta para que el resultado sea estable.
-  const ranking = [...activos].sort((a, b) => {
-    const diferencia = (ultimaActividad.get(b.projectPath) ?? -Infinity) - (ultimaActividad.get(a.projectPath) ?? -Infinity);
-    if (diferencia !== 0 && !Number.isNaN(diferencia)) return diferencia;
-    return a.projectPath.localeCompare(b.projectPath);
-  });
-  const enElPiso = new Set(ranking.slice(0, PISO_PROYECTOS).map((p) => p.projectId));
-
   // El proyecto de la sesión fija, por su cwd y por la fila de la propia sesión.
   const proyectoFijaPorCwd = proyectoDeCwd(fija?.cwd ?? null, proyectos);
   const rutasFija = new Set<string>();
@@ -168,6 +160,16 @@ export function seleccionarLimpieza(
       if (sesion.sessionId === fija.sessionId && sesion.projectPath) rutasFija.add(sesion.projectPath);
     }
   }
+
+  // El tope: de lo que no está fijado, los N proyectos con actividad más
+  // reciente. Sin actividad interactiva no hay nada que mostrar, así que no
+  // compiten; el empate se resuelve por ruta para que el resultado sea estable.
+  const eximido = (p: ProyectoLimpieza): 'fijado' | 'sesion-fija' | null =>
+    p.isStarred ? 'fijado' : rutasFija.has(p.projectPath) ? 'sesion-fija' : null;
+  const ranking = activos
+    .filter((p) => !eximido(p) && ultimaActividad.has(p.projectPath))
+    .sort((a, b) => ultimaActividad.get(b.projectPath)! - ultimaActividad.get(a.projectPath)! || a.projectPath.localeCompare(b.projectPath));
+  const enElTope = new Set(ranking.slice(0, TOPE_PROYECTOS).map((p) => p.projectId));
 
   const sidsConTmux = new Set<string>();
   for (const viva of tmuxVivas) {
@@ -183,16 +185,8 @@ export function seleccionarLimpieza(
 
   for (const proyecto of activos) {
     const actividad = ultimaActividad.get(proyecto.projectPath) ?? null;
-    const inactivo = actividad === null || actividad <= limiteInactividad;
-    if (!inactivo) continue;
 
-    const motivoExento: MotivoExento | null = proyecto.isStarred
-      ? 'fijado'
-      : rutasFija.has(proyecto.projectPath)
-        ? 'sesion-fija'
-        : enElPiso.has(proyecto.projectId)
-          ? 'piso'
-          : null;
+    const motivoExento: MotivoExento | null = eximido(proyecto) ?? (enElTope.has(proyecto.projectId) ? 'tope' : null);
     if (motivoExento) {
       plan.exentos.push({ projectId: proyecto.projectId, projectPath: proyecto.projectPath, motivo: motivoExento });
       continue;

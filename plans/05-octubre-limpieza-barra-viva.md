@@ -3,7 +3,7 @@
 **Fecha:** 05 de Octubre 2026
 **Estado:** en-ejecucion
 
-La barra lateral de CloudCLI pasa a mostrar pocos proyectos: lo que lleva más de 72 h sin actividad interactiva se archiva solo, y antes se duermen sus sesiones de tmux. Además, toda sesión que cree el orquestador aparece en la barra sin recargar, incluso si cae en un proyecto archivado o reusa un nombre de tmux viejo.
+La barra lateral de CloudCLI pasa a mostrar pocos proyectos: quedan los 3 con actividad interactiva más reciente más los fijados, y todo lo demás se archiva solo (antes se duermen sus sesiones de tmux). Las sesiones inactivas de más de 72 h también se archivan. Además, toda sesión que cree el orquestador aparece en la barra sin recargar, incluso si cae en un proyecto archivado o reusa un nombre de tmux viejo.
 
 ---
 
@@ -20,12 +20,12 @@ Hoy la barra tiene 15 proyectos activos (`prueba-e2e`, `prueba-env`, `prueba-ask
 |---|---|
 | «Eliminar de la barra» | **Archivar**: `isArchived=1`. El `.jsonl` queda en disco y la vista «Archivados» que ya existe permite restaurarlo. |
 | Excepciones | Solo **Workspace Leandro**, que es donde vive la Session Orquestadora fija. El mecanismo es «Fijar arriba» (`isStarred`): lo fijado nunca se archiva. No se fija nada más de entrada. |
-| Regla de los 3 | **Piso**: se archiva lo que lleva más de 72 h sin actividad, pero los 3 proyectos más recientes quedan siempre, aunque estén inactivos. Si hay 5 activos, se ven los 5. |
+| Regla de los 3 | **Tope** (cambio del 5-oct, tarde; antes era un piso): quedan visibles como máximo los 3 proyectos con actividad más reciente, **más** los fijados (estrella; hoy Workspace Leandro). Todo lo demás se archiva en cada corrida aunque tenga menos de 72 h. Si hay 5 activos, se ven 3 más los fijados. Los 72 h siguen rigiendo para las **sesiones**, no para los proyectos. Se mantiene: un proyecto con tmux viva que no se deja dormir no se archiva (queda en `bloqueados` del log); la actividad nueva lo hace reaparecer; archivar el proyecto no archiva sus sesiones. |
 | Qué cuenta como actividad | **Solo las sesiones interactivas**: tmux, `ct` y el chat de CloudCLI. Una corrida headless `claude -p` (entrypoint `sdk-cli`) no mantiene vivo un proyecto, y su propia sesión se archiva apenas termina. *Es el valor por defecto propuesto; Leandro no lo eligió explícitamente.* |
 
 ### Valores por defecto (no preguntados; se corrigen si hace falta)
 
-- **Ritmo.** El chequeo es continuo, una vez por hora. No es un barrido cada 3 días: así nada queda más de 73 h a la vista.
+- **Ritmo.** El chequeo es continuo, una vez por hora: un proyecto que sale del top 3 sigue visible a lo sumo una hora.
 - **Sesiones de tmux.** Se apagan con `orquestar.py dormir`, nunca con `cerrar`. Dormir guarda el `session_id` en `hibernadas.json`, así que se pueden revivir. Nunca se usa `--forzar`.
 - **Sesión que no se deja dormir.** Si una sesión de tmux del proyecto se niega a dormir (repo sucio, pregunta pendiente, `web`, `orquestador`), **el proyecto no se archiva**: ocultar una sesión viva es peor que dejar un proyecto de más. Queda en el log y se avisa una vez.
 - **Reaparición.** Toda actividad interactiva posterior a `archived_at` desarchiva el proyecto y la sesión, sin importar quién los archivó. Un re-escaneo de transcripts viejos sigue sin resucitarlos, porque su actividad es anterior al archivado.
@@ -81,7 +81,7 @@ Hoy la barra tiene 15 proyectos activos (`prueba-e2e`, `prueba-env`, `prueba-ask
 - [x] Desarchivar con actividad nueva: un upsert de sesión interactiva con actividad posterior a `archived_at` desarchiva sesión y proyecto, y un re-escaneo viejo no | valida: `NODE_ENV=test npx vitest run server/modules/providers server/modules/database`
 - [x] La sesión viva del registro de tmux en un proyecto archivado lo desarchiva y emite `session_upserted` — acepta: el caso `fiesta-music` reproducido en test termina con el proyecto activo | valida: `tmux-registry-sessions.service.test.ts`
 - [x] Evento `sidebar_archived {projectIds, sessionIds}`: el frontend saca proyectos y sesiones en el lugar, sin `fetchProjects` | valida: test de `useProjectsState` + verificación en navegador
-- [x] `seleccionarLimpieza()` pura: piso de 3, umbral de 72 h, fijados exentos, la sesión fija exenta, headless terminadas a archivar | valida: `NODE_ENV=test npx vitest run server/modules/limpieza` (≥10 casos)
+- [x] `seleccionarLimpieza()` pura: tope de 3 (más fijados), umbral de 72 h solo para sesiones, fijados exentos, la sesión fija exenta, headless terminadas a archivar | valida: `NODE_ENV=test npx vitest run server/modules/limpieza` (≥10 casos)
 - [x] Ejecutor: por cada proyecto candidato, `orquestar.py dormir` en cada sesión de tmux viva (sin `--forzar`); si alguna se niega, el proyecto no se archiva y queda el motivo | valida: test con `orquestar` falso + log `~/.cache/aos/limpieza.jsonl`
 - [x] Scheduler horario + modo `simular` por defecto (`LIMPIEZA_MODO=simular|ejecutar`) — acepta: en `simular` no cambia nada y escribe el plan de cambios en el log | valida: `journalctl --user -u cloudcli | grep limpieza`
 - [ ] Fijar Workspace Leandro (`isStarred=1`) — acepta: aparece arriba con la estrella | valida: UI + query de solo lectura
@@ -105,7 +105,7 @@ Hoy la barra tiene 15 proyectos activos (`prueba-e2e`, `prueba-env`, `prueba-ask
 ### Huecos no cubiertos
 
 - **Carrera en `sesiones.json`.** El hook y `sesiones.py` escriben sin candado. El merge de la Fase 1 achica la ventana pero no la cierra; un `flock` sobre `sesiones.json.lock` la cerraría (sugerencia 2).
-- **El piso de 3 cuenta proyectos con actividad interactiva**, no proyectos con sesiones. Si en 3 días solo corrieron headless, el piso se llena con los 3 interactivos más recientes, aunque sean viejos. Es lo esperado, pero conviene saberlo.
+- **El tope de 3 cuenta proyectos con actividad interactiva**, no proyectos con sesiones. Los 3 más recientes quedan aunque lleven más de 72 h (el tope limita, no vacía la barra), y un proyecto sin ninguna sesión interactiva no compite por un lugar: se archiva. Los fijados y el proyecto de la sesión fija no ocupan lugar del tope. Un proyecto frenado por una tmux que no duerme queda visible por encima del tope, con la causa en `bloqueados`.
 - **Las ejecutoras que corren `claude -p` como parte de una tarea viva** (como hoy `permisos-ejecutora-1`) dejan sesiones `sdk-cli` que se archivan apenas terminan. Si Leandro quiere leer alguna, está en «Archivados».
 - **El hook detecta «proceso principal del pane»** por la cadena de padres (`$PPID` del claude → `env` → `bash -ic` → `pane_pid`). Si `claude-tmux` cambia cómo lanza el proceso, la detección se rompe. Lo cubre el test `hijo_no_pisa`.
 
@@ -237,8 +237,8 @@ Hoy la barra tiene 15 proyectos activos (`prueba-e2e`, `prueba-env`, `prueba-ask
 #### Pasos
 1. **Entrada de `seleccionarLimpieza(ahora, proyectos, sesiones, tmuxVivas)`:** por proyecto, `ultimaActividad` = máximo `updated_at` de sus sesiones con `entrypoint != 'sdk-cli'`. Las `NULL` cuentan como interactivas, para no archivar por falta de dato.
 2. **Reglas, en orden:**
-   1. Exentos: `isStarred=1`, el proyecto de la sesión `fija` y los 3 con `ultimaActividad` más reciente (el piso).
-   2. Candidato: inactivo hace 72 h o más.
+   1. Exentos: `isStarred=1`, el proyecto de la sesión `fija` y, de los demás, los 3 con `ultimaActividad` más reciente (el tope; motivo `tope`).
+   2. Candidato: todo proyecto activo que no sea exento, tenga la edad que tenga. Los 72 h ya no cuentan para proyectos.
    3. Sesiones a archivar: en proyectos que quedan, las inactivas hace 72 h o más sin tmux vivo; además, toda `sdk-cli` cuyo `.jsonl` no se escribe hace 10 min o más.
    4. Nunca se archiva la sesión `fija`.
 3. **`ejecutarLimpieza(plan, modo)`:** por proyecto candidato, por cada sesión de tmux viva cuyo cwd cae dentro del `project_path` (sale del registro), `execFile('python3', [ORQUESTAR, 'dormir', nombre])` sin `--forzar`, con timeout de 20 s.
@@ -248,7 +248,7 @@ Hoy la barra tiene 15 proyectos activos (`prueba-e2e`, `prueba-env`, `prueba-ask
 5. **Modo:** `LIMPIEZA_MODO` (`simular` por defecto, `ejecutar`) por variable de entorno en la unit. En `simular` loguea el plan entero y no toca nada.
 6. **Scheduler:** `setInterval` de 1 h, más una corrida 5 min después del arranque. Nunca dos corridas a la vez: un flag en memoria.
 7. **Log:** una línea JSON por corrida en `~/.cache/aos/limpieza.jsonl` (`ts`, `modo`, `archivados`, `dormidas`, `bloqueados`, `exentos`).
-8. **Tests:** piso de 3 con 5 activos (no se archiva ninguno), piso de 3 con 0 activos (quedan 3), fijado inactivo exento, sesión fija exenta, headless terminada archivada, headless corriendo no archivada, `dormir` que falla bloquea el proyecto, `simular` no escribe, dos corridas no se pisan, y un proyecto sin sesiones se archiva si no entra en el piso.
+8. **Tests:** tope de 3 con 5 activos (se archivan los 2 más viejos aunque tengan menos de 72 h), tope de 3 con 0 activos (quedan 3), fijado que no ocupa lugar del tope, fijado inactivo exento, sesión fija exenta, proyecto reciente fuera del tope con tmux que no duerme (se queda y el log lo avisa), headless terminada archivada, headless corriendo no archivada, `dormir` que falla bloquea el proyecto, `simular` no escribe, dos corridas no se pisan, y un proyecto sin sesiones se archiva sin ocupar lugar del tope.
 
 #### Estado (arranca todo en fail)
 - [pass] Selección correcta en los 10 casos o más (19 tests, node:test) | valida: `NODE_ENV=test npx vitest run server/modules/limpieza`
@@ -308,7 +308,7 @@ Con la barra abierta y sin recargar:
 
 1. `orquestar.py crear zzz-final guia /tmp/prueba-env`, en un proyecto que la limpieza archivó, aparece en menos de 15 s con su proyecto.
 2. `tail -3 ~/.cache/aos/limpieza.jsonl` muestra corridas horarias en `ejecutar`.
-3. La barra muestra Workspace Leandro (fijado) más los proyectos con actividad interactiva en las últimas 72 h (al menos 3).
+3. La barra muestra Workspace Leandro (fijado) más, como máximo, los 3 proyectos con actividad interactiva más reciente.
 4. `python3 ~/workspace-leandro/.claude/bin/sesiones.py listar --json` no tiene sids repetidos entre sesiones vivas.
 
 ## Riesgos globales
@@ -327,7 +327,8 @@ Con la barra abierta y sin recargar:
 - **Fase 3:** también se tocó `sessions-watcher.service.ts`: encola `reactivadas` además de `indexadas`, para que una fila que ya existía y solo se reactivó emita `session_upserted`. Una fila archivada con `archived_at` NULL (archivada antes de la migración) no se reactiva, así que la Fase 5 agrega un backfill (`archived_at` = momento de la migración). La reactivación por `.jsonl` solo aplica al provider claude.
 - **Fase 4:** el productor nuevo está en `sidebar-archived-broadcast.service.ts`, exportado desde `websocket/index.ts`. Se agregó el caso `sidebar_archived` en `useChatRealtimeHandlers.ts`. Mergeada en `feat/limpieza-barra` (`d57a35fa`).
 - **Fase 5:** al archivar un proyecto se archiva **solo la fila del proyecto**, no sus sesiones. Así «Restaurar» desde Archivados lo devuelve con todo adentro, igual que el archivado manual. Se archivan sesiones sueltas en dos casos: las `sdk-cli` terminadas y las interactivas inactivas de proyectos que se quedan. Hay un backfill de `archived_at` para lo archivado antes de la migración (cierra la falla b para esas filas). En `simular` no se puede anticipar un `dormir` rechazado por repo sucio o pregunta pendiente: eso solo aparece en `ejecutar`. Mergeado a `diseno/propio` (`36795114`).
-- **Simulado sobre una copia de auth.db (5-oct 11:54Z):** archivaría 6 proyectos (`/home/leantejado`, `worktrees/cloudcli/diseno-feedback-2`, `/tmp/prueba-prompt-tmux`, `/tmp/prueba-ask-tmux`, `/tmp/prueba-env`, `/tmp/prueba-e2e`) y 73 sesiones inactivas (~40 de `clientes/optimum`, ~17 de `/tmp`, 5 de `/tmp/spike-parciales`, 4 de cloudcli). No dormiría ni bloquearía nada. `entrypoint` todavía está en NULL en las filas viejas: las headless aparecen después de la primera sincronización completa del servicio nuevo. Línea completa: `scratchpad/f/limpieza.jsonl` de la sesión `cloudcli-limpieza-guia-1`.
+- **Cambio piso → tope (5-oct, tarde):** `PISO_PROYECTOS` pasó a `TOPE_PROYECTOS` y el motivo de exento `piso` a `tope`. `seleccionarLimpieza` ya no filtra proyectos por 72 h: todo activo que no sea fijado, de la sesión fija o top 3 es candidato; `ejecutarLimpieza` no cambió. `exentos` del log ahora lista siempre los fijados y los 3 del tope, no solo los inactivos salvados. Leandro lo aplicó a mano ese día (quedaron Workspace Leandro, app-norte, app-optimum-main y cloudcli; archivó fiesta-music, estudio-video, app-optimum-mkt y optimum con `archived_by='orquestador'`). Tests: 22 en `limpieza.test.ts`.
+- **Simulado sobre una copia de auth.db (5-oct 11:54Z, con la regla vieja de piso):** archivaría 6 proyectos (`/home/leantejado`, `worktrees/cloudcli/diseno-feedback-2`, `/tmp/prueba-prompt-tmux`, `/tmp/prueba-ask-tmux`, `/tmp/prueba-env`, `/tmp/prueba-e2e`) y 73 sesiones inactivas (~40 de `clientes/optimum`, ~17 de `/tmp`, 5 de `/tmp/spike-parciales`, 4 de cloudcli). No dormiría ni bloquearía nada. `entrypoint` todavía está en NULL en las filas viejas: las headless aparecen después de la primera sincronización completa del servicio nuevo. Línea completa: `scratchpad/f/limpieza.jsonl` de la sesión `cloudcli-limpieza-guia-1`.
 - **Ruido de cloudcli (sugerencia 1):** se revirtió `package-lock.json` (re-resolución de npm, sin cambios en `package.json`) y `dist.old/` pasó a `.gitignore`.
 
 ---

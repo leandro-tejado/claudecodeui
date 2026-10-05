@@ -38,16 +38,21 @@ function sesion(id: string, ruta: string | null, haceHoras: number, extra: Parti
 
 const idsCandidatos = (plan: ReturnType<typeof seleccionarLimpieza>) => plan.proyectos.map((p) => p.projectPath).sort();
 
-test('piso de 3 con 5 proyectos activos: no se archiva ninguno', () => {
+test('tope de 3 con 5 proyectos activos: los 2 más viejos se archivan aunque tengan menos de 72 h', () => {
   const rutas = ['/w/a', '/w/b', '/w/c', '/w/d', '/w/e'];
   const proyectos = rutas.map((r) => proyecto(r));
   const sesiones = rutas.map((r, i) => sesion(`s-${i}`, r, i + 1));
   const plan = seleccionarLimpieza(AHORA, proyectos, sesiones, []);
-  assert.deepEqual(plan.proyectos, []);
-  assert.deepEqual(plan.sesiones, []);
+  assert.deepEqual(idsCandidatos(plan), ['/w/d', '/w/e']);
+  assert.deepEqual(plan.exentos.map((e) => [e.projectPath, e.motivo]).sort(), [
+    ['/w/a', 'tope'],
+    ['/w/b', 'tope'],
+    ['/w/c', 'tope'],
+  ]);
+  assert.deepEqual(plan.sesiones, [], 'archivar el proyecto no archiva sus sesiones recientes');
 });
 
-test('piso de 3 con 0 activos: quedan los 3 más recientes y el resto es candidato', () => {
+test('tope de 3 con 0 activos: los 3 más recientes quedan aunque lleven más de 72 h', () => {
   const rutas = ['/w/a', '/w/b', '/w/c', '/w/d', '/w/e'];
   const proyectos = rutas.map((r) => proyecto(r));
   // Todos con más de 72 h; el orden de actividad es a > b > c > d > e.
@@ -55,13 +60,34 @@ test('piso de 3 con 0 activos: quedan los 3 más recientes y el resto es candida
   const plan = seleccionarLimpieza(AHORA, proyectos, sesiones, []);
   assert.deepEqual(idsCandidatos(plan), ['/w/d', '/w/e']);
   assert.deepEqual(plan.exentos.map((e) => [e.projectPath, e.motivo]).sort(), [
-    ['/w/a', 'piso'],
-    ['/w/b', 'piso'],
-    ['/w/c', 'piso'],
+    ['/w/a', 'tope'],
+    ['/w/b', 'tope'],
+    ['/w/c', 'tope'],
   ]);
 });
 
-test('un proyecto fijado inactivo queda exento aunque no entre en el piso', () => {
+test('con menos proyectos que el tope no se archiva ninguno', () => {
+  const proyectos = [proyecto('/w/a'), proyecto('/w/b')];
+  const plan = seleccionarLimpieza(AHORA, proyectos, [sesion('s-a', '/w/a', 1), sesion('s-b', '/w/b', 200)], []);
+  assert.deepEqual(plan.proyectos, []);
+});
+
+test('un proyecto fijado se suma al tope: no ocupa uno de los 3 lugares', () => {
+  const proyectos = [
+    proyecto('/w/a'), proyecto('/w/b'), proyecto('/w/c'), proyecto('/w/d'),
+    proyecto('/w/fijado', { isStarred: true }),
+  ];
+  const sesiones = [
+    sesion('s-a', '/w/a', 1), sesion('s-b', '/w/b', 2), sesion('s-c', '/w/c', 3), sesion('s-d', '/w/d', 4),
+    // El fijado es el más reciente de todos y aun así no desplaza a ninguno.
+    sesion('s-f', '/w/fijado', 0.5),
+  ];
+  const plan = seleccionarLimpieza(AHORA, proyectos, sesiones, []);
+  assert.deepEqual(idsCandidatos(plan), ['/w/d']);
+  assert.equal(plan.exentos.find((e) => e.projectPath === '/w/fijado')?.motivo, 'fijado');
+});
+
+test('un proyecto fijado inactivo se queda y no cuenta para el tope', () => {
   const proyectos = [proyecto('/w/a'), proyecto('/w/b'), proyecto('/w/c'), proyecto('/w/fijado', { isStarred: true })];
   const sesiones = [
     sesion('s-a', '/w/a', 80), sesion('s-b', '/w/b', 81), sesion('s-c', '/w/c', 82),
@@ -118,15 +144,15 @@ test('las headless no mantienen vivo un proyecto, y un entrypoint NULL cuenta co
     sesion('s-n', '/w/sin-dato', 1, { entrypoint: null }),
   ];
   const plan = seleccionarLimpieza(AHORA, proyectos, sesiones, []);
-  // sin-dato (1 h) entra al piso junto con a y b; c y solo-headless quedan afuera.
+  // sin-dato (1 h) entra al tope junto con a y b; c y solo-headless quedan afuera.
   assert.deepEqual(idsCandidatos(plan), ['/w/c', '/w/solo-headless']);
   assert.equal(plan.proyectos.find((p) => p.projectPath === '/w/solo-headless')?.ultimaActividad, null);
   assert.ok(!plan.proyectos.some((p) => p.projectPath === '/w/sin-dato'));
 });
 
-test('un proyecto sin sesiones se archiva si no entra en el piso', () => {
-  const proyectos = [proyecto('/w/a'), proyecto('/w/b'), proyecto('/w/c'), proyecto('/w/vacio')];
-  const sesiones = [sesion('s-a', '/w/a', 1), sesion('s-b', '/w/b', 2), sesion('s-c', '/w/c', 3)];
+test('un proyecto sin sesiones se archiva y no ocupa un lugar del tope', () => {
+  const proyectos = [proyecto('/w/a'), proyecto('/w/b'), proyecto('/w/vacio')];
+  const sesiones = [sesion('s-a', '/w/a', 1), sesion('s-b', '/w/b', 2)];
   const plan = seleccionarLimpieza(AHORA, proyectos, sesiones, []);
   assert.deepEqual(idsCandidatos(plan), ['/w/vacio']);
   assert.equal(plan.proyectos[0].ultimaActividad, null);
@@ -244,6 +270,19 @@ test('web y orquestador nunca llegan a dormir: bloquean el proyecto', async () =
   assert.equal(linea.bloqueados[0].sesion, 'orquestador');
 });
 
+test('un proyecto reciente fuera del tope con una tmux que no duerme se queda y el log lo avisa', async () => {
+  const proyectos = ['/w/a', '/w/b', '/w/c', '/w/cuarto'].map((r) => proyecto(r));
+  const sesiones = [sesion('s-a', '/w/a', 1), sesion('s-b', '/w/b', 2), sesion('s-c', '/w/c', 3), sesion('s-4', '/w/cuarto', 5)];
+  const tmux: TmuxViva[] = [{ nombre: 'cuarto-ejecutora-1', sessionId: null, cwd: '/w/cuarto' }];
+  const plan = seleccionarLimpieza(AHORA, proyectos, sesiones, tmux);
+  assert.deepEqual(idsCandidatos(plan), ['/w/cuarto']);
+  const { deps, llamadas } = dependenciasEspia(() => ({ ok: false, motivo: 'pregunta pendiente' }));
+  const linea = await ejecutarLimpieza(plan, 'ejecutar', deps);
+  assert.deepEqual(llamadas.proyectos, []);
+  assert.deepEqual(linea.bloqueados, [{ proyecto: '/w/cuarto', sesion: 'cuarto-ejecutora-1', motivo: 'pregunta pendiente' }]);
+  assert.equal(linea.resumen.bloqueados, 1);
+});
+
 test('si todas duermen se archiva el proyecto con un solo evento sidebar_archived', async () => {
   const { viejo, plan } = escenarioCandidato();
   const { deps, llamadas } = dependenciasEspia();
@@ -268,7 +307,7 @@ test('simular loguea el plan entero y no toca nada', async () => {
   assert.equal(linea.modo, 'simular');
   assert.deepEqual(linea.dormidas, ['viejo-ejecutora-1', 'viejo-guia-1']);
   assert.deepEqual(linea.archivados.proyectos, [{ projectId: viejo.projectId, projectPath: '/w/viejo' }]);
-  assert.deepEqual(linea.resumen, { proyectos: 1, sesiones: 0, dormidas: 2, bloqueados: 0, exentos: 0 });
+  assert.deepEqual(linea.resumen, { proyectos: 1, sesiones: 0, dormidas: 2, bloqueados: 0, exentos: 3 });
 });
 
 test('dos corridas a la vez no se pisan: la segunda se descarta', async () => {
