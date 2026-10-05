@@ -18,6 +18,17 @@ export const MINUTOS_HEADLESS_TERMINADA = 10;
 const HORA_MS = 60 * 60 * 1000;
 const MINUTO_MS = 60 * 1000;
 
+/**
+ * El proyecto descartable de la suite E2E (`e2e/lib/config.mjs`). Comparte
+ * `~/.claude` con esta instancia, así que sus turnos se ven como actividad: sin
+ * esto le quitaba un lugar del tope a un proyecto real (pasó el 05-oct).
+ */
+export function esProyectoDePrueba(projectPath: string): boolean {
+  const partes = projectPath.split(/[\\/]+/);
+  const i = partes.indexOf('cloudcli-e2e');
+  return i > 0 && partes[i - 1] === '.cache';
+}
+
 /** Nombres que `orquestar.py` protege; la limpieza no se los pasa nunca. */
 export const NOMBRES_TMUX_PROTEGIDOS: ReadonlySet<string> = new Set(['web', 'orquestador']);
 
@@ -167,7 +178,7 @@ export function seleccionarLimpieza(
   const eximido = (p: ProyectoLimpieza): 'fijado' | 'sesion-fija' | null =>
     p.isStarred ? 'fijado' : rutasFija.has(p.projectPath) ? 'sesion-fija' : null;
   const ranking = activos
-    .filter((p) => !eximido(p) && ultimaActividad.has(p.projectPath))
+    .filter((p) => !eximido(p) && !esProyectoDePrueba(p.projectPath) && ultimaActividad.has(p.projectPath))
     .sort((a, b) => ultimaActividad.get(b.projectPath)! - ultimaActividad.get(a.projectPath)! || a.projectPath.localeCompare(b.projectPath));
   const enElTope = new Set(ranking.slice(0, TOPE_PROYECTOS).map((p) => p.projectId));
 

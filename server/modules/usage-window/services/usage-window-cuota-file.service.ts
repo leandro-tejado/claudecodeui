@@ -17,8 +17,11 @@ import type { UsageWindowReading, UsageWindowSnapshot } from './usage-window.ser
  * no extra handling is needed there.
  */
 
-const CUOTA_DIR = path.join(os.homedir(), '.cache', 'aos');
-const CUOTA_FILE = path.join(CUOTA_DIR, 'cuota.json');
+// A test instance (e2e/instancia.mjs) points this elsewhere so it never reads
+// or writes the real file the statusline and the gobernador depend on.
+const CUOTA_FILE = process.env.RUTA_CUOTA_JSON
+  || path.join(os.homedir(), '.cache', 'aos', 'cuota.json');
+const CUOTA_DIR = path.dirname(CUOTA_FILE);
 
 type CuotaEstado = {
   ts: number;

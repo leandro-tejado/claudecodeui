@@ -157,3 +157,9 @@ stats.html
 # Test fixtures created beside the tests (cleaned up by the tests; kept out of the tree if a run is killed)
 server/**/tests/read-only-roots-fixture-*/
 server/**/tests/file-tree-outside-*/
+
+# Arnés E2E: dependencias propias, trazas y videos (las PNG y los informe.md sí van)
+e2e/node_modules/
+e2e/evidencia/**/*.zip
+e2e/evidencia/**/*.webm
+e2e/evidencia/prueba-*/

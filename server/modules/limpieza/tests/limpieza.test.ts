@@ -11,6 +11,7 @@ import type { DependenciasLimpieza, LineaLimpieza } from '../services/ejecucion.
 import { leerRegistroTmux } from '../services/entradas.service.js';
 import { correrLimpieza } from '../services/limpieza.service.js';
 import {
+  esProyectoDePrueba,
   proyectoDeCwd,
   seleccionarLimpieza,
 } from '../services/seleccion.service.js';
@@ -50,6 +51,23 @@ test('tope de 3 con 5 proyectos activos: los 2 más viejos se archivan aunque te
     ['/w/c', 'tope'],
   ]);
   assert.deepEqual(plan.sesiones, [], 'archivar el proyecto no archiva sus sesiones recientes');
+});
+
+test('el proyecto de la suite E2E no ocupa un lugar del tope aunque sea el más reciente', () => {
+  const e2e = '/home/u/.cache/cloudcli-e2e/proyecto';
+  const rutas = [e2e, '/w/a', '/w/b', '/w/c', '/w/d'];
+  const proyectos = rutas.map((r) => proyecto(r));
+  const sesiones = rutas.map((r, i) => sesion(`s-${i}`, r, i + 1));
+  const plan = seleccionarLimpieza(AHORA, proyectos, sesiones, []);
+  assert.deepEqual(plan.exentos.map((e) => e.projectPath).sort(), ['/w/a', '/w/b', '/w/c']);
+  assert.deepEqual(idsCandidatos(plan), [e2e, '/w/d'].sort());
+});
+
+test('esProyectoDePrueba solo reconoce la caché de la suite', () => {
+  assert.equal(esProyectoDePrueba('/home/u/.cache/cloudcli-e2e/proyecto'), true);
+  assert.equal(esProyectoDePrueba('C:\\Users\\u\\.cache\\cloudcli-e2e\\proyecto'), true);
+  assert.equal(esProyectoDePrueba('/home/u/cloudcli-e2e/proyecto'), false);
+  assert.equal(esProyectoDePrueba('/home/u/cloudcli'), false);
 });
 
 test('tope de 3 con 0 activos: los 3 más recientes quedan aunque lleven más de 72 h', () => {

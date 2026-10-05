@@ -1,7 +1,7 @@
 # Revisión de punta a punta de CloudCLI: que los mensajes lleguen bien y se vea como Optimum
 
 **Fecha:** 05 de Octubre 2026
-**Estado:** borrador
+**Estado:** en-ejecucion
 
 Se revisa y se verifica en un navegador real todo lo que Leandro sigue viendo roto en CloudCLI: el streaming partido o de golpe, el "pensando" que no aparece, los subagentes invisibles, la cuota en "sin dato", la barra que no se actualiza, el cuestionario feo y que contesta mal, y las sesiones de tmux que se traban. Después se rediseña con el lenguaje del chat `/claude` de Optimum, que hicimos nosotros y anda bien. Cada arreglo se cierra con evidencia de Playwright contra el servicio corriendo, no con tests unitarios.
 
@@ -94,10 +94,10 @@ Las sesiones nuevas del orquestador llegan por polling de 3 s sobre `~/.cache/ao
 
 ## Micro-tasks
 
-- [ ] Agregar `playwright-core@1.63.0` como devDependency y apuntar al `chromium_headless_shell-1243` de `~/.cache/ms-playwright` — acepta: `node e2e/humo.mjs` abre `about:blank` y saca una captura | valida: `NODE_ENV=development npm i -D playwright-core@1.63.0 && node e2e/humo.mjs`
-- [ ] Script `e2e/instancia.mjs` que levanta el `dist/` actual en `:3901` con `DATABASE_PATH=/tmp/cloudcli-e2e/auth.db`, registra el usuario de prueba y guarda el token — acepta: `curl :3901/api/auth/status` responde `needsSetup:false` y el token sirve en `/api/auth/user` | valida: `node e2e/instancia.mjs up && curl -s 127.0.0.1:3901/api/auth/status`
-- [ ] Helpers `e2e/sesiones.mjs`: crear y cerrar sesiones `e2e-*` (headless por la UI, tmux por `orquestar.py crear`), con teardown que se niega a tocar nada sin prefijo — acepta: después del teardown, `tmux ls | grep -c '^e2e-'` = 0 y las sesiones de Leandro siguen idénticas | valida: `node e2e/sesiones.mjs prueba-teardown`
-- [ ] CLI falso `e2e/claude-falso.mjs` con guiones (`subagente-a-mitad`, `stderr-a-mitad`, `6000-deltas`, `pensamiento`, `pregunta`) y una instancia `:3902` con `CLAUDE_CLI_PATH` — acepta: un turno en `:3902` reproduce el guion entero sin gastar cuota | valida: `node e2e/correr.mjs falso/humo`
+- [x] Agregar `playwright-core@1.63.0` como devDependency y apuntar al `chromium_headless_shell-1243` de `~/.cache/ms-playwright` — acepta: `node e2e/humo.mjs` abre `about:blank` y saca una captura | valida: `NODE_ENV=development npm i -D playwright-core@1.63.0 && node e2e/humo.mjs`
+- [x] Script `e2e/instancia.mjs` que levanta el `dist/` actual en `:3901` con `DATABASE_PATH=/tmp/cloudcli-e2e/auth.db`, registra el usuario de prueba y guarda el token — acepta: `curl :3901/api/auth/status` responde `needsSetup:false` y el token sirve en `/api/auth/user` | valida: `node e2e/instancia.mjs up && curl -s 127.0.0.1:3901/api/auth/status`
+- [x] Helpers `e2e/sesiones.mjs`: crear y cerrar sesiones `e2e-*` (headless por la UI, tmux por `orquestar.py crear`), con teardown que se niega a tocar nada sin prefijo — acepta: después del teardown, `tmux ls | grep -c '^e2e-'` = 0 y las sesiones de Leandro siguen idénticas | valida: `node e2e/sesiones.mjs prueba-teardown`
+- [x] CLI falso `e2e/claude-falso.mjs` con guiones (`subagente-a-mitad`, `stderr-a-mitad`, `6000-deltas`, `pensamiento`, `pregunta`) y una instancia `:3902` con `CLAUDE_CLI_PATH` — acepta: un turno en `:3902` reproduce el guion entero sin gastar cuota | valida: `node e2e/correr.mjs falso/humo`
 - [ ] Línea base: correr los escenarios de los 8 puntos y de los 7 commits de hoy contra el código actual — acepta: `e2e/evidencia/00-linea-base/informe.md` con una fila por check (pasa/falla + captura o log) | valida: `node e2e/correr.mjs linea-base`
 - [ ] Cuota: releer `cuota.json` en cada `getUsageWindow` y quedarse con la lectura más nueva; ruta por `RUTA_CUOTA_JSON` — acepta: test de server verde | valida: `NODE_ENV=test npm test -- usage-window`
 - [ ] Cuota: `fs.watch` sobre el archivo → `scheduleUsageWindowBroadcast` — acepta: escribir el archivo cambia el header abierto en ≤ 3 s sin recargar | valida: `node e2e/correr.mjs cuota/en-vivo`
@@ -197,14 +197,14 @@ Las sesiones nuevas del orquestador llegan por polling de 3 s sobre `~/.cache/ao
 
 #### Estado (arranca todo en fail)
 > El agente ejecutor solo cierra la fase cuando cada check pasa de `[fail]` a `[pass]` mediante validación real.
-- [fail] Chromium headless abre y captura | valida: `node e2e/humo.mjs`
-- [fail] Instancia `:3901` con DB propia y login de prueba | valida: `node e2e/instancia.mjs up && curl -s -H "Authorization: Bearer $(cat /tmp/cloudcli-e2e/token-3901)" 127.0.0.1:3901/api/auth/user`
-- [fail] `~/.cloudcli/auth.db` intacto (mismo `sha256sum` antes y después) | valida: `sha256sum ~/.cloudcli/auth.db`
-- [fail] CLI falso reproduce el guion `humo` en `:3902` sin gastar cuota | valida: `node e2e/correr.mjs falso/humo`
-- [fail] Teardown deja cero `e2e-*` y no toca otras sesiones (lista de `tmux ls` sin `e2e-` igual antes y después) | valida: `node e2e/sesiones.mjs prueba-teardown`
-- [fail] Teardown con un nombre sin prefijo tira error | valida: test en `e2e/tests/teardown.test.mjs`
-- [fail] Limpieza excluye `/tmp/cloudcli-e2e/` | valida: `NODE_ENV=test npm test -- limpieza`
-- [fail] `informe.md` generado con tabla y capturas | valida: `cat e2e/evidencia/humo-*/informe.md`
+- [pass] Chromium headless abre y captura | valida: `node e2e/humo.mjs`
+- [pass] Instancia `:3901` con DB propia y login de prueba | valida: `node e2e/instancia.mjs up && curl -s -H "Authorization: Bearer $(cat /tmp/cloudcli-e2e/token-3901)" 127.0.0.1:3901/api/auth/user`
+- [pass] `~/.cloudcli/auth.db` intacto (mismo `sha256sum` antes y después) | valida: `sha256sum ~/.cloudcli/auth.db`
+- [pass] CLI falso reproduce el guion `humo` en `:3902` sin gastar cuota | valida: `node e2e/correr.mjs falso/humo`
+- [pass] Teardown deja cero `e2e-*` y no toca otras sesiones (lista de `tmux ls` sin `e2e-` igual antes y después) | valida: `node e2e/sesiones.mjs prueba-teardown`
+- [pass] Teardown con un nombre sin prefijo tira error | valida: test en `e2e/tests/teardown.test.mjs`
+- [pass] Limpieza excluye `/tmp/cloudcli-e2e/` | valida: `NODE_ENV=test npm test -- limpieza`
+- [pass] `informe.md` generado con tabla y capturas | valida: `cat e2e/evidencia/humo-*/informe.md`
 
 #### Peligros
 - Crear sesiones con el gobernador en rojo (REGLA 11). El paso 5 lo corta.
@@ -551,14 +551,22 @@ Fase 1 (arnés) → Fase 2 (línea base)
 
 ## Cambios realizados
 
-[Completar después de ejecutar.]
+**Fase 1 (05-oct):**
+- `playwright-core` vive en `e2e/package.json` propio (no como devDependency de la raíz): así no toca el `node_modules` que usa el servicio de `:3001`. Se instala con `cd e2e && NODE_ENV=development npm install`.
+- El proyecto de prueba va en `~/.cache/cloudcli-e2e/proyecto`, no en `/tmp/cloudcli-e2e/proyecto`: `validateWorkspacePath` rechaza `/tmp` y exige estar bajo el home. La exclusión de la limpieza (`esProyectoDePrueba`) reconoce esa ruta.
+- Dos rutas del server se volvieron configurables para que una instancia de prueba no pise las de `:3001`: `LOCAL_SERVER_MARKER_PATH` (`server/index.ts`) y `RUTA_CUOTA_JSON` (`usage-window-cuota-file.service.ts`). Esta última **ya se leía en el plan pero el server la ignoraba**: hasta hoy las instancias de prueba leían el `cuota.json` real.
+- Las sesiones nuevas de la UI nacen en tmux (`setRunsInTmux(true)`), así que "crear headless por la UI" gasta cuota real. Las pruebas headless crean la sesión con el CLI falso (`-p`) y la abren por URL: el ack dice `runsInTmux=false` y los turnos van por `chat.send`.
+- 🔴 **Efecto colateral detectado y contenido:** `:3001` comparte `~/.claude`, así que veía el proyecto de prueba como actividad interactiva y le dio un lugar del tope a las 17:36 UTC, desplazando a `app-optimum-main` (su sesión `optimumstock-guia-1` se salvó de dormirse solo por tener cambios sin commitear). Contención: el CLI falso escribe `entrypoint: 'sdk-cli'` (no cuenta como actividad), se reescribieron los 26 transcripts de prueba y se movió el único interactivo (`72b0937a`, de una sesión real de tmux creada por error al probar la UI) a `~/.cache/cloudcli-e2e/transcripts-retirados/`. El arreglo de fondo (`esProyectoDePrueba` fuera del tope, con test) **solo corre en `:3001` después de rebuild + reinicio**, que decide Leandro.
+- La barra filtra por defecto "solo tmux vivo": los escenarios de la barra lo apagan en su navegador (`mostrarTodasLasSesiones`). El CLI falso escribe un `ai-title` con el nonce para que cada sesión de prueba se distinga por texto.
+- Los 404 de abrir una sesión todavía sin indexar se guardan aparte (`[carga]` en `consola-*.txt`): miden la carrera del punto 4, no la salud del turno.
+- Suite de server: 2 fallas **previas a este plan** en `shell-tmux.test.ts` (también fallan en un worktree limpio de `HEAD`), y 4 más que solo aparecen si el shell exporta `CLAUDE_CLI_PATH`/`TMUX` (el de un agente lo hace).
 
 ---
 
 ## Continuación de Sesión
 
-**Fases completadas:** ninguna (borrador)
-**Fase actual:** pendiente inicio
-**Próximo paso exacto:** Fase 1, paso 1: `NODE_ENV=development npm i -D playwright-core@1.63.0` en `~/cloudcli` y escribir `e2e/humo.mjs`.
+**Fases completadas:** Fase 1
+**Fase actual:** Fase 2 - Línea base
+**Próximo paso exacto:** `node e2e/correr.mjs todo --corrida 00-linea-base --con-cuota` (gobernador no rojo) y escribir los párrafos por punto en `e2e/evidencia/00-linea-base/informe.md`.
 **Bloqueantes:** la Fase 10 necesita el prompt de ejemplo del cuestionario (Leandro lo pasa al llegar ahí). La Fase 12 necesita que Leandro reinicie `:3001`.
-**Micro-tasks pendientes:** 41 de 41
+**Micro-tasks pendientes:** 37 de 41
