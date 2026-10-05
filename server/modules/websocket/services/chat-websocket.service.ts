@@ -8,6 +8,10 @@ import { chatRunRegistry } from '@/modules/websocket/services/chat-run-registry.
 import { nombreTmux } from '@/modules/websocket/services/shell-websocket.service.js';
 import { tmuxBridgeService } from '@/modules/websocket/services/tmux-bridge.service.js';
 import {
+  tmuxPaneVivoService,
+  type EventoPaneVivo,
+} from '@/modules/websocket/services/tmux-pane-vivo.service.js';
+import {
   esperarQueSeDespeje,
   mensajePromptsTmux,
   responderPromptTmux,
@@ -185,6 +189,30 @@ function broadcastMessageStatus(
 }
 
 /**
+ * Fase 7 Paso 4: difunde un evento del lector del pane en vivo (`activity`,
+ * `stream_delta` del borrador, o `stream_reemplazo` al cerrarlo) a todos los
+ * clientes conectados, igual que `busyEvent`/`broadcastMessageStatus` — el
+ * cliente filtra por `sessionId`, no hay suscripción fina por socket.
+ */
+function emitirEventoPaneVivo(evento: EventoPaneVivo): void {
+  const frame = JSON.stringify(evento);
+  connectedClients.forEach((client) => {
+    if (client.readyState === WS_OPEN_STATE) {
+      client.send(frame);
+    }
+  });
+}
+
+/**
+ * Bajas de `tmuxPaneVivoService.suscribirPaneVivo` activas para cada socket,
+ * por `providerSessionId`. Un `WeakMap` para que un socket que se cierra sin
+ * pasar por `ws.on('close')` (no debería pasar, pero por si acaso) no deje
+ * la entrada viva a propósito; aun así, `close` SIEMPRE llama a cada baja —
+ * sin eso el `setInterval` de `capture-pane` sigue corriendo huérfano.
+ */
+const bajasPaneVivoPorWs = new WeakMap<WebSocket, Map<string, () => void>>();
+
+/**
  * Messages sent while their session already had a run going, oldest first.
  *
  * Bug del 30-sep: those were refused with RUN_IN_PROGRESS, and the message
@@ -264,6 +292,9 @@ function readRequiredSessionId(data: AnyRecord): string | null {
 const MENSAJE_TMUX_SESSION_GONE =
   'Esta sesión corría en una terminal tmux que ya se cerró sin llegar a guardar ninguna conversación: no hay nada que retomar. Abrí una sesión nueva.';
 
+const MENSAJE_TMUX_PANE_VIVO =
+  'Esta sesión corre en una terminal tmux viva: el mensaje tiene que ir por ahí (chat.send-tmux), no por un turno nuevo del SDK.';
+
 /**
  * Handles `chat.send`: resolves the session row (provider, project path, and
  * provider-native id all come from the database — never from the client),
@@ -280,18 +311,22 @@ async function handleChatSend(
     return;
   }
 
-  // A session running in a pane CloudCLI did not open (`orquestar.py`, `ct`)
-  // already has a live REPL writing its transcript: resuming it over the SDK
-  // would put a second process on the same file. A client that still thinks
-  // it is not tmux (subscribed before the pane showed up in the registry)
-  // gets its send typed into the pane instead.
+  // A session with a live pane (propio o externo — `orquestar.py`, `ct`) ya
+  // tiene un REPL escribiendo su transcript: un `--resume` del SDK encima
+  // sería un segundo proceso sobre el mismo archivo ("doble envío", Fase 7
+  // Paso 5). El camino feliz del cliente ya elige `chat.send-tmux` en vez de
+  // `chat.send` para una sesión así (lee `runsInTmux` del ack de
+  // `chat.subscribe`); llegar hasta aquí con un pane vivo es un cliente con
+  // estado viejo o una carrera, así que se rechaza en vez de reenrutar en
+  // silencio como antes — reenrutar escondía el caso en el que el cliente
+  // SÍ debería estar en modo tmux y no lo está.
   if (resolved.provider === 'claude') {
     const pane = tmuxBridgeService.resolverPaneTmux(resolved.session);
-    if (pane?.externo) {
-      await handleChatSendTmux(ws, data, dependencies);
+    if (pane) {
+      sendProtocolError(ws, 'TMUX_PANE_VIVO', MENSAJE_TMUX_PANE_VIVO, resolved.sessionId);
       return;
     }
-    if (!pane && esFilaTmuxSinTranscript(resolved.session)) {
+    if (esFilaTmuxSinTranscript(resolved.session)) {
       sendProtocolError(ws, 'TMUX_SESSION_GONE', MENSAJE_TMUX_SESSION_GONE, resolved.sessionId);
       return;
     }
@@ -364,6 +399,35 @@ async function handleChatSendTmux(
     return;
   }
 
+  const clientMessageId = readClientMessageId(data);
+  // Fire-and-forget: ni esto ni el código viejo que reemplaza esperan a que
+  // el mensaje termine de teclearse antes de volver — `ws.on('message', ...)`
+  // no serializa un frame contra el siguiente de todos modos (cada mensaje
+  // dispara su propio callback async, sin que el emisor espere al anterior),
+  // así que no hay ninguna garantía de orden que perder acá.
+  void entregarPorTmux(ws, sessionId, session, content, clientMessageId);
+}
+
+/**
+ * El núcleo compartido de `chat.send-tmux` y del despacho sin cliente
+ * (Fase 7 Paso 5, `runDetachedChatTurn`): resuelve el pane (puenteando uno
+ * externo si hace falta), lo levanta si no existe, y teclea el mensaje —
+ * reintentando si un diálogo propio de Claude Code lo frena.
+ *
+ * `ws` es `null` para un turno sin cliente conectado (un mensaje programado
+ * sobre una sesión con pane vivo): ahí no hay a quién mandarle un
+ * `protocol_error`, pero el resultado se devuelve igual para que el llamador
+ * (p. ej. `scheduled-message-dispatcher.service.ts`, vía
+ * `runDetachedChatTurn`) pueda marcar el mensaje fallido en vez de darlo por
+ * enviado.
+ */
+async function entregarPorTmux(
+  ws: WebSocket | null,
+  sessionId: string,
+  session: NonNullable<ReturnType<typeof sessionsDb.getSessionById>>,
+  content: string,
+  clientMessageId: string | null
+): Promise<{ entregado: boolean; error: string | null }> {
   // A pane CloudCLI did not open (`orquestar.py`, `ct`) is only ever typed
   // into: its name comes from the tmux registry, and asegurarSesionTmux would
   // spawn a second `claude` under CloudCLI's own name if it looked dead.
@@ -376,8 +440,8 @@ async function handleChatSendTmux(
   // A pending row from the tmux registry whose pane is gone never wrote a
   // transcript: reopening it would start an unrelated `claude`.
   if (!pane && esFilaTmuxSinTranscript(session)) {
-    sendProtocolError(ws, 'TMUX_SESSION_GONE', MENSAJE_TMUX_SESSION_GONE, sessionId);
-    return;
+    if (ws) sendProtocolError(ws, 'TMUX_SESSION_GONE', MENSAJE_TMUX_SESSION_GONE, sessionId);
+    return { entregado: false, error: MENSAJE_TMUX_SESSION_GONE };
   }
 
   // A brand-new session (or one whose pane died) has nothing to type into
@@ -400,19 +464,15 @@ async function handleChatSendTmux(
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       console.error('[Chat] tmux-bridge could not open the pane', { sessionId, error: message });
-      sendProtocolError(ws, 'TMUX_SESSION_CREATE_FAILED', message, sessionId);
-      return;
+      if (ws) sendProtocolError(ws, 'TMUX_SESSION_CREATE_FAILED', message, sessionId);
+      return { entregado: false, error: message };
     }
   }
 
   if (!tmuxBridgeService.tieneSesionTmux(nombreSesion)) {
-    sendProtocolError(
-      ws,
-      'TMUX_SESSION_NOT_FOUND',
-      `No hay una sesion de tmux viva para "${sessionId}".`,
-      sessionId
-    );
-    return;
+    const message = `No hay una sesion de tmux viva para "${sessionId}".`;
+    if (ws) sendProtocolError(ws, 'TMUX_SESSION_NOT_FOUND', message, sessionId);
+    return { entregado: false, error: message };
   }
 
   // Bug del 30-sep: una pregunta de AskUserQuestion se contestó sola con la
@@ -422,35 +482,44 @@ async function handleChatSendTmux(
   // teclea nada: el mensaje espera, y el chat dice por qué. Los mensajes de un
   // mismo pane salen de a uno y en orden, para que dos no se mezclen en el
   // cuadro de texto.
-  const clientMessageId = readClientMessageId(data);
   if (panesFrenados.has(nombreSesion) && clientMessageId) {
     broadcastMessageStatus(sessionId, clientMessageId, 'queued', { reason: 'tmux_prompt' });
   }
-  encolarEnPane(nombreSesion, async () => {
-    let enEspera = panesFrenados.has(nombreSesion);
-    for (;;) {
-      const resultado = await teclearEnPane(ws, sessionId, nombreSesion, content, clientMessageId, { fromQueue: enEspera });
-      if (resultado !== 'dialogo') return;
-      if (!enEspera && clientMessageId) {
-        broadcastMessageStatus(sessionId, clientMessageId, 'queued', { reason: 'tmux_prompt' });
-      }
-      enEspera = true;
-      panesFrenados.add(nombreSesion);
-      let vivo: boolean;
-      try {
-        vivo = await esperarQueSeDespeje(nombreSesion, {
-          sigueVivo: () => tmuxBridgeService.tieneSesionTmux(nombreSesion),
+
+  return new Promise((resolve) => {
+    encolarEnPane(nombreSesion, async () => {
+      let enEspera = panesFrenados.has(nombreSesion);
+      for (;;) {
+        const { resultado, error } = await teclearEnPane(ws, sessionId, nombreSesion, content, clientMessageId, {
+          fromQueue: enEspera,
         });
-      } finally {
-        panesFrenados.delete(nombreSesion);
-      }
-      if (!vivo) {
-        if (ws.readyState === WS_OPEN_STATE) {
-          sendProtocolError(ws, 'TMUX_SESSION_NOT_FOUND', `La sesion de tmux de "${sessionId}" se cerro antes de poder mandar el mensaje.`, sessionId, clientMessageId ? { clientMessageId } : {});
+        if (resultado !== 'dialogo') {
+          resolve({ entregado: error === null, error });
+          return;
         }
-        return;
+        if (!enEspera && clientMessageId) {
+          broadcastMessageStatus(sessionId, clientMessageId, 'queued', { reason: 'tmux_prompt' });
+        }
+        enEspera = true;
+        panesFrenados.add(nombreSesion);
+        let vivo: boolean;
+        try {
+          vivo = await esperarQueSeDespeje(nombreSesion, {
+            sigueVivo: () => tmuxBridgeService.tieneSesionTmux(nombreSesion),
+          });
+        } finally {
+          panesFrenados.delete(nombreSesion);
+        }
+        if (!vivo) {
+          const message = `La sesion de tmux de "${sessionId}" se cerro antes de poder mandar el mensaje.`;
+          if (ws && ws.readyState === WS_OPEN_STATE) {
+            sendProtocolError(ws, 'TMUX_SESSION_NOT_FOUND', message, sessionId, clientMessageId ? { clientMessageId } : {});
+          }
+          resolve({ entregado: false, error: message });
+          return;
+        }
       }
-    }
+    });
   });
 }
 
@@ -485,15 +554,21 @@ const CODIGO_ENVIO_TMUX = {
  * Teclea el mensaje en el pane y, solo cuando el pane muestra que Claude lo
  * tomó, lo marca enviado y avisa que la sesión quedó ocupada. Devuelve
  * `dialogo` sin teclear nada si el pane tiene un diálogo abierto.
+ *
+ * `ws` es `null` para un turno sin cliente (`runDetachedChatTurn`, Paso 5 de
+ * la Fase 7: un mensaje programado sobre una sesión con pane vivo también va
+ * por `teclearEnPane`, nunca por el SDK) — ahí no hay a quién mandarle un
+ * `protocol_error`, pero el resto (marcar enviado, avisar ocupado) es igual
+ * para cualquier cliente conectado.
  */
 async function teclearEnPane(
-  ws: WebSocket,
+  ws: WebSocket | null,
   sessionId: string,
   nombreSesion: string,
   content: string,
   clientMessageId: string | null,
   { fromQueue = false }: { fromQueue?: boolean } = {},
-): Promise<'dialogo' | 'listo'> {
+): Promise<{ resultado: 'dialogo' | 'listo'; error: string | null }> {
   const conId = clientMessageId ? { clientMessageId } : {};
   let resultado: Awaited<ReturnType<typeof tmuxBridgeService.enviarPromptVerificado>>;
   try {
@@ -501,24 +576,29 @@ async function teclearEnPane(
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     console.error('[Chat] tmux-bridge send failed', { sessionId, error: message });
-    if (ws.readyState === WS_OPEN_STATE) {
+    if (ws && ws.readyState === WS_OPEN_STATE) {
       sendProtocolError(ws, 'TMUX_SEND_FAILED', message, sessionId, conId);
     }
-    return 'listo';
+    return { resultado: 'listo', error: message };
   }
 
   if (!resultado.ok) {
-    if (resultado.motivo === 'dialogo') return 'dialogo';
+    if (resultado.motivo === 'dialogo') return { resultado: 'dialogo', error: null };
     console.error('[Chat] tmux-bridge send not confirmed', { sessionId, motivo: resultado.motivo });
-    if (ws.readyState === WS_OPEN_STATE) {
+    if (ws && ws.readyState === WS_OPEN_STATE) {
       sendProtocolError(ws, CODIGO_ENVIO_TMUX[resultado.motivo], resultado.mensaje, sessionId, conId);
     }
-    return 'listo';
+    return { resultado: 'listo', error: resultado.mensaje };
   }
 
   if (clientMessageId) {
     broadcastMessageStatus(sessionId, clientMessageId, 'sent', fromQueue ? { fromQueue: true } : {});
   }
+
+  // Paso 7: el pane queda ocupado desde ya — sin esto, un `chat.subscribe`
+  // que llega antes del próximo poll del puente (hasta 6 s sin la vigilancia
+  // rápida del Paso 3 todavía instalada) vería `ocupado: false`.
+  tmuxBridgeService.marcarPaneOcupado(sessionsDb.getSessionById(sessionId)?.provider_session_id ?? null);
 
   // No provider run was dispatched, so no `complete` will come from
   // `chatRunRegistry` either. Every connected client (this one included) is
@@ -537,7 +617,7 @@ async function teclearEnPane(
       client.send(JSON.stringify(busyEvent));
     }
   });
-  return 'listo';
+  return { resultado: 'listo', error: null };
 }
 
 type ResolvedSendTarget = {
@@ -928,12 +1008,55 @@ function handleChatSubscribe(
     // restart` with nothing to reload: the flag is only ever a question, not
     // a row.
     const sessionRow = sessionsDb.getSessionById(sessionId);
-    const runsInTmux = sessionRow ? tmuxBridgeService.resolverPaneTmux(sessionRow) !== null : false;
+    const pane = sessionRow ? tmuxBridgeService.resolverPaneTmux(sessionRow) : null;
+    const runsInTmux = pane !== null;
+
+    // Fase 7 Paso 4: mientras el pane esté puenteado, esta conexión sigue su
+    // actividad (spinner/tool/borrador) — un solo `setInterval` de
+    // `capture-pane` por sesión, compartido entre todos los sockets
+    // suscriptos (ver `suscribirPaneVivo`), que se apaga en `ws.on('close')`.
+    if (pane && sessionRow?.provider_session_id) {
+      const providerSessionId = sessionRow.provider_session_id;
+      let bajasDeEsteWs = bajasPaneVivoPorWs.get(ws);
+      if (!bajasDeEsteWs) {
+        bajasDeEsteWs = new Map();
+        bajasPaneVivoPorWs.set(ws, bajasDeEsteWs);
+      }
+      if (!bajasDeEsteWs.has(providerSessionId)) {
+        const baja = tmuxPaneVivoService.suscribirPaneVivo(
+          ws,
+          providerSessionId,
+          pane.nombre,
+          sessionId,
+          emitirEventoPaneVivo,
+        );
+        bajasDeEsteWs.set(providerSessionId, baja);
+      }
+    }
+
+    // Fase 7 Paso 7: `chatRunRegistry.isProcessing` es siempre `false` para
+    // una sesión puenteada — ningún run de la SDK se registra para ella, así
+    // que nunca hay nada que marcar "corriendo" ahí. El indicador real de
+    // "ocupado" para tmux sale del último `activity` que leyó el pane en
+    // vivo (Paso 4) cuando ya hay uno; si todavía no hubo ni un solo poll
+    // (recién se suscribió, o nadie más estaba mirando esta sesión), se cae
+    // al heurístico del `.jsonl` (`tmux-bridge.service.ts`,
+    // `marcarPaneOcupado` en cada envío confirmado) en vez de asumir `false`
+    // fijo. Sin esto, recargar la página a mitad de un turno tmux perdía el
+    // indicador de "pensando" aunque el pane siguiera genuinamente ocupado.
+    const actividadPane = runsInTmux
+      ? tmuxPaneVivoService.ultimaActividadConocida(sessionRow?.provider_session_id ?? null)
+      : null;
+    const isProcessingParaAck = runsInTmux
+      ? (actividadPane
+          ? actividadPane.kind !== 'idle'
+          : isProcessing || tmuxBridgeService.estaOcupadoTmux(sessionRow?.provider_session_id ?? null))
+      : isProcessing;
 
     sendJson(ws, {
       kind: 'chat_subscribed',
       sessionId,
-      isProcessing,
+      isProcessing: isProcessingParaAck,
       lastSeq: run?.lastSeq ?? 0,
       pendingPermissions,
       runsInTmux,
@@ -1074,6 +1197,20 @@ export async function runDetachedChatTurn(
   }
 
   const provider = session.provider as LLMProvider;
+
+  // Fase 7 Paso 5 ("el dispatcher"): un mensaje programado o encolado sobre
+  // una sesión con pane vivo (propio o externo) va por `teclearEnPane`, igual
+  // que `chat.send-tmux` — nunca por el SDK, porque eso sería un segundo
+  // `claude --resume` escribiendo encima del mismo .jsonl que el pane ya
+  // escribe. No hay `ws`: nadie puede ver un `protocol_error`, así que el
+  // resultado se traduce a `{started, error}` para que el llamador (p. ej.
+  // `scheduled-message-dispatcher.service.ts`) marque el mensaje fallido en
+  // vez de darlo por enviado.
+  if (provider === 'claude' && tmuxBridgeService.resolverPaneTmux(session)) {
+    const { entregado, error } = await entregarPorTmux(null, input.sessionId, session, input.content, null);
+    return { started: entregado, error };
+  }
+
   if (!dependencies.runtime.hasRuntime(provider)) {
     return { started: false, error: `Provider "${provider}" is not available.` };
   }
@@ -1167,5 +1304,13 @@ export function handleChatConnection(
   ws.on('close', () => {
     console.log('[INFO] Chat client disconnected');
     connectedClients.delete(ws);
+    // Fase 7 Paso 4: sin esto, el `setInterval` de `capture-pane` de una
+    // sesión que este socket era el único mirando quedaba huérfano para
+    // siempre (nunca se llega a 0 suscriptores en `tmuxPaneVivoService`).
+    const bajas = bajasPaneVivoPorWs.get(ws);
+    if (bajas) {
+      for (const baja of bajas.values()) baja();
+      bajasPaneVivoPorWs.delete(ws);
+    }
   });
 }
