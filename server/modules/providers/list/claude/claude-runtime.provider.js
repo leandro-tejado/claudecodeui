@@ -123,6 +123,22 @@ function applyClaudeEffort(sdkOptions, resolvedEffort) {
   };
 }
 
+/**
+ * Static stand-in for the SDK's live `ModelInfo.supportsAdaptiveThinking`
+ * (see the call site in `mapCliOptionsToSDK` for why it is static here).
+ * `model` is the resolved SDK option — `undefined`/`'default'`/`'best'`
+ * resolve server-side to a current flagship model, so only an explicit
+ * `haiku` pick is excluded.
+ * @param {string|undefined} model
+ * @returns {boolean}
+ */
+function modelSupportsAdaptiveThinking(model) {
+  if (!model) {
+    return true;
+  }
+  return !/haiku/i.test(model);
+}
+
 function createRequestId() {
   if (typeof crypto.randomUUID === 'function') {
     return crypto.randomUUID();
@@ -291,6 +307,23 @@ function mapCliOptionsToSDK(options = {}) {
     options.effortModels || CLAUDE_PREDEFINED_MODELS,
   ));
 
+  // `thinking: {type:'adaptive', display:'summarized'}` is the only config
+  // servidor-code measured with a non-empty `thinking_delta` (its Fase 1,
+  // 23-sep): without it the thinking block streams blank. Adaptive leaves the
+  // model deciding when to think; this only asks for it when the resolved
+  // model supports it, mirroring servidor-code's `fichaDe().supportsAdaptiveThinking`
+  // gate (servidor-code/server.mjs:851-854). That gate reads the SDK's live
+  // model catalog; this codebase's own copy of that call
+  // (`queryInstance.supportedModels()` in claude-models.provider.ts) is
+  // disabled because it opens a spurious session, so there is no live
+  // capability lookup to call at option-build time (before the query instance
+  // exists) — `modelSupportsAdaptiveThinking` below is a static stand-in for
+  // it, not the same live check, and its one documented exclusion (haiku
+  // reporting the capability as `undefined`) is the one servidor-code found.
+  if (modelSupportsAdaptiveThinking(sdkOptions.model)) {
+    sdkOptions.thinking = { type: 'adaptive', display: 'summarized' };
+  }
+
   // `append` extends the preset system prompt without replacing it — the SDK
   // sends both the built-in Claude Code prompt and this line. Kept as one
   // shared constant (salidas-convencion.ts) with the tmux pane's
@@ -445,11 +478,15 @@ export function isSubagentPromptEcho(message) {
  * Two things get filtered here rather than in the normalizer itself:
  * - Anything that is not a `stream_event` (assistant/result/system/...) —
  *   those already have their own normalizer branch and go through unwrapped.
- * - Subagent partials, which carry `parent_tool_use_id`. The main thread only
- *   ever shows the Agent tool card for a subagent, never its streamed text —
- *   same rule `isSubagentPromptEcho` applies to the subagent's complete
- *   messages — so its deltas are dropped here instead of reaching the client
- *   as an orphan `stream_delta` with no bubble to attach to.
+ * - Subagent partials, which carry `parent_tool_use_id`. The main thread never
+ *   shows a subagent's streamed text or thinking — same rule
+ *   `isSubagentPromptEcho` applies to its complete messages — so
+ *   `content_block_delta`/`content_block_stop`/`message_start`/`message_stop`
+ *   are dropped here instead of reaching the client as an orphan
+ *   `stream_delta` with no bubble to attach to. `content_block_start` is the
+ *   one partial let through: the normalizer turns it into an `activity`
+ *   (`kind:'thinking'|'tool'`), which is what lets the Agent card show what
+ *   the subagent is doing right now (Fase 4, paso 6) without streaming its text.
  * @param {Object|null} sdkMessage - raw message from the query() async generator
  * @returns {Object|null} The inner Anthropic stream event, or null to skip
  */
@@ -457,10 +494,14 @@ function resolvePartialStreamEvent(sdkMessage) {
   if (!sdkMessage || sdkMessage.type !== 'stream_event') {
     return null;
   }
-  if (sdkMessage.parent_tool_use_id) {
+  const event = sdkMessage.event || null;
+  if (!event) {
     return null;
   }
-  return sdkMessage.event || null;
+  if (sdkMessage.parent_tool_use_id) {
+    return event.type === 'content_block_start' ? event : null;
+  }
+  return event;
 }
 
 function readNumber(value) {
@@ -1245,6 +1286,17 @@ async function queryClaudeSDK(command, options = {}, ws, context) {
         // Preserve parentToolUseId from SDK wrapper for subagent tool grouping
         if (transformedMessage.parentToolUseId && !msg.parentToolUseId) {
           msg.parentToolUseId = transformedMessage.parentToolUseId;
+          // A subagent's `content_block_start` reaches the normalizer with no
+          // way to tell it apart from the main thread's own — both share the
+          // same `sid` key into `liveMessageIds` — so the `messageId` it got
+          // stamped with (if any) is the MAIN thread's current message, not
+          // the subagent's. Dropped here rather than threading subagent
+          // identity into the normalizer for an id nothing reads yet: the
+          // card this `activity` feeds keys off `parentToolUseId`, not
+          // `messageId`.
+          if (msg.kind === 'activity') {
+            delete msg.messageId;
+          }
         }
         if (isSubagentPromptEcho(msg)) {
           continue;
@@ -1609,5 +1661,6 @@ export {
   extractCumulativeTokenBudget,
   extractCompactBoundaryTokenBudget,
   resolvePartialStreamEvent,
-  mapCliOptionsToSDK
+  mapCliOptionsToSDK,
+  modelSupportsAdaptiveThinking
 };

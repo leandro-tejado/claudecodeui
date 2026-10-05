@@ -147,12 +147,58 @@ function decorateAndRecordEvent(run: ChatRun, message: NormalizedMessage): Norma
     notifyRunCompleted(run.appSessionId);
   }
 
+  bufferEvent(run, outbound);
+
+  return outbound;
+}
+
+/**
+ * Appends one decorated event to the run's replay buffer, fusing it into the
+ * previous buffered entry when both are `stream_delta`/`thinking_delta` for
+ * the same `(messageId, blockIndex)` — i.e. the same content block still
+ * streaming (protocolo-streaming.md).
+ *
+ * A long turn can emit thousands of per-character deltas; buffering one entry
+ * per delta is what used to run the 5000-event cap into a turn that was still
+ * only one message in. Fusing them means the cap is sized by the number of
+ * blocks a turn has, not by how many frames the model streamed one in — and a
+ * client that replays mid-block gets one event carrying the whole block's
+ * text so far, which is already what it does with the final `text` row.
+ *
+ * Live delivery is untouched: `decorateAndRecordEvent`'s return value — the
+ * same `outbound` object this mutates in place when fusing — is what
+ * `ChatSessionWriter.forward` sends, so a fused event still reaches a
+ * connected socket as every delta it absorbed, just stored once.
+ */
+function bufferEvent(run: ChatRun, outbound: NormalizedMessage): void {
+  const isDelta = outbound.kind === 'stream_delta' || outbound.kind === 'thinking_delta';
+  const previous = run.events[run.events.length - 1];
+  const sameBlock = isDelta
+    && previous
+    && previous.kind === outbound.kind
+    && previous.messageId === outbound.messageId
+    && previous.blockIndex === outbound.blockIndex
+    // `messageId` is absent for providers that do not report it (the
+    // compatibility case protocolo-streaming.md documents) — without it a
+    // block cannot be told apart from the next one with the same index, so
+    // deltas fall back to one buffered entry per event instead of guessing.
+    && typeof outbound.messageId === 'string'
+    && outbound.messageId.length > 0;
+
+  if (sameBlock) {
+    previous.content = `${previous.content ?? ''}${outbound.content ?? ''}`;
+    // The merged entry must replay under the LATEST seq it absorbed: a client
+    // reconnecting with `afterSeq` anywhere inside the run of deltas this just
+    // swallowed still needs the fused text, and `replayEvents` only returns
+    // entries whose `seq` is greater than that.
+    previous.seq = outbound.seq;
+    return;
+  }
+
   run.events.push(outbound);
   if (run.events.length > MAX_BUFFERED_EVENTS_PER_RUN) {
     run.events.splice(0, run.events.length - MAX_BUFFERED_EVENTS_PER_RUN);
   }
-
-  return outbound;
 }
 
 /**

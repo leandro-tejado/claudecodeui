@@ -181,7 +181,9 @@ export type MessageKind =
   | 'tool_result'
   | 'thinking'
   | 'stream_delta'
+  | 'thinking_delta'
   | 'stream_end'
+  | 'activity'
   | 'error'
   | 'complete'
   | 'status'
@@ -390,6 +392,39 @@ export type NormalizedMessage = {
   outputFile?: string;
   /** A workflow's `progress` only: where each agent the run spawned stands. */
   agents?: WorkflowAgentProgress[];
+  /**
+   * The streaming protocol's identity pair (docs/architecture/protocolo-streaming.md).
+   *
+   * `messageId` is the Anthropic API's `message.id` for the assistant message
+   * currently streaming — never the row's own `id` above, which this app
+   * synthesizes and which changes on every history reload. `blockIndex` is the
+   * content block's position within that message (`content_block_*.index`).
+   * Together they are the key a client replaces a row by instead of appending
+   * to: the same pair labels every `stream_delta`/`thinking_delta`/`stream_end`
+   * for one block AND the final `text`/`thinking` row it resolves to.
+   *
+   * Absent on providers that do not report per-message identity on the wire —
+   * a client must fall back to append-only rendering for those.
+   */
+  messageId?: string;
+  blockIndex?: number;
+  /**
+   * `activity` only: what just started inside the content block named by
+   * `messageId`/`blockIndex` above. `tool` names the tool in `toolName`
+   * (reusing the field `tool_use` already carries); `thinking` has none.
+   *
+   * Only `thinking` and `tool` blocks raise an `activity` — a `text` block's
+   * own `stream_delta` is the signal that text has started, so it gets none.
+   */
+  activityKind?: 'thinking' | 'tool';
+  /**
+   * Set when this event belongs to a subagent's run rather than the main
+   * thread — same meaning as the `tool_use` row's own `parentToolUseId`: the
+   * id of the `Task`/`Agent` call driving it. Only `activity` events cross
+   * from a subagent to the main session; its `stream_delta`/`thinking_delta`
+   * never do (`claude-runtime.provider.js`'s `resolvePartialStreamEvent`).
+   */
+  parentToolUseId?: string;
   [key: string]: unknown;
 };
 

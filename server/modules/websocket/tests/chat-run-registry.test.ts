@@ -226,6 +226,63 @@ test('replayEvents returns only events after the requested seq', async () => {
   });
 });
 
+test('consecutive stream_delta events for the same (messageId, blockIndex) are fused in the replay buffer', async () => {
+  await withIsolatedDatabase(() => {
+    sessionsDb.createAppSession('app-run-coalesce', 'claude', '/workspace/demo');
+    const connection = new FakeConnection();
+    const run = chatRunRegistry.startRun({
+      appSessionId: 'app-run-coalesce',
+      provider: 'claude',
+      providerSessionId: null,
+      connection,
+      userId: null,
+    });
+    assert.ok(run);
+
+    run.writer.send({ kind: 'stream_delta', provider: 'claude', sessionId: 'x', content: 'Ho', messageId: 'msg_1', blockIndex: 0 });
+    run.writer.send({ kind: 'stream_delta', provider: 'claude', sessionId: 'x', content: 'la', messageId: 'msg_1', blockIndex: 0 });
+    run.writer.send({ kind: 'stream_delta', provider: 'claude', sessionId: 'x', content: '!', messageId: 'msg_1', blockIndex: 0 });
+
+    // Live delivery still gets every delta, one frame each.
+    assert.equal(connection.frames.length, 3);
+    assert.deepEqual(connection.frames.map((frame) => frame.content), ['Ho', 'la', '!']);
+    assert.deepEqual(connection.frames.map((frame) => frame.seq), [1, 2, 3]);
+
+    // The replay buffer fused them into the one entry a reconnecting client needs.
+    const replayed = chatRunRegistry.replayEvents('app-run-coalesce', 0);
+    assert.equal(replayed.length, 1);
+    assert.equal(replayed[0]?.content, 'Hola!');
+    assert.equal(replayed[0]?.seq, 3);
+
+    // A client reconnecting with afterSeq inside the fused range still gets it.
+    assert.deepEqual(chatRunRegistry.replayEvents('app-run-coalesce', 1), replayed);
+  });
+});
+
+test('stream_delta events for a different blockIndex, or a different messageId, are not fused', async () => {
+  await withIsolatedDatabase(() => {
+    sessionsDb.createAppSession('app-run-no-fuse', 'claude', '/workspace/demo');
+    const connection = new FakeConnection();
+    const run = chatRunRegistry.startRun({
+      appSessionId: 'app-run-no-fuse',
+      provider: 'claude',
+      providerSessionId: null,
+      connection,
+      userId: null,
+    });
+    assert.ok(run);
+
+    run.writer.send({ kind: 'stream_delta', provider: 'claude', sessionId: 'x', content: 'a', messageId: 'msg_1', blockIndex: 0 });
+    run.writer.send({ kind: 'stream_delta', provider: 'claude', sessionId: 'x', content: 'b', messageId: 'msg_1', blockIndex: 1 });
+    run.writer.send({ kind: 'stream_delta', provider: 'claude', sessionId: 'x', content: 'c', messageId: 'msg_2', blockIndex: 0 });
+    // thinking_delta and stream_delta never fuse even sharing (messageId, blockIndex).
+    run.writer.send({ kind: 'thinking_delta', provider: 'claude', sessionId: 'x', content: 'd', messageId: 'msg_1', blockIndex: 0 });
+
+    const replayed = chatRunRegistry.replayEvents('app-run-no-fuse', 0);
+    assert.deepEqual(replayed.map((event) => event.content), ['a', 'b', 'c', 'd']);
+  });
+});
+
 test('attachConnection adds a socket without cutting off the ones already watching', async () => {
   await withIsolatedDatabase(() => {
     sessionsDb.createAppSession('app-run-5', 'opencode', '/workspace/demo');
