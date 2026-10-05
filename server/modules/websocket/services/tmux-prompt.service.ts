@@ -174,6 +174,52 @@ type CuadroDeEntrada = {
 };
 
 /**
+ * Si todo lo visible del cuadro (después del `❯`) está atenuado (`ESC[2m`):
+ * es la sugerencia de próximo prompt o el ejemplo de cuadro vacío, que Enter
+ * no manda. Se mira cada renglón por separado porque la captura repite los
+ * atributos al principio de cada uno cuando la sugerencia parte en varios.
+ */
+function textoTodoAtenuado(crudas: string[]): boolean {
+  let hayTexto = false;
+  for (let indice = 0; indice < crudas.length; indice += 1) {
+    const cruda = crudas[indice];
+    let atenuado = false;
+    let pasoLaMarca = indice > 0;
+    let resto = cruda;
+    while (resto) {
+      const sgr = /^\x1b\[([0-9;]*)m/.exec(resto);
+      if (sgr) {
+        const parametros = sgr[1] === '' ? ['0'] : sgr[1].split(';');
+        for (let i = 0; i < parametros.length; i += 1) {
+          const parametro = parametros[i];
+          // `38;5;n` y `38;2;r;g;b` (y 48/58) llevan argumentos que no son atributos.
+          if (parametro === '38' || parametro === '48' || parametro === '58') i += parametros[i + 1] === '2' ? 4 : 2;
+          else if (parametro === '0' || parametro === '22') atenuado = false;
+          else if (parametro === '2') atenuado = true;
+        }
+        resto = resto.slice(sgr[0].length);
+        continue;
+      }
+      const otra = /^\x1b\[[0-9;?]*[A-Za-z]/.exec(resto);
+      if (otra) {
+        resto = resto.slice(otra[0].length);
+        continue;
+      }
+      const caracter = resto[0];
+      resto = resto.slice(1);
+      if (!pasoLaMarca) {
+        if (caracter === '❯' || caracter === '!') pasoLaMarca = true;
+        continue;
+      }
+      if (/[\s\u00a0]/.test(caracter)) continue;
+      if (!atenuado) return false;
+      hayTexto = true;
+    }
+  }
+  return hayTexto;
+}
+
+/**
  * El cuadro de texto de Claude Code al pie del pane, si está. Medido el 5-oct:
  *
  *     ──────────────────────
@@ -185,7 +231,9 @@ type CuadroDeEntrada = {
  *
  * Vacío muestra un ejemplo atenuado (`❯ Try "create a util…"`) que en el
  * texto plano no se distingue de algo escrito: por eso se lee la captura con
- * `-e` y lo atenuado (`ESC[2m`) cuenta como vacío.
+ * `-e` y lo atenuado (`ESC[2m`) cuenta como vacío. Lo mismo la sugerencia de
+ * próximo prompt que Claude Code deja en gris tras un turno (medido el 5-oct:
+ * `❯\u00a0ESC[2m…ESC[0m`): Enter no la manda, no es texto escrito.
  */
 function ubicarCuadroDeEntrada(crudas: string[]): CuadroDeEntrada | null {
   const lineas = crudas.map((linea) => sinEscapes(linea).replace(/\s+$/, ''));
@@ -211,15 +259,12 @@ function ubicarCuadroDeEntrada(crudas: string[]): CuadroDeEntrada | null {
   if (rayaSuperior < 0 || rayaSuperior + 1 >= rayaInferior) return null;
   if (!INICIO_CUADRO.test(lineas[rayaSuperior + 1])) return null;
 
-  const primeraCruda = crudas[rayaSuperior + 1];
-  const despuesDeLaMarca = primeraCruda.slice(primeraCruda.search(/[❯!]/) + 1);
-  const arranque = /^(?:[\s\u00a0]|\x1b\[[0-9;]*m)*/.exec(despuesDeLaMarca)?.[0] ?? '';
-  const atenuado = /\x1b\[(?:[0-9;]*;)?2(?:;[0-9;]*)?m/.test(arranque);
+  const atenuado = textoTodoAtenuado(crudas.slice(rayaSuperior + 1, rayaInferior));
 
   const renglones = lineas.slice(rayaSuperior + 1, rayaInferior);
   renglones[0] = renglones[0].replace(INICIO_CUADRO, '');
   const texto = renglones.map((renglon) => renglon.replace(/^[\s\u00a0]+/, '')).join('\n').trim();
-  return { rayaSuperior, texto: atenuado && renglones.length === 1 ? '' : texto };
+  return { rayaSuperior, texto: atenuado ? '' : texto };
 }
 
 function sinMarca(linea: string): string {

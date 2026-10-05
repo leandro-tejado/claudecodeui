@@ -543,6 +543,31 @@ test('el cuadro de texto: vacío, con el ejemplo atenuado, con algo escrito, o t
   assert.equal(detectarPromptTmux(conEjemplo), null);
 });
 
+// 5-oct: tras un turno Claude Code deja en el cuadro una SUGERENCIA de próximo
+// prompt en gris: `❯` + NBSP + `ESC[2m…ESC[0m`. Enter no la manda, así que no
+// es texto escrito: tratarla como tal frenaba todo mensaje del chat a una
+// sesión ociosa («cuadro ocupado»). Sintético, medido en un pane propio.
+test('la sugerencia de próximo prompt atenuada cuenta como cuadro vacío; el texto real no', () => {
+  const conSugerencia = (cuerpo: string) => EN_REPOSO.replace('❯ ', cuerpo);
+  const una = conSugerencia('\x1b[39m❯ \x1b[2mopción 1, hacé las ediciones y probá en tmux\x1b[0m');
+  assert.deepEqual(leerEstadoPane(una).cuadro, { texto: '' });
+  assert.deepEqual(leerEstadoPane(conSugerencia('\x1b[39m❯ \x1b[2m/aos-core:wrapup\x1b[0m')).cuadro, { texto: '' });
+
+  // En un pane angosto la sugerencia parte en varios renglones, cada uno atenuado.
+  const partida = conSugerencia('\x1b[39m❯ \x1b[2mopción 1, hacé las ediciones\x1b[0m\n  \x1b[2my probá en tmux\x1b[0m');
+  assert.deepEqual(leerEstadoPane(partida).cuadro, { texto: '' });
+
+  // Un color 256 con `2` como argumento no es el atributo atenuado.
+  const color = conSugerencia('\x1b[39m❯ \x1b[38;5;2mhola\x1b[0m');
+  assert.deepEqual(leerEstadoPane(color).cuadro, { texto: 'hola' });
+
+  // Lo escrito de verdad, aunque venga después de una sugerencia, ocupa el cuadro.
+  const mezcla = conSugerencia('\x1b[39m❯ \x1b[2msugerencia\x1b[0m\n  escrito a mano');
+  assert.deepEqual(leerEstadoPane(mezcla).cuadro, { texto: 'sugerencia\nescrito a mano' });
+  const escritoYSigue = conSugerencia('\x1b[39m❯ hola \x1b[2mgris\x1b[0m');
+  assert.deepEqual(leerEstadoPane(escritoYSigue).cuadro, { texto: 'hola gris' });
+});
+
 test('una tecla del pie se manda sola, y solo si el diálogo de ahora la ofrece', async () => {
   _resetPromptsTmuxParaTests();
   const { deps, enviadas, pantallas } = fake();
