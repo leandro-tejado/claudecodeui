@@ -155,11 +155,11 @@ Hoy la barra tiene 15 proyectos activos (`prueba-e2e`, `prueba-env`, `prueba-ask
 10. Correr `sesiones.py listar` y verificar que no quedan sids repetidos. Commit y push.
 
 #### Estado (arranca todo en fail)
-- [fail] Un hijo `claude -p` no pisa al pane | valida: `python3 .claude/bin/test-sesiones.py` + prueba en vivo del paso 9
-- [fail] El hook concurrente con `construir()` sobrevive | valida: `test-sesiones.py`
-- [fail] Un nombre reusado no hereda el sid viejo | valida: `test-sesiones.py`
-- [fail] No hay sids repetidos entre sesiones vivas | valida: `python3 .claude/bin/sesiones.py listar --json | python3 -c '…contar duplicados…'`
-- [fail] Los tests previos siguen verdes | valida: `python3 .claude/bin/test-hibernar-tabla.py && python3 .claude/bin/test-orquestar.py && python3 .claude/bin/test-ciclo.py`
+- [pass] Un hijo `claude -p` no pisa al pane (tests con tabla y con procesos reales; prueba en vivo `[sin-verificar]`: gobernador en rojo, `crear` rechazado sin --forzar) | valida: `python3 .claude/bin/test-sesiones.py` + prueba en vivo del paso 9
+- [pass] El hook concurrente con `construir()` sobrevive | valida: `test-sesiones.py`
+- [pass] Un nombre reusado no hereda el sid viejo | valida: `test-sesiones.py`
+- [pass] No hay sids repetidos entre sesiones vivas (registro real tras el merge: 7 vivas, todas `sid_fuente: proceso`, 0 duplicados) | valida: `python3 .claude/bin/sesiones.py listar --json | python3 -c '…contar duplicados…'`
+- [pass] Los tests previos siguen verdes | valida: `python3 .claude/bin/test-hibernar-tabla.py && python3 .claude/bin/test-orquestar.py && python3 .claude/bin/test-ciclo.py`
 
 #### Peligros
 - El hook tiene un tope de 3 s y bloquea el arranque. Recorrer `/proc/<pid>/stat` es barato, pero no hay que llamar a `ps` en un loop.
@@ -184,9 +184,9 @@ Hoy la barra tiene 15 proyectos activos (`prueba-e2e`, `prueba-env`, `prueba-ask
 6. Tests: una DB vieja migra sin perder filas; el entrypoint sale de un `.jsonl` fixture `cli` y de uno `sdk-cli`.
 
 #### Estado (arranca todo en fail)
-- [fail] La migración es idempotente y conserva las filas | valida: `NODE_ENV=test npx vitest run server/modules/database`
-- [fail] `entrypoint` se llena desde el `.jsonl` | valida: `NODE_ENV=test npx vitest run server/modules/providers`
-- [fail] Archivar a mano escribe `archived_by='user'` | valida: test de `project-delete.service`
+- [pass] La migración es idempotente y conserva las filas (node:test, no vitest) | valida: `NODE_ENV=test npx vitest run server/modules/database`
+- [pass] `entrypoint` se llena desde el `.jsonl` | valida: `NODE_ENV=test npx vitest run server/modules/providers`
+- [pass] Archivar a mano escribe `archived_by='user'` | valida: test de `project-delete.service`
 
 #### Peligros
 - `auth.db` es la DB viva: la migración corre al arrancar el servicio. No probar contra `~/.cloudcli/auth.db`, sino contra una copia en el scratchpad.
@@ -321,7 +321,10 @@ Con la barra abierta y sin recargar:
 
 ## Cambios realizados
 
-*(se completa al ejecutar)*
+- **Tests del server:** corren con `node:test` vía `tsx` (`NODE_ENV=test npx tsx --tsconfig server/tsconfig.json --test <archivo>`), no con vitest. Los `valida:` del server que dicen vitest están mal; vitest es solo para `src/`.
+- **Fase 1, fuente nueva:** se agregó una fuente 0 para el sid de una sesión viva: `pane_pid → claude principal → ~/.claude/sessions/<pid>.json → sessionId`. Es exacta y gana sobre el hook y sobre el cwd. Cada entrada lleva `sid_fuente` (`proceso` / `hook` / `cwd`). La lógica del hook pasó a `sesiones.py hook` (testeable) y `registro-sesion.sh` quedó como envoltorio. Hay `flock` sobre `sesiones.json.lock` (sugerencia 2, incorporada). El filtro de transcripts excluye todo `sdk*` del respaldo por cwd. `hibernar.py` no se tocó. Mergeado a `master` de workspace-leandro (`968cf78`).
+- **Fase 2:** `por` es obligatorio en las funciones de archivado. Por eso también se tocó `sessions.service.ts`, y los tipos `ArchivedBy`/`archived_*` van en `server/shared/types.ts` como opcionales. Hay 6 tests del server que ya fallaban en la base `c92c5dc1`, antes del plan: `shell-tmux.test.ts` (2) y `claude-cli-path.test.ts` (4).
+- **Ruido de cloudcli (sugerencia 1):** se revirtió `package-lock.json` (re-resolución de npm, sin cambios en `package.json`) y `dist.old/` pasó a `.gitignore`.
 
 ---
 
