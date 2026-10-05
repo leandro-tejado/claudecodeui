@@ -1,6 +1,8 @@
 import os from 'node:os';
 import path from 'node:path';
+import { createReadStream } from 'node:fs';
 import { readFile } from 'node:fs/promises';
+import readline from 'node:readline';
 
 import { sessionsDb } from '@/modules/database/index.js';
 import {
@@ -16,7 +18,12 @@ type ParsedSession = {
   sessionId: string;
   projectPath: string;
   sessionName?: string;
+  /** 'cli' | 'sdk-ts' | 'sdk-cli'; undefined si las primeras líneas no lo traen. */
+  entrypoint?: string;
 };
+
+/** Líneas del arranque del .jsonl donde Claude Code deja `entrypoint`; no hace falta leer más. */
+const ENTRYPOINT_SCAN_LINES = 10;
 
 /**
  * Session indexer for Claude transcript artifacts.
@@ -72,7 +79,8 @@ export class ClaudeSessionSynchronizer implements IProviderSessionSynchronizer {
         parsed.sessionName,
         timestamps.createdAt,
         timestamps.updatedAt,
-        filePath
+        filePath,
+        parsed.entrypoint
       );
       processed += 1;
     }
@@ -105,7 +113,8 @@ export class ClaudeSessionSynchronizer implements IProviderSessionSynchronizer {
       parsed.sessionName,
       timestamps.createdAt,
       timestamps.updatedAt,
-      filePath
+      filePath,
+      parsed.entrypoint
     );
   }
 
@@ -135,6 +144,10 @@ export class ClaudeSessionSynchronizer implements IProviderSessionSynchronizer {
       return null;
     }
 
+    const entrypoint = await this.extractEntrypoint(filePath);
+    const withEntrypoint = (session: ParsedSession): ParsedSession =>
+      (entrypoint ? { ...session, entrypoint } : session);
+
     // App-created sessions are keyed by an app id, so disk-discovered provider
     // ids must be resolved through the provider-id mapping first.
     const existingSession = sessionsDb.getSessionByProviderSessionId(parsed.sessionId)
@@ -147,10 +160,10 @@ export class ClaudeSessionSynchronizer implements IProviderSessionSynchronizer {
       && existingSessionName !== 'Untitled Claude Session'
       && !existingSession?.custom_name_is_placeholder;
     if (isLocked) {
-      return {
+      return withEntrypoint({
         ...parsed,
         sessionName: normalizeSessionName(existingSessionName ?? undefined, 'Untitled Claude Session'),
-      };
+      });
     }
 
     let sessionName = await this.extractSessionTitle(filePath, parsed.sessionId);
@@ -166,13 +179,58 @@ export class ClaudeSessionSynchronizer implements IProviderSessionSynchronizer {
       // placeholder guess untouched instead of downgrading it to "Untitled
       // Claude Session". A row with no name at all yet still falls through
       // to the normalizeSessionName fallback below, same as before.
-      return { ...parsed, sessionName: undefined };
+      return withEntrypoint({ ...parsed, sessionName: undefined });
     }
 
-    return {
+    return withEntrypoint({
       ...parsed,
       sessionName: normalizeSessionName(sessionName, 'Untitled Claude Session'),
-    };
+    });
+  }
+
+  /**
+   * Lee `entrypoint` de las primeras líneas del transcript: `'cli'` (tmux/`ct`),
+   * `'sdk-ts'` (chat de CloudCLI) o `'sdk-cli'` (`claude -p` headless).
+   *
+   * Lectura acotada: corta a las `ENTRYPOINT_SCAN_LINES` líneas con contenido,
+   * sin cargar el archivo entero (los transcripts llegan a decenas de MB).
+   * Devuelve undefined si no aparece o el archivo no se puede leer; la fila
+   * queda con NULL y la próxima sincronización lo reintenta.
+   */
+  private async extractEntrypoint(filePath: string): Promise<string | undefined> {
+    const fileStream = createReadStream(filePath);
+    const lineReader = readline.createInterface({ input: fileStream, crlfDelay: Infinity });
+
+    try {
+      let scanned = 0;
+      for await (const line of lineReader) {
+        const trimmed = line.trim();
+        if (!trimmed) {
+          continue;
+        }
+
+        scanned += 1;
+        try {
+          const data = JSON.parse(trimmed) as Record<string, unknown>;
+          if (typeof data.entrypoint === 'string' && data.entrypoint.trim()) {
+            return data.entrypoint.trim();
+          }
+        } catch {
+          // Una línea truncada no invalida las siguientes.
+        }
+
+        if (scanned >= ENTRYPOINT_SCAN_LINES) {
+          break;
+        }
+      }
+    } catch {
+      // Archivo ausente o ilegible: sin entrypoint, el sync sigue.
+    } finally {
+      lineReader.close();
+      fileStream.destroy();
+    }
+
+    return undefined;
   }
 
   /**

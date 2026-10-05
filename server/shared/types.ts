@@ -883,6 +883,12 @@ export type CreateCredentialResult = {
 // ---------------------------
 //----------------- PROJECT PERSISTENCE TYPES ------------
 /**
+ * Quién archivó un proyecto o una sesión: `'user'` a mano, `'auto'` la limpieza
+ * automática de la barra. Al restaurar se vuelve a NULL.
+ */
+export type ArchivedBy = 'user' | 'auto';
+
+/**
  * Canonical project row shape returned by the projects repository.
  *
  * Use this type whenever backend services need to pass around one database
@@ -894,6 +900,10 @@ export type ProjectRepositoryRow = {
   custom_project_name: string | null;
   isStarred: number;
   isArchived: number;
+  /** Cuándo se archivó (UTC de SQLite); NULL si está activo o es anterior a la columna. */
+  archived_at?: string | null;
+  /** Quién archivó; NULL si está activo o es anterior a la columna. */
+  archived_by?: ArchivedBy | null;
 };
 
 /**

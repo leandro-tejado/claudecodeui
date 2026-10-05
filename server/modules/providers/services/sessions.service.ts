@@ -701,7 +701,7 @@ export const sessionsService = {
     }
 
     if (!options.force) {
-      sessionsDb.updateSessionIsArchived(sessionId, true);
+      sessionsDb.updateSessionIsArchived(sessionId, true, 'user');
       return {
         sessionId,
         action: 'archived',
@@ -753,7 +753,7 @@ export const sessionsService = {
       });
     }
 
-    sessionsDb.updateSessionIsArchived(sessionId, false);
+    sessionsDb.updateSessionIsArchived(sessionId, false, 'user');
     return { sessionId, isArchived: false };
   },
 

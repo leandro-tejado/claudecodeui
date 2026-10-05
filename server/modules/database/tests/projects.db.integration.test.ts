@@ -47,7 +47,7 @@ test('projectsDb.createProjectPath returns reactivated_archived for archived dup
     assert.equal(initial.outcome, 'created');
     assert.ok(initial.project);
 
-    projectsDb.updateProjectIsArchived('/workspace/archived-project', true);
+    projectsDb.updateProjectIsArchived('/workspace/archived-project', true, 'user');
 
     const reused = projectsDb.createProjectPath('/workspace/archived-project', 'Renamed Project');
     assert.equal(reused.outcome, 'reactivated_archived');
@@ -76,7 +76,7 @@ test('projectsDb.ensureProjectPathExists never reactivates an archived project',
     const initial = projectsDb.createProjectPath('/workspace/archived-by-user', 'Archived Project');
     assert.ok(initial.project);
 
-    projectsDb.updateProjectIsArchived('/workspace/archived-by-user', true);
+    projectsDb.updateProjectIsArchived('/workspace/archived-by-user', true, 'user');
 
     // Session synchronizers call this on every disk scan, including scans
     // that merely re-confirm a transcript already indexed. It must not undo

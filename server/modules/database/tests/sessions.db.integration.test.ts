@@ -35,7 +35,7 @@ test('session archive queries hide archived rows from active project views', asy
   await withIsolatedDatabase(() => {
     sessionsDb.createSession('session-active', 'claude', '/workspace/demo-project', 'Active Session');
     sessionsDb.createSession('session-archived', 'claude', '/workspace/demo-project', 'Archived Session');
-    sessionsDb.updateSessionIsArchived('session-archived', true);
+    sessionsDb.updateSessionIsArchived('session-archived', true, 'user');
 
     const activeSessions = sessionsDb.getAllSessions();
     const archivedSessions = sessionsDb.getArchivedSessions();
@@ -56,7 +56,7 @@ test('session archive queries hide archived rows from active project views', asy
 test('createSession never reactivates an archived row', async () => {
   await withIsolatedDatabase(() => {
     sessionsDb.createSession('session-reused', 'claude', '/workspace/demo-project', 'First Name');
-    sessionsDb.updateSessionIsArchived('session-reused', true);
+    sessionsDb.updateSessionIsArchived('session-reused', true, 'user');
 
     // This upsert only ever runs from a synchronizer re-scanning disk;
     // re-discovering the transcript must not undo the user's archive.
@@ -82,7 +82,7 @@ test("createSession leaves an archived row archived regardless of the transcript
     const jsonlPath = "/transcripts/session-untouched.jsonl";
 
     sessionsDb.createSession("session-untouched", "claude", "/workspace/demo-project", "A Name", createdAt, updatedAt, jsonlPath);
-    sessionsDb.updateSessionIsArchived("session-untouched", true);
+    sessionsDb.updateSessionIsArchived("session-untouched", true, 'user');
 
     // A full rescan re-indexes every transcript created since the last scan,
     // changed or not, and hands over the timestamps the file still carries.
@@ -105,7 +105,7 @@ test("the upsert path never reactivates a row even with an omitted timestamp", a
     // An app-created row carries no provider id, so indexing it takes the
     // INSERT ... ON CONFLICT branch rather than the UPDATE above.
     sessionsDb.createAppSession("session-legacy", "claude", "/workspace/demo-project");
-    sessionsDb.updateSessionIsArchived("session-legacy", true);
+    sessionsDb.updateSessionIsArchived("session-legacy", true, 'user');
 
     sessionsDb.createSession("session-legacy", "claude", "/workspace/demo-project", "Indexed Name");
 
@@ -116,7 +116,7 @@ test("the upsert path never reactivates a row even with an omitted timestamp", a
 test("the upsert path leaves an archived row alone for a transcript older than it", async () => {
   await withIsolatedDatabase(() => {
     sessionsDb.createAppSession("session-stale", "claude", "/workspace/demo-project");
-    sessionsDb.updateSessionIsArchived("session-stale", true);
+    sessionsDb.updateSessionIsArchived("session-stale", true, 'user');
 
     sessionsDb.createSession("session-stale", "claude", "/workspace/demo-project", "Indexed Name", "2026-07-18T09:00:00.000Z", "2026-07-18T10:00:00.000Z", "/transcripts/session-stale.jsonl");
 
@@ -149,8 +149,8 @@ test('recent sessions are globally ordered, paginated, and limited to visible co
     ];
     fixtures.forEach((fixture) => sessionsDb.createSession(...fixture));
 
-    sessionsDb.updateSessionIsArchived('session-archived', true);
-    projectsDb.updateProjectIsArchived('/workspace/project-hidden', true);
+    sessionsDb.updateSessionIsArchived('session-archived', true, 'user');
+    projectsDb.updateProjectIsArchived('/workspace/project-hidden', true, 'user');
 
     const firstPage = sessionsDb.getRecentSessionsPage(2, 0);
     const secondPage = sessionsDb.getRecentSessionsPage(2, 2);

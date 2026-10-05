@@ -1,5 +1,6 @@
 import { getConnection } from '@/modules/database/connection.js';
 import { projectsDb } from '@/modules/database/repositories/projects.db.js';
+import type { ArchivedBy } from '@/shared/types.js';
 import { normalizeProjectPath } from '@/shared/utils.js';
 
 type SessionRow = {
@@ -23,6 +24,15 @@ type SessionRow = {
   /** The app session this one was branched from; NULL unless it is a fork. */
   forked_from_session_id: string | null;
   isArchived: number;
+  /** Cuándo se archivó (UTC de SQLite); NULL si está activa o es anterior a la columna. */
+  archived_at?: string | null;
+  /** Quién archivó; NULL si está activa o es anterior a la columna. */
+  archived_by?: ArchivedBy | null;
+  /**
+   * Con qué se abrió, tal como lo escribe Claude Code en el `.jsonl`: 'cli',
+   * 'sdk-ts' o 'sdk-cli'. NULL hasta que el synchronizer lo lee.
+   */
+  entrypoint?: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -33,7 +43,7 @@ type RecentSessionsPage = {
 };
 
 const SESSION_ROW_COLUMNS =
-  'session_id, provider, provider_session_id, project_path, jsonl_path, custom_name, custom_name_is_placeholder, model, effort, forked_from_session_id, isArchived, created_at, updated_at';
+  'session_id, provider, provider_session_id, project_path, jsonl_path, custom_name, custom_name_is_placeholder, model, effort, forked_from_session_id, isArchived, archived_at, archived_by, entrypoint, created_at, updated_at';
 
 const SQLITE_UTC_TIMESTAMP_REGEX = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/;
 
@@ -101,7 +111,8 @@ export const sessionsDb = {
     customName?: string,
     createdAt?: string,
     updatedAt?: string,
-    jsonlPath?: string | null
+    jsonlPath?: string | null,
+    entrypoint?: string | null
   ): string {
     const db = getConnection();
     const createdAtValue = normalizeTimestamp(createdAt);
@@ -147,7 +158,8 @@ export const sessionsDb = {
                THEN custom_name_is_placeholder
              WHEN ? IS NOT NULL THEN 0
              ELSE custom_name_is_placeholder
-           END
+           END,
+           entrypoint = COALESCE(entrypoint, ?)
          WHERE session_id = ?`
       ).run(
         provider,
@@ -156,6 +168,7 @@ export const sessionsDb = {
         jsonlPath ?? null,
         customName ?? null,
         customName ?? null,
+        entrypoint ?? null,
         existing.session_id
       );
 
@@ -168,14 +181,15 @@ export const sessionsDb = {
     // Same reasoning as the UPDATE branch above: isArchived is excluded from
     // DO UPDATE SET so a re-scan can never resurrect an archived session.
     db.prepare(
-      `INSERT INTO sessions (session_id, provider, provider_session_id, custom_name, project_path, jsonl_path, isArchived, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, 0, COALESCE(?, CURRENT_TIMESTAMP), COALESCE(?, CURRENT_TIMESTAMP))
+      `INSERT INTO sessions (session_id, provider, provider_session_id, custom_name, project_path, jsonl_path, entrypoint, isArchived, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, 0, COALESCE(?, CURRENT_TIMESTAMP), COALESCE(?, CURRENT_TIMESTAMP))
        ON CONFLICT(session_id) DO UPDATE SET
          provider = excluded.provider,
          provider_session_id = excluded.provider_session_id,
          updated_at = excluded.updated_at,
          project_path = excluded.project_path,
          jsonl_path = excluded.jsonl_path,
+         entrypoint = COALESCE(sessions.entrypoint, excluded.entrypoint),
          custom_name = CASE
            WHEN sessions.session_id <> sessions.provider_session_id AND sessions.custom_name IS NOT NULL
              THEN sessions.custom_name
@@ -188,6 +202,7 @@ export const sessionsDb = {
       customName ?? null,
       normalizedProjectPath,
       jsonlPath ?? null,
+      entrypoint ?? null,
       createdAtValue,
       updatedAtValue
     );
@@ -794,13 +809,18 @@ export const sessionsDb = {
    * Soft-delete and restore both use the same flag update so callers keep the
    * row, metadata, and file path intact while toggling visibility.
    */
-  updateSessionIsArchived(sessionId: string, isArchived: boolean): void {
+  updateSessionIsArchived(sessionId: string, isArchived: boolean, por: ArchivedBy): void {
     const db = getConnection();
+    const flag = isArchived ? 1 : 0;
+    // Archivar deja fecha y autor; restaurar los limpia. `por` es obligatorio
+    // para que la limpieza automática nunca dependa de un default.
     db.prepare(
       `UPDATE sessions
-       SET isArchived = ?
+       SET isArchived = ?,
+           archived_at = CASE WHEN ? = 1 THEN CURRENT_TIMESTAMP ELSE NULL END,
+           archived_by = CASE WHEN ? = 1 THEN ? ELSE NULL END
        WHERE session_id = ?`
-    ).run(isArchived ? 1 : 0, sessionId);
+    ).run(flag, flag, flag, por, sessionId);
   },
 
   deleteSessionById(sessionId: string): boolean {

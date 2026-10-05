@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import path from 'node:path';
 
 import { getConnection } from '@/modules/database/connection.js';
-import type { CreateProjectPathResult, ProjectRepositoryRow } from '@/shared/types.js';
+import type { ArchivedBy, CreateProjectPathResult, ProjectRepositoryRow } from '@/shared/types.js';
 import { normalizeProjectPath } from '@/shared/utils.js';
 
 function normalizeProjectDisplayName(projectPath: string, customProjectName: string | null): string {
@@ -25,9 +25,11 @@ export const projectsDb = {
         INSERT INTO projects (project_id, project_path, custom_project_name, isArchived)
             VALUES (?, ?, ?, 0)
             ON CONFLICT(project_path) DO UPDATE SET
-            isArchived = 0
+            isArchived = 0,
+            archived_at = NULL,
+            archived_by = NULL
             WHERE projects.isArchived = 1
-            RETURNING project_id, project_path, custom_project_name, isStarred, isArchived
+            RETURNING project_id, project_path, custom_project_name, isStarred, isArchived, archived_at, archived_by
         `).get(attemptedId, normalizedProjectPath, normalizedProjectName) as ProjectRepositoryRow | undefined;
 
         if (row) {
@@ -70,7 +72,7 @@ export const projectsDb = {
         const db = getConnection();
         const normalizedProjectPath = normalizeProjectPath(projectPath);
         const row = db.prepare(`
-            SELECT project_id, project_path, custom_project_name, isStarred, isArchived
+            SELECT project_id, project_path, custom_project_name, isStarred, isArchived, archived_at, archived_by
             FROM projects
             WHERE project_path = ?
         `).get(normalizedProjectPath) as ProjectRepositoryRow | undefined;
@@ -81,7 +83,7 @@ export const projectsDb = {
     getProjectById(projectId: string): ProjectRepositoryRow | null {
         const db = getConnection();
         const row = db.prepare(`
-            SELECT project_id, project_path, custom_project_name, isStarred, isArchived
+            SELECT project_id, project_path, custom_project_name, isStarred, isArchived, archived_at, archived_by
             FROM projects
             WHERE project_id = ?
         `).get(projectId) as ProjectRepositoryRow | undefined;
@@ -111,7 +113,7 @@ export const projectsDb = {
     getProjectPaths(): ProjectRepositoryRow[] {
         const db = getConnection();
         return db.prepare(`
-            SELECT project_id, project_path, custom_project_name, isStarred, isArchived
+            SELECT project_id, project_path, custom_project_name, isStarred, isArchived, archived_at, archived_by
             FROM projects
             WHERE isArchived = 0
         `).all() as ProjectRepositoryRow[];
@@ -124,7 +126,7 @@ export const projectsDb = {
     getArchivedProjectPaths(): ProjectRepositoryRow[] {
         const db = getConnection();
         return db.prepare(`
-            SELECT project_id, project_path, custom_project_name, isStarred, isArchived
+            SELECT project_id, project_path, custom_project_name, isStarred, isArchived, archived_at, archived_by
             FROM projects
             WHERE isArchived = 1
         `).all() as ProjectRepositoryRow[];
@@ -180,23 +182,32 @@ export const projectsDb = {
         `).run(isStarred ? 1 : 0, projectId);
     },
 
-    updateProjectIsArchived(projectPath: string, isArchived: boolean): void {
+    /**
+     * Archivar escribe `archived_at` y `archived_by = por`; restaurar los
+     * limpia. `por` es obligatorio a propósito: la limpieza automática se
+     * apoya en saber quién archivó, y un default lo taparía en un caller nuevo.
+     */
+    updateProjectIsArchived(projectPath: string, isArchived: boolean, por: ArchivedBy): void {
         const db = getConnection();
         const normalizedProjectPath = normalizeProjectPath(projectPath);
         db.prepare(`
             UPDATE projects
-            SET isArchived = ?
+            SET isArchived = ?,
+                archived_at = CASE WHEN ? = 1 THEN CURRENT_TIMESTAMP ELSE NULL END,
+                archived_by = CASE WHEN ? = 1 THEN ? ELSE NULL END
             WHERE project_path = ?
-        `).run(isArchived ? 1 : 0, normalizedProjectPath);
+        `).run(isArchived ? 1 : 0, isArchived ? 1 : 0, isArchived ? 1 : 0, por, normalizedProjectPath);
     },
 
-    updateProjectIsArchivedById(projectId: string, isArchived: boolean): void {
+    updateProjectIsArchivedById(projectId: string, isArchived: boolean, por: ArchivedBy): void {
         const db = getConnection();
         db.prepare(`
             UPDATE projects
-            SET isArchived = ?
+            SET isArchived = ?,
+                archived_at = CASE WHEN ? = 1 THEN CURRENT_TIMESTAMP ELSE NULL END,
+                archived_by = CASE WHEN ? = 1 THEN ? ELSE NULL END
             WHERE project_id = ?
-        `).run(isArchived ? 1 : 0, projectId);
+        `).run(isArchived ? 1 : 0, isArchived ? 1 : 0, isArchived ? 1 : 0, por, projectId);
     },
 
     deleteProjectPath(projectPath: string): void {

@@ -92,7 +92,11 @@ CREATE TABLE IF NOT EXISTS projects (
     project_path TEXT NOT NULL UNIQUE,
     custom_project_name TEXT DEFAULT NULL,
     isStarred BOOLEAN DEFAULT 0,
-    isArchived BOOLEAN DEFAULT 0
+    isArchived BOOLEAN DEFAULT 0,
+    -- Cuándo y quién archivó el proyecto: 'user' | 'auto'. NULL si está activo
+    -- o si se archivó antes de que existieran estas columnas.
+    archived_at DATETIME,
+    archived_by TEXT
 );
 `;
 
@@ -152,6 +156,15 @@ CREATE TABLE IF NOT EXISTS sessions (
     -- session, and deleting the source does not affect it.
     forked_from_session_id TEXT,
     isArchived BOOLEAN DEFAULT 0,
+    -- Cuándo y quién archivó la sesión: 'user' | 'auto'. Se limpian al
+    -- restaurar; NULL en lo activo y en lo archivado antes de estas columnas.
+    archived_at DATETIME,
+    archived_by TEXT,
+    -- Con qué se abrió la sesión, tal como lo escribe Claude Code en el
+    -- .jsonl: 'cli' (tmux/ct), 'sdk-ts' (chat de CloudCLI) o 'sdk-cli'
+    -- (claude -p headless). NULL hasta que el synchronizer lo lee; una vez
+    -- lleno no se pisa.
+    entrypoint TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (session_id),
