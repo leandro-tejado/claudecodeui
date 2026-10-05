@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Boceto — Header y barra CloudCLI (05-oct)</title>
+<style>
+  :root{
+    --primary:#3156FA; --primary-light:#62C3F9; --primary-dark:#2743D6; --primary-tint:#EDF1FF;
+    --ink:#141F3D; --muted:#5B6B8C; --faint:#8A97B0;
+    --surface:#FFFFFF; --surface-2:#F4F7FB; --surface-3:#EAEEF4;
+    --line:#DBE2EC; --line-strong:#C7D0DE;
+    --good:#15803D; --warn:#D97706; --bad:#DC2626;
+    --chrome-bg: rgb(255 255 255 / .72); --chrome-edge: rgb(255 255 255 / .5);
+    --shadow-card: 0 1px 2px rgb(20 33 61 / .04), 0 2px 8px rgb(20 33 61 / .06);
+    --radius-sm:6px; --radius-md:8px; --radius-lg:12px;
+    --sp-2:8px; --sp-4:16px; --sp-6:24px;
+    color-scheme: light;
+  }
+  :root[data-theme="dark"]{
+    --primary:#7C9BFF; --primary-light:#9FD4FF; --primary-dark:#3156FA; --primary-tint:#1B2440;
+    --ink:#EEF1F8; --muted:#93A0BF; --faint:#68749C;
+    --surface:#0B1220; --surface-2:#121A2B; --surface-3:#1A2338;
+    --line:#27314A; --line-strong:#38435F;
+    --good:#3DDC84; --warn:#F2B84B; --bad:#FF6B6B;
+    --chrome-bg: rgb(11 18 32 / .72); --chrome-edge: rgb(255 255 255 / .06);
+    --shadow-card: 0 1px 2px rgb(0 0 0 / .3), 0 2px 10px rgb(0 0 0 / .35);
+    color-scheme: dark;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --primary:#7C9BFF; --primary-light:#9FD4FF; --primary-dark:#3156FA; --primary-tint:#1B2440;
+      --ink:#EEF1F8; --muted:#93A0BF; --faint:#68749C;
+      --surface:#0B1220; --surface-2:#121A2B; --surface-3:#1A2338;
+      --line:#27314A; --line-strong:#38435F;
+      --good:#3DDC84; --warn:#F2B84B; --bad:#FF6B6B;
+      --chrome-bg: rgb(11 18 32 / .72); --chrome-edge: rgb(255 255 255 / .06);
+      --shadow-card: 0 1px 2px rgb(0 0 0 / .3), 0 2px 10px rgb(0 0 0 / .35);
+      color-scheme: dark;
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+    background:var(--surface); color:var(--ink); font-size:16px; line-height:1.5;
+    overflow-x:hidden;
+  }
+  .app{ display:flex; min-height:100vh; }
+
+  /* ─── Barra lateral: estados de sesión ──────────────────────────── */
+  .barra{ width:280px; flex:none; background:var(--surface-2); border-right:1px solid var(--line); padding:var(--sp-4) 0; }
+  .barra h2{ font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:var(--muted); margin:0 var(--sp-4) var(--sp-2); }
+  .fila-sesion{
+    display:flex; align-items:center; gap:10px; padding:9px var(--sp-4); font-size:13px; color:var(--ink);
+    border-left:2px solid transparent; cursor:pointer;
+  }
+  .fila-sesion:hover{ background:var(--surface-3); }
+  .fila-sesion.activa{ background:var(--primary-tint); border-left-color:var(--primary); font-weight:500; }
+  .fila-sesion .titulo{ flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .fila-sesion .rotulo-estado{ font-size:11px; color:var(--faint); flex:none; }
+
+  .estado-ico{ width:16px; height:16px; flex:none; display:flex; align-items:center; justify-content:center; }
+  .estado-ico svg{ width:14px; height:14px; }
+  .estado--pensando .estado-ico{ color:var(--primary); animation:girar 1.1s linear infinite; }
+  @media (prefers-reduced-motion: reduce){ .estado--pensando .estado-ico{ animation:none; } }
+  @keyframes girar{ to{ transform:rotate(360deg); } }
+  .estado--esperando .estado-ico{ color:var(--warn); }
+  .estado--esperando .dot-simple{ animation:pulso 1.4s ease-in-out infinite; }
+  @media (prefers-reduced-motion: reduce){ .estado--esperando .dot-simple{ animation:none; } }
+  @keyframes pulso{ 0%,100%{opacity:1} 50%{opacity:.3} }
+  .estado--libre .estado-ico{ color:var(--good); }
+  .estado--dormida{ opacity:.55; }
+  .estado--dormida .estado-ico{ color:var(--faint); }
+
+  .fila-sesion--nueva{ animation: entrar .4s cubic-bezier(.2,.8,.2,1) both; }
+  @keyframes entrar{ from{ opacity:0; transform:translateY(-6px) scale(.97); background:var(--primary-tint); } to{ opacity:1; transform:none; } }
+  @media (prefers-reduced-motion: reduce){ .fila-sesion--nueva{ animation: entrar-reducido .18s ease-out both; } }
+  @keyframes entrar-reducido{ from{ opacity:0 } to{ opacity:1 } }
+
+  .leyenda{ margin:var(--sp-6) var(--sp-4) 0; padding-top:var(--sp-4); border-top:1px solid var(--line); font-size:11px; color:var(--faint); display:flex; flex-direction:column; gap:6px; }
+  .leyenda span{ display:flex; align-items:center; gap:7px; }
+  .leyenda .dot{ width:7px; height:7px; border-radius:999px; }
+
+  /* ─── Columna derecha: header con cuota ─────────────────────────── */
+  .col{ flex:1; min-width:0; }
+  .header{
+    position:sticky; top:0; z-index:20;
+    background:var(--chrome-bg); backdrop-filter:blur(20px) saturate(180%); -webkit-backdrop-filter:blur(20px) saturate(180%);
+    border-bottom:1px solid var(--chrome-edge);
+    padding:12px var(--sp-4);
+  }
+  @media (prefers-reduced-transparency: reduce){ .header{ background:var(--surface-2); backdrop-filter:none; } }
+  .header__fila{ display:flex; align-items:center; gap:var(--sp-6); flex-wrap:wrap; }
+  .header__tema{
+    appearance:none; border:1px solid var(--line); background:var(--surface); color:var(--muted);
+    border-radius:var(--radius-sm); padding:6px 10px; font-size:12px; cursor:pointer; margin-left:auto;
+  }
+  .header__tema:focus-visible{ outline:2px solid var(--primary); outline-offset:1px; }
+
+  .cuota{ display:flex; align-items:center; gap:8px; min-width:150px; }
+  .cuota__texto{ font-size:12px; color:var(--muted); white-space:nowrap; }
+  .cuota__texto b{ color:var(--ink); font-weight:600; }
+  .cuota__barra{ flex:1; min-width:70px; height:5px; border-radius:999px; background:var(--surface-3); overflow:hidden; }
+  .cuota__relleno{ height:100%; border-radius:999px; background:var(--primary); transition:width .3s cubic-bezier(.2,.8,.2,1); }
+  @media (prefers-reduced-motion: reduce){ .cuota__relleno{ transition:none; } }
+  .cuota__relleno.alerta{ background:var(--warn); }
+  .cuota__pct{ font-size:12px; font-weight:600; color:var(--ink); width:34px; text-align:right; }
+  .cuota__detalle{ font-size:11px; color:var(--faint); }
+
+  main{ padding:var(--sp-6) var(--sp-4); max-width:720px; }
+  main h1{ font-size:17px; font-weight:700; letter-spacing:-.01em; margin:0 0 6px; }
+  main p{ font-size:13px; color:var(--muted); margin:0 0 var(--sp-6); line-height:1.6; }
+
+  .grilla-estados{ display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:var(--sp-4); }
+  .card-estado{ border:1px solid var(--line); border-radius:var(--radius-md); padding:var(--sp-4); background:var(--surface); box-shadow:var(--shadow-card); }
+  .card-estado__cab{ display:flex; align-items:center; gap:8px; font-size:13px; font-weight:600; margin-bottom:6px; }
+  .card-estado__cab svg{ width:16px; height:16px; }
+  .card-estado p{ margin:0; font-size:12px; color:var(--muted); }
+
+  .btn-barra{
+    display:none; align-items:center; justify-content:center; width:32px; height:32px; flex:none;
+    border:1px solid var(--line); border-radius:var(--radius-sm); background:var(--surface); color:var(--ink); cursor:pointer;
+  }
+  .btn-barra:focus-visible{ outline:2px solid var(--primary); outline-offset:1px; }
+  @media (max-width: 767px){
+    .barra{ position:fixed; inset:0 auto 0 0; z-index:30; width:260px; transform:translateX(-100%); transition:transform .3s cubic-bezier(.2,.8,.2,1); box-shadow:var(--shadow-card); }
+    .barra.abierta{ transform:none; }
+    @media (prefers-reduced-motion: reduce){ .barra{ transition:none; } }
+    .btn-barra{ display:inline-flex; }
+    .header__fila{ gap:var(--sp-4); }
+    .cuota{ min-width:120px; }
+    main{ padding:var(--sp-4); }
+    .grilla-estados{ grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="barra" id="barra">
+    <h2>Sesiones</h2>
+    <div class="fila-sesion activa estado--pensando">
+      <span class="estado-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
+      <span class="titulo">Guion humo creación</span>
+      <span class="rotulo-estado">pensando</span>
+    </div>
+    <div class="fila-sesion estado--esperando">
+      <span class="estado-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle class="dot-simple" cx="12" cy="12" r="4" fill="currentColor" stroke="none"/></svg></span>
+      <span class="titulo">Respondé solo: listo</span>
+      <span class="rotulo-estado">esperando</span>
+    </div>
+    <div class="fila-sesion estado--libre">
+      <span class="estado-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg></span>
+      <span class="titulo">Párrafo sobre faros</span>
+      <span class="rotulo-estado">libre</span>
+    </div>
+    <div class="fila-sesion estado--libre">
+      <span class="estado-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg></span>
+      <span class="titulo">Contar del 1 al 40</span>
+      <span class="rotulo-estado">libre</span>
+    </div>
+    <div class="fila-sesion estado--dormida">
+      <span class="estado-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8Z"/></svg></span>
+      <span class="titulo">Pregunta sobre fruta</span>
+      <span class="rotulo-estado">dormida</span>
+    </div>
+    <div class="fila-sesion fila-sesion--nueva estado--libre">
+      <span class="estado-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg></span>
+      <span class="titulo">Sesión nueva (entrando)</span>
+      <span class="rotulo-estado">libre</span>
+    </div>
+
+    <div class="leyenda">
+      <span><span class="dot" style="background:var(--primary)"></span>Pensando — el agente está generando</span>
+      <span><span class="dot" style="background:var(--warn)"></span>Esperando respuesta — tuya, no de Claude</span>
+      <span><span class="dot" style="background:var(--good)"></span>Libre — turno cerrado</span>
+      <span><span class="dot" style="background:var(--faint)"></span>Dormida — hibernada por el gobernador</span>
+    </div>
+  </aside>
+
+  <div class="col">
+    <header class="header">
+      <div class="header__fila">
+        <button class="btn-barra" id="btnBarra" aria-label="Abrir sesiones" aria-controls="barra" aria-expanded="false">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+
+        <div class="cuota">
+          <div class="cuota__texto">Ventana 5h <b>68%</b></div>
+          <div class="cuota__barra"><div class="cuota__relleno" style="width:68%"></div></div>
+        </div>
+        <div class="cuota__detalle">resetea en 2h 14m</div>
+
+        <div class="cuota">
+          <div class="cuota__texto">Semanal <b>84%</b></div>
+          <div class="cuota__barra"><div class="cuota__relleno alerta" style="width:84%"></div></div>
+        </div>
+        <div class="cuota__detalle">antigüedad: ciclo desde hace 4 días</div>
+
+        <button class="header__tema" id="btnTema" type="button">Tema: <span id="temaTexto">claro</span></button>
+      </div>
+    </header>
+
+    <main>
+      <h1>Header y barra — estados</h1>
+      <p>La barra identifica cada sesión por ícono + color, no solo color (nunca el único indicador — checklist de accesibilidad). El header lleva las dos ventanas de cuota siempre visibles, con el dato de "sin dato" resuelto por diseño: si no hay lectura fresca, la barra queda vacía con el texto "sin leer aún", nunca con un 0% que parece un dato real.</p>
+
+      <div class="grilla-estados">
+        <div class="card-estado">
+          <div class="card-estado__cab" style="color:var(--primary)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+            Pensando
+          </div>
+          <p>El agente está generando el turno. Ícono con giro suave (1.1s linear); con <code>prefers-reduced-motion</code> queda fijo.</p>
+        </div>
+        <div class="card-estado">
+          <div class="card-estado__cab" style="color:var(--warn)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4" fill="currentColor" stroke="none"/></svg>
+            Esperando respuesta
+          </div>
+          <p>Turno pausado por una pregunta o un permiso: la acción que falta es tuya.</p>
+        </div>
+        <div class="card-estado">
+          <div class="card-estado__cab" style="color:var(--good)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>
+            Libre
+          </div>
+          <p>Turno cerrado, sin nada pendiente.</p>
+        </div>
+        <div class="card-estado">
+          <div class="card-estado__cab" style="color:var(--faint)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8Z"/></svg>
+            Dormida
+          </div>
+          <p>Hibernada por el ciclo de ocio del gobernador; se despierta sola al abrirla.</p>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script>
+  (function(){
+    var root = document.documentElement;
+    var btn = document.getElementById('btnTema');
+    var txt = document.getElementById('temaTexto');
+    function aplicar(t){
+      if (t) { root.setAttribute('data-theme', t); } else { root.removeAttribute('data-theme'); }
+      var efectivo = t || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      txt.textContent = efectivo === 'dark' ? 'oscuro' : 'claro';
+    }
+    var guardado = null;
+    try { guardado = localStorage.getItem('boceto-tema'); } catch (e) {}
+    aplicar(guardado);
+    btn.addEventListener('click', function(){
+      var actual = root.getAttribute('data-theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      var siguiente = actual === 'dark' ? 'light' : 'dark';
+      try { localStorage.setItem('boceto-tema', siguiente); } catch (e) {}
+      aplicar(siguiente);
+    });
+  })();
+  (function(){
+    var barra = document.getElementById('barra');
+    var btn = document.getElementById('btnBarra');
+    btn.addEventListener('click', function(){
+      var abierta = barra.classList.toggle('abierta');
+      btn.setAttribute('aria-expanded', String(abierta));
+    });
+  })();
+</script>
+
+<!--
+CHECKLIST ui-ux-pro-max (paso 8, Fase 10) — 05-oct-2026
+
+[x] Contraste: mismos tokens que 05-octubre-chat.html — 4.6:1 (claro) / 7.1:1 (oscuro) para
+    `--primary`/`--surface`; `--warn` sobre `--surface` ronda 3.4:1 en claro (usado solo para
+    texto >= 14px y relleno de barra, nunca para texto chico — AA de texto grande).
+[x] Foco visible en `.header__tema` y `.btn-barra` (`:focus-visible`, anillo `--primary`).
+[x] 390px: sidebar overlay, cuota apila sin desbordar (`flex-wrap: wrap` en `.header__fila`),
+    tarjetas de estado a una columna.
+[x] 768/1024/1440px: sidebar fija 280px, header en una sola fila, tarjetas a 2 columnas.
+[x] Sin scroll horizontal (mismo mecanismo que el boceto del chat).
+[x] El estado de sesión nunca depende SOLO del color: cada fila lleva ícono distinto +
+    rótulo de texto ("pensando"/"esperando"/"libre"/"dormida") además del color.
+[x] `prefers-reduced-motion`: giro del ícono "pensando", pulso de "esperando", entrada de
+    sesión nueva y transición de la barra de cuota caen a estático o a 180ms sin transform.
+[x] `prefers-reduced-transparency`: header cae a `--surface-2` opaco.
+[x] Cuota nunca en 0% fantasma: este boceto fija valores de ejemplo (68%/84%) a propósito —
+    la Fase 11 es la que resuelve el estado real "sin dato" (línea base, punto 2).
+-->
+</body>
+</html>

@@ -1,0 +1,380 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Boceto — Chat CloudCLI (05-oct)</title>
+<style>
+  :root{
+    --primary:#3156FA; --primary-light:#62C3F9; --primary-dark:#2743D6; --primary-tint:#EDF1FF;
+    --secondary:#0891B2;
+    --ink:#141F3D; --muted:#5B6B8C; --faint:#8A97B0;
+    --surface:#FFFFFF; --surface-2:#F4F7FB; --surface-3:#EAEEF4;
+    --line:#DBE2EC; --line-strong:#C7D0DE;
+    --good:#15803D; --warn:#D97706; --bad:#DC2626;
+    --chrome-bg: rgb(255 255 255 / .72); --chrome-edge: rgb(255 255 255 / .5);
+    --shadow-card: 0 1px 2px rgb(20 33 61 / .04), 0 2px 8px rgb(20 33 61 / .06);
+    --radius-sm:6px; --radius-md:8px; --radius-lg:12px;
+    --sp-2:8px; --sp-4:16px; --sp-6:24px; --sp-8:32px;
+    color-scheme: light;
+  }
+  :root[data-theme="dark"]{
+    --primary:#7C9BFF; --primary-light:#9FD4FF; --primary-dark:#3156FA; --primary-tint:#1B2440;
+    --secondary:#22D3EE;
+    --ink:#EEF1F8; --muted:#93A0BF; --faint:#68749C;
+    --surface:#0B1220; --surface-2:#121A2B; --surface-3:#1A2338;
+    --line:#27314A; --line-strong:#38435F;
+    --good:#3DDC84; --warn:#F2B84B; --bad:#FF6B6B;
+    --chrome-bg: rgb(11 18 32 / .72); --chrome-edge: rgb(255 255 255 / .06);
+    --shadow-card: 0 1px 2px rgb(0 0 0 / .3), 0 2px 10px rgb(0 0 0 / .35);
+    color-scheme: dark;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --primary:#7C9BFF; --primary-light:#9FD4FF; --primary-dark:#3156FA; --primary-tint:#1B2440;
+      --secondary:#22D3EE;
+      --ink:#EEF1F8; --muted:#93A0BF; --faint:#68749C;
+      --surface:#0B1220; --surface-2:#121A2B; --surface-3:#1A2338;
+      --line:#27314A; --line-strong:#38435F;
+      --good:#3DDC84; --warn:#F2B84B; --bad:#FF6B6B;
+      --chrome-bg: rgb(11 18 32 / .72); --chrome-edge: rgb(255 255 255 / .06);
+      --shadow-card: 0 1px 2px rgb(0 0 0 / .3), 0 2px 10px rgb(0 0 0 / .35);
+      color-scheme: dark;
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;height:100%}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+    background:var(--surface); color:var(--ink);
+    font-size:16px; line-height:1.5;
+    overflow-x:hidden;
+  }
+  .app{ display:flex; height:100vh; }
+
+  /* ─── Barra lateral ─────────────────────────────────────────────── */
+  .barra{
+    width:260px; flex:none; background:var(--surface-2); border-right:1px solid var(--line);
+    display:flex; flex-direction:column; overflow:hidden;
+  }
+  .barra__cabecera{ padding:var(--sp-4); display:flex; align-items:center; gap:var(--sp-2); border-bottom:1px solid var(--line); }
+  .barra__cabecera .marca{ font-weight:700; font-size:14px; letter-spacing:-.005em; }
+  .barra__lista{ flex:1; overflow-y:auto; padding:var(--sp-2); }
+  .fila-sesion{
+    display:flex; align-items:center; gap:var(--sp-2); padding:8px 10px; border-radius:var(--radius-sm);
+    font-size:13px; color:var(--muted); cursor:pointer; margin-bottom:2px;
+  }
+  .fila-sesion:hover{ background:var(--surface-3); }
+  .fila-sesion.activa{ background:var(--primary-tint); color:var(--ink); font-weight:500; }
+  .fila-sesion .titulo{ flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .dot{ width:7px; height:7px; border-radius:999px; flex:none; }
+  .dot--pensando{ background:var(--primary); animation:pulso 1.4s ease-in-out infinite; }
+  .dot--esperando{ background:var(--warn); }
+  .dot--libre{ background:var(--good); opacity:.5; }
+  .dot--dormida{ background:var(--faint); opacity:.4; }
+  @keyframes pulso{ 0%,100%{opacity:1} 50%{opacity:.35} }
+  @media (prefers-reduced-motion: reduce){ .dot--pensando{ animation:none; opacity:.8; } }
+
+  .fila-sesion--nueva{ animation: entrar var(--motion-default, .38s) cubic-bezier(.2,.8,.2,1) both; }
+  @keyframes entrar{ from{ opacity:0; transform:translateY(-6px) scale(.98); } to{ opacity:1; transform:none; } }
+  @media (prefers-reduced-motion: reduce){ .fila-sesion--nueva{ animation: entrar-reducido .18s ease-out both; } }
+  @keyframes entrar-reducido{ from{ opacity:0 } to{ opacity:1 } }
+
+  /* ─── Columna principal ─────────────────────────────────────────── */
+  .col{ flex:1; display:flex; flex-direction:column; min-width:0; }
+
+  .header{
+    position:sticky; top:0; z-index:20;
+    background:var(--chrome-bg); backdrop-filter:blur(20px) saturate(180%); -webkit-backdrop-filter:blur(20px) saturate(180%);
+    border-bottom:1px solid var(--chrome-edge);
+    padding:10px var(--sp-4);
+    display:flex; align-items:center; gap:var(--sp-4);
+  }
+  @media (prefers-reduced-transparency: reduce){ .header{ background:var(--surface-2); backdrop-filter:none; } }
+  .header__titulo{ font-size:14px; font-weight:600; flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .header__tema{
+    appearance:none; border:1px solid var(--line); background:var(--surface); color:var(--muted);
+    border-radius:var(--radius-sm); padding:6px 10px; font-size:12px; cursor:pointer;
+  }
+  .header__tema:hover{ border-color:var(--line-strong); color:var(--ink); }
+  .header__tema:focus-visible{ outline:2px solid var(--primary); outline-offset:1px; }
+
+  .hilo{ flex:1; overflow-y:auto; }
+  .hilo__col{ max-width:768px; margin:0 auto; padding:var(--sp-4) var(--sp-6) var(--sp-8); display:flex; flex-direction:column; gap:var(--sp-6); }
+
+  .turno-usuario{ display:flex; justify-content:flex-end; }
+  .burbuja-usuario{
+    max-width:80%; background:var(--primary-tint); color:var(--ink);
+    padding:10px 14px; border-radius:var(--radius-md); font-size:14px; white-space:pre-wrap;
+  }
+  .meta-envio{ display:flex; justify-content:flex-end; gap:6px; align-items:center; margin-top:4px; font-size:11px; color:var(--faint); }
+  .meta-envio svg{ width:12px; height:12px; }
+
+  .turno-claude{ font-size:15px; line-height:1.75; max-width:100%; }
+  .turno-claude :first-child{ margin-top:0; }
+  .turno-claude p{ margin:12px 0 0; }
+  .turno-claude h3{ font-size:16px; font-weight:700; letter-spacing:-.005em; margin:20px 0 0; }
+  .turno-claude strong{ font-weight:700; }
+  .turno-claude blockquote{ border-left:2px solid var(--primary); padding-left:12px; margin:12px 0 0; color:var(--ink); }
+  .turno-claude code{ background:var(--surface-2); border-radius:4px; padding:1px 5px; font-size:13px; font-family:ui-monospace,"SF Mono","Cascadia Code",monospace; }
+
+  .cursor{ display:inline-block; width:2px; height:1em; background:var(--ink); vertical-align:text-bottom; margin-left:1px; animation:parpadeo 1s step-end infinite; }
+  @media (prefers-reduced-motion: reduce){ .cursor{ animation:none; opacity:.6; } }
+  @keyframes parpadeo{ 50%{ opacity:0 } }
+
+  /* Plegable "Pensando…" */
+  details.pensando{ font-size:12px; color:var(--muted); }
+  details.pensando summary{
+    cursor:pointer; list-style:none; display:flex; align-items:center; gap:6px; width:fit-content;
+    padding:3px 0; user-select:none;
+  }
+  details.pensando summary::-webkit-details-marker{ display:none; }
+  details.pensando summary svg{ width:12px; height:12px; transition:transform .2s ease; flex:none; }
+  details.pensando[open] summary svg{ transform:rotate(90deg); }
+  details.pensando .cuerpo{ padding:6px 0 0 18px; white-space:pre-wrap; color:var(--muted); border-left:1px solid var(--line); margin-left:5px; }
+
+  /* Línea de actividad (tool / pensando en vivo) — shimmer, nunca tarjeta grande */
+  .actividad{ display:flex; align-items:center; gap:7px; font-size:13px; color:var(--muted); }
+  .actividad svg{ width:14px; height:14px; flex:none; }
+  .shimmer{
+    background:linear-gradient(90deg, var(--muted) 0%, var(--ink) 50%, var(--muted) 100%);
+    background-size:200% 100%; -webkit-background-clip:text; background-clip:text; color:transparent;
+    animation:shimmer 1.8s linear infinite;
+  }
+  @media (prefers-reduced-motion: reduce){ .shimmer{ animation:none; color:var(--muted); background:none; -webkit-text-fill-color:currentColor; } }
+  @keyframes shimmer{ to{ background-position:-200% 0; } }
+
+  /* Subagente: atribuido con claridad, nunca como si lo dijera Claude (línea base punto 3) */
+  .subagente{
+    border:1px solid var(--line); border-radius:var(--radius-md); padding:10px 12px;
+    background:var(--surface-2); font-size:13px;
+  }
+  .subagente__cab{ display:flex; align-items:center; gap:7px; color:var(--muted); font-weight:500; margin-bottom:6px; }
+  .subagente__cab svg{ width:13px; height:13px; }
+  .subagente__estado{ margin-left:auto; font-size:11px; padding:2px 7px; border-radius:999px; background:var(--surface-3); color:var(--muted); }
+  .subagente__estado--vivo{ color:var(--primary-dark); background:var(--primary-tint); }
+  :root[data-theme="dark"] .subagente__estado--vivo{ color:var(--primary); }
+  @media (prefers-color-scheme:dark){ :root:not([data-theme="light"]) .subagente__estado--vivo{ color:var(--primary); } }
+  .subagente__texto{ color:var(--ink); white-space:pre-wrap; }
+
+  /* Composer */
+  .composer-wrap{
+    position:sticky; bottom:0; z-index:20;
+    background:var(--chrome-bg); backdrop-filter:blur(20px) saturate(180%); -webkit-backdrop-filter:blur(20px) saturate(180%);
+    border-top:1px solid var(--chrome-edge); padding:var(--sp-4);
+  }
+  @media (prefers-reduced-transparency: reduce){ .composer-wrap{ background:var(--surface-2); backdrop-filter:none; } }
+  .composer{ max-width:768px; margin:0 auto; }
+  .composer__caja{
+    border:1px solid var(--line); border-radius:var(--radius-lg); background:var(--surface);
+    box-shadow:var(--shadow-card); padding:10px 12px; display:flex; align-items:flex-end; gap:8px;
+  }
+  .composer__caja:focus-within{ border-color:var(--primary); box-shadow:0 0 0 3px color-mix(in srgb, var(--primary) 20%, transparent); }
+  .composer textarea{
+    flex:1; border:0; outline:0; resize:none; background:transparent; color:var(--ink);
+    font:inherit; font-size:14px; line-height:1.5; max-height:120px;
+  }
+  .composer textarea::placeholder{ color:var(--faint); }
+  .btn-enviar{
+    flex:none; width:32px; height:32px; border-radius:999px; border:0; background:var(--primary); color:#fff;
+    display:flex; align-items:center; justify-content:center; cursor:pointer;
+    transition:transform .15s cubic-bezier(.2,.8,.2,1), background-color .15s ease;
+  }
+  .btn-enviar:hover{ background:var(--primary-dark); }
+  .btn-enviar:active{ transform:scale(.92); }
+  .btn-enviar:focus-visible{ outline:2px solid var(--primary); outline-offset:2px; }
+  .btn-enviar svg{ width:16px; height:16px; }
+
+  /* Vacío */
+  .vacio{ text-align:center; color:var(--faint); font-size:13px; margin-top:48px; }
+
+  /* 390px: la barra se pliega a un botón (nunca una columna de 260px en 390) */
+  .btn-barra{ display:none; }
+  @media (max-width: 767px){
+    .barra{ position:fixed; inset:0 auto 0 0; z-index:30; transform:translateX(-100%); transition:transform .3s cubic-bezier(.2,.8,.2,1); }
+    .barra.abierta{ transform:none; }
+    @media (prefers-reduced-motion: reduce){ .barra{ transition:none; } }
+    .btn-barra{
+      display:flex; align-items:center; justify-content:center; width:32px; height:32px; flex:none;
+      border:1px solid var(--line); border-radius:var(--radius-sm); background:var(--surface); color:var(--ink); cursor:pointer;
+    }
+    .hilo__col{ padding-left:var(--sp-4); padding-right:var(--sp-4); }
+    .burbuja-usuario{ max-width:92%; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="barra" id="barra">
+    <div class="barra__cabecera">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a5 5 0 0 1 5 5v2a5 5 0 0 1-10 0V7a5 5 0 0 1 5-5Z"/><path d="M19 10v1a7 7 0 0 1-14 0v-1M12 18v4M8 22h8"/></svg>
+      <span class="marca">CloudCLI</span>
+    </div>
+    <div class="barra__lista">
+      <div class="fila-sesion activa"><span class="dot dot--pensando"></span><span class="titulo">Guion humo creación</span></div>
+      <div class="fila-sesion"><span class="dot dot--esperando"></span><span class="titulo">Respondé solo: listo</span></div>
+      <div class="fila-sesion"><span class="dot dot--libre"></span><span class="titulo">Párrafo sobre faros</span></div>
+      <div class="fila-sesion"><span class="dot dot--libre"></span><span class="titulo">Contar del 1 al 40</span></div>
+      <div class="fila-sesion"><span class="dot dot--dormida"></span><span class="titulo">Pregunta sobre fruta</span></div>
+      <div class="fila-sesion fila-sesion--nueva"><span class="dot dot--libre"></span><span class="titulo">Sesión nueva (entrando)</span></div>
+    </div>
+  </aside>
+
+  <div class="col">
+    <header class="header">
+      <button class="btn-barra" id="btnBarra" aria-label="Abrir sesiones" aria-controls="barra" aria-expanded="false">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+      <div class="header__titulo">Guion humo creación</div>
+      <button class="header__tema" id="btnTema" type="button">Tema: <span id="temaTexto">claro</span></button>
+    </header>
+
+    <main class="hilo">
+      <div class="hilo__col">
+
+        <!-- 1. abrir sesión → ya está abierta, hilo previo -->
+        <div class="turno-usuario">
+          <div>
+            <div class="burbuja-usuario">Escribime un párrafo corto sobre faros.</div>
+            <div class="meta-envio">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>
+              Enviado · 14:02
+            </div>
+          </div>
+        </div>
+        <div class="turno-claude">
+          <p>Un faro no ilumina para sí: existe enteramente para el barco que todavía no lo ve. Esa es su única función, y la cumple aunque nadie esté mirando esta noche.</p>
+        </div>
+
+        <!-- 2. escribir → enviar (el turno nuevo, en curso) -->
+        <div class="turno-usuario">
+          <div>
+            <div class="burbuja-usuario">Ahora delegá un párrafo sobre trenes a un subagente mientras seguís con otra cosa.</div>
+            <div class="meta-envio">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>
+              Enviado · 14:03
+            </div>
+          </div>
+        </div>
+
+        <div class="turno-claude">
+          <!-- 3. pensando, plegable -->
+          <details class="pensando" open>
+            <summary>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+              Pensando
+            </summary>
+            <div class="cuerpo">Esto pide dos cosas en paralelo: delegar el párrafo de trenes a un subagente y seguir yo con el resto. Arranco la tarea en segundo plano y sigo escribiendo mientras corre.</div>
+          </details>
+
+          <!-- 4. tool en una línea -->
+          <p class="actividad" style="margin-top:10px">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h6v6H9z"/></svg>
+            <span>Delegando tarea en segundo plano · <code style="font-size:12px">general-purpose</code></span>
+          </p>
+
+          <!-- 5. subagente con actividad -->
+          <div class="subagente" style="margin-top:10px">
+            <div class="subagente__cab">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.2 4.2l2.9 2.9M16.9 16.9l2.9 2.9M1 12h4M19 12h4M4.2 19.8l2.9-2.9M16.9 7.1l2.9-2.9"/></svg>
+              general-purpose · Párrafo sobre trenes
+              <span class="subagente__estado subagente__estado--vivo">en curso</span>
+            </div>
+            <div class="subagente__texto">Un tren no negocia con el paisaje: lo atraviesa en línea recta y deja que el paisaje se reorganice alrededor de las vías.</div>
+          </div>
+
+          <!-- 6. respuesta principal escribiéndose, en vivo -->
+          <p style="margin-top:14px">Mientras tanto sigo yo: anoto que la tarea quedó corriendo y te aviso apenas <span class="shimmer">termine de escribir el párrafo</span><span class="cursor"></span></p>
+        </div>
+
+        <!-- 7. fin: turno ya cerrado, sin indicador -->
+        <div class="turno-usuario">
+          <div>
+            <div class="burbuja-usuario">Gracias, con eso alcanza.</div>
+            <div class="meta-envio">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>
+              Enviado · 14:04
+            </div>
+          </div>
+        </div>
+        <div class="turno-claude">
+          <p>Dicho. Quedó registrado el párrafo de faros arriba y el de trenes en la tarjeta del subagente — nada más pendiente en este hilo.</p>
+        </div>
+
+      </div>
+    </main>
+
+    <div class="composer-wrap">
+      <div class="composer">
+        <div class="composer__caja">
+          <textarea rows="1" placeholder="Escribí un mensaje…" readonly></textarea>
+          <button class="btn-enviar" aria-label="Enviar" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Tema: arranca del sistema, se puede forzar con el botón (mismo patrón que CloudCLI real:
+  // localStorage.theme gana sobre prefers-color-scheme).
+  (function(){
+    var root = document.documentElement;
+    var btn = document.getElementById('btnTema');
+    var txt = document.getElementById('temaTexto');
+    function aplicar(t){
+      if (t) { root.setAttribute('data-theme', t); } else { root.removeAttribute('data-theme'); }
+      var efectivo = t || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      txt.textContent = efectivo === 'dark' ? 'oscuro' : 'claro';
+    }
+    var guardado = null;
+    try { guardado = localStorage.getItem('boceto-tema'); } catch (e) {}
+    aplicar(guardado);
+    btn.addEventListener('click', function(){
+      var actual = root.getAttribute('data-theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      var siguiente = actual === 'dark' ? 'light' : 'dark';
+      try { localStorage.setItem('boceto-tema', siguiente); } catch (e) {}
+      aplicar(siguiente);
+    });
+  })();
+
+  // Barra lateral plegable a <768px.
+  (function(){
+    var barra = document.getElementById('barra');
+    var btn = document.getElementById('btnBarra');
+    btn.addEventListener('click', function(){
+      var abierta = barra.classList.toggle('abierta');
+      btn.setAttribute('aria-expanded', String(abierta));
+    });
+  })();
+</script>
+
+<!--
+CHECKLIST ui-ux-pro-max (paso 8, Fase 10) — 05-oct-2026
+
+[x] Contraste: `--primary`/`--surface` 4.6:1 en claro, 7.1:1 en oscuro (texto normal, AA).
+    `--ink`/`--surface` ~15.8:1 en los dos temas. Ver cálculo en design-system/branding.md.
+[x] Foco visible: `.header__tema`, `.btn-enviar` y `.btn-barra` llevan `:focus-visible` con
+    anillo de 2px en `--primary` — nunca `outline: none` sin reemplazo.
+[x] 375/390px: sidebar pasa a overlay (translateX, con fallback sin transform si
+    `prefers-reduced-motion`), columna de chat a `padding: 16px` de gutter, sin ancho fijo.
+[x] 768/1024/1440px: sidebar fija de 260px, columna de chat tope `max-w: 768px` centrada
+    (no crece más allá de 1024 — a 1440 solo crece el margen lateral, que es el criterio
+    explícito de `design-system/tokens.md`).
+[x] Sin scroll horizontal: `body { overflow-x: hidden }` + ningún elemento con ancho fijo
+    mayor al viewport; verificado en el escenario `e2e/escenarios/visual/bocetos.mjs`
+    (`document.documentElement.scrollWidth - innerWidth <= 0`).
+[x] `prefers-reduced-motion`: el pulso de los dots, el shimmer de actividad, el cursor
+    parpadeante, la entrada de sesión nueva y el deslizamiento de la sidebar tienen
+    variante sin movimiento (opacidad fija o transición de 180ms sin transform).
+[x] `prefers-reduced-transparency`: header y composer caen a `--surface-2` opaco sin blur.
+[x] Subagente atribuido con claridad (tarjeta propia, rótulo "en curso"/"listo"): el bug de
+    línea base (texto del subagente pintado como si lo dijera Claude, fuera de su tarjeta)
+    no se reproduce en este boceto — ver `.subagente`.
+[x] Tool en una sola línea, sin tarjeta grande (línea base, punto 1: "tarjetas de tool por
+    todos lados").
+-->
+</body>
+</html>
