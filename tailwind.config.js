@@ -79,12 +79,23 @@ export default {
           from: { opacity: '0', transform: 'translateY(100%)' },
           to: { opacity: '1', transform: 'translateY(0)' },
         },
+        // Las carpetas del árbol (TreeMotion.tsx).
+        'tree-root-in': {
+          from: { opacity: '0', transform: 'translateY(20px)' },
+          to: { opacity: '1', transform: 'translateY(0)' },
+        },
+        'tree-item-in': {
+          from: { opacity: '0', transform: 'translateX(-10px)' },
+          to: { opacity: '1', transform: 'translateX(0)' },
+        },
       },
       animation: {
         shimmer: 'shimmer 2s linear infinite',
         'dialog-overlay-show': 'dialog-overlay-show 150ms ease-out',
         'dialog-content-show': 'dialog-content-show 150ms ease-out',
         'bottom-sheet-content-show': 'bottom-sheet-content-show 220ms cubic-bezier(0.22, 1, 0.36, 1)',
+        'tree-root-in': 'tree-root-in 400ms ease-out both',
+        'tree-item-in': 'tree-item-in 200ms ease-out both',
       },
     },
   },
