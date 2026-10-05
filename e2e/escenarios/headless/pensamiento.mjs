@@ -1,8 +1,9 @@
 // Punto 1: un turno headless real con Sonnet muestra el razonamiento mientras se genera.
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
+import path from 'node:path';
 import { abrirSesion, escribirYEnviar, esperarFin } from '../../lib/chat.mjs';
-import { PROYECTO } from '../../lib/config.mjs';
+import { PROYECTO, RAIZ_TMP, puertoDeEscenario } from '../../lib/config.mjs';
 
 export const meta = {
   descripcion: 'thinking real (Sonnet) por chat.send',
@@ -13,7 +14,7 @@ export const meta = {
 export async function correr(ctx) {
   // Los turnos headless de la instancia necesitan el token de la máquina en su entorno, y la
   // suite no maneja credenciales: si no está, el escenario se bloquea y lo decide Leandro.
-  const pid = fs.readFileSync(`/tmp/cloudcli-e2e/pid-${meta.puerto}`, 'utf8').trim();
+  const pid = fs.readFileSync(path.join(RAIZ_TMP, `pid-${puertoDeEscenario(meta.puerto)}`), 'utf8').trim();
   const conToken = fs.readFileSync(`/proc/${pid}/environ`, 'utf8').split('\0').some((l) => l.startsWith('CLAUDE_CODE_OAUTH_TOKEN='));
   if (!conToken) return ctx.bloquear('la instancia de prueba no tiene CLAUDE_CODE_OAUTH_TOKEN (decisión de Leandro)');
   // Sesión sin pane: se crea con un -p mínimo en Haiku.

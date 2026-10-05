@@ -12,7 +12,7 @@ import os from 'node:os';
 import path from 'node:path';
 import readline from 'node:readline';
 
-const LOG = '/tmp/cloudcli-e2e/falso.log';
+const LOG = path.join(process.env.E2E_RAIZ || '/tmp/cloudcli-e2e', 'falso.log');
 const argv = process.argv.slice(2);
 const log = (...x) => { try { fs.appendFileSync(LOG, `${new Date().toISOString()} ${x.map((v) => (typeof v === 'string' ? v : JSON.stringify(v))).join(' ')}\n`); } catch { /* sin log */ } };
 log('argv', argv);

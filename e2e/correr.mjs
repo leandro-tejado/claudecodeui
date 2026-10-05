@@ -10,7 +10,7 @@
 // --con-cuota, o con el gobernador en rojo, sus checks quedan "bloqueado".
 import fs from 'node:fs';
 import path from 'node:path';
-import { EVIDENCIA, REPO } from './lib/config.mjs';
+import { EVIDENCIA, REPO, puertoDeEscenario } from './lib/config.mjs';
 import { abrir } from './lib/navegador.mjs';
 import { gobernador, teardown } from './sesiones.mjs';
 
@@ -63,7 +63,7 @@ for (const id of elegidos) {
   const ctx = {
     id, meta, dir,
     async abrir(opciones = {}) {
-      const s = await abrir({ puerto: meta.puerto ?? 3902, ...opciones });
+      const s = await abrir({ puerto: puertoDeEscenario(meta.puerto), ...opciones });
       sesionesAbiertas.push(s);
       return s;
     },

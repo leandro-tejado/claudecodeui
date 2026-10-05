@@ -36,7 +36,9 @@ export function exigirGobernadorNoRojo() {
 
 // Crea una sesión como lo hace el orquestador. `base` termina siendo
 // `<base>-ejecutora-<n>`, así que base tiene que empezar con el prefijo.
+// Con E2E_PREFIJO, los nombres fijos de los escenarios (`e2e-…`) se pasan al prefijo de la corrida.
 export function crearTmux(base, dir = PROYECTO) {
+  if (PREFIJO !== 'e2e-' && base.startsWith('e2e-')) base = PREFIJO + base.slice(4);
   exigirPrefijo(base);
   exigirGobernadorNoRojo();
   const antes = new Set(sesionesTmux());
