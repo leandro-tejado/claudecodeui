@@ -264,6 +264,7 @@ export function useChatRealtimeHandlers({
 
         // Sidebar/global events — owned by useProjectsState.
         case 'session_upserted':
+        case 'sidebar_archived':
         case 'loading_progress':
           return;
 
