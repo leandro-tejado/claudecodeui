@@ -237,6 +237,63 @@ function findServerTurnRangeByOrdinal(
   return { start, end };
 }
 
+/**
+ * Rows the client itself made out of streamed text: the growing
+ * `__streaming_<sid>` row and the `text_…` row `finalizeStreaming` leaves when
+ * a block closes. Neither is on disk, so each can hold only *part* of the
+ * reply — the transcript's one full message is the row that stays.
+ */
+const STREAMING_ROW_ID_PREFIX = '__streaming_';
+const FINALIZED_STREAM_ROW_ID_PREFIX = 'text_';
+
+function isStreamFragment(message: NormalizedMessage): boolean {
+  if (message.kind === 'stream_delta') {
+    return true;
+  }
+  return message.kind === 'text'
+    && message.role === 'assistant'
+    && typeof message.id === 'string'
+    && (message.id.startsWith(STREAMING_ROW_ID_PREFIX) || message.id.startsWith(FINALIZED_STREAM_ROW_ID_PREFIX));
+}
+
+/** A fragment is echoed by a full reply that contains it; anything else only by an identical one. */
+function isEchoOfFullText(message: NormalizedMessage, fullText: string): boolean {
+  const text = (message.content || '').trim();
+  if (!text) {
+    return false;
+  }
+  return isStreamFragment(message) ? fullText.includes(text) : fullText === text;
+}
+
+/**
+ * The reply's full message just arrived: the streamed rows of that same block
+ * are now redundant, however the stream got cut (a reconnect, an event that
+ * closed the block early, a replay). Walks back from the newest row through
+ * the streamed rows and the non-content events between them, and stops at the
+ * first real message — an earlier block's fragments were already retired by
+ * its own full message.
+ */
+function dropStreamFragmentsOf(rows: NormalizedMessage[], fullText: string): NormalizedMessage[] {
+  const text = fullText.trim();
+  if (!text) {
+    return rows;
+  }
+  const dropped = new Set<number>();
+  for (let index = rows.length - 1; index >= 0; index--) {
+    const row = rows[index];
+    if (row.kind === 'task_status' || row.kind === 'status') {
+      continue;
+    }
+    if (!isStreamFragment(row)) {
+      break;
+    }
+    if (isEchoOfFullText(row, text)) {
+      dropped.add(index);
+    }
+  }
+  return dropped.size === 0 ? rows : rows.filter((_, index) => !dropped.has(index));
+}
+
 function isAssistantTextEchoedInSameTurnOnServer(
   message: NormalizedMessage,
   serverMessages: NormalizedMessage[],
@@ -258,7 +315,7 @@ function isAssistantTextEchoedInSameTurnOnServer(
     .some((serverMessage) =>
       serverMessage.kind === 'text'
       && serverMessage.role === 'assistant'
-      && (serverMessage.content || '').trim() === assistantText,
+      && isEchoOfFullText(message, (serverMessage.content || '').trim()),
     );
 }
 
@@ -274,11 +331,15 @@ function dedupeAdjacentAssistantEchoes(merged: NormalizedMessage[]): NormalizedM
   for (const m of merged) {
     const prev = out[out.length - 1];
     if (prev) {
-      if (prev.kind === 'stream_delta' && m.kind === 'text' && m.role === 'assistant') {
-        const ps = (prev.content || '').trim();
+      if (isStreamFragment(prev) && m.kind === 'text' && m.role === 'assistant' && !isStreamFragment(m)) {
         const ms = (m.content || '').trim();
-        if (ps.length > 0 && ps === ms) {
+        if (isEchoOfFullText(prev, ms)) {
           out[out.length - 1] = m;
+          continue;
+        }
+      }
+      if (isStreamFragment(m) && prev.kind === 'text' && prev.role === 'assistant' && !isStreamFragment(prev)) {
+        if (isEchoOfFullText(m, (prev.content || '').trim())) {
           continue;
         }
       }
@@ -826,7 +887,21 @@ export function useSessionStore() {
       && normalizedMessage.role === 'assistant'
       ? { ...normalizedMessage, isLiveText: true }
       : normalizedMessage;
-    let updated = [...slot.realtimeMessages, withLiveTextFlag];
+    // The same message twice (a replay after a reconnect) is one message.
+    const duplicateIndex = slot.realtimeMessages.findIndex((row) => row.id === withLiveTextFlag.id);
+    let base = duplicateIndex >= 0
+      ? slot.realtimeMessages.filter((_, index) => index !== duplicateIndex)
+      : slot.realtimeMessages;
+    // A reply's full message replaces the text that streamed in for it.
+    if (
+      withLiveTextFlag.kind === 'text'
+      && withLiveTextFlag.role === 'assistant'
+      && !withLiveTextFlag.parentToolUseId
+      && !isStreamFragment(withLiveTextFlag)
+    ) {
+      base = dropStreamFragmentsOf(base, withLiveTextFlag.content || '');
+    }
+    let updated = [...base, withLiveTextFlag];
     if (updated.length > MAX_REALTIME_MESSAGES) {
       updated = updated.slice(-MAX_REALTIME_MESSAGES);
     }

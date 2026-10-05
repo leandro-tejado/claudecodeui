@@ -16,6 +16,12 @@ export type StreamBuffer = {
   text: string;
   timer: ReturnType<typeof setTimeout> | null;
   provider: LLMProvider;
+  /**
+   * Set once the block's full message arrived. The streamed rows are gone by
+   * then, so whatever deltas still follow for that same block are swallowed
+   * instead of growing a row of their own next to the full message.
+   */
+  settledBy?: string;
 };
 
 export type StreamBuffers = Map<string, StreamBuffer>;
@@ -33,6 +39,16 @@ export function appendStreamDelta(
 ): void {
   let buffer = buffers.get(sessionId);
   if (!buffer) {
+    buffer = { text: '', timer: null, provider };
+    buffers.set(sessionId, buffer);
+  }
+  if (buffer.settledBy !== undefined) {
+    const continued = buffer.text + text;
+    if (buffer.settledBy.startsWith(continued)) {
+      buffer.text = continued;
+      return;
+    }
+    // Not the tail of the settled block: a new block starts here.
     buffer = { text: '', timer: null, provider };
     buffers.set(sessionId, buffer);
   }
@@ -56,9 +72,25 @@ export function flushStreamBuffer(buffers: StreamBuffers, sessionId: string, sto
     clearTimeout(buffer.timer);
     buffer.timer = null;
   }
-  if (buffer.text) {
+  if (buffer.text && buffer.settledBy === undefined) {
     store.updateStreaming(sessionId, buffer.text, buffer.provider);
   }
+}
+
+/**
+ * The block's full message is here: its streamed rows are redundant (the
+ * store retires them when it appends the message), so nothing pending is
+ * written. The buffer stays until `stream_end` to absorb deltas that trail
+ * the message.
+ */
+export function settleStreamBuffer(buffers: StreamBuffers, sessionId: string, fullText: string): void {
+  const buffer = buffers.get(sessionId);
+  if (!buffer) return;
+  if (buffer.timer) {
+    clearTimeout(buffer.timer);
+    buffer.timer = null;
+  }
+  buffer.settledBy = fullText;
 }
 
 /**

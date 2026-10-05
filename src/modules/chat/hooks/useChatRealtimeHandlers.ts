@@ -8,7 +8,7 @@ import { publishSessionBudget } from '@/modules/skin';
 import type { SessionStore } from '@/modules/chat/hooks/useSessionStore';
 import { normalizedToChatMessages } from '@/modules/chat/hooks/useChatMessages';
 import { collectRunningBackgroundTasks } from '@/modules/chat/utils/backgroundTasks';
-import { appendStreamDelta, finalizeStreamBuffer } from '@/modules/chat/utils/streamBuffers';
+import { appendStreamDelta, finalizeStreamBuffer, settleStreamBuffer } from '@/modules/chat/utils/streamBuffers';
 import type { StreamBuffers } from '@/modules/chat/utils/streamBuffers';
 
 const isActionablePermissionRequest = (request: { toolName?: unknown } | null | undefined): boolean => {
@@ -310,8 +310,15 @@ export function useChatRealtimeHandlers({
         // Anything the run persists after streamed text (the full message, a
         // tool call) closes that text block first, so the rows keep their
         // order and the full message lands right after its streamed copy.
-        if (streamBuffersRef.current.has(sid)) {
-          finalizeStreamBuffer(streamBuffersRef.current, sid, sessionStore);
+        // Background-task bookkeeping is not part of the reply: it can land
+        // in the middle of a block, and closing the block there is what cut
+        // one reply into a fragment, the full message and a leftover.
+        if (streamBuffersRef.current.has(sid) && msg.kind !== 'task_status') {
+          if (msg.kind === 'text' && msg.role === 'assistant' && !msg.parentToolUseId) {
+            settleStreamBuffer(streamBuffersRef.current, sid, String(msg.content || ''));
+          } else {
+            finalizeStreamBuffer(streamBuffersRef.current, sid, sessionStore);
+          }
         }
         sessionStore.appendRealtime(sid, msg as unknown as NormalizedMessage);
       }
