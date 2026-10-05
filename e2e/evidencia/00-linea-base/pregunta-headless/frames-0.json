@@ -1,0 +1,676 @@
+[
+  {
+    "t": 1791223999653,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3902/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjIyNTY0LCJleHAiOjE4MjI3NTg1NjR9.gYPSd4Pzpm6E2YA_zuCJNSeOziRDn28WRXb6C3Ib11U",
+    "datos": {
+      "type": "chat.tmux-prompts"
+    }
+  },
+  {
+    "t": 1791223999728,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3902/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjIyNTY0LCJleHAiOjE4MjI3NTg1NjR9.gYPSd4Pzpm6E2YA_zuCJNSeOziRDn28WRXb6C3Ib11U",
+    "datos": {
+      "kind": "tmux_prompts",
+      "prompts": [],
+      "timestamp": "2026-10-05T18:13:19.719Z"
+    }
+  },
+  {
+    "t": 1791224000187,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3902/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjIyNTY0LCJleHAiOjE4MjI3NTg1NjR9.gYPSd4Pzpm6E2YA_zuCJNSeOziRDn28WRXb6C3Ib11U",
+    "datos": {
+      "type": "chat.subscribe",
+      "sessions": [
+        {
+          "sessionId": "59a33ded-eb0f-41a7-85e5-ae8499d1fd2c",
+          "lastSeq": 0
+        }
+      ]
+    }
+  },
+  {
+    "t": 1791224000195,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3902/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjIyNTY0LCJleHAiOjE4MjI3NTg1NjR9.gYPSd4Pzpm6E2YA_zuCJNSeOziRDn28WRXb6C3Ib11U",
+    "datos": {
+      "kind": "chat_subscribed",
+      "sessionId": "59a33ded-eb0f-41a7-85e5-ae8499d1fd2c",
+      "isProcessing": false,
+      "lastSeq": 0,
+      "pendingPermissions": [],
+      "runsInTmux": false,
+      "timestamp": "2026-10-05T18:13:20.188Z"
+    }
+  },
+  {
+    "t": 1791224000309,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3902/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjIyNTY0LCJleHAiOjE4MjI3NTg1NjR9.gYPSd4Pzpm6E2YA_zuCJNSeOziRDn28WRXb6C3Ib11U",
+    "datos": {
+      "type": "chat.subscribe",
+      "sessions": [
+        {
+          "sessionId": "59a33ded-eb0f-41a7-85e5-ae8499d1fd2c",
+          "lastSeq": 0
+        }
+      ]
+    }
+  },
+  {
+    "t": 1791224000335,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3902/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjIyNTY0LCJleHAiOjE4MjI3NTg1NjR9.gYPSd4Pzpm6E2YA_zuCJNSeOziRDn28WRXb6C3Ib11U",
+    "datos": {
+      "kind": "chat_subscribed",
+      "sessionId": "59a33ded-eb0f-41a7-85e5-ae8499d1fd2c",
+      "isProcessing": false,
+      "lastSeq": 0,
+      "pendingPermissions": [],
+      "runsInTmux": false,
+      "timestamp": "2026-10-05T18:13:20.299Z"
+    }
+  },
+  {
+    "t": 1791224001174,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3902/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjIyNTY0LCJleHAiOjE4MjI3NTg1NjR9.gYPSd4Pzpm6E2YA_zuCJNSeOziRDn28WRXb6C3Ib11U",
+    "datos": {
+      "type": "chat.send",
+      "sessionId": "59a33ded-eb0f-41a7-85e5-ae8499d1fd2c",
+      "content": "guion:pregunta",
+      "clientMessageId": "local_1791224001156_ql6frt",
+      "options": {
+        "model": "claude-falso-1",
+        "effort": "default",
+        "permissionMode": "default",
+        "toolsSettings": {
+          "allowedTools": [],
+          "disallowedTools": [],
+          "skipPermissions": false
+        },
+        "skipPermissions": false,
+        "sessionSummary": "Guion humo creacion",
+        "attachments": []
+      }
+    }
+  },
+  {
+    "t": 1791224001202,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3902/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjIyNTY0LCJleHAiOjE4MjI3NTg1NjR9.gYPSd4Pzpm6E2YA_zuCJNSeOziRDn28WRXb6C3Ib11U",
+    "datos": {
+      "kind": "message_status",
+      "sessionId": "59a33ded-eb0f-41a7-85e5-ae8499d1fd2c",
+      "clientMessageId": "local_1791224001156_ql6frt",
+      "status": "sent",
+      "timestamp": "2026-10-05T18:13:21.171Z"
+    }
+  },
+  {
+    "t": 1791224001248,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3902/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjIyNTY0LCJleHAiOjE4MjI3NTg1NjR9.gYPSd4Pzpm6E2YA_zuCJNSeOziRDn28WRXb6C3Ib11U",
+    "datos": {
+      "kind": "stream_end",
+      "sessionId": "59a33ded-eb0f-41a7-85e5-ae8499d1fd2c",
+      "provider": "claude",
+      "id": "stream_end_4a8a5239-ccbb-4e0a-bfec-301f5bba4ed1",
+      "timestamp": "2026-10-05T18:13:21.246Z",
+      "seq": 1
+    }
+  },
+  {
+    "t": 1791224001248,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3902/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjIyNTY0LCJleHAiOjE4MjI3NTg1NjR9.gYPSd4Pzpm6E2YA_zuCJNSeOziRDn28WRXb6C3Ib11U",
+    "datos": {
+      "id": "e406537b-2876-41cd-8fad-dc83f1dc6731_0",
+      "sessionId": "59a33ded-eb0f-41a7-85e5-ae8499d1fd2c",
+      "timestamp": "2026-10-05T18:13:21.247Z",
+      "provider": "claude",
+      "kind": "tool_use",
+      "toolName": "AskUserQuestion",
+      "toolInput": {
+        "questions": [
+          {
+            "question": "¿Qué color preferís?",
+            "header": "Color",
+            "multiSelect": false,
+            "options": [
+              {
+                "label": "Rojo",
+                "description": "cálido"
+              },
+              {
+                "label": "Azul",
+                "description": "frío"
+              },
+              {
+                "label": "Verde",
+                "description": "neutro"
+              }
+            ]
+          },
+          {
+            "question": "¿Qué frutas querés?",
+            "header": "Frutas",
+            "multiSelect": true,
+            "options": [
+              {
+                "label": "Manzana",
+                "description": ""
+              },
+              {
+                "label": "Pera",
+                "description": ""
+              },
+              {
+                "label": "Uva",
+                "description": ""
+              }
+            ]
+          },
+          {
+            "question": "Elegí \"una\" opción con comillas",
+            "header": "Comillas",
+            "multiSelect": false,
+            "options": [
+              {
+                "label": "Sí",
+                "description": ""
+              },
+              {
+                "label": "No",
+                "description": ""
+              }
+            ]
+          }
+        ]
+      },
+      "toolId": "toolu_falso_f80e6842",
+      "seq": 2
+    }
+  },
+  {
+    "t": 1791224001254,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3902/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjIyNTY0LCJleHAiOjE4MjI3NTg1NjR9.gYPSd4Pzpm6E2YA_zuCJNSeOziRDn28WRXb6C3Ib11U",
+    "datos": {
+      "kind": "status",
+      "text": "token_budget",
+      "tokenBudget": {
+        "used": 30,
+        "total": null,
+        "inputTokens": 10,
+        "outputTokens": 20,
+        "cacheReadTokens": 0,
+        "cacheCreationTokens": 0,
+        "cacheTokens": 0,
+        "breakdown": {
+          "input": 10,
+          "output": 20
+        },
+        "compactAt": 245000
+      },
+      "sessionId": "59a33ded-eb0f-41a7-85e5-ae8499d1fd2c",
+      "provider": "claude",
+      "id": "status_05a74444-4f2d-421d-bb71-ee8dd1ef40b5",
+      "timestamp": "2026-10-05T18:13:21.247Z",
+      "seq": 3
+    }
+  },
+  {
+    "t": 1791224001300,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3902/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjIyNTY0LCJleHAiOjE4MjI3NTg1NjR9.gYPSd4Pzpm6E2YA_zuCJNSeOziRDn28WRXb6C3Ib11U",
+    "datos": {
+      "kind": "permission_request",
+      "requestId": "644b1391-4391-477e-9a98-e6823a83b4f4",
+      "toolName": "AskUserQuestion",
+      "input": {
+        "questions": [
+          {
+            "question": "¿Qué color preferís?",
+            "header": "Color",
+            "multiSelect": false,
+            "options": [
+              {
+                "label": "Rojo",
+                "description": "cálido"
+              },
+              {
+                "label": "Azul",
+                "description": "frío"
+              },
+              {
+                "label": "Verde",
+                "description": "neutro"
+              }
+            ]
+          },
+          {
+            "question": "¿Qué frutas querés?",
+            "header": "Frutas",
+            "multiSelect": true,
+            "options": [
+              {
+                "label": "Manzana",
+                "description": ""
+              },
+              {
+                "label": "Pera",
+                "description": ""
+              },
+              {
+                "label": "Uva",
+                "description": ""
+              }
+            ]
+          },
+          {
+            "question": "Elegí \"una\" opción con comillas",
+            "header": "Comillas",
+            "multiSelect": false,
+            "options": [
+              {
+                "label": "Sí",
+                "description": ""
+              },
+              {
+                "label": "No",
+                "description": ""
+              }
+            ]
+          }
+        ]
+      },
+      "sessionId": "59a33ded-eb0f-41a7-85e5-ae8499d1fd2c",
+      "provider": "claude",
+      "id": "permission_request_b6154521-445a-479b-8e8a-bf53e8c05aee",
+      "timestamp": "2026-10-05T18:13:21.248Z",
+      "seq": 4
+    }
+  },
+  {
+    "t": 1791224002653,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3902/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjIyNTY0LCJleHAiOjE4MjI3NTg1NjR9.gYPSd4Pzpm6E2YA_zuCJNSeOziRDn28WRXb6C3Ib11U",
+    "datos": {
+      "type": "chat.permission-response",
+      "requestId": "644b1391-4391-477e-9a98-e6823a83b4f4",
+      "allow": true,
+      "updatedInput": {
+        "questions": [
+          {
+            "question": "¿Qué color preferís?",
+            "header": "Color",
+            "multiSelect": false,
+            "options": [
+              {
+                "label": "Rojo",
+                "description": "cálido"
+              },
+              {
+                "label": "Azul",
+                "description": "frío"
+              },
+              {
+                "label": "Verde",
+                "description": "neutro"
+              }
+            ]
+          },
+          {
+            "question": "¿Qué frutas querés?",
+            "header": "Frutas",
+            "multiSelect": true,
+            "options": [
+              {
+                "label": "Manzana",
+                "description": ""
+              },
+              {
+                "label": "Pera",
+                "description": ""
+              },
+              {
+                "label": "Uva",
+                "description": ""
+              }
+            ]
+          },
+          {
+            "question": "Elegí \"una\" opción con comillas",
+            "header": "Comillas",
+            "multiSelect": false,
+            "options": [
+              {
+                "label": "Sí",
+                "description": ""
+              },
+              {
+                "label": "No",
+                "description": ""
+              }
+            ]
+          }
+        ],
+        "answers": {
+          "¿Qué color preferís?": "Azul",
+          "¿Qué frutas querés?": "Manzana, Uva",
+          "Elegí \"una\" opción con comillas": "Sí"
+        }
+      }
+    }
+  },
+  {
+    "t": 1791224002663,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3902/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjIyNTY0LCJleHAiOjE4MjI3NTg1NjR9.gYPSd4Pzpm6E2YA_zuCJNSeOziRDn28WRXb6C3Ib11U",
+    "datos": {
+      "kind": "permission_resolved",
+      "requestId": "644b1391-4391-477e-9a98-e6823a83b4f4",
+      "sessionId": "59a33ded-eb0f-41a7-85e5-ae8499d1fd2c",
+      "provider": "claude",
+      "id": "permission_resolved_375957d2-2f01-4dfa-92e9-10f8e532f920",
+      "timestamp": "2026-10-05T18:13:22.642Z",
+      "seq": 5
+    }
+  },
+  {
+    "t": 1791224002666,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3902/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjIyNTY0LCJleHAiOjE4MjI3NTg1NjR9.gYPSd4Pzpm6E2YA_zuCJNSeOziRDn28WRXb6C3Ib11U",
+    "datos": {
+      "id": "b1592240-8203-4970-bcb7-ec08df5e9ec1_tr_toolu_falso_f80e6842",
+      "sessionId": "59a33ded-eb0f-41a7-85e5-ae8499d1fd2c",
+      "timestamp": "2026-10-05T18:13:22.645Z",
+      "provider": "claude",
+      "kind": "tool_result",
+      "toolId": "toolu_falso_f80e6842",
+      "content": "User has answered your questions: \"¿Qué color preferís?\"=\"Azul\", \"¿Qué frutas querés?\"=\"Manzana, Uva\", \"Elegí \"una\" opción con comillas\"=\"Sí\". You can now continue with the user's answers in mind.",
+      "isError": false,
+      "seq": 6
+    }
+  },
+  {
+    "t": 1791224002667,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3902/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjIyNTY0LCJleHAiOjE4MjI3NTg1NjR9.gYPSd4Pzpm6E2YA_zuCJNSeOziRDn28WRXb6C3Ib11U",
+    "datos": {
+      "kind": "stream_delta",
+      "content": "Elegis",
+      "sessionId": "59a33ded-eb0f-41a7-85e5-ae8499d1fd2c",
+      "provider": "claude",
+      "id": "stream_delta_7ee41926-2e84-40a6-984f-bb60ae27e3b0",
+      "timestamp": "2026-10-05T18:13:22.646Z",
+      "seq": 7
+    }
+  },
+  {
+    "t": 1791224002690,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3902/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjIyNTY0LCJleHAiOjE4MjI3NTg1NjR9.gYPSd4Pzpm6E2YA_zuCJNSeOziRDn28WRXb6C3Ib11U",
+    "datos": {
+      "kind": "stream_delta",
+      "content": "te: Az",
+      "sessionId": "59a33ded-eb0f-41a7-85e5-ae8499d1fd2c",
+      "provider": "claude",
+      "id": "stream_delta_ac286aca-3dc9-4b3c-be79-943e67e8377b",
+      "timestamp": "2026-10-05T18:13:22.686Z",
+      "seq": 8
+    }
+  },
+  {
+    "t": 1791224002729,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3902/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjIyNTY0LCJleHAiOjE4MjI3NTg1NjR9.gYPSd4Pzpm6E2YA_zuCJNSeOziRDn28WRXb6C3Ib11U",
+    "datos": {
+      "kind": "stream_delta",
+      "content": "ul | M",
+      "sessionId": "59a33ded-eb0f-41a7-85e5-ae8499d1fd2c",
+      "provider": "claude",
+      "id": "stream_delta_1f0041d4-cd0f-4398-b63f-df21e0e4fe5d",
+      "timestamp": "2026-10-05T18:13:22.727Z",
+      "seq": 9
+    }
+  },
+  {
+    "t": 1791224002774,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3902/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjIyNTY0LCJleHAiOjE4MjI3NTg1NjR9.gYPSd4Pzpm6E2YA_zuCJNSeOziRDn28WRXb6C3Ib11U",
+    "datos": {
+      "kind": "stream_delta",
+      "content": "anzana",
+      "sessionId": "59a33ded-eb0f-41a7-85e5-ae8499d1fd2c",
+      "provider": "claude",
+      "id": "stream_delta_3e34f7d3-8542-4ed6-b11c-08f657a82dc6",
+      "timestamp": "2026-10-05T18:13:22.767Z",
+      "seq": 10
+    }
+  },
+  {
+    "t": 1791224002810,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3902/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjIyNTY0LCJleHAiOjE4MjI3NTg1NjR9.gYPSd4Pzpm6E2YA_zuCJNSeOziRDn28WRXb6C3Ib11U",
+    "datos": {
+      "kind": "stream_delta",
+      "content": ", Uva ",
+      "sessionId": "59a33ded-eb0f-41a7-85e5-ae8499d1fd2c",
+      "provider": "claude",
+      "id": "stream_delta_2e96f99c-f3e2-4e00-9ad8-d13cd370a037",
+      "timestamp": "2026-10-05T18:13:22.808Z",
+      "seq": 11
+    }
+  },
+  {
+    "t": 1791224002854,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3902/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjIyNTY0LCJleHAiOjE4MjI3NTg1NjR9.gYPSd4Pzpm6E2YA_zuCJNSeOziRDn28WRXb6C3Ib11U",
+    "datos": {
+      "kind": "stream_delta",
+      "content": "| Sí",
+      "sessionId": "59a33ded-eb0f-41a7-85e5-ae8499d1fd2c",
+      "provider": "claude",
+      "id": "stream_delta_3a2f6d43-cde8-45a5-9ead-235cec50c79e",
+      "timestamp": "2026-10-05T18:13:22.849Z",
+      "seq": 12
+    }
+  },
+  {
+    "t": 1791224002895,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3902/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjIyNTY0LCJleHAiOjE4MjI3NTg1NjR9.gYPSd4Pzpm6E2YA_zuCJNSeOziRDn28WRXb6C3Ib11U",
+    "datos": {
+      "kind": "stream_end",
+      "sessionId": "59a33ded-eb0f-41a7-85e5-ae8499d1fd2c",
+      "provider": "claude",
+      "id": "stream_end_b1403760-2e43-4895-a902-80d05a2e1acb",
+      "timestamp": "2026-10-05T18:13:22.890Z",
+      "seq": 13
+    }
+  },
+  {
+    "t": 1791224002899,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3902/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjIyNTY0LCJleHAiOjE4MjI3NTg1NjR9.gYPSd4Pzpm6E2YA_zuCJNSeOziRDn28WRXb6C3Ib11U",
+    "datos": {
+      "id": "e0f4e4ec-baba-4f9e-b0f8-fd40a2339a13_0",
+      "sessionId": "59a33ded-eb0f-41a7-85e5-ae8499d1fd2c",
+      "timestamp": "2026-10-05T18:13:22.891Z",
+      "provider": "claude",
+      "kind": "text",
+      "role": "assistant",
+      "content": "Elegiste: Azul | Manzana, Uva | Sí",
+      "seq": 14
+    }
+  },
+  {
+    "t": 1791224002899,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3902/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjIyNTY0LCJleHAiOjE4MjI3NTg1NjR9.gYPSd4Pzpm6E2YA_zuCJNSeOziRDn28WRXb6C3Ib11U",
+    "datos": {
+      "kind": "status",
+      "text": "token_budget",
+      "tokenBudget": {
+        "used": 30,
+        "total": null,
+        "inputTokens": 10,
+        "outputTokens": 20,
+        "cacheReadTokens": 0,
+        "cacheCreationTokens": 0,
+        "cacheTokens": 0,
+        "breakdown": {
+          "input": 10,
+          "output": 20
+        },
+        "compactAt": 245000
+      },
+      "sessionId": "59a33ded-eb0f-41a7-85e5-ae8499d1fd2c",
+      "provider": "claude",
+      "id": "status_6f759017-b415-4674-9f33-b4433ccf633a",
+      "timestamp": "2026-10-05T18:13:22.891Z",
+      "seq": 15
+    }
+  },
+  {
+    "t": 1791224002904,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3902/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjIyNTY0LCJleHAiOjE4MjI3NTg1NjR9.gYPSd4Pzpm6E2YA_zuCJNSeOziRDn28WRXb6C3Ib11U",
+    "datos": {
+      "kind": "complete",
+      "provider": "claude",
+      "sessionId": "59a33ded-eb0f-41a7-85e5-ae8499d1fd2c",
+      "actualSessionId": "59a33ded-eb0f-41a7-85e5-ae8499d1fd2c",
+      "exitCode": 0,
+      "success": true,
+      "aborted": false,
+      "id": "complete_20058147-0a0f-4fb4-b3f5-10d94b632d20",
+      "timestamp": "2026-10-05T18:13:22.892Z",
+      "seq": 16
+    }
+  },
+  {
+    "t": 1791224004129,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3902/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjIyNTY0LCJleHAiOjE4MjI3NTg1NjR9.gYPSd4Pzpm6E2YA_zuCJNSeOziRDn28WRXb6C3Ib11U",
+    "datos": {
+      "kind": "recursos",
+      "ram": {
+        "porcentajePct": 30.05823082190164,
+        "usadaGb": 2.331035614013672,
+        "totalGb": 7.75506591796875
+      },
+      "disco": {
+        "usadoPct": 22.615282897153744,
+        "usadoGb": 21.67041778564453,
+        "totalGb": 95.82200622558594
+      },
+      "sesionesTmux": 3,
+      "techoRam": 90
+    }
+  },
+  {
+    "t": 1791224004800,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3902/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjIyNTY0LCJleHAiOjE4MjI3NTg1NjR9.gYPSd4Pzpm6E2YA_zuCJNSeOziRDn28WRXb6C3Ib11U",
+    "datos": {
+      "kind": "session_upserted",
+      "sessionId": "59a33ded-eb0f-41a7-85e5-ae8499d1fd2c",
+      "providerSessionId": "59a33ded-eb0f-41a7-85e5-ae8499d1fd2c",
+      "provider": "claude",
+      "session": {
+        "id": "59a33ded-eb0f-41a7-85e5-ae8499d1fd2c",
+        "summary": "Guion humo creacion",
+        "messageCount": 0,
+        "lastActivity": "2026-10-05T18:13:22.889Z",
+        "tmux": null
+      },
+      "project": {
+        "projectId": "c1e99f77-d34d-4246-b801-1f25e0e34f0f",
+        "path": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
+        "fullPath": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
+        "displayName": "e2e-proyecto",
+        "isStarred": false
+      },
+      "timestamp": "2026-10-05T18:13:24.797Z"
+    }
+  },
+  {
+    "t": 1791224005275,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3902/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjIyNTY0LCJleHAiOjE4MjI3NTg1NjR9.gYPSd4Pzpm6E2YA_zuCJNSeOziRDn28WRXb6C3Ib11U",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": {
+        "porcentaje": 37,
+        "resetsAt": 1791233370000,
+        "leidoEn": 1791222570000
+      },
+      "sevenDay": {
+        "porcentaje": 21,
+        "resetsAt": 1791568170000,
+        "leidoEn": 1791222570000
+      }
+    }
+  },
+  {
+    "t": 1791224008245,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3902/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjIyNTY0LCJleHAiOjE4MjI3NTg1NjR9.gYPSd4Pzpm6E2YA_zuCJNSeOziRDn28WRXb6C3Ib11U",
+    "datos": {
+      "kind": "message_status",
+      "sessionId": "5fd55062-35de-49a0-bfbe-250e691eefa7",
+      "clientMessageId": "local_1791224008227_iljsgf",
+      "status": "sent",
+      "timestamp": "2026-10-05T18:13:28.242Z"
+    }
+  },
+  {
+    "t": 1791224010802,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3902/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjIyNTY0LCJleHAiOjE4MjI3NTg1NjR9.gYPSd4Pzpm6E2YA_zuCJNSeOziRDn28WRXb6C3Ib11U",
+    "datos": {
+      "kind": "session_upserted",
+      "sessionId": "5fd55062-35de-49a0-bfbe-250e691eefa7",
+      "providerSessionId": "5fd55062-35de-49a0-bfbe-250e691eefa7",
+      "provider": "claude",
+      "session": {
+        "id": "5fd55062-35de-49a0-bfbe-250e691eefa7",
+        "summary": "Guion humo creacion",
+        "messageCount": 0,
+        "lastActivity": "2026-10-05T18:13:29.929Z",
+        "tmux": null
+      },
+      "project": {
+        "projectId": "c1e99f77-d34d-4246-b801-1f25e0e34f0f",
+        "path": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
+        "fullPath": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
+        "displayName": "e2e-proyecto",
+        "isStarred": false
+      },
+      "timestamp": "2026-10-05T18:13:30.796Z"
+    }
+  },
+  {
+    "t": 1791224011294,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3902/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjIyNTY0LCJleHAiOjE4MjI3NTg1NjR9.gYPSd4Pzpm6E2YA_zuCJNSeOziRDn28WRXb6C3Ib11U",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": {
+        "porcentaje": 37,
+        "resetsAt": 1791233370000,
+        "leidoEn": 1791222570000
+      },
+      "sevenDay": {
+        "porcentaje": 21,
+        "resetsAt": 1791568170000,
+        "leidoEn": 1791222570000
+      }
+    }
+  }
+]

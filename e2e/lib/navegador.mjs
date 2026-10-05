@@ -17,6 +17,13 @@ export async function abrir({ puerto, viewport = 'escritorio', tema = 'light', t
     deviceScaleFactor: 1,
   });
   const tk = token ?? fs.readFileSync(archivoToken(puerto), 'utf8').trim();
+  // El tema es una preferencia del usuario guardada en el server (gana sobre
+  // localStorage). Solo en las instancias de prueba: contra :3001 no se toca.
+  if (!process.env.CLOUDCLI_URL) {
+    await fetch(`${urlBase(puerto)}/api/user/preferences`, {
+      method: 'PATCH', headers: { Authorization: `Bearer ${tk}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ theme: tema }),
+    }).catch(() => {});
+  }
   await contexto.addInitScript(([t, th]) => {
     localStorage.setItem('auth-token', t);
     localStorage.setItem('theme', th);

@@ -21,7 +21,7 @@ export async function correr(ctx) {
   }
   const capI = await ctx.captura(s, 'indicador');
   ctx.check('"pensando" visible ≤ 2 s después de enviar', tInd !== null && tInd <= 2000, { evidencia: capI, datos: { tInd } });
-  const largos = await muestrearTexto(s.pagina, '.chat-message.assistant >> nth=-1', { cadaMs: 400, n: 60 });
+  const largos = (await muestrearTexto(s.pagina, '.chat-message.assistant', { cadaMs: 400, n: 60 })).map((m) => m.largo);
   const distintas = new Set(largos.filter((x) => x > 0)).size;
   await esperarFin(s, t, 120_000);
   ctx.check('el texto crece en ≥ 3 muestras', distintas >= 3, { datos: { distintas, largos: largos.join(',') } });

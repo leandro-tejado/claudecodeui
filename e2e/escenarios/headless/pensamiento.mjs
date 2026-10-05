@@ -1,5 +1,6 @@
 // Punto 1: un turno headless real con Sonnet muestra el razonamiento mientras se genera.
 import { execFileSync } from 'node:child_process';
+import fs from 'node:fs';
 import { abrirSesion, escribirYEnviar, esperarFin } from '../../lib/chat.mjs';
 import { PROYECTO } from '../../lib/config.mjs';
 
@@ -10,8 +11,20 @@ export const meta = {
 };
 
 export async function correr(ctx) {
+  // Los turnos headless de la instancia necesitan el token de la máquina en su entorno, y la
+  // suite no maneja credenciales: si no está, el escenario se bloquea y lo decide Leandro.
+  const pid = fs.readFileSync(`/tmp/cloudcli-e2e/pid-${meta.puerto}`, 'utf8').trim();
+  const conToken = fs.readFileSync(`/proc/${pid}/environ`, 'utf8').split('\0').some((l) => l.startsWith('CLAUDE_CODE_OAUTH_TOKEN='));
+  if (!conToken) return ctx.bloquear('la instancia de prueba no tiene CLAUDE_CODE_OAUTH_TOKEN (decisión de Leandro)');
   // Sesión sin pane: se crea con un -p mínimo en Haiku.
-  const salida = execFileSync('claude', ['-p', '--model', 'haiku', '--output-format', 'json', 'Respondé solo: listo'], { cwd: PROYECTO, encoding: 'utf8', timeout: 120_000 });
+  // Sin las CLAUDE_CODE_* de la sesión que corre la suite: el hijo se cree un subagente sin nadie atendiendo.
+  const env = Object.fromEntries(Object.entries(process.env).filter(([k]) => !(k.startsWith('CLAUDE_CODE_') && k !== 'CLAUDE_CODE_OAUTH_TOKEN') && k !== 'CLAUDECODE'));
+  let salida;
+  try {
+    salida = execFileSync('claude', ['-p', '--model', 'haiku', '--output-format', 'json', 'Respondé solo: listo'], { cwd: PROYECTO, env, encoding: 'utf8', timeout: 120_000 });
+  } catch (e) {
+    throw new Error(`claude -p falló (status ${e.status}): ${String(e.stderr || e.stdout).slice(0, 300)}`);
+  }
   const sid = JSON.parse(salida).session_id;
   const s = await ctx.abrir();
   await s.pagina.addInitScript(() => localStorage.setItem('claude-model', 'sonnet'));

@@ -21,7 +21,7 @@ export async function correr(ctx) {
       else await s.pagina.waitForTimeout(100);
     }
     const fin = await esperarFin(s, t, 30_000);
-    tiempos.push({ i, respuestaMs: tVisto && tVisto - t, libreDespuesMs: fin !== null && tVisto ? t + fin - tVisto : null, filas: await contarFilas(s, `OK ${n}`) });
+    tiempos.push({ i, respuestaMs: tVisto && tVisto - t, libreDespuesMs: fin !== null && tVisto ? t + fin - tVisto : null, filas: await contarFilas(s, `OK ${n}`), sinComplete: fin === null });
   }
   const cap = await ctx.captura(s, 'final');
   ctx.guardar('tiempos.json', tiempos);

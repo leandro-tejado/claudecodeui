@@ -98,7 +98,7 @@ Las sesiones nuevas del orquestador llegan por polling de 3 s sobre `~/.cache/ao
 - [x] Script `e2e/instancia.mjs` que levanta el `dist/` actual en `:3901` con `DATABASE_PATH=/tmp/cloudcli-e2e/auth.db`, registra el usuario de prueba y guarda el token — acepta: `curl :3901/api/auth/status` responde `needsSetup:false` y el token sirve en `/api/auth/user` | valida: `node e2e/instancia.mjs up && curl -s 127.0.0.1:3901/api/auth/status`
 - [x] Helpers `e2e/sesiones.mjs`: crear y cerrar sesiones `e2e-*` (headless por la UI, tmux por `orquestar.py crear`), con teardown que se niega a tocar nada sin prefijo — acepta: después del teardown, `tmux ls | grep -c '^e2e-'` = 0 y las sesiones de Leandro siguen idénticas | valida: `node e2e/sesiones.mjs prueba-teardown`
 - [x] CLI falso `e2e/claude-falso.mjs` con guiones (`subagente-a-mitad`, `stderr-a-mitad`, `6000-deltas`, `pensamiento`, `pregunta`) y una instancia `:3902` con `CLAUDE_CLI_PATH` — acepta: un turno en `:3902` reproduce el guion entero sin gastar cuota | valida: `node e2e/correr.mjs falso/humo`
-- [ ] Línea base: correr los escenarios de los 8 puntos y de los 7 commits de hoy contra el código actual — acepta: `e2e/evidencia/00-linea-base/informe.md` con una fila por check (pasa/falla + captura o log) | valida: `node e2e/correr.mjs linea-base`
+- [x] Línea base: correr los escenarios de los 8 puntos y de los 7 commits de hoy contra el código actual — acepta: `e2e/evidencia/00-linea-base/informe.md` con una fila por check (pasa/falla + captura o log) | valida: `node e2e/correr.mjs linea-base`
 - [ ] Cuota: releer `cuota.json` en cada `getUsageWindow` y quedarse con la lectura más nueva; ruta por `RUTA_CUOTA_JSON` — acepta: test de server verde | valida: `NODE_ENV=test npm test -- usage-window`
 - [ ] Cuota: `fs.watch` sobre el archivo → `scheduleUsageWindowBroadcast` — acepta: escribir el archivo cambia el header abierto en ≤ 3 s sin recargar | valida: `node e2e/correr.mjs cuota/en-vivo`
 - [ ] Cuota en el cliente: nunca "sin dato" si hay una lectura; antigüedad visible (> 15 min) y refetch al volver a la pestaña — acepta: con un archivo de hace 2 h, el header muestra los dos porcentajes y la antigüedad | valida: `node e2e/correr.mjs cuota/vieja`
@@ -237,10 +237,10 @@ Las sesiones nuevas del orquestador llegan por polling de 3 s sobre `~/.cache/ao
 5. Informe: tabla + un párrafo por punto con la causa confirmada o descartada contra el diagnóstico del Contexto.
 
 #### Estado (arranca todo en fail)
-- [fail] Informe con los 8 puntos y los 7 commits | valida: `grep -c '^|' e2e/evidencia/00-linea-base/informe.md` ≥ 30
-- [fail] Cada fila tiene captura o log enlazado y existente | valida: script que verifica los links del informe
-- [fail] Números de línea base anotados (latencias, remontajes) | valida: lectura del informe
-- [fail] Teardown limpio al final | valida: `tmux ls | grep -c '^e2e-'` = 0
+- [pass] Informe con los 8 puntos y los 7 commits | valida: `grep -c '^|' e2e/evidencia/00-linea-base/informe.md` ≥ 30
+- [pass] Cada fila tiene captura o log enlazado y existente | valida: script que verifica los links del informe
+- [pass] Números de línea base anotados (latencias, remontajes) | valida: lectura del informe
+- [pass] Teardown limpio al final | valida: `tmux ls | grep -c '^e2e-'` = 0
 
 #### Peligros
 - Un síntoma que no se reproduce en headless de Playwright pero sí en el celular de Leandro (red móvil, pestaña en segundo plano). Si no reproduce, se repite con `page.emulate` de un iPhone, con red lenta (`route` con demora) y con la pestaña oculta (`visibilitychange`) antes de anotar "no reproduce".
@@ -561,12 +561,18 @@ Fase 1 (arnés) → Fase 2 (línea base)
 - Los 404 de abrir una sesión todavía sin indexar se guardan aparte (`[carga]` en `consola-*.txt`): miden la carrera del punto 4, no la salud del turno.
 - Suite de server: 2 fallas **previas a este plan** en `shell-tmux.test.ts` (también fallan en un worktree limpio de `HEAD`), y 4 más que solo aparecen si el shell exporta `CLAUDE_CLI_PATH`/`TMUX` (el de un agente lo hace).
 
+**Fase 2 (05-oct):**
+- Validado: `grep -c '^|'` = 103; `node e2e/verificar-informe.mjs e2e/evidencia/00-linea-base/informe.md` → 70 filas, 0 problemas; `tmux ls | grep -c '^e2e-'` = 0. Los números y la lectura por punto y por commit están en `e2e/evidencia/00-linea-base/lectura.md`, que `correr.mjs` agrega al final de `informe.md` (después de `---`).
+- Estado nuevo en el informe: **bloqueado** (`ctx.bloquear(motivo)`). Lo usa `headless/pensamiento`: `:3901` no tiene `CLAUDE_CODE_OAUTH_TOKEN` y la suite no maneja credenciales (decide Leandro). El verificador saltea esas filas.
+- Los checks sin evidencia propia guardan los frames del WS (`frames-0.json`) como respaldo, así ninguna fila queda sin enlace.
+- Resultado: 8267cbe1 y 62d63c69 pasan; 4158e887 falla; 373dc739 pasa headless y falla en tmux; 1329d865 parcial; ed997afa/36795114 seleccionan bien pero la barra abierta no se entera.
+
 ---
 
 ## Continuación de Sesión
 
-**Fases completadas:** Fase 1
-**Fase actual:** Fase 2 - Línea base
-**Próximo paso exacto:** `node e2e/correr.mjs todo --corrida 00-linea-base --con-cuota` (gobernador no rojo) y escribir los párrafos por punto en `e2e/evidencia/00-linea-base/informe.md`.
-**Bloqueantes:** la Fase 10 necesita el prompt de ejemplo del cuestionario (Leandro lo pasa al llegar ahí). La Fase 12 necesita que Leandro reinicie `:3001`.
-**Micro-tasks pendientes:** 37 de 41
+**Fases completadas:** Fase 1, Fase 2
+**Fase actual:** Grupo A en paralelo (Fases 3, 4, 8 y 10, en worktrees), después Fase 7 server (grupo B)
+**Próximo paso exacto:** despachar el grupo A con `aos-core:ejecutar-plan` (reparto ya aprobado por Leandro) y revalidar cada check con su escenario contra `:3901`/`:3902` reconstruidas desde la rama de cada fase.
+**Bloqueantes:** la Fase 10 necesita el prompt de ejemplo del cuestionario. `headless/pensamiento` necesita que Leandro decida si `:3901` lleva el token. La Fase 12 necesita que Leandro reinicie `:3001` (y ese reinicio también aplica `esProyectoDePrueba`).
+**Micro-tasks pendientes:** 36 de 41

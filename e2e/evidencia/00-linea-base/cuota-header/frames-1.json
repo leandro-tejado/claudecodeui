@@ -1,0 +1,68 @@
+[
+  {
+    "t": 1791224057939,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3902/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjIyNTY0LCJleHAiOjE4MjI3NTg1NjR9.gYPSd4Pzpm6E2YA_zuCJNSeOziRDn28WRXb6C3Ib11U",
+    "datos": {
+      "type": "chat.tmux-prompts"
+    }
+  },
+  {
+    "t": 1791224058000,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3902/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjIyNTY0LCJleHAiOjE4MjI3NTg1NjR9.gYPSd4Pzpm6E2YA_zuCJNSeOziRDn28WRXb6C3Ib11U",
+    "datos": {
+      "kind": "tmux_prompts",
+      "prompts": [],
+      "timestamp": "2026-10-05T18:14:17.996Z"
+    }
+  },
+  {
+    "t": 1791224058488,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3902/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjIyNTY0LCJleHAiOjE4MjI3NTg1NjR9.gYPSd4Pzpm6E2YA_zuCJNSeOziRDn28WRXb6C3Ib11U",
+    "datos": {
+      "type": "chat.subscribe",
+      "sessions": [
+        {
+          "sessionId": "c59ee530-51cb-48d4-8233-858b16d8570a",
+          "lastSeq": 0
+        }
+      ]
+    }
+  },
+  {
+    "t": 1791224058505,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3902/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjIyNTY0LCJleHAiOjE4MjI3NTg1NjR9.gYPSd4Pzpm6E2YA_zuCJNSeOziRDn28WRXb6C3Ib11U",
+    "datos": {
+      "kind": "chat_subscribed",
+      "sessionId": "c59ee530-51cb-48d4-8233-858b16d8570a",
+      "isProcessing": false,
+      "lastSeq": 0,
+      "pendingPermissions": [],
+      "runsInTmux": false,
+      "timestamp": "2026-10-05T18:14:18.501Z"
+    }
+  },
+  {
+    "t": 1791224064134,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3902/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjIyNTY0LCJleHAiOjE4MjI3NTg1NjR9.gYPSd4Pzpm6E2YA_zuCJNSeOziRDn28WRXb6C3Ib11U",
+    "datos": {
+      "kind": "recursos",
+      "ram": {
+        "porcentajePct": 30.848808427580888,
+        "usadaGb": 2.392345428466797,
+        "totalGb": 7.75506591796875
+      },
+      "disco": {
+        "usadoPct": 22.609984153931237,
+        "usadoGb": 21.665340423583984,
+        "totalGb": 95.82200622558594
+      },
+      "sesionesTmux": 3,
+      "techoRam": 90
+    }
+  }
+]

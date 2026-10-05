@@ -77,6 +77,11 @@ for (const id of elegidos) {
       fs.writeFileSync(destino, typeof datos === 'string' ? datos : JSON.stringify(datos, null, 2));
       return path.relative(dirCorrida, destino);
     },
+    // Un escenario que no puede correr por algo ajeno (credenciales, cuota) lo dice, no falla.
+    bloquear(motivo) {
+      for (const c of meta.checks ?? ['(todo el escenario)']) checks.push({ escenario: id, nombre: c, resultado: 'bloqueado', evidencia: [], datos: motivo });
+      console.log(`  ⏸ bloqueado: ${motivo}`);
+    },
     check(nombre, pasa, { evidencia = [], datos } = {}) {
       const r = { escenario: id, nombre, resultado: pasa ? 'pasa' : 'falla', evidencia: [].concat(evidencia).filter(Boolean), datos };
       checks.push(r);
@@ -105,6 +110,11 @@ for (const id of elegidos) {
         try { const todo = [...(s.erroresDeCarga ?? []).map((e) => `[carga] ${e}`), ...s.errores]; if (todo.length) ctx.guardar(`consola-${sesionesAbiertas.indexOf(s)}.txt`, todo.join('\n')); } catch { /* nada */ }
         await s.navegador.close().catch(() => {});
       }
+      // Un check sin captura propia lleva el log de frames del escenario: ninguna fila queda sin evidencia.
+      const log = path.join(dir, 'frames-0.json');
+      if (fs.existsSync(log)) {
+        for (const c of checks) if (!c.evidencia.length) c.evidencia.push(path.relative(dirCorrida, log));
+      }
       if (meta.cuota || meta.tmux) {
         const t = teardown();
         if (!t.ajenasIntactas) console.error('  ⚠ el teardown cambió sesiones ajenas: revisar ya');
@@ -131,7 +141,11 @@ const md = [
 const informe = path.join(dirCorrida, 'informe.md');
 // Varias invocaciones con la misma --corrida se acumulan en el mismo informe.
 const previo = fs.existsSync(path.join(dirCorrida, 'filas.json')) ? JSON.parse(fs.readFileSync(path.join(dirCorrida, 'filas.json'), 'utf8')) : [];
-const todas = [...previo.filter((p) => !elegidos.includes(p.escenario)), ...filas];
+const conLog = (f) => {
+  const log = path.join(dirCorrida, f.escenario.replace('/', '-'), 'frames-0.json');
+  return f.evidencia.length || f.resultado === 'bloqueado' || !fs.existsSync(log) ? f : { ...f, evidencia: [path.relative(dirCorrida, log)] };
+};
+const todas = [...previo.filter((p) => !elegidos.includes(p.escenario)), ...filas].map(conLog);
 fs.writeFileSync(path.join(dirCorrida, 'filas.json'), JSON.stringify(todas, null, 2));
 if (todas.length !== filas.length) {
   md.splice(0, md.length,
@@ -142,6 +156,9 @@ if (todas.length !== filas.length) {
     '| Escenario | Check | Resultado | Evidencia | Datos |', '|---|---|---|---|---|',
     ...todas.map((f) => `| \`${f.escenario}\` | ${f.nombre.replace(/\|/g, '\\|')} | ${icono[f.resultado]} | ${f.evidencia.map((e) => `[${path.basename(e)}](${e})`).join(' ') || '—'} | ${f.datos === undefined ? '' : String(typeof f.datos === 'string' ? f.datos : JSON.stringify(f.datos)).replace(/\|/g, '\\|').slice(0, 220)} |`), '');
 }
+// La lectura humana de la corrida (por punto, causas, números) vive aparte para que regenerar no la pise.
+const lectura = path.join(dirCorrida, 'lectura.md');
+if (fs.existsSync(lectura)) md.push('---', '', fs.readFileSync(lectura, 'utf8'));
 fs.writeFileSync(informe, md.join('\n'));
 console.log(`\ninforme: ${path.relative(REPO, informe)}`);
 const fallas = filas.filter((f) => f.resultado === 'falla').length;

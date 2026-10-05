@@ -47,7 +47,7 @@ export async function correr(ctx) {
   const s = await ctx.abrir();
   await abrirSesion(s, id);
   const r1 = await esperarEtiqueta(s, /37%/, 15_000);
-  ctx.check('5 h muestra la lectura del archivo (primera lectura del proceso)', r1.ok, { evidencia: await ctx.captura(s, 'primera-lectura'), datos: r1 });
+  ctx.check('5 h muestra la lectura fresca del archivo (≤ 15 s, sin reiniciar)', r1.ok, { evidencia: await ctx.captura(s, 'primera-lectura'), datos: r1 });
   ctx.check('la semanal muestra % (no solo la hora de renovación)', /Semanal: ~?21%/.test(r1.ultima ?? ''), { datos: { etiqueta: r1.ultima } });
   escribir(52, 23);
   const r2 = await esperarEtiqueta(s, /52%/, 15_000);
