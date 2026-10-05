@@ -225,11 +225,11 @@ async function onRegistroTmuxUpdate(filePath: string): Promise<void> {
 
   try {
     invalidarRegistroSesiones();
-    const { indexadas, podadas } = await sincronizarSesionesTmuxSinTranscript();
-    if (indexadas.length > 0 || podadas > 0) {
-      console.log('Sesiones tmux sin transcript sincronizadas desde el registro', { indexadas, podadas });
+    const { indexadas, reactivadas, podadas } = await sincronizarSesionesTmuxSinTranscript();
+    if (indexadas.length > 0 || reactivadas.length > 0 || podadas > 0) {
+      console.log('Sesiones tmux sin transcript sincronizadas desde el registro', { indexadas, reactivadas, podadas });
     }
-    for (const sessionId of indexadas) {
+    for (const sessionId of [...indexadas, ...reactivadas]) {
       queuePendingWatcherUpdate('add', 'claude', sessionId);
     }
   } catch (error) {
