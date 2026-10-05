@@ -100,4 +100,45 @@ describe('chat: la pregunta pendiente con sus botones', () => {
     expect(onAnswer).toHaveBeenCalledWith(ask, 2, 'Verde');
     expect(screen.getByRole('button', { name: 'Enviando…' })).toHaveProperty('disabled', true);
   });
+
+  it('5-oct: un formulario se ve tal cual, con un botón por tecla de su pie; la tecla va sola', async () => {
+    await loadLanguage('es');
+    await i18n.changeLanguage('es');
+    const onAnswer = vi.fn();
+    const onKey = vi.fn();
+    const form: TmuxPrompt = {
+      ...PROMPT,
+      id: 'huella-form',
+      pregunta: 'Teach auto mode about your environment?',
+      detalle: 'How you use Claude here     Mixed\n❯ Also scan shell history     false\n\nContinue',
+      opciones: [],
+      seleccionada: -1,
+      teclas: [
+        { tecla: 'Up', accion: '' },
+        { tecla: 'Down', accion: '' },
+        { tecla: 'Left', accion: 'change' },
+        { tecla: 'Right', accion: 'change' },
+        { tecla: 'Enter', accion: 'continue' },
+        { tecla: 'Escape', accion: 'cancel' },
+      ],
+    };
+    const Harness = () => {
+      const { prompts, errors } = useTmuxPrompts();
+      return <TmuxPromptBanner prompts={prompts} errors={errors} onAnswer={onAnswer} onKey={onKey} />;
+    };
+    render(<Harness />);
+    act(() => { publishTmuxPrompts([form]); });
+
+    // Con los espacios tal cual: alinean los valores del formulario.
+    const pre = screen.getByText((_, element) => element?.tagName === 'PRE');
+    expect(pre.textContent).toContain('❯ Also scan shell history     false');
+    expect(screen.getByRole('button', { name: 'Enter · continue' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Esc · cancel' })).toBeTruthy();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Bajar' }));
+    expect(onKey).toHaveBeenCalledWith(form, 'Down');
+    expect(onAnswer).not.toHaveBeenCalled();
+    // Hasta que el pane cambia de pantalla, no se manda otra.
+    expect(screen.getByRole('button', { name: 'Esc · cancel' })).toHaveProperty('disabled', true);
+  });
 });

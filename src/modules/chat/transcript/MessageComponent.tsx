@@ -50,6 +50,7 @@ const DELIVERY_LABEL_DEFAULTS: Record<MessageDeliveryState, string> = {
   sending: 'Sending…',
   sent: 'Sent',
   queued: 'Queued · sends when the current reply ends',
+  held: 'Waiting · the session is stopped on a dialog; sends once it is answered',
   failed: 'Not sent',
 };
 
@@ -65,7 +66,13 @@ function DeliveryLabel({ state }: { state?: MessageDeliveryState }) {
     <span
       data-testid="message-delivery-state"
       data-state={state}
-      className={state === 'failed' ? 'text-destructive' : state === 'queued' ? 'text-primary/80' : undefined}
+      className={
+        state === 'failed'
+          ? 'text-destructive'
+          : state === 'held'
+            ? 'text-amber-600 dark:text-amber-400'
+            : state === 'queued' ? 'text-primary/80' : undefined
+      }
     >
       {t(`message.delivery.${state}`, { defaultValue: DELIVERY_LABEL_DEFAULTS[state] })}
       {' ·'}

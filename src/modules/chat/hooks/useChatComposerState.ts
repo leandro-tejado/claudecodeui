@@ -903,7 +903,12 @@ export function useChatComposerState({
         ...(replacedAnchorId ? { replacesAnchorId: replacedAnchorId } : {}),
       };
       addMessage(userMessage);
-      if (targetSessionId) {
+      // A message to a tmux pane is not "thinking" until the pane shows it
+      // took it (5-oct: a dialog swallowed two messages that said
+      // "Pensando…"). The server's `sent` is what starts the indicator there.
+      const goesToTmuxPane =
+        !replacedAnchorId && attachedFiles.length === 0 && targetSessionId !== null && sessionStore.runsInTmux(targetSessionId);
+      if (targetSessionId && !goesToTmuxPane) {
         // Mark this request as processing in the per-session activity map
         // (the single source of truth the indicator derives from).
         onSessionProcessing?.(targetSessionId, {

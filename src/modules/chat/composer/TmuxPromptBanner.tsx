@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { TerminalSquareIcon } from 'lucide-react';
 
-import type { TmuxPrompt } from '@/modules/skin';
+import type { TmuxPrompt, TmuxPromptKey } from '@/modules/skin';
 import {
   Confirmation,
   ConfirmationAction,
@@ -15,6 +15,18 @@ type TmuxPromptBannerProps = {
   prompts: TmuxPrompt[];
   errors: ReadonlyMap<string, { promptId: string; error: string }>;
   onAnswer: (prompt: TmuxPrompt, optionIndex: number, text?: string) => void;
+  /** Una tecla suelta del pie del diálogo (flechas, Enter, Esc). */
+  onKey?: (prompt: TmuxPrompt, key: TmuxPromptKey) => void;
+};
+
+const KEY_SYMBOL: Record<TmuxPromptKey, string> = {
+  Up: '↑',
+  Down: '↓',
+  Left: '←',
+  Right: '→',
+  Enter: 'Enter',
+  Escape: 'Esc',
+  Tab: 'Tab',
 };
 
 const formatTime = (iso: string): string => {
@@ -33,12 +45,18 @@ const formatTime = (iso: string): string => {
  *
  * La opción libre de AskUserQuestion ("Type something.") no es un botón sino
  * un campo: la respuesta se escribe acá y el servidor la teclea en el pane.
+ *
+ * Un diálogo que no es una lista de opciones —el formulario de auto mode del
+ * 5-oct— se muestra tal cual se ve en el pane, con un botón por cada tecla
+ * que nombra su pie. Cada tecla cambia la pantalla, y la tarjeta se
+ * reemplaza con la nueva.
  */
-export default function TmuxPromptBanner({ prompts, errors, onAnswer }: TmuxPromptBannerProps) {
+export default function TmuxPromptBanner({ prompts, errors, onAnswer, onKey }: TmuxPromptBannerProps) {
   const { t } = useTranslation('chat');
   // promptId -> la opción mandada y el error que había en ese momento. Sigue
   // "enviando" hasta que el prompt se va o llega un error nuevo.
-  const [answering, setAnswering] = useState<Map<string, { option: number; errorAtSend: unknown }>>(new Map());
+  // Una opción va por su índice; una tecla, por su nombre.
+  const [answering, setAnswering] = useState<Map<string, { option: number | TmuxPromptKey; errorAtSend: unknown }>>(new Map());
   // promptId -> lo escrito en su opción libre.
   const [drafts, setDrafts] = useState<Map<string, string>>(new Map());
 
@@ -71,9 +89,17 @@ export default function TmuxPromptBanner({ prompts, errors, onAnswer }: TmuxProm
             </ConfirmationTitle>
 
             {prompt.detalle && (
-              <pre className="max-h-48 overflow-auto whitespace-pre-wrap rounded-md border bg-muted/50 p-2 text-xs text-muted-foreground">
+              <pre
+                className={`max-h-48 overflow-auto rounded-md border bg-muted/50 p-2 text-xs ${
+                  prompt.opciones.length === 0 ? 'whitespace-pre text-foreground' : 'whitespace-pre-wrap text-muted-foreground'
+                }`}
+              >
                 {prompt.detalle}
               </pre>
+            )}
+
+            {prompt.opciones.some((option) => option.casilla) && (
+              <div className="text-xs text-muted-foreground">{t('tmuxPrompt.multiHint')}</div>
             )}
 
             {errorText && (
@@ -132,6 +158,30 @@ export default function TmuxPromptBanner({ prompts, errors, onAnswer }: TmuxProm
                 );
               })}
             </ConfirmationActions>
+
+            {onKey && prompt.teclas && prompt.teclas.length > 0 && (
+              <ConfirmationActions className="flex-wrap" data-testid="tmux-prompt-keys">
+                {prompt.teclas.map(({ tecla, accion }) => {
+                  const symbol = KEY_SYMBOL[tecla];
+                  const label = accion ? `${symbol} · ${accion}` : symbol;
+                  return (
+                    <ConfirmationAction
+                      key={tecla}
+                      variant="outline"
+                      aria-label={accion ? label : t(`tmuxPrompt.key.${tecla}`)}
+                      title={accion ? label : t(`tmuxPrompt.key.${tecla}`)}
+                      disabled={sentOption !== undefined}
+                      onClick={() => {
+                        setAnswering((previous) => new Map(previous).set(prompt.id, { option: tecla, errorAtSend: error }));
+                        onKey(prompt, tecla);
+                      }}
+                    >
+                      {sentOption === tecla ? t('tmuxPrompt.sending') : label}
+                    </ConfirmationAction>
+                  );
+                })}
+              </ConfirmationActions>
+            )}
           </Confirmation>
         );
       })}

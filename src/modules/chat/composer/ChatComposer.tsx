@@ -31,7 +31,7 @@ import ComposerAttachment from '@/modules/chat/composer/ComposerAttachment';
 import VoiceInputButton from '@/modules/chat/composer/VoiceInputButton';
 import PermissionRequestsBanner from '@/modules/chat/composer/PermissionRequestsBanner';
 import TmuxPromptBanner from '@/modules/chat/composer/TmuxPromptBanner';
-import type { TmuxPrompt } from '@/modules/skin';
+import type { TmuxPrompt, TmuxPromptKey } from '@/modules/skin';
 import { SkinContextMeterBridge as TokenUsageSummary } from '@/modules/skin';
 import QueuedMessageCard from '@/modules/chat/composer/QueuedMessageCard';
 import { ScheduleMessagePopover } from '@/modules/chat/composer/ScheduleMessagePopover';
@@ -58,6 +58,7 @@ type ChatComposerProps = {
   tmuxPrompts?: TmuxPrompt[];
   tmuxPromptErrors?: ReadonlyMap<string, { promptId: string; error: string }>;
   onAnswerTmuxPrompt?: (prompt: TmuxPrompt, optionIndex: number, text?: string) => void;
+  onTmuxPromptKey?: (prompt: TmuxPrompt, key: TmuxPromptKey) => void;
   activity: SessionActivity | null;
   isLoading: boolean;
   onAbortSession: () => void;
@@ -136,6 +137,7 @@ export default function ChatComposer({
   tmuxPrompts = EMPTY_TMUX_PROMPTS,
   tmuxPromptErrors = EMPTY_TMUX_PROMPT_ERRORS,
   onAnswerTmuxPrompt,
+  onTmuxPromptKey,
   handlePermissionDecision,
   handleGrantToolPermission,
   activity,
@@ -303,7 +305,7 @@ export default function ChatComposer({
 
       {tmuxPrompts.length > 0 && onAnswerTmuxPrompt && (
         <div className="mx-auto mb-3 max-w-[54.25rem]">
-          <TmuxPromptBanner prompts={tmuxPrompts} errors={tmuxPromptErrors} onAnswer={onAnswerTmuxPrompt} />
+          <TmuxPromptBanner prompts={tmuxPrompts} errors={tmuxPromptErrors} onAnswer={onAnswerTmuxPrompt} onKey={onTmuxPromptKey} />
         </div>
       )}
 

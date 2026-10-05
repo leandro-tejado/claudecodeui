@@ -10,6 +10,7 @@ import { buscarPaneTmuxRegistrado, sessionsService } from '@/modules/providers/i
 import { SALIDAS_SYSTEM_PROMPT_APPEND } from '@/modules/salidas/index.js';
 import { nombreTmux } from '@/modules/websocket/services/shell-websocket.service.js';
 import { sinEntornoDeLaSesionPadre } from '@/modules/websocket/services/tmux-entorno.js';
+import { leerEstadoPane, type EstadoPaneTmux } from '@/modules/websocket/services/tmux-prompt.service.js';
 import { connectedClients, WS_OPEN_STATE } from '@/modules/websocket/services/websocket-state.service.js';
 import type { AnyRecord, LLMProvider, NormalizedMessage } from '@/shared/types.js';
 
@@ -369,6 +370,150 @@ export async function enviarPrompt(
   await dependencies.sendEnter(nombreSesion);
 }
 
+export type ResultadoEnvioTmux =
+  | { ok: true }
+  /** El pane tiene un diálogo abierto: no se tecleó nada, y el mensaje tiene que esperar a que se conteste. */
+  | { ok: false; motivo: 'dialogo' }
+  | { ok: false; motivo: 'sin-cuadro' | 'cuadro-ocupado' | 'no-aparecio' | 'no-salio'; mensaje: string };
+
+export type EnvioVerificadoDependencias = Pick<TmuxBridgeDependencies, 'sendKeysLiteral' | 'sendEnter'> & {
+  /** La pantalla visible, con atributos (`capture-pane -p -e`). */
+  capturarPantalla: (nombreSesion: string) => Promise<string>;
+  esperar: (ms: number) => Promise<void>;
+};
+
+const dependenciasEnvioVerificado: EnvioVerificadoDependencias = {
+  sendKeysLiteral: defaultSendKeysLiteral,
+  sendEnter: defaultSendEnter,
+  capturarPantalla: async (nombreSesion) => {
+    const { stdout } = await execFileAsync('tmux', ['capture-pane', '-p', '-e', '-t', targetExacto(nombreSesion)], { timeout: 2000 });
+    return stdout;
+  },
+  esperar: (ms) => new Promise((resolve) => { setTimeout(resolve, ms); }),
+};
+
+const PASO_VERIFICACION_MS = 250;
+// Un pane recién creado tarda en dibujar el cuadro de texto.
+const ESPERA_CUADRO_MS = 4000;
+const ESPERA_TEXTO_MS = 3000;
+const ESPERA_SALIDA_MS = 4000;
+// Si el cuadro sigue lleno a mitad de la espera, un `Enter` más: el 16-sep uno
+// se perdió porque llegó antes de que la interfaz terminara de montarse. En
+// un cuadro ya vacío, un `Enter` de más no manda nada.
+const REINTENTO_ENTER_MS = 2000;
+
+/**
+ * Si el cuadro de texto muestra lo que se tecleó. Sin espacios, porque el
+ * cuadro parte los renglones largos donde le entra; por el final del texto,
+ * que es lo último en llegar; y un pegado largo se ve como "[Pasted text #1
+ * +39 lines]" (medido el 5-oct), que alcanza porque antes el cuadro estaba vacío.
+ */
+function cuadroMuestra(cuadro: string, texto: string): boolean {
+  if (/\[Pasted text #\d+/.test(cuadro)) return true;
+  // `!` al principio pasa el cuadro a modo bash y no se dibuja como texto.
+  const buscado = texto.replace(/\s+/g, '').replace(/^!/, '').slice(-40);
+  return buscado.length > 0 && cuadro.replace(/\s+/g, '').includes(buscado);
+}
+
+function recortar(texto: string, largo = 60): string {
+  const plano = texto.replace(/\s+/g, ' ').trim();
+  return plano.length > largo ? `${plano.slice(0, largo - 1)}…` : plano;
+}
+
+/**
+ * Manda un mensaje a un pane y confirma que llegó, en vez de darlo por
+ * mandado porque `send-keys` no falló.
+ *
+ * 5-oct: en `estudio-guia-1` Claude Code tenía abierto un diálogo propio, dos
+ * "1" desde el chat se los comió el diálogo, y el chat decía "Enviado" y
+ * "Pensando…". Ahora:
+ *
+ * 1. Antes de teclear, el pane tiene que mostrar el cuadro de texto, vacío y
+ *    sin ningún diálogo encima. Con un diálogo no se teclea nada (`dialogo`).
+ * 2. Se teclea, y el texto tiene que aparecer en el cuadro antes del `Enter`.
+ * 3. Recién con el `Enter` el cuadro se vacía: eso es que Claude lo tomó.
+ */
+export async function enviarPromptVerificado(
+  nombreSesion: string,
+  texto: string,
+  dependencies: EnvioVerificadoDependencias = dependenciasEnvioVerificado,
+): Promise<ResultadoEnvioTmux> {
+  assertNombreSesionValido(nombreSesion);
+
+  const leer = async (): Promise<EstadoPaneTmux> => {
+    try {
+      return leerEstadoPane(await dependencies.capturarPantalla(nombreSesion));
+    } catch {
+      return { prompt: null, cuadro: null };
+    }
+  };
+
+  let estado = await leer();
+  for (let esperado = 0; !estado.prompt && !estado.cuadro && esperado < ESPERA_CUADRO_MS; esperado += PASO_VERIFICACION_MS) {
+    await dependencies.esperar(PASO_VERIFICACION_MS);
+    estado = await leer();
+  }
+  if (estado.prompt) return { ok: false, motivo: 'dialogo' };
+  if (!estado.cuadro) {
+    return {
+      ok: false,
+      motivo: 'sin-cuadro',
+      mensaje: 'La sesión no muestra el cuadro de texto de Claude: está en otra pantalla o claude se cerró. No se mandó nada.',
+    };
+  }
+  if (estado.cuadro.texto) {
+    return {
+      ok: false,
+      motivo: 'cuadro-ocupado',
+      mensaje: `El cuadro de texto de la sesión ya tiene algo escrito («${recortar(estado.cuadro.texto)}»). No se mandó nada para no mezclarlo: borralo desde la terminal y volvé a mandar el mensaje.`,
+    };
+  }
+
+  const payload = texto.includes('\n') ? `${BRACKETED_PASTE_START}${texto}${BRACKETED_PASTE_END}` : texto;
+  for (const tramo of partirParaSendKeys(payload)) {
+    await dependencies.sendKeysLiteral(nombreSesion, tramo);
+  }
+
+  let aparecio = false;
+  for (let esperado = 0; esperado <= ESPERA_TEXTO_MS; esperado += PASO_VERIFICACION_MS) {
+    estado = await leer();
+    if (estado.prompt) break;
+    if (estado.cuadro && cuadroMuestra(estado.cuadro.texto, texto)) {
+      aparecio = true;
+      break;
+    }
+    await dependencies.esperar(PASO_VERIFICACION_MS);
+  }
+  if (!aparecio) {
+    return {
+      ok: false,
+      motivo: 'no-aparecio',
+      mensaje: estado.prompt
+        ? 'Mientras se escribía el mensaje se abrió un diálogo en la sesión. No se mandó el Enter: revisá la sesión antes de volver a mandarlo.'
+        : 'El texto no apareció en el cuadro de la sesión, así que no se mandó el Enter. Revisá la sesión antes de volver a mandarlo.',
+    };
+  }
+
+  await dependencies.sendEnter(nombreSesion);
+  let reintentado = false;
+  for (let esperado = 0; esperado <= ESPERA_SALIDA_MS; esperado += PASO_VERIFICACION_MS) {
+    await dependencies.esperar(PASO_VERIFICACION_MS);
+    estado = await leer();
+    // Un cuadro que ya no tiene el texto —vacío, o reemplazado por la
+    // pantalla de un comando que abrió el mensaje— es que salió.
+    if (!estado.cuadro || !cuadroMuestra(estado.cuadro.texto, texto)) return { ok: true };
+    if (!reintentado && esperado >= REINTENTO_ENTER_MS) {
+      reintentado = true;
+      await dependencies.sendEnter(nombreSesion);
+    }
+  }
+  return {
+    ok: false,
+    motivo: 'no-salio',
+    mensaje: 'El mensaje quedó escrito en el cuadro de la sesión pero Claude no lo tomó. Revisá la sesión desde la terminal.',
+  };
+}
+
 // tmux rechaza con "command too long" un comando de más de ~16 KB (medido el
 // 30-sep: 16.000 bytes pasan, 20.000 no). Un prompt largo pegado en el chat
 // -el del 30-sep traía un componente entero y pesaba más de 20 KB- se perdía
@@ -669,6 +814,7 @@ export async function manejarActualizacionTranscript(providerSessionIdOEspacioAp
 
 export const tmuxBridgeService = {
   enviarPrompt,
+  enviarPromptVerificado,
   tieneSesionTmux,
   resolverPaneTmux,
   puentearPaneExterno,

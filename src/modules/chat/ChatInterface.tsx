@@ -30,7 +30,7 @@ import ChatComposer from '@/modules/chat/composer/ChatComposer';
 import CommandResultModal from '@/modules/chat/modals/CommandResultModal';
 import PanelSalidas from '@/modules/chat/panel-salidas/PanelSalidas';
 import { SkinSubagentBridge, useTmuxPrompts } from '@/modules/skin';
-import type { TmuxPrompt } from '@/modules/skin';
+import type { TmuxPrompt, TmuxPromptKey } from '@/modules/skin';
 import { flushAllStreamBuffers } from '@/modules/chat/utils/streamBuffers';
 import type { StreamBuffers } from '@/modules/chat/utils/streamBuffers';
 
@@ -409,6 +409,15 @@ function ChatInterface({
       ...(text !== undefined ? { texto: text } : {}),
     });
   }, [sendMessage]);
+  const handleTmuxPromptKey = useCallback((prompt: TmuxPrompt, key: TmuxPromptKey) => {
+    sendMessage({
+      type: 'chat.tmux-prompt-response',
+      sessionId: prompt.sessionId,
+      pane: prompt.pane,
+      promptId: prompt.id,
+      tecla: key,
+    });
+  }, [sendMessage]);
 
   // Lets a workflow card fetch its agents' timelines for this session.
   const transcriptSessionValue = useMemo(() => ({ sessionId: currentSessionId }), [currentSessionId]);
@@ -549,6 +558,7 @@ function ChatInterface({
           tmuxPrompts={tmuxPrompts}
           tmuxPromptErrors={tmuxPromptErrors}
           onAnswerTmuxPrompt={handleAnswerTmuxPrompt}
+          onTmuxPromptKey={handleTmuxPromptKey}
           activity={sessionActivity}
           isLoading={isProcessing}
           onAbortSession={handleAbortSession}

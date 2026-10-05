@@ -122,3 +122,40 @@ test('un error sin id marca el eco más reciente que seguía "enviando"', () => 
   const states = pane.rendered().filter(([type]) => type === 'user').map(([, , state]) => state);
   assert.deepEqual(states, ['sent', 'failed']);
 });
+
+/*
+ * 5-oct: en una sesión de tmux frenada en un diálogo propio de Claude Code,
+ * el chat decía "Enviado" y "Pensando…" para un mensaje que se comió el
+ * diálogo. Ahora el servidor no teclea nada y lo dice; el eco queda "en
+ * espera" sin indicador de que esté pensando, y sale cuando se contesta.
+ */
+test('tmux frenado en un diálogo: el mensaje queda en espera, sin "Pensando…", y sale al contestarse', () => {
+  const pane = renderPane();
+  pane.echo('local_1_a', '1');
+  pane.emitEvent({
+    kind: 'message_status', sessionId: SID, clientMessageId: 'local_1_a', status: 'queued', reason: 'tmux_prompt',
+  } as ServerEvent);
+
+  assert.deepEqual(pane.rendered(), [['user', '1', 'held']]);
+  assert.deepEqual(pane.idle, [SID]);
+  assert.deepEqual(pane.processing, []);
+
+  pane.emitEvent({
+    kind: 'message_status', sessionId: SID, clientMessageId: 'local_1_a', status: 'sent', fromQueue: true,
+  } as ServerEvent);
+  assert.deepEqual(pane.rendered(), [['user', '1', 'sent']]);
+  assert.equal(pane.processing.at(-1), SID);
+});
+
+test('un mensaje que el pane no tomó queda "no enviado"', () => {
+  const pane = renderPane();
+  pane.echo('local_1_a', 'hola');
+  pane.emitEvent({
+    kind: 'protocol_error',
+    code: 'PANE_SEND_UNCONFIRMED',
+    error: 'El texto no apareció en el cuadro de la sesión, así que no se mandó el Enter.',
+    sessionId: SID,
+    clientMessageId: 'local_1_a',
+  } as ServerEvent);
+  assert.deepEqual(pane.rendered().filter(([type]) => type === 'user'), [['user', 'hola', 'failed']]);
+});

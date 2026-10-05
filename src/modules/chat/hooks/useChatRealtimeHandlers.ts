@@ -244,10 +244,19 @@ export function useChatRealtimeHandlers({
           // or it waits for the run in progress to end (`queued`). A queued
           // message leaving the queue starts the session's next turn.
           if (!sid || typeof msg.clientMessageId !== 'string') return;
-          const status = msg.status === 'queued' ? 'queued' : msg.status === 'sent' ? 'sent' : null;
+          // 5-oct: a tmux session stopped on a dialog got "Pensando…" for a
+          // message the dialog swallowed. Now nothing is typed while a dialog
+          // is open, and the echo says so instead of pretending a turn runs.
+          const held = msg.status === 'queued' && msg.reason === 'tmux_prompt';
+          const status = held ? 'held' : msg.status === 'queued' ? 'queued' : msg.status === 'sent' ? 'sent' : null;
           if (!status) return;
           sessionStore.setDeliveryState(sid, msg.clientMessageId, status);
-          if (status === 'sent' && msg.fromQueue === true) {
+          if (held) {
+            onSessionIdle?.(sid);
+          }
+          // A tmux send is only `sent` once the pane took it, and that is
+          // when its turn starts showing (the composer does not guess it).
+          if (status === 'sent' && (msg.fromQueue === true || sessionStore.runsInTmux(sid))) {
             onSessionProcessing?.(sid, { statusText: null, canInterrupt: true });
           }
           return;

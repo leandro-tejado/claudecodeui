@@ -375,13 +375,16 @@ function retireOptimisticUserEchoes(
  * it sits below everything, where the run's reply keeps growing above it,
  * the same place Claude Code shows a queued prompt.
  */
+const isWaitingEcho = (message: NormalizedMessage) =>
+  message.deliveryState === 'queued' || message.deliveryState === 'held';
+
 function pinQueuedEchoesLast(merged: NormalizedMessage[]): NormalizedMessage[] {
-  if (!merged.some((message) => message.deliveryState === 'queued')) {
+  if (!merged.some(isWaitingEcho)) {
     return merged;
   }
   return [
-    ...merged.filter((message) => message.deliveryState !== 'queued'),
-    ...merged.filter((message) => message.deliveryState === 'queued'),
+    ...merged.filter((message) => !isWaitingEcho(message)),
+    ...merged.filter(isWaitingEcho),
   ];
 }
 
@@ -847,7 +850,7 @@ export function useSessionStore() {
     const idx = slot.realtimeMessages.findIndex((message) => message.id === clientMessageId);
     if (idx < 0) return false;
     const previous = slot.realtimeMessages[idx];
-    const leavesQueue = previous.deliveryState === 'queued' && state === 'sent';
+    const leavesQueue = isWaitingEcho(previous) && state === 'sent';
     const next: NormalizedMessage = {
       ...previous,
       ...patch,

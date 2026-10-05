@@ -10,7 +10,6 @@ import { tmuxBridgeService } from '@/modules/websocket/services/tmux-bridge.serv
 import {
   esperarQueSeDespeje,
   mensajePromptsTmux,
-  paneTienePrompt,
   responderPromptTmux,
   revisarPromptsTmux,
 } from '@/modules/websocket/services/tmux-prompt.service.js';
@@ -417,36 +416,49 @@ async function handleChatSendTmux(
   }
 
   // Bug del 30-sep: una pregunta de AskUserQuestion se contestó sola con la
-  // opción "(Recommended)". El texto de un mensaje no entra en ese diálogo,
-  // pero el `Enter` que lo cierra elige la opción del cursor. Con una
-  // pregunta abierta —o mensajes ya esperando delante— el mensaje espera a
-  // que la persona conteste, y recién entonces se teclea.
+  // opción "(Recommended)": el `Enter` que cierra un mensaje elige la opción
+  // del cursor. Y el 5-oct un diálogo propio de Claude Code se comió dos
+  // mensajes que el chat dio por enviados. Con un diálogo abierto no se
+  // teclea nada: el mensaje espera, y el chat dice por qué. Los mensajes de un
+  // mismo pane salen de a uno y en orden, para que dos no se mezclen en el
+  // cuadro de texto.
   const clientMessageId = readClientMessageId(data);
-  if (colasTmux.has(nombreSesion) || await paneTienePrompt(nombreSesion)) {
-    if (clientMessageId) {
-      broadcastMessageStatus(sessionId, clientMessageId, 'queued', { reason: 'tmux_prompt' });
-    }
-    encolarEnPane(nombreSesion, async () => {
-      const vivo = await esperarQueSeDespeje(nombreSesion, {
-        sigueVivo: () => tmuxBridgeService.tieneSesionTmux(nombreSesion),
-      });
+  if (panesFrenados.has(nombreSesion) && clientMessageId) {
+    broadcastMessageStatus(sessionId, clientMessageId, 'queued', { reason: 'tmux_prompt' });
+  }
+  encolarEnPane(nombreSesion, async () => {
+    let enEspera = panesFrenados.has(nombreSesion);
+    for (;;) {
+      const resultado = await teclearEnPane(ws, sessionId, nombreSesion, content, clientMessageId, { fromQueue: enEspera });
+      if (resultado !== 'dialogo') return;
+      if (!enEspera && clientMessageId) {
+        broadcastMessageStatus(sessionId, clientMessageId, 'queued', { reason: 'tmux_prompt' });
+      }
+      enEspera = true;
+      panesFrenados.add(nombreSesion);
+      let vivo: boolean;
+      try {
+        vivo = await esperarQueSeDespeje(nombreSesion, {
+          sigueVivo: () => tmuxBridgeService.tieneSesionTmux(nombreSesion),
+        });
+      } finally {
+        panesFrenados.delete(nombreSesion);
+      }
       if (!vivo) {
         if (ws.readyState === WS_OPEN_STATE) {
-          sendProtocolError(ws, 'TMUX_SESSION_NOT_FOUND', `La sesion de tmux de "${sessionId}" se cerro antes de poder mandar el mensaje.`, sessionId);
+          sendProtocolError(ws, 'TMUX_SESSION_NOT_FOUND', `La sesion de tmux de "${sessionId}" se cerro antes de poder mandar el mensaje.`, sessionId, clientMessageId ? { clientMessageId } : {});
         }
         return;
       }
-      await teclearEnPane(ws, sessionId, nombreSesion, content, clientMessageId, { fromQueue: true });
-    });
-    return;
-  }
-
-  await teclearEnPane(ws, sessionId, nombreSesion, content, clientMessageId);
+    }
+  });
 }
 
-// Por pane: los mensajes que esperan a que se conteste una pregunta abierta,
-// encadenados para que salgan en el orden en que llegaron.
+// Por pane: los mensajes en camino, encadenados para que salgan de a uno y
+// en el orden en que llegaron.
 const colasTmux = new Map<string, Promise<void>>();
+// Los panes con un mensaje esperando a que se conteste un diálogo.
+const panesFrenados = new Set<string>();
 
 function encolarEnPane(pane: string, tarea: () => Promise<void>): void {
   const turno = (colasTmux.get(pane) ?? Promise.resolve())
@@ -460,7 +472,20 @@ function encolarEnPane(pane: string, tarea: () => Promise<void>): void {
   });
 }
 
-/** Teclea el mensaje en el pane y avisa a todos que la sesión quedó ocupada. */
+// Códigos sin el prefijo `TMUX_` a propósito: el cliente vuelve a
+// `chat.send` ante un `TMUX_…`, y acá la sesión de tmux sigue viva.
+const CODIGO_ENVIO_TMUX = {
+  'sin-cuadro': 'PANE_NOT_AT_PROMPT',
+  'cuadro-ocupado': 'PANE_INPUT_NOT_EMPTY',
+  'no-aparecio': 'PANE_SEND_UNCONFIRMED',
+  'no-salio': 'PANE_SEND_UNCONFIRMED',
+} as const;
+
+/**
+ * Teclea el mensaje en el pane y, solo cuando el pane muestra que Claude lo
+ * tomó, lo marca enviado y avisa que la sesión quedó ocupada. Devuelve
+ * `dialogo` sin teclear nada si el pane tiene un diálogo abierto.
+ */
 async function teclearEnPane(
   ws: WebSocket,
   sessionId: string,
@@ -468,16 +493,27 @@ async function teclearEnPane(
   content: string,
   clientMessageId: string | null,
   { fromQueue = false }: { fromQueue?: boolean } = {},
-): Promise<void> {
+): Promise<'dialogo' | 'listo'> {
+  const conId = clientMessageId ? { clientMessageId } : {};
+  let resultado: Awaited<ReturnType<typeof tmuxBridgeService.enviarPromptVerificado>>;
   try {
-    await tmuxBridgeService.enviarPrompt(nombreSesion, content);
+    resultado = await tmuxBridgeService.enviarPromptVerificado(nombreSesion, content);
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     console.error('[Chat] tmux-bridge send failed', { sessionId, error: message });
     if (ws.readyState === WS_OPEN_STATE) {
-      sendProtocolError(ws, 'TMUX_SEND_FAILED', message, sessionId);
+      sendProtocolError(ws, 'TMUX_SEND_FAILED', message, sessionId, conId);
     }
-    return;
+    return 'listo';
+  }
+
+  if (!resultado.ok) {
+    if (resultado.motivo === 'dialogo') return 'dialogo';
+    console.error('[Chat] tmux-bridge send not confirmed', { sessionId, motivo: resultado.motivo });
+    if (ws.readyState === WS_OPEN_STATE) {
+      sendProtocolError(ws, CODIGO_ENVIO_TMUX[resultado.motivo], resultado.mensaje, sessionId, conId);
+    }
+    return 'listo';
   }
 
   if (clientMessageId) {
@@ -501,6 +537,7 @@ async function teclearEnPane(
       client.send(JSON.stringify(busyEvent));
     }
   });
+  return 'listo';
 }
 
 type ResolvedSendTarget = {
@@ -955,11 +992,12 @@ async function handleTmuxPromptResponse(ws: WebSocket, data: AnyRecord): Promise
   const sessionId = typeof data.sessionId === 'string' ? data.sessionId : '';
   const pane = typeof data.pane === 'string' ? data.pane : '';
   const promptId = typeof data.promptId === 'string' ? data.promptId : '';
-  const opcion = typeof data.opcion === 'number' ? data.opcion : -1;
+  const tecla = typeof data.tecla === 'string' ? data.tecla : undefined;
+  const opcion = typeof data.opcion === 'number' ? data.opcion : tecla === undefined ? -1 : undefined;
   const texto = typeof data.texto === 'string' ? data.texto : undefined;
 
   const resultado = await responderPromptTmux(
-    { sessionId, pane, promptId, opcion, texto },
+    { sessionId, pane, promptId, opcion, tecla, texto },
     {
       // Bridged before the key goes in, so the rows the answer unblocks
       // stream into the chat — same as a prompt typed from the chat.
@@ -995,7 +1033,7 @@ async function handleTmuxPromptResponse(ws: WebSocket, data: AnyRecord): Promise
  * - `chat.subscribe`           { sessions: [{ sessionId, lastSeq? }] }
  * - `chat.permission-response` { requestId, allow, updatedInput?, message?, rememberEntry? }
  * - `chat.tmux-prompts`        {}
- * - `chat.tmux-prompt-response` { sessionId, pane, promptId, opcion, texto? }
+ * - `chat.tmux-prompt-response` { sessionId, pane, promptId, opcion | tecla, texto? }
  *
  * Outbound protocol (server to client): every frame is `kind`-based — either
  * a provider `NormalizedMessage` (with `seq`) or a gateway event

@@ -349,7 +349,12 @@ export type SubagentInfo = {
 };
 
 /** One rendered entry in a chat transcript — user turn, assistant turn, tool call and result, local command output, or subagent container — and the shape the chat message list and message components consume. */
-export type MessageDeliveryState = 'sending' | 'queued' | 'sent' | 'failed';
+/**
+ * `held`: a tmux session is stopped on a dialog of its own (a permission
+ * prompt, a question, a form), so nothing was typed into it. The message
+ * waits like a queued one and goes out once the dialog is answered.
+ */
+export type MessageDeliveryState = 'sending' | 'queued' | 'held' | 'sent' | 'failed';
 
 export type ChatMessage = {
   type: string;

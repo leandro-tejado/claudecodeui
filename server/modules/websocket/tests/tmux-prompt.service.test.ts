@@ -5,6 +5,7 @@ import {
   _resetPromptsTmuxParaTests,
   detectarPromptTmux,
   esperarQueSeDespeje,
+  leerEstadoPane,
   paneTienePrompt,
   promptsTmuxPendientes,
   responderPromptTmux,
@@ -428,4 +429,171 @@ test('AskUserQuestion: "Type something." se contesta con el dígito, el texto en
   assert.deepEqual(ok, { ok: true });
   assert.deepEqual(enviadas, [{ pane: 'demo-guia-1', teclas: { tipo: 'libre', numero: '3', texto: 'Verde' } }]);
   _resetPromptsTmuxParaTests();
+});
+
+/*
+ * 5-oct: en `estudio-guia-1` Claude Code abrió su propio diálogo, "Teach auto
+ * mode about your environment?", y dos "1" mandados desde el chat se los
+ * comió. Primero aparece arriba del cuadro de texto, que sigue abajo; su
+ * "Yes" abre un formulario a pantalla entera, con renglones que tienen valor
+ * y se cambian con ←/→. Forma medida ese día (Claude Code v2.1.3xx).
+ */
+const RAYA_FORMULARIO = '▔'.repeat(100);
+
+const AVISO_AUTO_MODE = [
+  '  Para seguir, elegí una:',
+  REGLA,
+  '  Teach auto mode about your environment?',
+  '',
+  '  Auto mode works better when it knows your environment. Takes about a minute.',
+  '',
+  '  ❯ 1. Yes',
+  '    2. Not now',
+  "    3. Don't show again",
+  '',
+  '  Enter to confirm · Esc to cancel',
+  REGLA,
+  '❯ algo que quedó escrito',
+  REGLA,
+  '  ctx 13% · 5h 3% (09:20) · 7d 0%',
+  '  ⏵⏵ auto mode on (shift+tab to cycle) · ← for agents',
+].join('\n');
+
+const FORMULARIO_AUTO_MODE = [
+  '  ¿Cuál querés?',
+  '',
+  '✻ Baked for 2m 32s · done 4:50 AM',
+  RAYA_FORMULARIO,
+  '   Teach auto mode about your environment?',
+  '',
+  '   Claude Code reads this project, your recent Claude sessions, and',
+  '   optionally your shell history and other repositories.',
+  '',
+  '     How you use Claude here     Mixed',
+  '   ❯ Also scan shell history     false',
+  '     Also scan your other repos  false',
+  '',
+  '     Continue',
+  '',
+  '   ←/→ to change · Enter to continue · Esc to cancel',
+].join('\n');
+
+test('5-oct: el aviso de auto mode, arriba del cuadro de texto, es una pregunta con sus tres opciones y Esc', () => {
+  const prompt = detectarPromptTmux(AVISO_AUTO_MODE);
+  assert.ok(prompt);
+  assert.equal(prompt.pregunta, 'Teach auto mode about your environment?');
+  assert.match(prompt.detalle, /Auto mode works better when it knows your environment/);
+  assert.deepEqual(prompt.opciones.map((opcion) => opcion.etiqueta), ['Yes', 'Not now', "Don't show again"]);
+  assert.deepEqual(prompt.teclas, [{ tecla: 'Escape', accion: 'cancel' }]);
+  assert.equal(teclasParaOpcion(prompt, 0).tipo, 'literal');
+});
+
+test('5-oct: el formulario de auto mode no es una lista: sale con todo lo que muestra y las teclas de su pie', () => {
+  const prompt = detectarPromptTmux(FORMULARIO_AUTO_MODE);
+  assert.ok(prompt);
+  assert.equal(prompt.pregunta, 'Teach auto mode about your environment?');
+  assert.deepEqual(prompt.opciones, []);
+  assert.equal(prompt.seleccionada, -1);
+  assert.match(prompt.detalle, /❯ Also scan shell history {5}false/);
+  assert.match(prompt.detalle, /Continue$/);
+  assert.deepEqual(prompt.teclas.map((tecla) => tecla.tecla), ['Up', 'Down', 'Left', 'Right', 'Enter', 'Escape']);
+  assert.equal(prompt.teclas.find((tecla) => tecla.tecla === 'Enter')?.accion, 'continue');
+  // Mover el cursor cambia lo que se ve, y con eso la huella.
+  const abajo = detectarPromptTmux(FORMULARIO_AUTO_MODE
+    .replace('   ❯ Also scan shell history', '     Also scan shell history')
+    .replace('     Also scan your other repos', '   ❯ Also scan your other repos'));
+  assert.notEqual(abajo?.id, prompt.id);
+});
+
+test('un pie suelto en la conversación, o un pie sin raya que abra el diálogo, no es un diálogo', () => {
+  const enLaRespuesta = [
+    '● Para cerrarlo apretá Esc. El pie dice:',
+    '  Enter to confirm · Esc to cancel',
+    REGLA,
+    '❯ ',
+    REGLA,
+    '  ctx 12%',
+  ].join('\n');
+  // Sin opciones y sin la raya de arriba: no se toma como diálogo.
+  assert.equal(detectarPromptTmux(enLaRespuesta), null);
+  // Una frase que menciona la tecla no es un pie.
+  assert.equal(detectarPromptTmux([REGLA, ' Algo', '', ' Si querés, Esc to cancel y listo, o seguí escribiendo.'].join('\n')), null);
+  assert.equal(detectarPromptTmux(CORRIENDO), null);
+});
+
+test('el cuadro de texto: vacío, con el ejemplo atenuado, con algo escrito, o tapado por un formulario', () => {
+  assert.deepEqual(leerEstadoPane(EN_REPOSO), { prompt: null, cuadro: { texto: '' } });
+  const conEjemplo = EN_REPOSO.replace('❯ ', '\x1b[39m❯\u00a0\x1b[2mTry "create a util logging.py that..."\x1b[0m');
+  assert.deepEqual(leerEstadoPane(conEjemplo).cuadro, { texto: '' });
+  const escrito = EN_REPOSO.replace('❯ ', '\x1b[39m❯\u00a0hola mundo\n  segundo renglón');
+  assert.deepEqual(leerEstadoPane(escrito).cuadro, { texto: 'hola mundo\nsegundo renglón' });
+  assert.equal(leerEstadoPane(AVISO_AUTO_MODE).cuadro?.texto, 'algo que quedó escrito');
+  assert.ok(leerEstadoPane(AVISO_AUTO_MODE).prompt);
+  assert.deepEqual(leerEstadoPane(FORMULARIO_AUTO_MODE).cuadro, null);
+  assert.equal(detectarPromptTmux(conEjemplo), null);
+});
+
+test('una tecla del pie se manda sola, y solo si el diálogo de ahora la ofrece', async () => {
+  _resetPromptsTmuxParaTests();
+  const { deps, enviadas, pantallas } = fake();
+  pantallas.set('demo-guia-1', FORMULARIO_AUTO_MODE);
+  await revisarPromptsTmux(deps);
+  const [pendiente] = promptsTmuxPendientes();
+  assert.equal(pendiente.pregunta, 'Teach auto mode about your environment?');
+
+  const abajo = await responderPromptTmux({ sessionId: 'app-1', pane: 'demo-guia-1', promptId: pendiente.id, tecla: 'Down' }, {}, deps);
+  assert.deepEqual(abajo, { ok: true });
+  const tab = await responderPromptTmux({ sessionId: 'app-1', pane: 'demo-guia-1', promptId: pendiente.id, tecla: 'Tab' }, {}, deps);
+  assert.equal(!tab.ok && tab.codigo, 'TMUX_PROMPT_BAD_OPTION');
+  const inventada = await responderPromptTmux({ sessionId: 'app-1', pane: 'demo-guia-1', promptId: pendiente.id, tecla: 'C-c' }, {}, deps);
+  assert.equal(!inventada.ok && inventada.codigo, 'TMUX_PROMPT_BAD_OPTION');
+  assert.deepEqual(enviadas, [{ pane: 'demo-guia-1', teclas: { tipo: 'teclas', teclas: ['Down'] } }]);
+  _resetPromptsTmuxParaTests();
+});
+
+// 5-oct: un AskUserQuestion de varias respuestas, medido en un pane
+// descartable. El dígito marca o desmarca y el cursor no se mueve; "Submit"
+// no tiene número y se llega con las flechas.
+const VARIAS_RESPUESTAS = [
+  REGLA,
+  '←  ☐ Frutas  ✔ Submit  →',
+  '',
+  '│ ¿Qué frutas llevamos al picnic? Elegí todas las que quieras, la lista es',
+  '│ larga a propósito.',
+  '',
+  '❯ 1. [ ] Manzana',
+  '         Fruta roja o verde',
+  '  2. [✔] Pera',
+  '         Fruta dulce y jugosa',
+  '  3. [ ] Type something',
+  '     Submit',
+  REGLA,
+  '  4. Chat about this',
+  'Enter to select · ↑/↓ to navigate · Esc to cancel',
+].join('\n');
+
+test('5-oct: varias respuestas: casillas, "Submit" como opción propia y la pregunta encuadrada entera', () => {
+  const prompt = detectarPromptTmux(VARIAS_RESPUESTAS);
+  assert.ok(prompt);
+  assert.equal(prompt.pregunta, '¿Qué frutas llevamos al picnic? Elegí todas las que quieras, la lista es larga a propósito.');
+  assert.deepEqual(
+    prompt.opciones.map((opcion) => [opcion.numero, opcion.etiqueta.split('\n')[0], Boolean(opcion.casilla), Boolean(opcion.libre)]),
+    [
+      [1, '[ ] Manzana', true, false],
+      [2, '[✔] Pera', true, false],
+      [3, '[ ] Type something', true, true],
+      [null, 'Submit', false, false],
+      [4, 'Chat about this', false, false],
+    ],
+  );
+  assert.deepEqual(teclasParaOpcion(prompt, 1), { tipo: 'literal', texto: '2' });
+  assert.deepEqual(teclasParaOpcion(prompt, 3), { tipo: 'teclas', teclas: ['Down', 'Down', 'Down', 'Enter'] });
+  assert.deepEqual(teclasParaOpcion(prompt, 2, 'Kiwi'), { tipo: 'escribir', teclas: ['Down', 'Down'], texto: 'Kiwi' });
+
+  // Con el cursor parado en "Submit".
+  const enSubmit = detectarPromptTmux(VARIAS_RESPUESTAS
+    .replace('❯ 1. [ ] Manzana', '  1. [ ] Manzana')
+    .replace('     Submit', '❯    Submit'));
+  assert.equal(enSubmit?.seleccionada, 3);
+  assert.deepEqual(enSubmit && teclasParaOpcion(enSubmit, 3), { tipo: 'teclas', teclas: ['Enter'] });
 });

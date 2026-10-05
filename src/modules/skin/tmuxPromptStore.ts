@@ -15,6 +15,8 @@ import type { ServerEvent } from '@/shared/types';
  * sidebar y el chat a la vez, cada uno por su lado.
  */
 
+export type TmuxPromptKey = 'Up' | 'Down' | 'Left' | 'Right' | 'Enter' | 'Escape' | 'Tab';
+
 /** Mirror de `PromptTmuxPendiente` en `server/modules/websocket/services/tmux-prompt.service.ts`. */
 export type TmuxPrompt = {
   id: string;
@@ -22,8 +24,11 @@ export type TmuxPrompt = {
   pane: string;
   pregunta: string;
   detalle: string;
-  opciones: Array<{ indice: number; numero: number | null; etiqueta: string; libre?: boolean }>;
+  opciones: Array<{ indice: number; numero: number | null; etiqueta: string; libre?: boolean; casilla?: boolean }>;
+  /** -1 cuando no hay opciones (un formulario): se maneja con `teclas`. */
   seleccionada: number;
+  /** Las teclas sueltas que ofrece el pie del diálogo; los servidores viejos no las mandan. */
+  teclas?: Array<{ tecla: TmuxPromptKey; accion: string }>;
   desde: string;
 };
 

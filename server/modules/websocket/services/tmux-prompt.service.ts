@@ -29,6 +29,19 @@ export type OpcionPromptTmux = {
   etiqueta: string;
   /** La opción de AskUserQuestion que pide escribir la respuesta ("Type something."). */
   libre?: boolean;
+  /**
+   * Una opción con casilla, de un AskUserQuestion de varias respuestas: el
+   * dígito la marca o la desmarca y el cursor no se mueve; se termina con
+   * la opción "Submit" (medido el 5-oct).
+   */
+  casilla?: boolean;
+};
+
+/** Una tecla que el pie del diálogo ofrece ("←/→ to change", "Esc to cancel"), con lo que hace. */
+export type TeclaDialogoTmux = {
+  tecla: 'Up' | 'Down' | 'Left' | 'Right' | 'Enter' | 'Escape' | 'Tab';
+  /** Lo que dice el pie que hace ("continue", "cancel"); vacío para las flechas. */
+  accion: string;
 };
 
 export type PromptTmux = {
@@ -37,9 +50,12 @@ export type PromptTmux = {
   pregunta: string;
   /** Lo que el diálogo muestra arriba de la pregunta: el comando, la regla que lo frenó, la ruta. */
   detalle: string;
+  /** Vacío en los diálogos que no son una lista de opciones (un formulario): ahí se maneja con `teclas`. */
   opciones: OpcionPromptTmux[];
-  /** Índice de la opción donde está el cursor (`❯`). */
+  /** Índice de la opción donde está el cursor (`❯`); -1 si no hay opciones. */
   seleccionada: number;
+  /** Las teclas sueltas que se pueden mandar: todas las del pie si no hay opciones, solo `Esc` si las hay. */
+  teclas: TeclaDialogoTmux[];
 };
 
 export type PromptTmuxPendiente = PromptTmux & {
@@ -49,11 +65,15 @@ export type PromptTmuxPendiente = PromptTmux & {
   desde: string;
 };
 
-// Todos los diálogos de selección de Claude Code cierran con este pie:
-// "Esc to cancel · Tab to amend" (permisos), "Enter to confirm · Esc to
-// cancel" (confianza). Mientras corre, el pie dice "esc to interrupt".
-const PIE = /\bEsc to cancel\b/;
-const REGLA = /^\s*─{8,}\s*$/;
+// Los diálogos de Claude Code cierran con un pie de teclas: "Esc to cancel ·
+// Tab to amend" (permisos), "Enter to confirm · Esc to cancel" (confianza),
+// "←/→ to change · Enter to continue · Esc to cancel" (el de auto mode del
+// 5-oct). Ver `esPie`.
+const SEGMENTO_PIE = /^(?:Press\s+)?\S.{0,30}?\s+to\s+\S.{0,40}$/;
+const TECLA_DEL_PIE = /^(?:Press\s+)?(?:Esc|Enter)\b/;
+// La raya que abre un diálogo o encierra el cuadro de texto. `▔` es la del
+// formulario de auto mode, que ocupa la pantalla entera.
+const REGLA = /^\s*[─▔━═]{8,}\s*$/;
 const MARCA = '❯';
 const OPCION_NUMERADA = /^(\d+)\.\s+(.*)$/;
 // Las pestañas de AskUserQuestion: " ☐ Color", o "←  ☐ Fruta  ☐ Dia  ✔ Submit  →" si son varias.
@@ -61,8 +81,122 @@ const PESTANAS = /^\s*←?\s*[☐☒✔]/;
 const PESTANAS_VARIAS = /^\s*←.*[☐☒✔].*→\s*$/;
 const MAX_LINEAS_DETALLE = 60;
 const MAX_LINEAS_PREGUNTA = 4;
+const MAX_LINEAS_PREGUNTA_ENCUADRADA = 10;
 // Elegirla abre un campo de texto en el lugar de la opción: se teclea ahí y `Enter` lo manda.
 const OPCION_LIBRE = /^Type something\.?$/;
+// Las opciones de un AskUserQuestion de varias respuestas: "[ ] Pera", "[✔] Uva".
+const CASILLA = /^\[[ ✔xX✓]\]\s*/;
+const ACCION_DE_CASILLAS = /^(?:Submit|Next)$/;
+
+/**
+ * Una línea que es entera un pie de teclas: segmentos "<tecla> to <acción>"
+ * separados por " · ", y al menos uno de `Esc` o `Enter`. Estricta a
+ * propósito: un pie suelto en la respuesta de Claude, pegado al cuadro de
+ * texto, no tiene que pasar por diálogo. Distingue mayúsculas: el "esc to
+ * interrupt" de mientras corre no es un diálogo.
+ */
+function esPie(linea: string): boolean {
+  const segmentos = linea.trim().split(/\s+·\s+/);
+  return segmentos.every((segmento) => SEGMENTO_PIE.test(segmento))
+    && segmentos.some((segmento) => TECLA_DEL_PIE.test(segmento));
+}
+
+/** Las teclas que nombra el pie, en el orden en que conviene mostrarlas. */
+function teclasDelPie(pie: string, conCursor: boolean): TeclaDialogoTmux[] {
+  const teclas: TeclaDialogoTmux[] = [];
+  const agregar = (tecla: TeclaDialogoTmux['tecla'], accion = '') => {
+    if (!teclas.some((existente) => existente.tecla === tecla)) teclas.push({ tecla, accion });
+  };
+  const segmentos = pie.trim().split(/\s+·\s+/).map((segmento) => segmento.replace(/^Press\s+/, ''));
+  const accionDe = (segmento: string) => segmento.replace(/^.*?\s+to\s+/, '').trim();
+  if (conCursor || segmentos.some((segmento) => /↑|↓|Arrow keys/i.test(segmento))) {
+    agregar('Up');
+    agregar('Down');
+  }
+  for (const segmento of segmentos) {
+    if (/←|→/.test(segmento)) {
+      agregar('Left', accionDe(segmento));
+      agregar('Right', accionDe(segmento));
+    }
+  }
+  for (const segmento of segmentos) {
+    if (/^Tab\b(?!\/)/.test(segmento)) agregar('Tab', accionDe(segmento));
+  }
+  for (const segmento of segmentos) {
+    if (/^Enter\b/.test(segmento)) agregar('Enter', accionDe(segmento));
+    if (/^Esc\b/.test(segmento)) agregar('Escape', accionDe(segmento));
+  }
+  return teclas;
+}
+
+// Lo que `capture-pane -e` agrega: los colores y atributos. Se leen para
+// distinguir el texto de ejemplo atenuado del cuadro vacío; para todo lo
+// demás estorban.
+const SECUENCIA_SGR = /\x1b\[[0-9;?]*[A-Za-z]/g;
+// La primera línea del cuadro de texto: `❯` (o `!` en modo bash) y lo escrito.
+const INICIO_CUADRO = /^\s{0,2}[❯!]/;
+const MAX_LINEAS_ESTADO = 8;
+const MAX_LINEAS_CUADRO = 40;
+
+export function sinEscapes(texto: string): string {
+  return texto.replace(SECUENCIA_SGR, '');
+}
+
+type CuadroDeEntrada = {
+  /** Índice de la raya de arriba del cuadro: lo que está más arriba es la conversación (o un diálogo). */
+  rayaSuperior: number;
+  /** Lo escrito, sin el `❯`; vacío si el cuadro solo muestra el texto de ejemplo. */
+  texto: string;
+};
+
+/**
+ * El cuadro de texto de Claude Code al pie del pane, si está. Medido el 5-oct:
+ *
+ *     ──────────────────────
+ *     ❯ lo que se escribió
+ *       y su segundo renglón
+ *     ──────────────────────
+ *       ctx 13% · 5h 3%
+ *       ⏵⏵ auto mode on (shift+tab to cycle)
+ *
+ * Vacío muestra un ejemplo atenuado (`❯ Try "create a util…"`) que en el
+ * texto plano no se distingue de algo escrito: por eso se lee la captura con
+ * `-e` y lo atenuado (`ESC[2m`) cuenta como vacío.
+ */
+function ubicarCuadroDeEntrada(crudas: string[]): CuadroDeEntrada | null {
+  const lineas = crudas.map((linea) => sinEscapes(linea).replace(/\s+$/, ''));
+  let fin = lineas.length - 1;
+  while (fin >= 0 && !lineas[fin].trim()) fin -= 1;
+
+  let rayaInferior = -1;
+  for (let i = fin; i >= 0 && fin - i <= MAX_LINEAS_ESTADO; i -= 1) {
+    if (REGLA.test(lineas[i])) {
+      rayaInferior = i;
+      break;
+    }
+  }
+  if (rayaInferior < 1) return null;
+
+  let rayaSuperior = -1;
+  for (let i = rayaInferior - 1; i >= 0 && rayaInferior - i <= MAX_LINEAS_CUADRO; i -= 1) {
+    if (REGLA.test(lineas[i])) {
+      rayaSuperior = i;
+      break;
+    }
+  }
+  if (rayaSuperior < 0 || rayaSuperior + 1 >= rayaInferior) return null;
+  if (!INICIO_CUADRO.test(lineas[rayaSuperior + 1])) return null;
+
+  const primeraCruda = crudas[rayaSuperior + 1];
+  const despuesDeLaMarca = primeraCruda.slice(primeraCruda.search(/[❯!]/) + 1);
+  const arranque = /^(?:[\s\u00a0]|\x1b\[[0-9;]*m)*/.exec(despuesDeLaMarca)?.[0] ?? '';
+  const atenuado = /\x1b\[(?:[0-9;]*;)?2(?:;[0-9;]*)?m/.test(arranque);
+
+  const renglones = lineas.slice(rayaSuperior + 1, rayaInferior);
+  renglones[0] = renglones[0].replace(INICIO_CUADRO, '');
+  const texto = renglones.map((renglon) => renglon.replace(/^[\s\u00a0]+/, '')).join('\n').trim();
+  return { rayaSuperior, texto: atenuado && renglones.length === 1 ? '' : texto };
+}
 
 function sinMarca(linea: string): string {
   const recortada = linea.trim();
@@ -84,8 +218,13 @@ const NOMBRE_TMUX_PATTERN = /^[A-Za-z0-9_-]+$/;
 // (y la REGLA 11 del workspace la deja fuera de todo lo automático).
 const SESION_PROHIBIDA = 'web';
 
-function huella(pregunta: string, detalle: string, opciones: OpcionPromptTmux[]): string {
-  const texto = [pregunta, detalle, ...opciones.map((opcion) => `${opcion.numero ?? ''}|${opcion.etiqueta}`)].join('\n');
+function huella(pregunta: string, detalle: string, opciones: OpcionPromptTmux[], teclas: TeclaDialogoTmux[]): string {
+  const texto = [
+    pregunta,
+    detalle,
+    ...opciones.map((opcion) => `${opcion.numero ?? ''}|${opcion.etiqueta}`),
+    ...teclas.map((tecla) => `${tecla.tecla}|${tecla.accion}`),
+  ].join('\n');
   return createHash('sha1').update(texto).digest('hex').slice(0, 16);
 }
 
@@ -129,13 +268,29 @@ function limpiarLineaDetalle(linea: string): string {
  *       4. Chat about this
  *     Enter to select · Tab/Arrow keys to navigate · Esc to cancel
  *
- * El pie tiene que ser la última línea con texto: si el diálogo quedó arriba
- * en el scrollback y abajo hay otra cosa, ya no está esperando. La única
- * pantalla sin pie es la de confirmar un AskUserQuestion de varias preguntas
- * ("Ready to submit your answers?"); esa se reconoce por las pestañas.
+ * El 5-oct aparecieron dos más, y ninguno pasaba: el aviso "Teach auto mode
+ * about your environment? 1. Yes / 2. Not now / 3. Don't show again", que se
+ * dibuja arriba del cuadro de texto en vez de reemplazarlo, y el formulario
+ * que abre su "Yes" (renglones con su valor, "←/→ to change · Enter to
+ * continue · Esc to cancel"). Un "1" mandado desde el chat se lo comió el
+ * diálogo. El formulario, y cualquier diálogo con pie que no sea una lista de
+ * opciones, sale con las teclas de su pie en vez de opciones.
+ *
+ * El pie tiene que ser la última línea con texto (o la última arriba del
+ * cuadro de texto): si el diálogo quedó arriba en el scrollback y abajo hay
+ * otra cosa, ya no está esperando. La única pantalla sin pie es la de
+ * confirmar un AskUserQuestion de varias preguntas ("Ready to submit your
+ * answers?"); esa se reconoce por las pestañas.
  */
 export function detectarPromptTmux(pantalla: string): PromptTmux | null {
-  const lineas = pantalla.replace(/\r/g, '').split('\n').map((linea) => linea.replace(/\s+$/, ''));
+  const crudas = pantalla.replace(/\r/g, '').split('\n');
+  // Un diálogo chico —el "Teach auto mode about your environment?" del
+  // 5-oct— se dibuja arriba del cuadro de texto, que sigue al pie del pane.
+  // Lo que cuenta es lo que está justo encima del cuadro.
+  const cuadro = ubicarCuadroDeEntrada(crudas);
+  const lineas = crudas
+    .slice(0, cuadro ? cuadro.rayaSuperior : crudas.length)
+    .map((linea) => sinEscapes(linea).replace(/\s+$/, ''));
 
   let fin = lineas.length - 1;
   while (fin >= 0 && !lineas[fin].trim()) fin -= 1;
@@ -143,8 +298,41 @@ export function detectarPromptTmux(pantalla: string): PromptTmux | null {
   // La última pantalla de un AskUserQuestion de varias preguntas ("Ready to
   // submit your answers?") no tiene pie: ahí la marca del diálogo son las
   // pestañas de arriba, que se revisan más abajo.
-  const conPie = PIE.test(lineas[fin]);
+  const conPie = esPie(lineas[fin]);
 
+  // "←/→ to change": un formulario, no una lista. Sus renglones son campos
+  // con su valor, y elegir uno con `Enter` no es lo que pide.
+  if (conPie && /\bto change\b/.test(lineas[fin])) return dialogoConTeclas(lineas, fin);
+  return dialogoConOpciones(lineas, fin, conPie) ?? (conPie ? dialogoConTeclas(lineas, fin) : null);
+}
+
+/**
+ * Cualquier otro diálogo con pie de teclas: lo que muestra va tal cual, y se
+ * maneja con las teclas que el pie nombra. Es la red para lo que Claude Code
+ * agregue mañana; necesita la raya que abre el diálogo para no tomar por
+ * diálogo un pie suelto en la conversación.
+ */
+function dialogoConTeclas(lineas: string[], fin: number): PromptTmux | null {
+  let inicio = fin - 1;
+  while (inicio >= 0 && fin - inicio <= MAX_LINEAS_DETALLE && !REGLA.test(lineas[inicio])) inicio -= 1;
+  if (inicio < 0 || !REGLA.test(lineas[inicio])) return null;
+
+  const region = lineas.slice(inicio + 1, fin).map((linea) => linea.trim());
+  while (region.length > 0 && !region[0]) region.shift();
+  while (region.length > 0 && !region[region.length - 1]) region.pop();
+  if (region.length === 0) return null;
+
+  const pregunta = limpiarLineaDetalle(region[0]);
+  const cuerpo = region.slice(1);
+  while (cuerpo.length > 0 && !cuerpo[0]) cuerpo.shift();
+  const detalle = cuerpo.join('\n');
+  const teclas = teclasDelPie(lineas[fin], region.some((linea) => linea.startsWith(MARCA)));
+  if (teclas.length === 0) return null;
+  return { id: huella(pregunta, detalle, [], teclas), pregunta, detalle, opciones: [], seleccionada: -1, teclas };
+}
+
+/** Los diálogos de una lista de opciones: los de permiso, el de confianza, AskUserQuestion. */
+function dialogoConOpciones(lineas: string[], fin: number, conPie: boolean): PromptTmux | null {
   let cursor = conPie ? fin - 1 : fin;
   while (cursor >= 0 && !lineas[cursor].trim()) cursor -= 1;
 
@@ -173,6 +361,18 @@ export function detectarPromptTmux(pantalla: string): PromptTmux | null {
     const texto = sinMarca(linea);
     const numerada = numeradas ? OPCION_NUMERADA.exec(texto) : null;
 
+    // El renglón "Submit" (o "Next") de un AskUserQuestion de varias
+    // respuestas: no tiene número, se llega con las flechas y se elige con
+    // `Enter`. Va como opción propia, en el orden en que lo recorre el cursor.
+    if (numeradas && !numerada && ACCION_DE_CASILLAS.test(texto) && opciones.some((opcion) => opcion.casilla)) {
+      if (marcada) {
+        if (seleccionada !== -1) return null;
+        seleccionada = opciones.length;
+      }
+      opciones.push({ indice: opciones.length, numero: null, etiqueta: texto });
+      continue;
+    }
+
     if (numeradas && !numerada) {
       // Una opción larga que se partió en dos renglones, o la descripción de
       // una opción de AskUserQuestion: va con la anterior.
@@ -186,16 +386,20 @@ export function detectarPromptTmux(pantalla: string): PromptTmux | null {
       if (seleccionada !== -1) return null;
       seleccionada = opciones.length;
     }
+    const etiqueta = numerada ? numerada[2].trim() : texto;
+    const casilla = CASILLA.exec(etiqueta);
     opciones.push({
       indice: opciones.length,
       numero: numerada ? Number(numerada[1]) : null,
-      etiqueta: numerada ? numerada[2].trim() : texto,
-      ...(numerada && OPCION_LIBRE.test(numerada[2].trim()) ? { libre: true } : {}),
+      etiqueta,
+      ...(numerada && OPCION_LIBRE.test(casilla ? etiqueta.slice(casilla[0].length) : etiqueta) ? { libre: true } : {}),
+      ...(casilla ? { casilla: true } : {}),
     });
   }
 
   if (opciones.length < 2 || seleccionada === -1) return null;
-  if (numeradas && opciones.some((opcion, indice) => opcion.numero !== indice + 1)) return null;
+  const numeros = opciones.flatMap((opcion) => (opcion.numero === null ? [] : [opcion.numero]));
+  if (numeradas && numeros.some((numero, indice) => numero !== indice + 1)) return null;
 
   // La pregunta va pegada arriba de las opciones, y puede ocupar varios
   // renglones si es larga (las de AskUserQuestion). Corta en la línea en
@@ -210,6 +414,18 @@ export function detectarPromptTmux(pantalla: string): PromptTmux | null {
   ) {
     renglonesPregunta.unshift(limpiarLineaDetalle(lineas[cursor]));
     cursor -= 1;
+  }
+  // La pregunta larga de AskUserQuestion (5-oct) va encuadrada con `│` y con
+  // un renglón en blanco antes de las opciones.
+  if (renglonesPregunta.length === 0 && cursor >= 1 && !lineas[cursor].trim() && /^\s*│/.test(lineas[cursor - 1])) {
+    let arriba = cursor - 1;
+    const encuadrados: string[] = [];
+    while (arriba >= 0 && encuadrados.length < MAX_LINEAS_PREGUNTA_ENCUADRADA && /^\s*│/.test(lineas[arriba])) {
+      encuadrados.unshift(limpiarLineaDetalle(lineas[arriba]));
+      arriba -= 1;
+    }
+    renglonesPregunta.push(...encuadrados);
+    cursor = arriba;
   }
 
   // Lo de arriba, hasta la regla horizontal que abre el diálogo.
@@ -240,13 +456,17 @@ export function detectarPromptTmux(pantalla: string): PromptTmux | null {
   if (!pregunta) return null;
 
   const detalle = cuerpo.join('\n');
-  return { id: huella(pregunta, detalle, opciones), pregunta, detalle, opciones, seleccionada };
+  // Con opciones, de las teclas del pie solo `Esc`: cancelar también es una
+  // respuesta, y las flechas sobran donde cada opción es un botón.
+  const teclas = conPie ? teclasDelPie(lineas[fin], false).filter((tecla) => tecla.tecla === 'Escape') : [];
+  return { id: huella(pregunta, detalle, opciones, teclas), pregunta, detalle, opciones, seleccionada, teclas };
 }
 
 export type TeclasTmux =
   | { tipo: 'literal'; texto: string }
   | { tipo: 'teclas'; teclas: string[] }
-  | { tipo: 'libre'; numero: string; texto: string };
+  | { tipo: 'libre'; numero: string; texto: string }
+  | { tipo: 'escribir'; teclas: string[]; texto: string };
 
 const MAX_TEXTO_LIBRE = 2000;
 
@@ -262,19 +482,21 @@ const MAX_TEXTO_LIBRE = 2000;
  */
 export function teclasParaOpcion(prompt: PromptTmux, indice: number, texto = ''): TeclasTmux {
   const opcion = prompt.opciones[indice];
+  const distancia = indice - prompt.seleccionada;
+  const flechas = Array.from({ length: Math.abs(distancia) }, () => (distancia > 0 ? 'Down' : 'Up'));
+  const enUnRenglon = texto.replace(/\s*[\r\n]+\s*/g, ' ').trim().slice(0, MAX_TEXTO_LIBRE);
+  // Con casillas, el campo libre se llena llegando con el cursor y
+  // tecleando: queda marcado solo, y un `Enter` lo desmarcaría.
+  if (opcion.libre && opcion.casilla) {
+    return { tipo: 'escribir', teclas: flechas, texto: enUnRenglon };
+  }
   if (opcion.libre && opcion.numero !== null && opcion.numero <= 9) {
-    return {
-      tipo: 'libre',
-      numero: String(opcion.numero),
-      texto: texto.replace(/\s*[\r\n]+\s*/g, ' ').trim().slice(0, MAX_TEXTO_LIBRE),
-    };
+    return { tipo: 'libre', numero: String(opcion.numero), texto: enUnRenglon };
   }
   if (opcion.numero !== null && opcion.numero <= 9) {
     return { tipo: 'literal', texto: String(opcion.numero) };
   }
-  const distancia = indice - prompt.seleccionada;
-  const flecha = distancia > 0 ? 'Down' : 'Up';
-  return { tipo: 'teclas', teclas: [...Array.from({ length: Math.abs(distancia) }, () => flecha), 'Enter'] };
+  return { tipo: 'teclas', teclas: [...flechas, 'Enter'] };
 }
 
 type EntradaRegistro = { nombre?: unknown; session_id?: unknown };
@@ -308,7 +530,9 @@ export const dependenciasVigiaPorDefecto: VigiaPromptsDependencias = {
   capturarPane: async (nombre) => {
     // `-S -60`: un comando largo empuja el encabezado del diálogo fuera de la
     // pantalla visible; con un poco de scrollback se ve entero.
-    const { stdout } = await execFileAsync('tmux', ['capture-pane', '-p', '-S', '-60', '-t', targetExacto(nombre)], { timeout: 2000 });
+    // `-e`: con los atributos, para distinguir el texto de ejemplo atenuado
+    // del cuadro de texto de algo escrito (ver `ubicarCuadroDeEntrada`).
+    const { stdout } = await execFileAsync('tmux', ['capture-pane', '-p', '-e', '-S', '-60', '-t', targetExacto(nombre)], { timeout: 2000 });
     return stdout;
   },
   leerRegistro: () => {
@@ -328,6 +552,13 @@ export const dependenciasVigiaPorDefecto: VigiaPromptsDependencias = {
     // Como en tmux-bridge: argv por `execFile`, nunca un shell; `-l --` para
     // que el dígito vaya literal.
     const destino = targetExacto(nombre);
+    if (teclas.tipo === 'escribir') {
+      if (teclas.teclas.length > 0) {
+        await execFileAsync('tmux', ['send-keys', '-t', destino, ...teclas.teclas], { timeout: 2000 });
+      }
+      await execFileAsync('tmux', ['send-keys', '-t', destino, '-l', '--', teclas.texto], { timeout: 2000 });
+      return;
+    }
     if (teclas.tipo === 'libre') {
       await execFileAsync('tmux', ['send-keys', '-t', destino, '-l', '--', teclas.numero], { timeout: 2000 });
       await execFileAsync('tmux', ['send-keys', '-t', destino, '-l', '--', teclas.texto], { timeout: 2000 });
@@ -466,7 +697,7 @@ export type RespuestaPromptTmux =
  * contestaron desde la terminal, o es otra pregunta— no se manda nada.
  */
 export async function responderPromptTmux(
-  entrada: { sessionId: string; pane: string; promptId: string; opcion: number; texto?: string },
+  entrada: { sessionId: string; pane: string; promptId: string; opcion?: number; tecla?: string; texto?: string },
   opciones: { antesDeEnviar?: () => Promise<void> } = {},
   dependencias: VigiaPromptsDependencias = dependenciasVigiaPorDefecto,
 ): Promise<RespuestaPromptTmux> {
@@ -490,12 +721,23 @@ export async function responderPromptTmux(
     };
   }
 
-  if (!Number.isInteger(entrada.opcion) || entrada.opcion < 0 || entrada.opcion >= actual.opciones.length) {
-    return { ok: false, codigo: 'TMUX_PROMPT_BAD_OPTION', mensaje: 'Esa opción no existe en la pregunta.' };
-  }
-  const teclas = teclasParaOpcion(actual, entrada.opcion, entrada.texto ?? '');
-  if (teclas.tipo === 'libre' && !teclas.texto) {
-    return { ok: false, codigo: 'TMUX_PROMPT_BAD_OPTION', mensaje: 'Escribí la respuesta antes de mandarla.' };
+  let teclas: TeclasTmux;
+  if (entrada.tecla !== undefined) {
+    // Una tecla suelta, solo si el pie del diálogo la ofrece ahora.
+    const tecla = actual.teclas.find((ofrecida) => ofrecida.tecla === entrada.tecla);
+    if (!tecla) {
+      return { ok: false, codigo: 'TMUX_PROMPT_BAD_OPTION', mensaje: 'Esa tecla no hace nada en este diálogo.' };
+    }
+    teclas = { tipo: 'teclas', teclas: [tecla.tecla] };
+  } else {
+    const opcion = entrada.opcion;
+    if (opcion === undefined || !Number.isInteger(opcion) || opcion < 0 || opcion >= actual.opciones.length) {
+      return { ok: false, codigo: 'TMUX_PROMPT_BAD_OPTION', mensaje: 'Esa opción no existe en la pregunta.' };
+    }
+    teclas = teclasParaOpcion(actual, opcion, entrada.texto ?? '');
+    if ((teclas.tipo === 'libre' || teclas.tipo === 'escribir') && !teclas.texto) {
+      return { ok: false, codigo: 'TMUX_PROMPT_BAD_OPTION', mensaje: 'Escribí la respuesta antes de mandarla.' };
+    }
   }
 
   try {
@@ -512,6 +754,19 @@ export async function responderPromptTmux(
   // Que todos vean el prompt resuelto sin esperar la próxima vuelta.
   setTimeout(() => { void revisarPromptsTmux(dependencias); }, 400).unref?.();
   return { ok: true };
+}
+
+export type EstadoPaneTmux = {
+  /** El diálogo abierto, si hay uno. */
+  prompt: PromptTmux | null;
+  /** El cuadro de texto de Claude Code, o `null` si no está a la vista (un formulario, `claude` cerrado). */
+  cuadro: { texto: string } | null;
+};
+
+/** Lo que muestra el pane: si hay un diálogo y qué tiene escrito el cuadro de texto. Pura, sobre `capture-pane -p -e`. */
+export function leerEstadoPane(pantalla: string): EstadoPaneTmux {
+  const cuadro = ubicarCuadroDeEntrada(pantalla.replace(/\r/g, '').split('\n'));
+  return { prompt: detectarPromptTmux(pantalla), cuadro: cuadro ? { texto: cuadro.texto } : null };
 }
 
 /**
