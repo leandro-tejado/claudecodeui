@@ -183,6 +183,7 @@ export type MessageKind =
   | 'stream_delta'
   | 'thinking_delta'
   | 'stream_end'
+  | 'stream_reemplazo'
   | 'activity'
   | 'error'
   | 'complete'
