@@ -1,0 +1,68 @@
+[
+  {
+    "escenario": "barra/orquestador",
+    "nombre": "orquestar.py crear aparece en la barra abierta en ≤ 3 s, 5 de 5",
+    "resultado": "bloqueado",
+    "evidencia": [],
+    "datos": "gobernador en rojo (cuota pelada: 99% consumido (>= 98%))",
+    "ms": 1
+  },
+  {
+    "escenario": "barra/orquestador",
+    "nombre": "orquestar.py dormir cambia el estado en vivo (la fila sale de la barra sin recargar)",
+    "resultado": "bloqueado",
+    "evidencia": [],
+    "datos": "gobernador en rojo (cuota pelada: 99% consumido (>= 98%))",
+    "ms": 1
+  },
+  {
+    "escenario": "barra/archivar",
+    "nombre": "la sesión archivada sale de la barra ≤ 3 s sin recargar",
+    "resultado": "pasa",
+    "evidencia": [
+      "barra-archivar/antes.png",
+      "barra-archivar/despues.png"
+    ],
+    "datos": {
+      "status": 200,
+      "antes": 1,
+      "tBajaMs": 36,
+      "trasRecargar": 0
+    },
+    "ms": 5476
+  },
+  {
+    "escenario": "barra/componentes",
+    "nombre": "renombrar una sesión actualiza su fila en la barra en ≤ 3 s sin recargar",
+    "resultado": "pasa",
+    "evidencia": [
+      "barra-componentes/antes-de-renombrar.png",
+      "barra-componentes/despues-de-renombrar.png"
+    ],
+    "datos": {
+      "status": 200,
+      "antes": 1,
+      "tCambioMs": 38,
+      "nuevoTitulo": "Renombrada en vivo 5o0rr5"
+    },
+    "ms": 2229
+  },
+  {
+    "escenario": "barra/pestana-oculta",
+    "nombre": "socket mudo ≥ 70 s (sin cerrarse): al volver, la barra refleja lo que pasó mientras estaba muda, sin recargar",
+    "resultado": "pasa",
+    "evidencia": [
+      "barra-pestana-oculta/1-visible-antes-de-silenciar.png",
+      "barra-pestana-oculta/2-muda-recien-archivada.png",
+      "barra-pestana-oculta/3-vuelta-al-dia.png"
+    ],
+    "datos": {
+      "statusArchivar": 200,
+      "antes": 1,
+      "tBajaMs": 10,
+      "hayRefrescoDeCatchUp": true,
+      "silencioMs": 85000
+    },
+    "ms": 87513
+  }
+]

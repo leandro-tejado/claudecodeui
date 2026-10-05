@@ -377,13 +377,14 @@ export const sessionsDb = {
   },
 
   /**
-   * Borra las filas de `createPendingTmuxSession` cuya sesión ya no está viva
-   * en tmux y nunca llegó a escribir transcript: no hay nada que retomar, y
-   * sin esto quedarían para siempre como "Untitled" vacías.
+   * Session ids de las filas que dejó `createPendingTmuxSession` y siguen sin
+   * transcript — la misma forma que reconoce `deletePendingTmuxSessionsExcept`,
+   * compartida para que quien decide si una de ellas sigue viva de verdad
+   * (Fase 8: `orquestar.py dormir` no reescribe `sesiones.json`) sepa a
+   * cuáles vale la pena preguntarle a tmux.
    */
-  deletePendingTmuxSessionsExcept(liveSessionIds: Iterable<string>): number {
+  listPendingTmuxSessionIds(): Set<string> {
     const db = getConnection();
-    const live = new Set(liveSessionIds);
     const pending = db
       .prepare(
         `SELECT session_id FROM sessions
@@ -393,12 +394,28 @@ export const sessionsDb = {
            AND custom_name_is_placeholder = 1`
       )
       .all() as Array<{ session_id: string }>;
+    return new Set(pending.map((row) => row.session_id));
+  },
+
+  /**
+   * Borra las filas de `createPendingTmuxSession` cuya sesión ya no está viva
+   * en tmux y nunca llegó a escribir transcript: no hay nada que retomar, y
+   * sin esto quedarían para siempre como "Untitled" vacías. Devuelve los ids
+   * borrados (no solo cuántos): quien llama los necesita para avisarle a la
+   * barra abierta que esas filas ya no están, sin que nadie recargue.
+   */
+  deletePendingTmuxSessionsExcept(liveSessionIds: Iterable<string>): string[] {
+    const db = getConnection();
+    const live = new Set(liveSessionIds);
+    const pending = sessionsDb.listPendingTmuxSessionIds();
 
     const deleteRow = db.prepare('DELETE FROM sessions WHERE session_id = ?');
-    let deleted = 0;
-    for (const { session_id: sessionId } of pending) {
+    const deleted: string[] = [];
+    for (const sessionId of pending) {
       if (live.has(sessionId)) continue;
-      deleted += deleteRow.run(sessionId).changes;
+      if (deleteRow.run(sessionId).changes > 0) {
+        deleted.push(sessionId);
+      }
     }
     return deleted;
   },

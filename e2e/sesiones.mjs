@@ -54,6 +54,23 @@ export function leerPane(nombre) {
   return execFileSync('tmux', ['capture-pane', '-t', `=${nombre}:`, '-p'], { encoding: 'utf8' });
 }
 
+// `orquestar.py dormir`: mata el pane (kill-session) y registra el session_id
+// para poder revivirla — a diferencia de `cerrarTmux`, no la saca del
+// registro de sesiones.json (Fase 8: por eso el server tiene que verificar
+// contra tmux de verdad en vez de confiar en ese "viva"). Usada por
+// `barra/orquestador` para el punto 4 sin crear una sesión de más.
+export function dormirTmux(nombre) {
+  exigirPrefijo(nombre);
+  const r = spawnSync('python3', [ORQUESTAR, 'dormir', nombre], { encoding: 'utf8' });
+  if (sesionesTmux().includes(nombre)) {
+    // El invariante de "no dormir con cambios sin commitear" (o similar) la
+    // rechazó: no es el camino feliz que mide el escenario, pero tampoco hay
+    // que dejar un pane de prueba vivo.
+    spawnSync('tmux', ['kill-session', '-t', `=${nombre}`]);
+  }
+  return { salida: r.stdout + r.stderr, cerrada: !sesionesTmux().includes(nombre) };
+}
+
 export function cerrarTmux(nombre) {
   exigirPrefijo(nombre);
   // cerrar con --forzar: el proyecto descartable no tiene nada que perder y

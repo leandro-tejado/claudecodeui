@@ -189,6 +189,19 @@ const mergeExpandedSessionPages = (previousProjects: Project[], incomingProjects
       return incomingProject;
     }
 
+    // El total que manda el server es la señal de verdad para distinguir
+    // "esta página es más chica, pero hay más atrás" (`hasMore`) de "ahora
+    // hay de verdad menos sesiones" (una se archivó o se borró). Sin esto,
+    // cualquier refresco con una página default — el catch-up de
+    // `websocket_reconnected` entre ellos (Fase 8, Paso 6) — volvía a pegar
+    // una sesión ya archivada porque "la página nueva trajo menos que la que
+    // ya tenía cargada" se leía siempre como paginación, nunca como que de
+    // verdad desapareció.
+    const incomingTotal = incomingProject.sessionMeta?.total;
+    if (typeof incomingTotal === 'number' && incomingTotal < previousLoadedCount) {
+      return incomingProject;
+    }
+
     const mergedProject: Project = {
       ...incomingProject,
       sessions: mergeSessionProviderLists(incomingProject.sessions ?? [], previousProject.sessions ?? []),
