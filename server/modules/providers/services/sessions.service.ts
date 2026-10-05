@@ -3,7 +3,7 @@ import fsp from 'node:fs/promises';
 import path from 'node:path';
 
 import { projectsDb, sessionsDb } from '@/modules/database/index.js';
-import { broadcastSessionUpserted, chatRunRegistry } from '@/modules/websocket/index.js';
+import { broadcastSessionUpserted, broadcastSidebarArchived, chatRunRegistry } from '@/modules/websocket/index.js';
 import { providerRegistry } from '@/modules/providers/provider.registry.js';
 import { sessionHistoryCache } from '@/modules/providers/services/session-history-cache.service.js';
 import { gobernadorService, RAM_CEILING_PERCENT, ramCeilingService } from '@/modules/system/index.js';
@@ -702,6 +702,10 @@ export const sessionsService = {
 
     if (!options.force) {
       sessionsDb.updateSessionIsArchived(sessionId, true, 'user');
+      // Sin esto, archivar a mano (DELETE sin `force`) solo lo notaba la
+      // pestaña que hizo el pedido: el resto de la barra la seguía mostrando
+      // hasta recargar (Fase 8, `docs/actualizacion-en-vivo.md`).
+      broadcastSidebarArchived({ sessionIds: [sessionId] });
       return {
         sessionId,
         action: 'archived',
@@ -734,6 +738,10 @@ export const sessionsService = {
       });
     }
 
+    // Mismo motivo que la rama de archivado: una fila borrada de verdad
+    // también tiene que salir de cualquier otra barra abierta sin recargar.
+    broadcastSidebarArchived({ sessionIds: [sessionId] });
+
     return {
       sessionId,
       action: 'deleted',
@@ -744,7 +752,7 @@ export const sessionsService = {
   /**
    * Restores one archived session back into the active sidebar lists.
    */
-  restoreSessionById(sessionId: string): { sessionId: string; isArchived: false } {
+  async restoreSessionById(sessionId: string): Promise<{ sessionId: string; isArchived: false }> {
     const session = sessionsDb.getSessionById(sessionId);
     if (!session) {
       throw new AppError(`Session "${sessionId}" was not found.`, {
@@ -754,13 +762,21 @@ export const sessionsService = {
     }
 
     sessionsDb.updateSessionIsArchived(sessionId, false, 'user');
+    // `sidebar_archived` solo sabe sacar filas: para que vuelva a aparecer en
+    // cualquier otra barra abierta hace falta el mismo upsert que usa
+    // cualquier otra fila nueva o reactivada.
+    await broadcastSessionUpserted(sessionId);
     return { sessionId, isArchived: false };
   },
 
   /**
    * Renames one session by id without requiring the caller to pass provider.
+   *
+   * No avisaba al resto de la barra: sin el upsert, renombrar desde una
+   * pestaña dejaba el título viejo en cualquier otra hasta que alguien
+   * recargara (Fase 8, inventario de `docs/actualizacion-en-vivo.md`).
    */
-  renameSessionById(sessionId: string, summary: string): { sessionId: string; summary: string } {
+  async renameSessionById(sessionId: string, summary: string): Promise<{ sessionId: string; summary: string }> {
     const session = sessionsDb.getSessionById(sessionId);
     if (!session) {
       throw new AppError(`Session "${sessionId}" was not found.`, {
@@ -770,6 +786,7 @@ export const sessionsService = {
     }
 
     sessionsDb.updateSessionCustomName(sessionId, summary);
+    await broadcastSessionUpserted(sessionId);
     return { sessionId, summary };
   },
 };

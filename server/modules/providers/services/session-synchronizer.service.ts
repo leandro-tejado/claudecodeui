@@ -126,7 +126,7 @@ async function runSessionSynchronization(): Promise<SessionSynchronizeResult> {
   return {
     processedByProvider,
     prunedOrphans,
-    tmuxSinTranscript: { indexadas: tmux.indexadas.length, podadas: tmux.podadas },
+    tmuxSinTranscript: { indexadas: tmux.indexadas.length, podadas: tmux.podadas.length },
     failures,
   };
 }

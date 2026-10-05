@@ -52,7 +52,8 @@ export type SincronizacionTmuxResult = {
    * sidebar tiene que enterarse igual.
    */
   reactivadas: string[];
-  podadas: number;
+  /** `session_id` de filas pendientes borradas porque ya no están vivas. */
+  podadas: string[];
 };
 
 const execFileAsync = promisify(execFile);
@@ -79,9 +80,25 @@ async function defaultCwdDePane(nombre: string): Promise<string | null> {
   }
 }
 
+/**
+ * `nombre` sigue vivo en tmux de verdad, sin importar lo que diga el
+ * registro. `=nombre` fuerza el match exacto, igual que en `defaultCwdDePane`
+ * y en tmux-bridge: sin el `=`, `has-session` matchea por prefijo.
+ */
+async function defaultTmuxVivo(nombre: string): Promise<boolean> {
+  try {
+    await execFileAsync('tmux', ['has-session', '-t', `=${nombre}`], { timeout: 2_000 });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export type SincronizacionTmuxDeps = {
   /** Solo para tests: resuelve el cwd de un pane sin tocar tmux. */
   cwdDePane?: (nombre: string) => Promise<string | null>;
+  /** Solo para tests: verifica si el pane de `nombre` sigue vivo de verdad. */
+  tmuxVivo?: (nombre: string) => Promise<boolean>;
 };
 
 /**
@@ -109,13 +126,20 @@ async function resolverCwd(
 }
 
 export async function sincronizarSesionesTmuxSinTranscript(
-  { cwdDePane = defaultCwdDePane }: SincronizacionTmuxDeps = {},
+  { cwdDePane = defaultCwdDePane, tmuxVivo = defaultTmuxVivo }: SincronizacionTmuxDeps = {},
 ): Promise<SincronizacionTmuxResult> {
   const registro = await leerRegistro();
   if (!registro) {
     // Sin registro legible no se poda: se leería como "murieron todas".
-    return { indexadas: [], reactivadas: [], podadas: 0 };
+    return { indexadas: [], reactivadas: [], podadas: [] };
   }
+
+  // Filas pendientes de ANTES de esta pasada: son las únicas candidatas a
+  // podarse, y por eso las únicas para las que vale la pena preguntarle a
+  // tmux de verdad más abajo (Fase 8). Una recién indexada en esta misma
+  // pasada obviamente está viva — se acaba de crear — y no entra acá.
+  const pendientesPrevias = sessionsDb.listPendingTmuxSessionIds();
+  const nombrePorSessionId = new Map<string, string>();
 
   const vivas: string[] = [];
   const indexadas: string[] = [];
@@ -126,8 +150,10 @@ export async function sincronizarSesionesTmuxSinTranscript(
     if (typeof entry.session_id !== 'string' || !SESSION_ID_PATTERN.test(entry.session_id)) continue;
     const nombre = typeof entry.nombre === 'string' && entry.nombre ? entry.nombre : clave;
     // Viva según el registro alcanza para no podarla, aunque el cwd no se
-    // resuelva en esta pasada (un `tmux` que no respondió a tiempo).
+    // resuelva en esta pasada (un `tmux` que no respondió a tiempo). Se
+    // verifica contra tmux de verdad más abajo, no acá.
     vivas.push(entry.session_id);
+    nombrePorSessionId.set(entry.session_id, nombre);
     if (entry.cwd === undefined && sessionsDb.getSessionById(entry.session_id)) {
       // Ya indexada: no hace falta preguntarle a tmux en cada pasada.
       continue;
@@ -152,7 +178,25 @@ export async function sincronizarSesionesTmuxSinTranscript(
     }
   }
 
-  const podadas = sessionsDb.deletePendingTmuxSessionsExcept(vivas);
+  // `estado: 'viva'` puede estar desactualizado: `orquestar.py dormir` mata
+  // el pane pero nunca reescribe `sesiones.json` (anota en `hibernadas.json`,
+  // mismo directorio — Fase 8 de `05-octubre-revision-punta-a-punta.md`). Sin
+  // esto, una pendiente dormida se quedaba "viva" para siempre en la DB. Solo
+  // se verifica lo que ya era pendiente antes de esta pasada: acotado al
+  // puñado de filas sin transcript, nunca a todo el registro.
+  const vivasVerificadas: string[] = [];
+  for (const sessionId of vivas) {
+    if (!pendientesPrevias.has(sessionId)) {
+      vivasVerificadas.push(sessionId);
+      continue;
+    }
+    const nombre = nombrePorSessionId.get(sessionId);
+    if (nombre && (await tmuxVivo(nombre))) {
+      vivasVerificadas.push(sessionId);
+    }
+  }
+
+  const podadas = sessionsDb.deletePendingTmuxSessionsExcept(vivasVerificadas);
   return { indexadas, reactivadas, podadas };
 }
 

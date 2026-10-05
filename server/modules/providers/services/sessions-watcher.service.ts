@@ -1,6 +1,6 @@
 import os from 'node:os';
 import path from 'node:path';
-import { promises as fsPromises } from 'node:fs';
+import { promises as fsPromises, watch as watchFsNative, type FSWatcher as NativeFSWatcher } from 'node:fs';
 
 import chokidar, { type FSWatcher } from 'chokidar';
 
@@ -10,7 +10,7 @@ import {
   rutaRegistroSesionesTmux,
   sincronizarSesionesTmuxSinTranscript,
 } from '@/modules/providers/services/tmux-registry-sessions.service.js';
-import { broadcastSessionUpsertedBatch, tmuxBridgeService } from '@/modules/websocket/index.js';
+import { broadcastSessionUpsertedBatch, broadcastSidebarArchived, tmuxBridgeService } from '@/modules/websocket/index.js';
 import { scheduleUsageWindowBroadcast } from '@/modules/usage-window/index.js';
 import type { LLMProvider } from '@/shared/types.js';
 
@@ -51,6 +51,8 @@ const PROJECTS_UPDATE_DEBOUNCE_MS = 500;
 const PROJECTS_UPDATE_MAX_WAIT_MS = 2_000;
 
 const watchers: FSWatcher[] = [];
+/** Vigilantes nativos (`fs.watch`), aparte de los de chokidar: `.close()` existe en los dos, pero no comparten tipo. */
+const nativeWatchers: NativeFSWatcher[] = [];
 
 type PendingWatcherUpdate = {
   providers: Set<LLMProvider>;
@@ -213,24 +215,54 @@ async function onUpdate(
 }
 
 /**
- * El registro de tmux cambió: una sesión nueva sin transcript todavía no
- * dispara ningún evento de `.jsonl`, así que este es el único aviso de que
- * existe. Invalida el cache del listado para que el `session_upserted` salga
- * con su `tmux` ya resuelto.
+ * Debounce compartido por los dos vigilantes de `~/.cache/aos` (el nativo de
+ * abajo y el de respaldo por polling): no importa cuál disparó, los dos
+ * terminan en la misma resincronización, y dos avisos pegados (Paso 2 de la
+ * Fase 8: "el registro se reescribe con rename", que en algunos filesystems
+ * llega partido en más de un evento) no la corren dos veces.
  */
-async function onRegistroTmuxUpdate(filePath: string): Promise<void> {
-  if (path.resolve(filePath) !== path.resolve(rutaRegistroSesionesTmux())) {
+const REGISTRO_SYNC_DEBOUNCE_MS = 200;
+let registroSyncTimer: ReturnType<typeof setTimeout> | null = null;
+
+function scheduleRegistroSync(): void {
+  if (registroSyncTimer) {
     return;
   }
+  registroSyncTimer = setTimeout(() => {
+    registroSyncTimer = null;
+    void onRegistroDirectoryChange();
+  }, REGISTRO_SYNC_DEBOUNCE_MS);
+}
 
+/**
+ * Algo cambió en `~/.cache/aos`: una sesión nueva sin transcript todavía no
+ * dispara ningún evento de `.jsonl`, así que esto es el único aviso de que
+ * existe. No se filtra por nombre de archivo exacto — antes esto reaccionaba
+ * solo a `sesiones.json`, pero `orquestar.py dormir` jamás lo reescribe: mata
+ * el pane con `kill-session` y anota en `hibernadas.json` (mismo directorio,
+ * para poder revivirla) sin tocar el registro de sesiones. Cualquier escritura
+ * acá es señal de "resincronizá", y `sincronizarSesionesTmuxSinTranscript` ya
+ * verifica el pane de verdad para las filas pendientes en vez de confiar en
+ * el "viva" que pueda haber quedado desactualizado.
+ *
+ * Invalida el cache del listado para que el `session_upserted` salga con su
+ * `tmux` ya resuelto.
+ */
+async function onRegistroDirectoryChange(): Promise<void> {
   try {
     invalidarRegistroSesiones();
     const { indexadas, reactivadas, podadas } = await sincronizarSesionesTmuxSinTranscript();
-    if (indexadas.length > 0 || reactivadas.length > 0 || podadas > 0) {
+    if (indexadas.length > 0 || reactivadas.length > 0 || podadas.length > 0) {
       console.log('Sesiones tmux sin transcript sincronizadas desde el registro', { indexadas, reactivadas, podadas });
     }
     for (const sessionId of [...indexadas, ...reactivadas]) {
       queuePendingWatcherUpdate('add', 'claude', sessionId);
+    }
+    if (podadas.length > 0) {
+      // La misma clase de delta que archivar a mano: la fila sale de la
+      // barra abierta sin que nadie recargue (Fase 8, punto 4 — dormir o
+      // cerrar afuera una sesión pendiente cambia su estado en vivo).
+      broadcastSidebarArchived({ sessionIds: podadas });
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
@@ -293,6 +325,10 @@ export async function initializeSessionsWatcher(): Promise<void> {
   const registroDirectory = path.dirname(rutaRegistroSesionesTmux());
   try {
     await fsPromises.mkdir(registroDirectory, { recursive: true });
+
+    // Respaldo por polling (Paso 2 de la Fase 8): sigue existiendo para los
+    // filesystems donde `fs.watch` nativo no es confiable (red, algunos
+    // contenedores) — 3 s, igual que siempre.
     const registroWatcher = chokidar.watch(registroDirectory, {
       persistent: true,
       ignoreInitial: true,
@@ -302,17 +338,26 @@ export async function initializeSessionsWatcher(): Promise<void> {
       interval: 3_000,
     });
     registroWatcher
-      .on('add', (filePath: string) => {
-        void onRegistroTmuxUpdate(filePath);
-      })
-      .on('change', (filePath: string) => {
-        void onRegistroTmuxUpdate(filePath);
-      })
+      .on('add', () => scheduleRegistroSync())
+      .on('change', () => scheduleRegistroSync())
       .on('error', (error: unknown) => {
         const message = error instanceof Error ? error.message : String(error);
-        console.error('Error en el watcher del registro de tmux', { error: message });
+        console.error('Error en el watcher (polling, de respaldo) del registro de tmux', { error: message });
       });
     watchers.push(registroWatcher);
+
+    // Vigilante nativo: dispara casi al instante en vez de esperar hasta 3 s
+    // de polling, que es lo que medía la línea base como demora de una
+    // sesión nueva del orquestador en aparecer en la barra. Sin filtrar por
+    // nombre de archivo — ver el comentario de `onRegistroDirectoryChange`.
+    const registroFsWatcher = watchFsNative(registroDirectory, { persistent: true }, () => {
+      scheduleRegistroSync();
+    });
+    registroFsWatcher.on('error', (error: unknown) => {
+      const message = error instanceof Error ? error.message : String(error);
+      console.error('Error en el fs.watch nativo del registro de tmux', { error: message });
+    });
+    nativeWatchers.push(registroFsWatcher);
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     console.error('No se pudo vigilar el registro de tmux', { registroDirectory, error: message });
@@ -324,6 +369,10 @@ export async function initializeSessionsWatcher(): Promise<void> {
  */
 export async function closeSessionsWatcher(): Promise<void> {
   clearPendingWatcherFlushTimer();
+  if (registroSyncTimer) {
+    clearTimeout(registroSyncTimer);
+    registroSyncTimer = null;
+  }
 
   await Promise.all(
     watchers.map(async (watcher) => {
@@ -336,6 +385,17 @@ export async function closeSessionsWatcher(): Promise<void> {
     })
   );
   watchers.length = 0;
+
+  for (const watcher of nativeWatchers) {
+    try {
+      watcher.close();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.error('Failed to close native session watcher', { error: message });
+    }
+  }
+  nativeWatchers.length = 0;
+
   pendingWatcherUpdate = null;
   pendingWatcherUpdateStartedAt = null;
   watcherRefreshInFlight = false;
