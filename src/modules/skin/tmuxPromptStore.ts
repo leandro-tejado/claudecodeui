@@ -17,6 +17,8 @@ import type { ServerEvent } from '@/shared/types';
 
 export type TmuxPromptKey = 'Up' | 'Down' | 'Left' | 'Right' | 'Enter' | 'Escape' | 'Tab';
 
+export type TmuxPromptTab = { etiqueta: string; estado: 'respondida' | 'pendiente' | 'enviar'; activa: boolean };
+
 /** Mirror de `PromptTmuxPendiente` en `server/modules/websocket/services/tmux-prompt.service.ts`. */
 export type TmuxPrompt = {
   id: string;
@@ -24,11 +26,26 @@ export type TmuxPrompt = {
   pane: string;
   pregunta: string;
   detalle: string;
-  opciones: Array<{ indice: number; numero: number | null; etiqueta: string; libre?: boolean; casilla?: boolean }>;
+  opciones: Array<{
+    indice: number;
+    numero: number | null;
+    etiqueta: string;
+    libre?: boolean;
+    /** Una casilla de selección múltiple: elegirla la tilda o la destilda. */
+    casilla?: boolean;
+    /** Si la casilla está tildada ahora en el pane. */
+    marcada?: boolean;
+    /** El renglón "Next"/"Submit": pasa de pregunta, no es una respuesta. */
+    avance?: boolean;
+  }>;
   /** -1 cuando no hay opciones (un formulario): se maneja con `teclas`. */
   seleccionada: number;
   /** Las teclas sueltas que ofrece el pie del diálogo; los servidores viejos no las mandan. */
   teclas?: Array<{ tecla: TmuxPromptKey; accion: string }>;
+  /** Selección múltiple (casillas); los servidores viejos no lo mandan. */
+  multiple?: boolean;
+  /** Las pestañas de un AskUserQuestion de varias preguntas, con la que se está viendo. */
+  pestanas?: TmuxPromptTab[];
   desde: string;
 };
 

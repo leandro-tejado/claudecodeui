@@ -142,3 +142,131 @@ describe('chat: la pregunta pendiente con sus botones', () => {
     expect(screen.getByRole('button', { name: 'Esc · cancel' })).toHaveProperty('disabled', true);
   });
 });
+
+describe('chat: AskUserQuestion de selección múltiple con varias preguntas', () => {
+  /*
+   * 5-oct, cloudcli-limpieza-guia-1: los botones numerados solo tildaban y
+   * destildaban, no había "Siguiente" ni "Enviar", y "Ninguno más" apretado
+   * cuatro veces prendía y apagaba la casilla sin que la pregunta avanzara.
+   */
+  const MULTI: TmuxPrompt = {
+    ...PROMPT,
+    id: 'huella-multi',
+    pregunta: 'Días?',
+    detalle: '',
+    opciones: [
+      { indice: 0, numero: 1, etiqueta: 'Lunes\nPrimer día', casilla: true, marcada: true },
+      { indice: 1, numero: 2, etiqueta: 'Martes\nSegundo día', casilla: true, marcada: false },
+      { indice: 2, numero: 3, etiqueta: 'Type something', casilla: true, marcada: false, libre: true },
+      { indice: 3, numero: null, etiqueta: 'Next', avance: true },
+      { indice: 4, numero: 4, etiqueta: 'Chat about this' },
+    ],
+    seleccionada: 0,
+    multiple: true,
+    pestanas: [
+      { etiqueta: 'Frutas', estado: 'respondida', activa: false },
+      { etiqueta: 'Dias', estado: 'pendiente', activa: true },
+      { etiqueta: 'Colores', estado: 'pendiente', activa: false },
+      { etiqueta: 'Submit', estado: 'enviar', activa: false },
+    ],
+    teclas: [
+      { tecla: 'Left', accion: 'previous' },
+      { tecla: 'Right', accion: 'next' },
+      { tecla: 'Escape', accion: 'cancel' },
+    ],
+  };
+
+  const renderBanner = (onAnswer = vi.fn(), onKey = vi.fn()) => {
+    const Harness = () => {
+      const { prompts, errors } = useTmuxPrompts();
+      return <TmuxPromptBanner prompts={prompts} errors={errors} onAnswer={onAnswer} onKey={onKey} />;
+    };
+    render(<Harness />);
+    return { onAnswer, onKey };
+  };
+
+  it('pestañas con la activa, casillas con lo que dice el pane, y Siguiente / Anterior', async () => {
+    await loadLanguage('es');
+    await i18n.changeLanguage('es');
+    const { onAnswer, onKey } = renderBanner();
+    act(() => { publishTmuxPrompts([MULTI]); });
+
+    const tabs = screen.getByTestId('tmux-prompt-tabs');
+    expect(tabs.querySelector('[aria-current="step"]')?.textContent).toBe('Dias');
+    expect(screen.getByText(/Selección múltiple/)).toBeTruthy();
+
+    expect(screen.getByRole('checkbox', { name: '1. Lunes' }).getAttribute('aria-checked')).toBe('true');
+    expect(screen.getByRole('checkbox', { name: '2. Martes' }).getAttribute('aria-checked')).toBe('false');
+    // "Next" no es una casilla ni un botón suelto: es "Siguiente".
+    expect(screen.queryByRole('button', { name: 'Next' })).toBeNull();
+    // "Type something" es un campo, no una casilla.
+    expect(screen.queryByRole('checkbox', { name: /Type something/ })).toBeNull();
+    expect(screen.getByLabelText('Escribí tu respuesta')).toBeTruthy();
+    // ←/→ no se repiten en la fila de teclas; Esc sí queda.
+    expect(screen.queryByRole('button', { name: 'Izquierda' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Esc · cancel' })).toBeTruthy();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Siguiente →' }));
+    expect(onAnswer).toHaveBeenCalledWith(MULTI, 3);
+    // La tarjeta muestra lo que el pane dibuja después: llega otra pantalla y se desbloquea.
+    act(() => {
+      publishTmuxPrompts([{
+        ...MULTI,
+        id: 'huella-multi-2',
+        opciones: MULTI.opciones.map((opcion) => (opcion.indice === 1 ? { ...opcion, marcada: true } : opcion)),
+      }]);
+    });
+    expect(screen.getByRole('checkbox', { name: '2. Martes' }).getAttribute('aria-checked')).toBe('true');
+    fireEvent.click(screen.getByRole('button', { name: '← Anterior' }));
+    expect(onKey).toHaveBeenCalledWith(expect.objectContaining({ id: 'huella-multi-2' }), 'Left');
+  });
+
+  it('en la última pregunta el botón es "Enviar"; sin renglón "Next" va → con "Revisar y enviar"', async () => {
+    await loadLanguage('es');
+    await i18n.changeLanguage('es');
+    const { onAnswer, onKey } = renderBanner();
+    const ultima: TmuxPrompt = {
+      ...MULTI,
+      opciones: MULTI.opciones.map((opcion) => (opcion.avance ? { ...opcion, etiqueta: 'Submit' } : opcion)),
+    };
+    act(() => { publishTmuxPrompts([ultima]); });
+    fireEvent.click(screen.getByRole('button', { name: 'Enviar' }));
+    expect(onAnswer).toHaveBeenCalledWith(ultima, 3);
+
+    const unica: TmuxPrompt = {
+      ...PROMPT,
+      id: 'huella-unica',
+      opciones: [
+        { indice: 0, numero: 1, etiqueta: 'Rojo' },
+        { indice: 1, numero: 2, etiqueta: 'Azul' },
+      ],
+      multiple: false,
+      pestanas: [
+        { etiqueta: 'Color', estado: 'respondida', activa: true },
+        { etiqueta: 'Submit', estado: 'enviar', activa: false },
+      ],
+      teclas: [{ tecla: 'Right', accion: 'review' }],
+    };
+    act(() => { publishTmuxPrompts([unica]); });
+    expect(screen.getByText(/Una sola respuesta/)).toBeTruthy();
+    expect(screen.queryByRole('checkbox')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Revisar y enviar →' }));
+    expect(onKey).toHaveBeenCalledWith(unica, 'Right');
+  });
+
+  it('si el pane no cambia después del clic, a los 4 s deja de decir "Enviando…"', async () => {
+    await loadLanguage('es');
+    await i18n.changeLanguage('es');
+    vi.useFakeTimers();
+    try {
+      renderBanner();
+      act(() => { publishTmuxPrompts([MULTI]); });
+      fireEvent.click(screen.getByRole('checkbox', { name: '2. Martes' }));
+      expect(screen.getByRole('checkbox', { name: '1. Lunes' })).toHaveProperty('disabled', true);
+      act(() => { vi.advanceTimersByTime(4100); });
+      expect(screen.getByRole('checkbox', { name: '1. Lunes' })).toHaveProperty('disabled', false);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+});

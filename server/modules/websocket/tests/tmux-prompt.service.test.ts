@@ -193,7 +193,10 @@ test('AskUserQuestion: la raya antes de "Chat about this" no corta las opciones,
     [4, 'Chat about this'],
   ]);
   assert.equal(prompt.seleccionada, 0);
-  assert.equal(prompt.detalle, '☐ Color');
+  // La pestaña sola sale del detalle y va aparte, activa aunque no se pinte.
+  assert.equal(prompt.detalle, '');
+  assert.deepEqual(prompt.pestanas, [{ etiqueta: 'Color', estado: 'pendiente', activa: true }]);
+  assert.equal(prompt.multiple, false);
   assert.deepEqual(teclasParaOpcion(prompt, 1), { tipo: 'literal', texto: '2' });
 });
 
@@ -204,7 +207,14 @@ test('AskUserQuestion: una pregunta larga en dos renglones llega entera, sin las
     'Before I refactor the module, which of the two approaches do you want me to take for the storage layer?',
   );
   assert.equal(prompt?.opciones.length, 4);
-  assert.equal(prompt?.detalle, '←  ☐ Fruta  ☐ Dia  ✔ Submit  →');
+  assert.equal(prompt?.detalle, '');
+  assert.deepEqual(prompt?.pestanas.map((pestana) => [pestana.etiqueta, pestana.estado]), [
+    ['Fruta', 'pendiente'],
+    ['Dia', 'pendiente'],
+    ['Submit', 'enviar'],
+  ]);
+  // Sin colores no se sabe cuál es la activa: sin flechas, mejor que a ciegas.
+  assert.deepEqual(prompt?.teclas.map((tecla) => tecla.tecla), ['Escape']);
 });
 
 test('un mensaje del chat espera a que se conteste la pregunta, y no espera a un pane muerto', async () => {
@@ -577,18 +587,26 @@ test('5-oct: varias respuestas: casillas, "Submit" como opción propia y la preg
   assert.ok(prompt);
   assert.equal(prompt.pregunta, '¿Qué frutas llevamos al picnic? Elegí todas las que quieras, la lista es larga a propósito.');
   assert.deepEqual(
-    prompt.opciones.map((opcion) => [opcion.numero, opcion.etiqueta.split('\n')[0], Boolean(opcion.casilla), Boolean(opcion.libre)]),
+    prompt.opciones.map((opcion) => [
+      opcion.numero,
+      opcion.etiqueta.split('\n')[0],
+      Boolean(opcion.casilla),
+      Boolean(opcion.marcada),
+      Boolean(opcion.libre),
+      Boolean(opcion.avance),
+    ]),
     [
-      [1, '[ ] Manzana', true, false],
-      [2, '[✔] Pera', true, false],
-      [3, '[ ] Type something', true, true],
-      [null, 'Submit', false, false],
-      [4, 'Chat about this', false, false],
+      [1, 'Manzana', true, false, false, false],
+      [2, 'Pera', true, true, false, false],
+      [3, 'Type something', true, false, true, false],
+      [null, 'Submit', false, false, false, true],
+      [4, 'Chat about this', false, false, false, false],
     ],
   );
+  assert.equal(prompt.multiple, true);
   assert.deepEqual(teclasParaOpcion(prompt, 1), { tipo: 'literal', texto: '2' });
   assert.deepEqual(teclasParaOpcion(prompt, 3), { tipo: 'teclas', teclas: ['Down', 'Down', 'Down', 'Enter'] });
-  assert.deepEqual(teclasParaOpcion(prompt, 2, 'Kiwi'), { tipo: 'escribir', teclas: ['Down', 'Down'], texto: 'Kiwi' });
+  assert.deepEqual(teclasParaOpcion(prompt, 2, 'Kiwi'), { tipo: 'escribir', teclas: ['Down', 'Down', 'C-u'], texto: 'Kiwi' });
 
   // Con el cursor parado en "Submit".
   const enSubmit = detectarPromptTmux(VARIAS_RESPUESTAS
@@ -596,4 +614,109 @@ test('5-oct: varias respuestas: casillas, "Submit" como opción propia y la preg
     .replace('     Submit', '❯    Submit'));
   assert.equal(enSubmit?.seleccionada, 3);
   assert.deepEqual(enSubmit && teclasParaOpcion(enSubmit, 3), { tipo: 'teclas', teclas: ['Enter'] });
+});
+
+// 5-oct, cloudcli-limpieza-guia-1: con varias preguntas de casillas, los
+// botones numerados solo tildaban y destildaban; no había cómo pasar a la
+// siguiente. Las pestañas con colores, como las da `capture-pane -e`.
+const PESTANAS_CON_COLOR = (activa: number) => {
+  const pestanas = [' ☒ Frutas ', ' ☐ Colores ', ' ☒ Dias ', ' ✔ Submit '];
+  return `\x1b[39m←  ${pestanas
+    .map((pestana, i) => (i === activa ? `\x1b[38;5;16m\x1b[48;5;153m${pestana}\x1b[39m\x1b[49m` : pestana))
+    .join(' ')}  →`;
+};
+const CASILLAS_EN = (activa: number, accion: 'Next' | 'Submit', tildada: boolean) => [
+  REGLA,
+  PESTANAS_CON_COLOR(activa),
+  '',
+  'Días?',
+  '',
+  `❯ 1. [${tildada ? '✔' : ' '}] Lunes`,
+  '         Primer día de la semana laboral',
+  '  2. [ ] Martes',
+  '         Segundo día de la semana laboral',
+  '  3. [ ] Type something',
+  `     ${accion}`,
+  REGLA,
+  '  4. Chat about this',
+  '',
+  'Enter to select · Tab/Arrow keys to navigate · Esc to cancel',
+].join('\n');
+
+test('5-oct: varias preguntas de casillas: pestañas con la activa, lo tildado y las flechas para pasar de pregunta', () => {
+  const enDias = detectarPromptTmux(CASILLAS_EN(2, 'Submit', true));
+  assert.ok(enDias);
+  assert.deepEqual(enDias.pestanas, [
+    { etiqueta: 'Frutas', estado: 'respondida', activa: false },
+    { etiqueta: 'Colores', estado: 'pendiente', activa: false },
+    { etiqueta: 'Dias', estado: 'respondida', activa: true },
+    { etiqueta: 'Submit', estado: 'enviar', activa: false },
+  ]);
+  assert.equal(enDias.pregunta, 'Días?');
+  assert.equal(enDias.detalle, '');
+  assert.deepEqual(enDias.teclas, [
+    { tecla: 'Left', accion: 'previous' },
+    { tecla: 'Right', accion: 'review' },
+    { tecla: 'Escape', accion: 'cancel' },
+  ]);
+
+  const enFrutas = detectarPromptTmux(CASILLAS_EN(0, 'Next', true));
+  assert.deepEqual(enFrutas?.teclas.map((tecla) => `${tecla.tecla}|${tecla.accion}`), ['Right|next', 'Escape|cancel']);
+
+  // Tildar o pasar de pestaña cambia la huella: la tarjeta se entera.
+  const destildada = detectarPromptTmux(CASILLAS_EN(2, 'Submit', false));
+  assert.notEqual(destildada?.id, enDias.id);
+  assert.equal(destildada?.opciones[0].marcada, false);
+  assert.notEqual(detectarPromptTmux(CASILLAS_EN(1, 'Next', true))?.id, enFrutas?.id);
+
+  // Con algo escrito en el campo libre, sigue siendo el campo libre.
+  const escrito = detectarPromptTmux(CASILLAS_EN(2, 'Submit', true).replace('3. [ ] Type something', '3. [✔] Jueves'));
+  assert.deepEqual(escrito && [escrito.opciones[2].etiqueta, escrito.opciones[2].libre, escrito.opciones[2].marcada], ['Jueves', true, true]);
+});
+
+test('5-oct: ←/→ se mandan desde la primera opción: en el campo libre o en "Submit" no cambian de pestaña', async () => {
+  _resetPromptsTmuxParaTests();
+  const enviadas: unknown[] = [];
+  const pantalla = CASILLAS_EN(2, 'Submit', true)
+    .replace('❯ 1. [✔] Lunes', '  1. [✔] Lunes')
+    .replace('  3. [ ] Type something', '❯ 3. [ ] Type something');
+  const deps = {
+    listarPanes: async () => ['demo-guia-1'],
+    capturarPane: async () => pantalla,
+    leerRegistro: () => ({ 'demo-guia-1': { nombre: 'demo-guia-1', session_id: 'reg-1' } }),
+    sesionDeLaApp: () => 'app-1',
+    enviarTeclas: async (pane: string, teclas: unknown) => { enviadas.push({ pane, teclas }); },
+    emitir: () => {},
+    hayClientes: () => true,
+  };
+  await revisarPromptsTmux(deps);
+  const [pendiente] = promptsTmuxPendientes();
+  const resultado = await responderPromptTmux({ sessionId: 'app-1', pane: 'demo-guia-1', promptId: pendiente.id, tecla: 'Right' }, {}, deps);
+  assert.deepEqual(resultado, { ok: true });
+  assert.deepEqual(enviadas, [{ pane: 'demo-guia-1', teclas: { tipo: 'teclas', teclas: ['Up', 'Up', 'Right'] } }]);
+  _resetPromptsTmuxParaTests();
+});
+
+test('5-oct: la pantalla de revisión, sin pie, se reconoce por las pestañas y deja volver con ←', () => {
+  const revision = detectarPromptTmux([
+    REGLA,
+    PESTANAS_CON_COLOR(3),
+    '',
+    'Review your answers',
+    '',
+    '⚠ You have not answered all questions',
+    '',
+    ' ● Frutas?',
+    '   → Pera',
+    '',
+    'Ready to submit your answers?',
+    '',
+    '❯ 1. Submit answers',
+    '  2. Cancel',
+  ].join('\n'));
+  assert.ok(revision);
+  assert.equal(revision.pregunta, 'Ready to submit your answers?');
+  assert.equal(revision.pestanas[3].activa, true);
+  assert.deepEqual(revision.teclas, [{ tecla: 'Left', accion: 'previous' }]);
+  assert.equal(revision.multiple, false);
 });

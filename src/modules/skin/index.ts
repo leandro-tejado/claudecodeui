@@ -20,4 +20,4 @@ export {
   useTmuxPrompts,
   useTmuxPromptsFeed,
 } from '@/modules/skin/tmuxPromptStore';
-export type { TmuxPrompt, TmuxPromptKey } from '@/modules/skin/tmuxPromptStore';
+export type { TmuxPrompt, TmuxPromptKey, TmuxPromptTab } from '@/modules/skin/tmuxPromptStore';

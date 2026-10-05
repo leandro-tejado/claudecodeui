@@ -32,9 +32,26 @@ export type OpcionPromptTmux = {
   /**
    * Una opción con casilla, de un AskUserQuestion de varias respuestas: el
    * dígito la marca o la desmarca y el cursor no se mueve; se termina con
-   * la opción "Submit" (medido el 5-oct).
+   * la opción "Submit" (medido el 5-oct). La etiqueta va sin el "[ ] ".
    */
   casilla?: boolean;
+  /** Si la casilla está tildada ahora en el pane ("[✔]"). Solo con `casilla`. */
+  marcada?: boolean;
+  /**
+   * El renglón sin número "Next" o "Submit" de un AskUserQuestion de varias
+   * respuestas: no es una respuesta, pasa a la pregunta siguiente o a la
+   * pantalla de revisión. Va entre las opciones porque el cursor lo recorre.
+   */
+  avance?: boolean;
+};
+
+/** Una pestaña de AskUserQuestion con varias preguntas: "☒ Frutas", "☐ Colores", "✔ Submit". */
+export type PestanaTmux = {
+  etiqueta: string;
+  /** ☒ contestada, ☐ sin contestar, ✔ la de revisar y enviar. */
+  estado: 'respondida' | 'pendiente' | 'enviar';
+  /** La que se está viendo: Claude Code la pinta con fondo de color. */
+  activa: boolean;
 };
 
 /** Una tecla que el pie del diálogo ofrece ("←/→ to change", "Esc to cancel"), con lo que hace. */
@@ -54,8 +71,15 @@ export type PromptTmux = {
   opciones: OpcionPromptTmux[];
   /** Índice de la opción donde está el cursor (`❯`); -1 si no hay opciones. */
   seleccionada: number;
-  /** Las teclas sueltas que se pueden mandar: todas las del pie si no hay opciones, solo `Esc` si las hay. */
+  /**
+   * Las teclas sueltas que se pueden mandar: todas las del pie si no hay
+   * opciones; si las hay, `Esc` y las flechas ←/→ para cambiar de pestaña.
+   */
   teclas: TeclaDialogoTmux[];
+  /** Selección múltiple: las opciones son casillas y elegir una solo la tilda o destilda. */
+  multiple: boolean;
+  /** Las pestañas de un AskUserQuestion; vacío en los demás diálogos. */
+  pestanas: PestanaTmux[];
 };
 
 export type PromptTmuxPendiente = PromptTmux & {
@@ -218,12 +242,21 @@ const NOMBRE_TMUX_PATTERN = /^[A-Za-z0-9_-]+$/;
 // (y la REGLA 11 del workspace la deja fuera de todo lo automático).
 const SESION_PROHIBIDA = 'web';
 
-function huella(pregunta: string, detalle: string, opciones: OpcionPromptTmux[], teclas: TeclaDialogoTmux[]): string {
+function huella(
+  pregunta: string,
+  detalle: string,
+  opciones: OpcionPromptTmux[],
+  teclas: TeclaDialogoTmux[],
+  pestanas: PestanaTmux[] = [],
+): string {
+  // Lo tildado y la pestaña activa cuentan: tildar una casilla es otra
+  // pantalla, y la tarjeta tiene que enterarse.
   const texto = [
     pregunta,
     detalle,
-    ...opciones.map((opcion) => `${opcion.numero ?? ''}|${opcion.etiqueta}`),
+    ...opciones.map((opcion) => `${opcion.numero ?? ''}|${opcion.casilla ? (opcion.marcada ? 'x' : 'o') : ''}|${opcion.etiqueta}`),
     ...teclas.map((tecla) => `${tecla.tecla}|${tecla.accion}`),
+    ...pestanas.map((pestana) => `${pestana.estado}|${pestana.activa ? '*' : ''}|${pestana.etiqueta}`),
   ].join('\n');
   return createHash('sha1').update(texto).digest('hex').slice(0, 16);
 }
@@ -303,7 +336,7 @@ export function detectarPromptTmux(pantalla: string): PromptTmux | null {
   // "←/→ to change": un formulario, no una lista. Sus renglones son campos
   // con su valor, y elegir uno con `Enter` no es lo que pide.
   if (conPie && /\bto change\b/.test(lineas[fin])) return dialogoConTeclas(lineas, fin);
-  return dialogoConOpciones(lineas, fin, conPie) ?? (conPie ? dialogoConTeclas(lineas, fin) : null);
+  return dialogoConOpciones(lineas, crudas, fin, conPie) ?? (conPie ? dialogoConTeclas(lineas, fin) : null);
 }
 
 /**
@@ -328,11 +361,20 @@ function dialogoConTeclas(lineas: string[], fin: number): PromptTmux | null {
   const detalle = cuerpo.join('\n');
   const teclas = teclasDelPie(lineas[fin], region.some((linea) => linea.startsWith(MARCA)));
   if (teclas.length === 0) return null;
-  return { id: huella(pregunta, detalle, [], teclas), pregunta, detalle, opciones: [], seleccionada: -1, teclas };
+  return {
+    id: huella(pregunta, detalle, [], teclas),
+    pregunta,
+    detalle,
+    opciones: [],
+    seleccionada: -1,
+    teclas,
+    multiple: false,
+    pestanas: [],
+  };
 }
 
 /** Los diálogos de una lista de opciones: los de permiso, el de confianza, AskUserQuestion. */
-function dialogoConOpciones(lineas: string[], fin: number, conPie: boolean): PromptTmux | null {
+function dialogoConOpciones(lineas: string[], crudas: string[], fin: number, conPie: boolean): PromptTmux | null {
   let cursor = conPie ? fin - 1 : fin;
   while (cursor >= 0 && !lineas[cursor].trim()) cursor -= 1;
 
@@ -369,7 +411,7 @@ function dialogoConOpciones(lineas: string[], fin: number, conPie: boolean): Pro
         if (seleccionada !== -1) return null;
         seleccionada = opciones.length;
       }
-      opciones.push({ indice: opciones.length, numero: null, etiqueta: texto });
+      opciones.push({ indice: opciones.length, numero: null, etiqueta: texto, avance: true });
       continue;
     }
 
@@ -386,18 +428,26 @@ function dialogoConOpciones(lineas: string[], fin: number, conPie: boolean): Pro
       if (seleccionada !== -1) return null;
       seleccionada = opciones.length;
     }
-    const etiqueta = numerada ? numerada[2].trim() : texto;
-    const casilla = CASILLA.exec(etiqueta);
+    const completa = numerada ? numerada[2].trim() : texto;
+    const casilla = numerada ? CASILLA.exec(completa) : null;
+    const etiqueta = casilla ? completa.slice(casilla[0].length) : completa;
     opciones.push({
       indice: opciones.length,
       numero: numerada ? Number(numerada[1]) : null,
       etiqueta,
-      ...(numerada && OPCION_LIBRE.test(casilla ? etiqueta.slice(casilla[0].length) : etiqueta) ? { libre: true } : {}),
-      ...(casilla ? { casilla: true } : {}),
+      ...(numerada && OPCION_LIBRE.test(etiqueta) ? { libre: true } : {}),
+      ...(casilla ? { casilla: true, marcada: casilla[0].trim() !== '[ ]' } : {}),
     });
   }
 
   if (opciones.length < 2 || seleccionada === -1) return null;
+  // Con algo escrito, el renglón libre de las casillas ya no dice "Type
+  // something" sino lo escrito ("[✔] Jueves"). AskUserQuestion lo pone
+  // siempre último, pegado al "Next"/"Submit".
+  const avance = opciones.findIndex((opcion) => opcion.avance);
+  if (avance > 0 && !opciones.some((opcion) => opcion.libre) && opciones[avance - 1].casilla) {
+    opciones[avance - 1].libre = true;
+  }
   const numeros = opciones.flatMap((opcion) => (opcion.numero === null ? [] : [opcion.numero]));
   if (numeradas && numeros.some((numero, indice) => numero !== indice + 1)) return null;
 
@@ -432,8 +482,13 @@ function dialogoConOpciones(lineas: string[], fin: number, conPie: boolean): Pro
   let inicio = cursor;
   while (inicio >= 0 && cursor - inicio < MAX_LINEAS_DETALLE && !REGLA.test(lineas[inicio])) inicio -= 1;
   if (!conPie && !lineas.slice(inicio + 1, cursor + 1).some((linea) => PESTANAS_VARIAS.test(linea))) return null;
+  // Las pestañas van en el primer renglón, pegadas a la raya: se leen de la
+  // captura con colores (la activa tiene fondo) y salen del detalle.
+  let primera = inicio + 1;
+  while (primera <= cursor && !lineas[primera].trim()) primera += 1;
+  const pestanas = primera <= cursor && PESTANAS.test(lineas[primera]) ? leerPestanas(crudas[primera]) : [];
   const region = lineas
-    .slice(inicio + 1, cursor + 1)
+    .slice(pestanas.length > 0 ? primera + 1 : inicio + 1, cursor + 1)
     .map(limpiarLineaDetalle);
   while (region.length > 0 && !region[0]) region.shift();
   while (region.length > 0 && !region[region.length - 1]) region.pop();
@@ -457,9 +512,79 @@ function dialogoConOpciones(lineas: string[], fin: number, conPie: boolean): Pro
 
   const detalle = cuerpo.join('\n');
   // Con opciones, de las teclas del pie solo `Esc`: cancelar también es una
-  // respuesta, y las flechas sobran donde cada opción es un botón.
-  const teclas = conPie ? teclasDelPie(lineas[fin], false).filter((tecla) => tecla.tecla === 'Escape') : [];
-  return { id: huella(pregunta, detalle, opciones, teclas), pregunta, detalle, opciones, seleccionada, teclas };
+  // respuesta, y las flechas sobran donde cada opción es un botón. Salvo
+  // ←/→ con pestañas: cambian de pregunta sin perder lo tildado (5-oct), y
+  // en una de casillas son la única forma de seguir sin el renglón "Next".
+  const teclas: TeclaDialogoTmux[] = [];
+  const activa = pestanas.findIndex((pestana) => pestana.activa);
+  if (pestanas.length > 1 && activa !== -1) {
+    if (activa > 0) teclas.push({ tecla: 'Left', accion: 'previous' });
+    if (activa < pestanas.length - 1) {
+      teclas.push({ tecla: 'Right', accion: pestanas[activa + 1].estado === 'enviar' ? 'review' : 'next' });
+    }
+  }
+  if (conPie) teclas.push(...teclasDelPie(lineas[fin], false).filter((tecla) => tecla.tecla === 'Escape'));
+  return {
+    id: huella(pregunta, detalle, opciones, teclas, pestanas),
+    pregunta,
+    detalle,
+    opciones,
+    seleccionada,
+    teclas,
+    multiple: opciones.some((opcion) => opcion.casilla),
+    pestanas,
+  };
+}
+
+const ESTADO_PESTANA: Record<string, PestanaTmux['estado']> = { '☒': 'respondida', '☐': 'pendiente', '✔': 'enviar' };
+const PESTANA = /([☐☒✔])\s+([^☐☒✔→]+)/g;
+
+/**
+ * Las pestañas de un renglón crudo de `capture-pane -e`. Medido el 5-oct:
+ *
+ *     ←  ☒ Frutas  ☐ Colores ESC[48;5;153m ☒ Dias ESC[49m ✔ Submit  →
+ *
+ * La activa es la que va con fondo de color; sin colores (o con una sola
+ * pestaña, que no se pinta) se da por activa la única que hay.
+ */
+function leerPestanas(cruda: string): PestanaTmux[] {
+  let plano = '';
+  const conFondo: boolean[] = [];
+  let fondo = false;
+  for (const parte of cruda.split(/(\x1b\[[0-9;?]*[A-Za-z])/)) {
+    if (!parte.startsWith('\x1b[')) {
+      plano += parte;
+      for (let i = 0; i < parte.length; i += 1) conFondo.push(fondo);
+      continue;
+    }
+    if (!parte.endsWith('m')) continue;
+    const parametros = parte.slice(2, -1).split(';');
+    for (let i = 0; i < parametros.length; i += 1) {
+      const parametro = parametros[i];
+      if (parametro === '38' || parametro === '48') {
+        if (parametro === '48') fondo = true;
+        // 5;N o 2;R;G;B: son parte del color, no atributos sueltos.
+        i += parametros[i + 1] === '5' ? 2 : parametros[i + 1] === '2' ? 4 : 0;
+      } else if (parametro === '' || parametro === '0' || parametro === '49' || parametro === '27') {
+        fondo = false;
+      } else if (parametro === '7' || /^(?:4[0-7]|10[0-7])$/.test(parametro)) {
+        fondo = true;
+      }
+    }
+  }
+
+  const pestanas: PestanaTmux[] = [];
+  for (const encontrada of plano.matchAll(PESTANA)) {
+    const etiqueta = encontrada[2].trim();
+    if (!etiqueta) continue;
+    pestanas.push({
+      etiqueta,
+      estado: ESTADO_PESTANA[encontrada[1]],
+      activa: conFondo[encontrada.index ?? 0] === true,
+    });
+  }
+  if (pestanas.length === 1) pestanas[0].activa = true;
+  return pestanas;
 }
 
 export type TeclasTmux =
@@ -486,9 +611,10 @@ export function teclasParaOpcion(prompt: PromptTmux, indice: number, texto = '')
   const flechas = Array.from({ length: Math.abs(distancia) }, () => (distancia > 0 ? 'Down' : 'Up'));
   const enUnRenglon = texto.replace(/\s*[\r\n]+\s*/g, ' ').trim().slice(0, MAX_TEXTO_LIBRE);
   // Con casillas, el campo libre se llena llegando con el cursor y
-  // tecleando: queda marcado solo, y un `Enter` lo desmarcaría.
+  // tecleando: queda marcado solo, y un `Enter` lo desmarcaría. `C-u` borra
+  // lo que hubiera escrito antes, así lo nuevo lo reemplaza (medido el 5-oct).
   if (opcion.libre && opcion.casilla) {
-    return { tipo: 'escribir', teclas: flechas, texto: enUnRenglon };
+    return { tipo: 'escribir', teclas: [...flechas, 'C-u'], texto: enUnRenglon };
   }
   if (opcion.libre && opcion.numero !== null && opcion.numero <= 9) {
     return { tipo: 'libre', numero: String(opcion.numero), texto: enUnRenglon };
@@ -728,7 +854,13 @@ export async function responderPromptTmux(
     if (!tecla) {
       return { ok: false, codigo: 'TMUX_PROMPT_BAD_OPTION', mensaje: 'Esa tecla no hace nada en este diálogo.' };
     }
-    teclas = { tipo: 'teclas', teclas: [tecla.tecla] };
+    // ←/→ cambian de pestaña solo desde una opción común: parado en el campo
+    // libre mueven el cursor del texto, y en "Next"/"Submit" no hacen nada
+    // (medido el 5-oct). Antes se sube a la primera, que nunca es ninguna de esas.
+    const subir = (tecla.tecla === 'Left' || tecla.tecla === 'Right') && actual.pestanas.length > 1
+      ? Array.from({ length: Math.max(actual.seleccionada, 0) }, () => 'Up')
+      : [];
+    teclas = { tipo: 'teclas', teclas: [...subir, tecla.tecla] };
   } else {
     const opcion = entrada.opcion;
     if (opcion === undefined || !Number.isInteger(opcion) || opcion < 0 || opcion >= actual.opciones.length) {
@@ -752,7 +884,12 @@ export async function responderPromptTmux(
   }
 
   // Que todos vean el prompt resuelto sin esperar la próxima vuelta.
-  setTimeout(() => { void revisarPromptsTmux(dependencias); }, 400).unref?.();
+  // Dos veces: una casilla se tilda enseguida, pero cambiar de pestaña o
+  // abrir la revisión tarda en dibujarse, y la tarjeta tiene que mostrar lo
+  // que quedó en el pane de verdad, no lo que se mandó.
+  for (const demora of [250, 1200]) {
+    setTimeout(() => { void revisarPromptsTmux(dependencias); }, demora).unref?.();
+  }
   return { ok: true };
 }
 
