@@ -72,24 +72,24 @@ Hoy la barra tiene 15 proyectos activos (`prueba-e2e`, `prueba-env`, `prueba-ask
 
 ## Micro-tasks
 
-- [ ] Hook: `registro-sesion.sh` no escribe si el claude que lo dispara no es el principal del pane — acepta: un `claude -p` corrido dentro de un pane de prueba deja intacto el `session_id` del pane | valida: `python3 .claude/bin/test-sesiones.py` (caso `hijo_no_pisa`) + prueba manual en `zzz-hook-guia-1`
-- [ ] `sesiones.construir()` hace merge con el registro releído justo antes de `_guardar` — acepta: un hook que escribe a mitad de `construir` sobrevive | valida: `test-sesiones.py` (caso `hook_concurrente`)
-- [ ] `construir()` descarta el sid previo si la sesión de tmux es más nueva que la entrada (nombre reusado) y conserva `hook_ts` — acepta: la entrada vieja del 23-sep no se hereda | valida: `test-sesiones.py` (caso `nombre_reusado`)
-- [ ] `sid_para_cwd` ignora transcripts `sdk-cli` y `construir()` no asigna un sid que ya tiene otra sesión viva — acepta: dos sesiones en el mismo cwd nunca comparten sid | valida: `test-sesiones.py` (caso `cwd_compartido`) + `python3 .claude/bin/test-hibernar-tabla.py` sigue verde
-- [ ] Migración: columnas `archived_at`, `archived_by` en `projects` y `sessions`, y `entrypoint` en `sessions` — acepta: la DB vieja migra sin perder filas y los conteos de antes y después coinciden | valida: `NODE_ENV=test npx vitest run server/modules/database`
-- [ ] El synchronizer de claude guarda `entrypoint` (`cli` / `sdk-ts` / `sdk-cli`) leyendo las primeras líneas del `.jsonl` — acepta: `96c915b9` queda `sdk-cli` y `4ffcfe3f` queda `cli` | valida: test del synchronizer + query de solo lectura a `auth.db` después del deploy
-- [ ] Desarchivar con actividad nueva: un upsert de sesión interactiva con actividad posterior a `archived_at` desarchiva sesión y proyecto, y un re-escaneo viejo no | valida: `NODE_ENV=test npx vitest run server/modules/providers server/modules/database`
-- [ ] La sesión viva del registro de tmux en un proyecto archivado lo desarchiva y emite `session_upserted` — acepta: el caso `fiesta-music` reproducido en test termina con el proyecto activo | valida: `tmux-registry-sessions.service.test.ts`
-- [ ] Evento `sidebar_archived {projectIds, sessionIds}`: el frontend saca proyectos y sesiones en el lugar, sin `fetchProjects` | valida: test de `useProjectsState` + verificación en navegador
-- [ ] `seleccionarLimpieza()` pura: piso de 3, umbral de 72 h, fijados exentos, la sesión fija exenta, headless terminadas a archivar | valida: `NODE_ENV=test npx vitest run server/modules/limpieza` (≥10 casos)
-- [ ] Ejecutor: por cada proyecto candidato, `orquestar.py dormir` en cada sesión de tmux viva (sin `--forzar`); si alguna se niega, el proyecto no se archiva y queda el motivo | valida: test con `orquestar` falso + log `~/.cache/aos/limpieza.jsonl`
-- [ ] Scheduler horario + modo `simular` por defecto (`LIMPIEZA_MODO=simular|ejecutar`) — acepta: en `simular` no cambia nada y escribe el plan de cambios en el log | valida: `journalctl --user -u cloudcli | grep limpieza`
+- [x] Hook: `registro-sesion.sh` no escribe si el claude que lo dispara no es el principal del pane — acepta: un `claude -p` corrido dentro de un pane de prueba deja intacto el `session_id` del pane | valida: `python3 .claude/bin/test-sesiones.py` (caso `hijo_no_pisa`) + prueba manual en `zzz-hook-guia-1`
+- [x] `sesiones.construir()` hace merge con el registro releído justo antes de `_guardar` — acepta: un hook que escribe a mitad de `construir` sobrevive | valida: `test-sesiones.py` (caso `hook_concurrente`)
+- [x] `construir()` descarta el sid previo si la sesión de tmux es más nueva que la entrada (nombre reusado) y conserva `hook_ts` — acepta: la entrada vieja del 23-sep no se hereda | valida: `test-sesiones.py` (caso `nombre_reusado`)
+- [x] `sid_para_cwd` ignora transcripts `sdk-cli` y `construir()` no asigna un sid que ya tiene otra sesión viva — acepta: dos sesiones en el mismo cwd nunca comparten sid | valida: `test-sesiones.py` (caso `cwd_compartido`) + `python3 .claude/bin/test-hibernar-tabla.py` sigue verde
+- [x] Migración: columnas `archived_at`, `archived_by` en `projects` y `sessions`, y `entrypoint` en `sessions` — acepta: la DB vieja migra sin perder filas y los conteos de antes y después coinciden | valida: `NODE_ENV=test npx vitest run server/modules/database`
+- [x] El synchronizer de claude guarda `entrypoint` (`cli` / `sdk-ts` / `sdk-cli`) leyendo las primeras líneas del `.jsonl` — acepta: `96c915b9` queda `sdk-cli` y `4ffcfe3f` queda `cli` | valida: test del synchronizer + query de solo lectura a `auth.db` después del deploy
+- [x] Desarchivar con actividad nueva: un upsert de sesión interactiva con actividad posterior a `archived_at` desarchiva sesión y proyecto, y un re-escaneo viejo no | valida: `NODE_ENV=test npx vitest run server/modules/providers server/modules/database`
+- [x] La sesión viva del registro de tmux en un proyecto archivado lo desarchiva y emite `session_upserted` — acepta: el caso `fiesta-music` reproducido en test termina con el proyecto activo | valida: `tmux-registry-sessions.service.test.ts`
+- [x] Evento `sidebar_archived {projectIds, sessionIds}`: el frontend saca proyectos y sesiones en el lugar, sin `fetchProjects` | valida: test de `useProjectsState` + verificación en navegador
+- [x] `seleccionarLimpieza()` pura: piso de 3, umbral de 72 h, fijados exentos, la sesión fija exenta, headless terminadas a archivar | valida: `NODE_ENV=test npx vitest run server/modules/limpieza` (≥10 casos)
+- [x] Ejecutor: por cada proyecto candidato, `orquestar.py dormir` en cada sesión de tmux viva (sin `--forzar`); si alguna se niega, el proyecto no se archiva y queda el motivo | valida: test con `orquestar` falso + log `~/.cache/aos/limpieza.jsonl`
+- [x] Scheduler horario + modo `simular` por defecto (`LIMPIEZA_MODO=simular|ejecutar`) — acepta: en `simular` no cambia nada y escribe el plan de cambios en el log | valida: `journalctl --user -u cloudcli | grep limpieza`
 - [ ] Fijar Workspace Leandro (`isStarred=1`) — acepta: aparece arriba con la estrella | valida: UI + query de solo lectura
 - [ ] Deploy (`npm run build && systemctl --user restart cloudcli` desde ttyd/`ct`) y primera corrida en `simular`; Leandro aprueba la lista | valida: `limpieza.jsonl` mostrado a Leandro
 - [ ] Paso a `ejecutar` — acepta: la barra queda con ≤ los proyectos esperados según el simulado, sin recargar | valida: navegador (cloudcli-browser) antes/después
 - [ ] E2E (b): crear con `orquestar.py crear` una sesión de prueba en un proyecto archivado — acepta: aparece en la barra sin recargar en < 15 s | valida: snapshot del navegador
 - [ ] E2E (a): crear, cerrar y volver a crear una sesión con el mismo nombre — acepta: el registro tiene el sid nuevo y la barra la muestra | valida: `orquestar.py listar --json` + navegador
-- [ ] Reparar el registro actual: los sids mal asignados (`permisos-ejecutora-1`, el par diseno/feedback) se corrigen con la lógica nueva | valida: `sesiones.py listar` sin sids repetidos entre sesiones vivas
+- [x] Reparar el registro actual: los sids mal asignados (`permisos-ejecutora-1`, el par diseno/feedback) se corrigen con la lógica nueva | valida: `sesiones.py listar` sin sids repetidos entre sesiones vivas
 
 ---
 
@@ -251,10 +251,10 @@ Hoy la barra tiene 15 proyectos activos (`prueba-e2e`, `prueba-env`, `prueba-ask
 8. **Tests:** piso de 3 con 5 activos (no se archiva ninguno), piso de 3 con 0 activos (quedan 3), fijado inactivo exento, sesión fija exenta, headless terminada archivada, headless corriendo no archivada, `dormir` que falla bloquea el proyecto, `simular` no escribe, dos corridas no se pisan, y un proyecto sin sesiones se archiva si no entra en el piso.
 
 #### Estado (arranca todo en fail)
-- [fail] Selección correcta en los 10 casos o más | valida: `NODE_ENV=test npx vitest run server/modules/limpieza`
-- [fail] `dormir` rechazado bloquea el archivado del proyecto | valida: idem (orquestar simulado)
-- [fail] `simular` no toca la DB | valida: idem + conteo de `isArchived` antes y después en la corrida real
-- [fail] Línea en `limpieza.jsonl` por corrida | valida: `tail -1 ~/.cache/aos/limpieza.jsonl`
+- [pass] Selección correcta en los 10 casos o más (19 tests, node:test) | valida: `NODE_ENV=test npx vitest run server/modules/limpieza`
+- [pass] `dormir` rechazado bloquea el archivado del proyecto | valida: idem (orquestar simulado)
+- [pass] `simular` no toca la DB (corrida sobre una copia de auth.db: filas idénticas antes y después) | valida: idem + conteo de `isArchived` antes y después en la corrida real
+- [pass] Línea en `limpieza.jsonl` por corrida (validado con `LIMPIEZA_LOG_PATH`; el archivo real nace con el deploy, `[sin-verificar]` hasta la Fase 6) | valida: `tail -1 ~/.cache/aos/limpieza.jsonl`
 
 #### Peligros
 - El `cwd` de una sesión de tmux puede estar en un subdirectorio del proyecto, o en un worktree fuera de él. Se asigna al proyecto con el `project_path` más largo que sea prefijo; si ninguno es prefijo, la sesión no se toca.
@@ -326,14 +326,16 @@ Con la barra abierta y sin recargar:
 - **Fase 2:** `por` es obligatorio en las funciones de archivado. Por eso también se tocó `sessions.service.ts`, y los tipos `ArchivedBy`/`archived_*` van en `server/shared/types.ts` como opcionales. Hay 6 tests del server que ya fallaban en la base `c92c5dc1`, antes del plan: `shell-tmux.test.ts` (2) y `claude-cli-path.test.ts` (4).
 - **Fase 3:** también se tocó `sessions-watcher.service.ts`: encola `reactivadas` además de `indexadas`, para que una fila que ya existía y solo se reactivó emita `session_upserted`. Una fila archivada con `archived_at` NULL (archivada antes de la migración) no se reactiva, así que la Fase 5 agrega un backfill (`archived_at` = momento de la migración). La reactivación por `.jsonl` solo aplica al provider claude.
 - **Fase 4:** el productor nuevo está en `sidebar-archived-broadcast.service.ts`, exportado desde `websocket/index.ts`. Se agregó el caso `sidebar_archived` en `useChatRealtimeHandlers.ts`. Mergeada en `feat/limpieza-barra` (`d57a35fa`).
+- **Fase 5:** al archivar un proyecto se archiva **solo la fila del proyecto**, no sus sesiones. Así «Restaurar» desde Archivados lo devuelve con todo adentro, igual que el archivado manual. Se archivan sesiones sueltas en dos casos: las `sdk-cli` terminadas y las interactivas inactivas de proyectos que se quedan. Hay un backfill de `archived_at` para lo archivado antes de la migración (cierra la falla b para esas filas). En `simular` no se puede anticipar un `dormir` rechazado por repo sucio o pregunta pendiente: eso solo aparece en `ejecutar`. Mergeado a `diseno/propio` (`36795114`).
+- **Simulado sobre una copia de auth.db (5-oct 11:54Z):** archivaría 6 proyectos (`/home/leantejado`, `worktrees/cloudcli/diseno-feedback-2`, `/tmp/prueba-prompt-tmux`, `/tmp/prueba-ask-tmux`, `/tmp/prueba-env`, `/tmp/prueba-e2e`) y 73 sesiones inactivas (~40 de `clientes/optimum`, ~17 de `/tmp`, 5 de `/tmp/spike-parciales`, 4 de cloudcli). No dormiría ni bloquearía nada. `entrypoint` todavía está en NULL en las filas viejas: las headless aparecen después de la primera sincronización completa del servicio nuevo. Línea completa: `scratchpad/f/limpieza.jsonl` de la sesión `cloudcli-limpieza-guia-1`.
 - **Ruido de cloudcli (sugerencia 1):** se revirtió `package-lock.json` (re-resolución de npm, sin cambios en `package.json`) y `dist.old/` pasó a `.gitignore`.
 
 ---
 
 ## Continuación de Sesión
 
-**Fases completadas:** ninguna (borrador)
-**Fase actual:** pendiente de inicio
-**Próximo paso exacto:** que Leandro responda al Análisis Crítico (sobre todo la sugerencia 1, el ruido de `~/cloudcli`) y confirme «solo interactivas». Después, Fases 1 y 2 en paralelo.
-**Bloqueantes:** ninguno técnico. La sugerencia 1 condiciona que cloudcli pueda archivarse.
-**Micro-tasks pendientes:** 18 de 18
+**Fases completadas:** 1, 2, 3, 4 y 5 (revalidadas por el orquestador). Fase 1 en `master` de workspace-leandro (`968cf78`); Fases 2 a 5 en `diseno/propio` (`36795114`), pusheadas.
+**Fase actual:** Fase 6, que NO se ejecutó por decisión de Leandro: el deploy y el reinicio los decide él.
+**Próximo paso exacto:** desde ttyd (`:10000`), no desde una terminal colgada de cloudcli: `cp ~/.cloudcli/auth.db ~/.cloudcli/auth.db.bak-05oct && cd ~/cloudcli && npm run build && systemctl --user restart cloudcli`, hard refresh, y a los 5 min `tail -1 ~/.cache/aos/limpieza.jsonl` (sigue en `simular`). Con el OK de Leandro sobre esa lista, el paso 4 de la Fase 6 (`LIMPIEZA_MODO=ejecutar`) y los E2E.
+**Bloqueantes:** el gobernador estaba en rojo el 5-oct (pace 133%), así que `orquestar.py crear` no crea sesiones de prueba. La prueba en vivo del hook (Fase 1) y los E2E de la Fase 6 esperan a que baje. Hay que revisar si archivar ~40 sesiones de `clientes/optimum` y el proyecto `/home/leantejado` es lo que Leandro quiere.
+**Micro-tasks pendientes:** 5 de 18 (las de la Fase 6 y fijar Workspace Leandro)
