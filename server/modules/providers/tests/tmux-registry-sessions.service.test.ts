@@ -4,7 +4,8 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 
-import { closeConnection, initializeDatabase, sessionsDb } from '@/modules/database/index.js';
+import { getConnection } from '@/modules/database/connection.js';
+import { closeConnection, initializeDatabase, projectsDb, sessionsDb } from '@/modules/database/index.js';
 import { getProjectsWithSessions, invalidarRegistroSesiones } from '@/modules/projects/index.js';
 import {
   buscarPaneTmuxRegistrado,
@@ -73,7 +74,7 @@ test('una sesión viva en tmux sin transcript aparece en el listado del sidebar,
     await escribirRegistro({ 'os-guia-1': entrada() });
 
     const result = await sincronizarSesionesTmuxSinTranscript();
-    assert.deepEqual(result, { indexadas: [SESSION_ID], podadas: 0 });
+    assert.deepEqual(result, { indexadas: [SESSION_ID], reactivadas: [], podadas: 0 });
 
     const projects = await getProjectsWithSessions({ skipSynchronization: true });
     const project = projects.find((candidate) => candidate.path === PROJECT_PATH);
@@ -90,8 +91,8 @@ test('es idempotente y no duplica una sesión que ya tiene fila (nacida en Cloud
     sessionsDb.createAppSession(SESSION_ID, 'claude', PROJECT_PATH, 'hola');
     await escribirRegistro({ 'os-guia-1': entrada() });
 
-    assert.deepEqual(await sincronizarSesionesTmuxSinTranscript(), { indexadas: [], podadas: 0 });
-    assert.deepEqual(await sincronizarSesionesTmuxSinTranscript(), { indexadas: [], podadas: 0 });
+    assert.deepEqual(await sincronizarSesionesTmuxSinTranscript(), { indexadas: [], reactivadas: [], podadas: 0 });
+    assert.deepEqual(await sincronizarSesionesTmuxSinTranscript(), { indexadas: [], reactivadas: [], podadas: 0 });
     assert.equal(sessionsDb.getSessionById(SESSION_ID)?.custom_name, 'hola');
   });
 });
@@ -122,11 +123,11 @@ test('una sesión que muere sin transcript se poda; sin registro legible no se p
     await sincronizarSesionesTmuxSinTranscript();
 
     await escribirRegistro(null);
-    assert.deepEqual(await sincronizarSesionesTmuxSinTranscript(), { indexadas: [], podadas: 0 });
+    assert.deepEqual(await sincronizarSesionesTmuxSinTranscript(), { indexadas: [], reactivadas: [], podadas: 0 });
     assert.ok(sessionsDb.getSessionById(SESSION_ID), 'registro ausente no es "murieron todas"');
 
     await escribirRegistro({ 'os-guia-1': entrada({ estado: 'caida' }) });
-    assert.deepEqual(await sincronizarSesionesTmuxSinTranscript(), { indexadas: [], podadas: 1 });
+    assert.deepEqual(await sincronizarSesionesTmuxSinTranscript(), { indexadas: [], reactivadas: [], podadas: 1 });
     assert.ok(!sessionsDb.getSessionById(SESSION_ID));
   });
 });
@@ -138,7 +139,7 @@ test('ignora entradas sin session_id válido o sin cwd absoluto', async () => {
       b: entrada({ session_id: 'no-es-un-uuid' }),
       c: entrada({ cwd: 'relativo' }),
     });
-    assert.deepEqual(await sincronizarSesionesTmuxSinTranscript(), { indexadas: [], podadas: 0 });
+    assert.deepEqual(await sincronizarSesionesTmuxSinTranscript(), { indexadas: [], reactivadas: [], podadas: 0 });
   });
 });
 
@@ -152,12 +153,12 @@ test('una entrada recién escrita por el hook, sin cwd, se indexa con el cwd del
       consultados.push(nombre);
       return PROJECT_PATH;
     };
-    assert.deepEqual(await sincronizarSesionesTmuxSinTranscript({ cwdDePane }), { indexadas: [SESSION_ID], podadas: 0 });
+    assert.deepEqual(await sincronizarSesionesTmuxSinTranscript({ cwdDePane }), { indexadas: [SESSION_ID], reactivadas: [], podadas: 0 });
     assert.deepEqual(consultados, ['os-guia-1']);
     assert.equal(sessionsDb.getSessionById(SESSION_ID)?.project_path, PROJECT_PATH);
 
     // Ya indexada: la segunda pasada no vuelve a preguntarle a tmux.
-    assert.deepEqual(await sincronizarSesionesTmuxSinTranscript({ cwdDePane }), { indexadas: [], podadas: 0 });
+    assert.deepEqual(await sincronizarSesionesTmuxSinTranscript({ cwdDePane }), { indexadas: [], reactivadas: [], podadas: 0 });
     assert.deepEqual(consultados, ['os-guia-1']);
   });
 });
@@ -174,7 +175,7 @@ test('sin cwd y sin pane que responda no se indexa, pero tampoco se poda una fil
       'os-guia-2': { ...sinCwd, nombre: 'os-guia-2', session_id: otroId },
     });
     const sinPane = async () => null;
-    assert.deepEqual(await sincronizarSesionesTmuxSinTranscript({ cwdDePane: sinPane }), { indexadas: [], podadas: 0 });
+    assert.deepEqual(await sincronizarSesionesTmuxSinTranscript({ cwdDePane: sinPane }), { indexadas: [], reactivadas: [], podadas: 0 });
     assert.ok(sessionsDb.getSessionById(SESSION_ID));
     assert.ok(!sessionsDb.getSessionById(otroId));
   });
@@ -189,7 +190,7 @@ test('sin cwd, un nombre fuera de charset no llega nunca a tmux', async () => {
       llamadas += 1;
       return PROJECT_PATH;
     };
-    assert.deepEqual(await sincronizarSesionesTmuxSinTranscript({ cwdDePane }), { indexadas: [], podadas: 0 });
+    assert.deepEqual(await sincronizarSesionesTmuxSinTranscript({ cwdDePane }), { indexadas: [], reactivadas: [], podadas: 0 });
     assert.equal(llamadas, 0);
   });
 });
@@ -230,5 +231,81 @@ test('esFilaTmuxSinTranscript: reconoce la fila pendiente y no la de una sesión
     const deApp = sessionsDb.getSessionById(appId);
     assert.ok(deApp);
     assert.equal(esFilaTmuxSinTranscript(deApp), false);
+  });
+});
+
+/*
+ * Fase 3 de `05-octubre-limpieza-barra-viva.md`: caso `fiesta-music`. El
+ * proyecto quedó archivado (por la limpieza o a mano) y después se abrió una
+ * sesión nueva en él: la sesión viva del registro tiene que traerlo de vuelta.
+ */
+
+/** Archiva el proyecto con una fecha fija, para no depender del reloj. */
+function archivarProyecto(projectPath: string, archivedAt: string): void {
+  projectsDb.createProjectPath(projectPath);
+  projectsDb.updateProjectIsArchived(projectPath, true, 'auto');
+  getConnection()
+    .prepare('UPDATE projects SET archived_at = ? WHERE project_path = ?')
+    .run(archivedAt, projectPath);
+}
+
+test('fiesta-music: una sesión viva nueva en un proyecto archivado lo desarchiva y se anuncia', async () => {
+  await withEntorno(async (escribirRegistro) => {
+    archivarProyecto(PROJECT_PATH, '2026-09-01 00:00:00');
+    assert.equal(projectsDb.getProjectPath(PROJECT_PATH)?.isArchived, 1);
+
+    await escribirRegistro({ 'os-guia-1': entrada() });
+    const result = await sincronizarSesionesTmuxSinTranscript();
+
+    // `indexadas` es lo que el watcher encola como `session_upserted`.
+    assert.deepEqual(result.indexadas, [SESSION_ID]);
+    const proyecto = projectsDb.getProjectPath(PROJECT_PATH);
+    assert.equal(proyecto?.isArchived, 0);
+    assert.equal(proyecto?.archived_at ?? null, null);
+    assert.equal(proyecto?.archived_by ?? null, null);
+
+    const projects = await getProjectsWithSessions({ skipSynchronization: true });
+    assert.ok(projects.find((candidate) => candidate.path === PROJECT_PATH)?.sessions.some((s) => s.id === SESSION_ID));
+  });
+});
+
+test('una fila que ya existía y solo se reactiva también sale en `reactivadas`', async () => {
+  await withEntorno(async (escribirRegistro) => {
+    await escribirRegistro({ 'os-guia-1': entrada() });
+    await sincronizarSesionesTmuxSinTranscript();
+
+    // La limpieza la archivó (y a su proyecto) antes de que la sesión
+    // registrara actividad: la fila existe, está archivada, y es más nueva.
+    sessionsDb.updateSessionIsArchived(SESSION_ID, true, 'auto');
+    getConnection().prepare("UPDATE sessions SET archived_at = '2026-01-01 00:00:00' WHERE session_id = ?").run(SESSION_ID);
+    archivarProyecto(PROJECT_PATH, '2026-01-01 00:00:00');
+
+    const result = await sincronizarSesionesTmuxSinTranscript();
+
+    assert.deepEqual(result, { indexadas: [], reactivadas: [SESSION_ID], podadas: 0 });
+    const row = sessionsDb.getSessionById(SESSION_ID);
+    assert.equal(row?.isArchived, 0);
+    assert.equal(row?.archived_at ?? null, null);
+    assert.equal(row?.archived_by ?? null, null);
+    assert.equal(projectsDb.getProjectPath(PROJECT_PATH)?.isArchived, 0);
+
+    // Ya activa: la siguiente pasada no vuelve a anunciarla.
+    assert.deepEqual(await sincronizarSesionesTmuxSinTranscript(), { indexadas: [], reactivadas: [], podadas: 0 });
+  });
+});
+
+test('una fila archivada DESPUÉS de su última actividad no se reactiva por seguir en el registro', async () => {
+  await withEntorno(async (escribirRegistro) => {
+    await escribirRegistro({ 'os-guia-1': entrada() });
+    await sincronizarSesionesTmuxSinTranscript();
+
+    sessionsDb.updateSessionIsArchived(SESSION_ID, true, 'user');
+    // `creada` del registro es de 2026-09-25: archivada después, sin actividad nueva.
+    getConnection().prepare("UPDATE sessions SET archived_at = '2026-10-01 00:00:00' WHERE session_id = ?").run(SESSION_ID);
+
+    const result = await sincronizarSesionesTmuxSinTranscript();
+
+    assert.deepEqual(result, { indexadas: [], reactivadas: [], podadas: 0 });
+    assert.equal(sessionsDb.getSessionById(SESSION_ID)?.isArchived, 1);
   });
 });

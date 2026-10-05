@@ -210,6 +210,30 @@ export const projectsDb = {
         `).run(isArchived ? 1 : 0, isArchived ? 1 : 0, isArchived ? 1 : 0, por, projectId);
     },
 
+    /**
+     * Desarchiva el proyecto si está archivado y `actividadEn` es posterior a
+     * su `archived_at`. Devuelve `true` solo si lo desarchivó.
+     *
+     * Un proyecto archivado sin `archived_at` (anterior a la columna) no se
+     * toca: sin fecha no hay forma de saber si la actividad es posterior.
+     * `julianday` en vez de comparar strings porque `archived_at` es el
+     * formato de SQLite (`YYYY-MM-DD HH:MM:SS`) y `actividadEn` es ISO.
+     */
+    reactivarSiHayActividadPosterior(projectPath: string, actividadEn: string): boolean {
+        const db = getConnection();
+        const normalizedProjectPath = normalizeProjectPath(projectPath);
+        return db.prepare(`
+            UPDATE projects
+            SET isArchived = 0,
+                archived_at = NULL,
+                archived_by = NULL
+            WHERE project_path = ?
+              AND isArchived = 1
+              AND archived_at IS NOT NULL
+              AND julianday(?) > julianday(archived_at)
+        `).run(normalizedProjectPath, actividadEn).changes > 0;
+    },
+
     deleteProjectPath(projectPath: string): void {
         const db = getConnection();
         const normalizedProjectPath = normalizeProjectPath(projectPath);

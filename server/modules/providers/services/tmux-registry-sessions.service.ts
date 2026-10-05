@@ -46,6 +46,12 @@ async function leerRegistro(): Promise<Record<string, RegistroEntry> | null> {
 export type SincronizacionTmuxResult = {
   /** `session_id` de las filas creadas en esta pasada. */
   indexadas: string[];
+  /**
+   * `session_id` de filas que ya existían y esta pasada volvió a la barra
+   * (desarchivó la sesión o su proyecto). No son filas nuevas, pero el
+   * sidebar tiene que enterarse igual.
+   */
+  reactivadas: string[];
   podadas: number;
 };
 
@@ -108,11 +114,12 @@ export async function sincronizarSesionesTmuxSinTranscript(
   const registro = await leerRegistro();
   if (!registro) {
     // Sin registro legible no se poda: se leería como "murieron todas".
-    return { indexadas: [], podadas: 0 };
+    return { indexadas: [], reactivadas: [], podadas: 0 };
   }
 
   const vivas: string[] = [];
   const indexadas: string[] = [];
+  const reactivadas: string[] = [];
 
   for (const [clave, entry] of Object.entries(registro)) {
     if (entry.estado !== 'viva') continue;
@@ -134,6 +141,10 @@ export async function sincronizarSesionesTmuxSinTranscript(
     try {
       if (sessionsDb.createPendingTmuxSession(entry.session_id, cwd, nombre, creada)) {
         indexadas.push(entry.session_id);
+      } else if (sessionsDb.reactivarSiHayActividadNueva(entry.session_id)) {
+        // La fila ya existía (archivada, o su proyecto): solo se reactivó, y
+        // sin esto el sidebar no se enteraba hasta el próximo refresco.
+        reactivadas.push(entry.session_id);
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
@@ -142,7 +153,7 @@ export async function sincronizarSesionesTmuxSinTranscript(
   }
 
   const podadas = sessionsDb.deletePendingTmuxSessionsExcept(vivas);
-  return { indexadas, podadas };
+  return { indexadas, reactivadas, podadas };
 }
 
 /**

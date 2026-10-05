@@ -172,6 +172,7 @@ export const sessionsDb = {
         existing.session_id
       );
 
+      sessionsDb.reactivarTrasUpsert(existing.session_id, provider, updatedAtValue);
       return existing.session_id;
     }
 
@@ -207,7 +208,89 @@ export const sessionsDb = {
       updatedAtValue
     );
 
+    sessionsDb.reactivarTrasUpsert(providerSessionId, provider, updatedAtValue);
     return providerSessionId;
+  },
+
+  /**
+   * Cierra el upsert del synchronizer: si el transcript trae actividad
+   * posterior al archivado, la sesión (y su proyecto) vuelven a la barra.
+   *
+   * Solo Claude, que es el provider con `entrypoint` y el que la limpieza
+   * automática archiva. Y solo con la fecha del transcript: sin ella
+   * `updated_at` cayó a `CURRENT_TIMESTAMP`, y "ahora" no es actividad sino
+   * un re-escaneo, que resucitaría todo lo archivado.
+   */
+  reactivarTrasUpsert(sessionId: string, provider: string, updatedAt: string | null): void {
+    if (provider !== 'claude' || !updatedAt) {
+      return;
+    }
+    sessionsDb.reactivarSiHayActividadNueva(sessionId, updatedAt);
+  },
+
+  /**
+   * Desarchiva la sesión y su proyecto cuando hubo actividad después de
+   * archivarlos. Devuelve `true` si desarchivó alguno de los dos.
+   *
+   * Reglas (Fase 3 de `05-octubre-limpieza-barra-viva.md`):
+   * - Solo sesiones interactivas: `entrypoint != 'sdk-cli'`, con NULL contando
+   *   como interactiva. Una headless nueva (`claude -p`) no resucita nada.
+   * - "Actividad" es `actividadEn` (por defecto el `updated_at` de la fila,
+   *   que el synchronizer toma del transcript) contra el `archived_at` de
+   *   cada uno. Un re-escaneo de un `.jsonl` viejo queda atrás y no reactiva.
+   * - Una archivada sin `archived_at` (anterior a la columna) no se toca.
+   * - Cada uno se compara con su propio `archived_at`: una sesión nueva en un
+   *   proyecto archivado lo reactiva aunque la sesión nunca haya estado
+   *   archivada.
+   * `sessionId` se busca también como `provider_session_id`.
+   */
+  reactivarSiHayActividadNueva(sessionId: string, actividadEn?: string): boolean {
+    const db = getConnection();
+    const row = db
+      .prepare(
+        `SELECT session_id, project_path, isArchived, archived_at, entrypoint, updated_at
+         FROM sessions
+         WHERE session_id = ? OR provider_session_id = ?
+         ORDER BY (session_id = ?) DESC
+         LIMIT 1`
+      )
+      .get(sessionId, sessionId, sessionId) as
+      | {
+          session_id: string;
+          project_path: string | null;
+          isArchived: number | null;
+          archived_at: string | null;
+          entrypoint: string | null;
+          updated_at: string;
+        }
+      | undefined;
+    if (!row || row.entrypoint === 'sdk-cli') {
+      return false;
+    }
+
+    const actividad = normalizeTimestamp(actividadEn ?? row.updated_at);
+    if (!actividad) {
+      return false;
+    }
+
+    let reactivo = false;
+    if (row.isArchived === 1 && row.archived_at) {
+      reactivo = db
+        .prepare(
+          `UPDATE sessions
+           SET isArchived = 0, archived_at = NULL, archived_by = NULL
+           WHERE session_id = ? AND isArchived = 1
+             AND julianday(?) > julianday(archived_at)`
+        )
+        .run(row.session_id, actividad).changes > 0;
+    }
+
+    if (row.project_path) {
+      const proyectoReactivado = projectsDb.reactivarSiHayActividadPosterior(row.project_path, actividad);
+      reactivo = reactivo || proyectoReactivado;
+    }
+
+    return reactivo;
   },
 
   /**
@@ -284,6 +367,11 @@ export const sessionsDb = {
       `INSERT INTO sessions (session_id, provider, provider_session_id, custom_name, custom_name_is_placeholder, project_path, jsonl_path, isArchived, created_at, updated_at)
        VALUES (?, 'claude', ?, ?, 1, ?, NULL, 0, COALESCE(?, CURRENT_TIMESTAMP), COALESCE(?, CURRENT_TIMESTAMP))`
     ).run(sessionId, sessionId, customName, normalizedProjectPath, createdAtValue, createdAtValue);
+
+    // La fila nace ahora: es una sesión nueva aunque `creada` (el momento en
+    // que Claude arrancó) sea anterior, y su proyecto no puede seguir oculto.
+    // Sin `entrypoint` todavía (NULL), cuenta como interactiva.
+    sessionsDb.reactivarSiHayActividadNueva(sessionId, new Date().toISOString());
 
     return true;
   },
