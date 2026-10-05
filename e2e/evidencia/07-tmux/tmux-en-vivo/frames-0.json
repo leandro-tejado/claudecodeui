@@ -1,0 +1,705 @@
+[
+  {
+    "t": 1791243004335,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3971/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjQyOTY5LCJleHAiOjE4MjI3Nzg5Njl9.n5hZAl86Q6_2c3JawfAJrAbwHaF-NIFrCJjA4q78KP4",
+    "datos": {
+      "type": "chat.tmux-prompts"
+    }
+  },
+  {
+    "t": 1791243004442,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3971/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjQyOTY5LCJleHAiOjE4MjI3Nzg5Njl9.n5hZAl86Q6_2c3JawfAJrAbwHaF-NIFrCJjA4q78KP4",
+    "datos": {
+      "kind": "tmux_prompts",
+      "prompts": [
+        {
+          "id": "f5b2020ce12f80c6",
+          "pregunta": "Boceto del chat (design-system/visual-refs/05-octubre-chat.html; capturas en e2e/evidencia/revalida-grupo-a/visual-bocetos/chat-*.png): base de Optimum (Claude sin burbuja, tu mensaje con tinte, columna de lectura, un solo acento), \"Pensando\" plegable, tool en una línea y subagente en tarjeta con su estado. ¿Lo aprobás?",
+          "detalle": "",
+          "opciones": [
+            {
+              "indice": 0,
+              "numero": 1,
+              "etiqueta": "Aprobado\nPasa a ser la referencia de la Fase 11."
+            },
+            {
+              "indice": 1,
+              "numero": 2,
+              "etiqueta": "Quiero verlo antes\nTe lo publico como página privada para abrirla en el celular, con los dos\nbocetos."
+            },
+            {
+              "indice": 2,
+              "numero": 3,
+              "etiqueta": "Cambios\nEscribí en Other qué cambiarías; lo itero en un lote."
+            },
+            {
+              "indice": 3,
+              "numero": 4,
+              "etiqueta": "Type something.",
+              "libre": true
+            },
+            {
+              "indice": 4,
+              "numero": 5,
+              "etiqueta": "Chat about this"
+            }
+          ],
+          "seleccionada": 0,
+          "teclas": [
+            {
+              "tecla": "Right",
+              "accion": "next"
+            },
+            {
+              "tecla": "Escape",
+              "accion": "cancel"
+            }
+          ],
+          "multiple": false,
+          "pestanas": [
+            {
+              "etiqueta": "Chat",
+              "estado": "pendiente",
+              "activa": true
+            },
+            {
+              "etiqueta": "Header",
+              "estado": "pendiente",
+              "activa": false
+            },
+            {
+              "etiqueta": "Cuestionario",
+              "estado": "pendiente",
+              "activa": false
+            },
+            {
+              "etiqueta": "Submit",
+              "estado": "enviar",
+              "activa": false
+            }
+          ],
+          "sessionId": "8b8fe47b-d6a8-440d-a937-9a6c9e6c5907",
+          "pane": "cloudcli-revision-guia-1",
+          "desde": "2026-10-05T23:29:37.836Z"
+        }
+      ],
+      "timestamp": "2026-10-05T23:30:04.424Z"
+    }
+  },
+  {
+    "t": 1791243004824,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3971/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjQyOTY5LCJleHAiOjE4MjI3Nzg5Njl9.n5hZAl86Q6_2c3JawfAJrAbwHaF-NIFrCJjA4q78KP4",
+    "datos": {
+      "type": "chat.subscribe",
+      "sessions": [
+        {
+          "sessionId": "e08ce0b3-acdb-4a6f-a7f0-9c21dd558598",
+          "lastSeq": 0
+        }
+      ]
+    }
+  },
+  {
+    "t": 1791243004869,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3971/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjQyOTY5LCJleHAiOjE4MjI3Nzg5Njl9.n5hZAl86Q6_2c3JawfAJrAbwHaF-NIFrCJjA4q78KP4",
+    "datos": {
+      "kind": "chat_subscribed",
+      "sessionId": "e08ce0b3-acdb-4a6f-a7f0-9c21dd558598",
+      "isProcessing": false,
+      "lastSeq": 0,
+      "pendingPermissions": [],
+      "runsInTmux": true,
+      "timestamp": "2026-10-05T23:30:04.812Z"
+    }
+  },
+  {
+    "t": 1791243005739,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3971/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjQyOTY5LCJleHAiOjE4MjI3Nzg5Njl9.n5hZAl86Q6_2c3JawfAJrAbwHaF-NIFrCJjA4q78KP4",
+    "datos": {
+      "type": "chat.send-tmux",
+      "sessionId": "e08ce0b3-acdb-4a6f-a7f0-9c21dd558598",
+      "content": "Escribí un párrafo de unas 150 palabras sobre faros. Terminá con ntf6sw.",
+      "clientMessageId": "local_1791243005715_kp7w2z",
+      "options": {
+        "model": "default",
+        "effort": "default",
+        "permissionMode": "default",
+        "toolsSettings": {
+          "allowedTools": [],
+          "disallowedTools": [],
+          "skipPermissions": false
+        },
+        "skipPermissions": false,
+        "sessionSummary": "e2e-f7-envivo-ejecutora-1",
+        "attachments": []
+      }
+    }
+  },
+  {
+    "t": 1791243006330,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3971/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjQyOTY5LCJleHAiOjE4MjI3Nzg5Njl9.n5hZAl86Q6_2c3JawfAJrAbwHaF-NIFrCJjA4q78KP4",
+    "datos": {
+      "kind": "message_status",
+      "sessionId": "e08ce0b3-acdb-4a6f-a7f0-9c21dd558598",
+      "clientMessageId": "local_1791243005715_kp7w2z",
+      "status": "sent",
+      "timestamp": "2026-10-05T23:30:06.327Z"
+    }
+  },
+  {
+    "t": 1791243006337,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3971/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjQyOTY5LCJleHAiOjE4MjI3Nzg5Njl9.n5hZAl86Q6_2c3JawfAJrAbwHaF-NIFrCJjA4q78KP4",
+    "datos": {
+      "kind": "status",
+      "sessionId": "e08ce0b3-acdb-4a6f-a7f0-9c21dd558598",
+      "text": null,
+      "canInterrupt": false,
+      "timestamp": "2026-10-05T23:30:06.327Z"
+    }
+  },
+  {
+    "t": 1791243006362,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3971/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjQyOTY5LCJleHAiOjE4MjI3Nzg5Njl9.n5hZAl86Q6_2c3JawfAJrAbwHaF-NIFrCJjA4q78KP4",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": null,
+      "sevenDay": null
+    }
+  },
+  {
+    "t": 1791243006433,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3971/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjQyOTY5LCJleHAiOjE4MjI3Nzg5Njl9.n5hZAl86Q6_2c3JawfAJrAbwHaF-NIFrCJjA4q78KP4",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "e08ce0b3-acdb-4a6f-a7f0-9c21dd558598",
+      "activityKind": "thinking",
+      "texto": "Improvising… (running SessionStart hooks… 5/6 · 0s)",
+      "timestamp": "2026-10-05T23:30:06.427Z"
+    }
+  },
+  {
+    "t": 1791243006436,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3971/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjQyOTY5LCJleHAiOjE4MjI3Nzg5Njl9.n5hZAl86Q6_2c3JawfAJrAbwHaF-NIFrCJjA4q78KP4",
+    "datos": {
+      "kind": "stream_delta",
+      "sessionId": "e08ce0b3-acdb-4a6f-a7f0-9c21dd558598",
+      "messageId": "tmux-borrador:e08ce0b3-acdb-4a6f-a7f0-9c21dd558598",
+      "blockIndex": 0,
+      "content": "❯\n  5h ?",
+      "timestamp": "2026-10-05T23:30:06.427Z"
+    }
+  },
+  {
+    "t": 1791243006830,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3971/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjQyOTY5LCJleHAiOjE4MjI3Nzg5Njl9.n5hZAl86Q6_2c3JawfAJrAbwHaF-NIFrCJjA4q78KP4",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "e08ce0b3-acdb-4a6f-a7f0-9c21dd558598",
+      "activityKind": "thinking",
+      "texto": "Improvising… (running SessionStart hooks… 5/6 · 0s)",
+      "timestamp": "2026-10-05T23:30:06.825Z"
+    }
+  },
+  {
+    "t": 1791243007224,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3971/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjQyOTY5LCJleHAiOjE4MjI3Nzg5Njl9.n5hZAl86Q6_2c3JawfAJrAbwHaF-NIFrCJjA4q78KP4",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "e08ce0b3-acdb-4a6f-a7f0-9c21dd558598",
+      "activityKind": "thinking",
+      "texto": "Improvising… (running SessionStart hooks… 5/6 · 1s)",
+      "timestamp": "2026-10-05T23:30:07.222Z"
+    }
+  },
+  {
+    "t": 1791243007629,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3971/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjQyOTY5LCJleHAiOjE4MjI3Nzg5Njl9.n5hZAl86Q6_2c3JawfAJrAbwHaF-NIFrCJjA4q78KP4",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "e08ce0b3-acdb-4a6f-a7f0-9c21dd558598",
+      "activityKind": "thinking",
+      "texto": "Improvising… (running SessionStart hooks… 5/6 · 1s)",
+      "timestamp": "2026-10-05T23:30:07.626Z"
+    }
+  },
+  {
+    "t": 1791243008027,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3971/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjQyOTY5LCJleHAiOjE4MjI3Nzg5Njl9.n5hZAl86Q6_2c3JawfAJrAbwHaF-NIFrCJjA4q78KP4",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "e08ce0b3-acdb-4a6f-a7f0-9c21dd558598",
+      "activityKind": "thinking",
+      "texto": "Improvising… (running SessionStart hooks… 5/6 · 1s)",
+      "timestamp": "2026-10-05T23:30:08.025Z"
+    }
+  },
+  {
+    "t": 1791243008431,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3971/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjQyOTY5LCJleHAiOjE4MjI3Nzg5Njl9.n5hZAl86Q6_2c3JawfAJrAbwHaF-NIFrCJjA4q78KP4",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "e08ce0b3-acdb-4a6f-a7f0-9c21dd558598",
+      "activityKind": "thinking",
+      "texto": "Improvising… (running SessionStart hooks… 5/6 · 2s)",
+      "timestamp": "2026-10-05T23:30:08.426Z"
+    }
+  },
+  {
+    "t": 1791243008828,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3971/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjQyOTY5LCJleHAiOjE4MjI3Nzg5Njl9.n5hZAl86Q6_2c3JawfAJrAbwHaF-NIFrCJjA4q78KP4",
+    "datos": {
+      "kind": "stream_reemplazo",
+      "sessionId": "e08ce0b3-acdb-4a6f-a7f0-9c21dd558598",
+      "messageId": "tmux-borrador:e08ce0b3-acdb-4a6f-a7f0-9c21dd558598",
+      "blockIndex": 0,
+      "timestamp": "2026-10-05T23:30:08.826Z"
+    }
+  },
+  {
+    "t": 1791243008832,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3971/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjQyOTY5LCJleHAiOjE4MjI3Nzg5Njl9.n5hZAl86Q6_2c3JawfAJrAbwHaF-NIFrCJjA4q78KP4",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "e08ce0b3-acdb-4a6f-a7f0-9c21dd558598",
+      "idle": true,
+      "timestamp": "2026-10-05T23:30:08.826Z"
+    }
+  },
+  {
+    "t": 1791243009628,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3971/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjQyOTY5LCJleHAiOjE4MjI3Nzg5Njl9.n5hZAl86Q6_2c3JawfAJrAbwHaF-NIFrCJjA4q78KP4",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "e08ce0b3-acdb-4a6f-a7f0-9c21dd558598",
+      "activityKind": "thinking",
+      "texto": "Crystallizing… (3s · ↓ 2 tokens)",
+      "timestamp": "2026-10-05T23:30:09.626Z"
+    }
+  },
+  {
+    "t": 1791243009632,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3971/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjQyOTY5LCJleHAiOjE4MjI3Nzg5Njl9.n5hZAl86Q6_2c3JawfAJrAbwHaF-NIFrCJjA4q78KP4",
+    "datos": {
+      "kind": "stream_delta",
+      "sessionId": "e08ce0b3-acdb-4a6f-a7f0-9c21dd558598",
+      "messageId": "tmux-borrador:e08ce0b3-acdb-4a6f-a7f0-9c21dd558598",
+      "blockIndex": 0,
+      "content": "❯\n  5h ?",
+      "timestamp": "2026-10-05T23:30:09.626Z"
+    }
+  },
+  {
+    "t": 1791243010029,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3971/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjQyOTY5LCJleHAiOjE4MjI3Nzg5Njl9.n5hZAl86Q6_2c3JawfAJrAbwHaF-NIFrCJjA4q78KP4",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "e08ce0b3-acdb-4a6f-a7f0-9c21dd558598",
+      "activityKind": "thinking",
+      "texto": "Crystallizing… (3s · ↓ 3 tokens)",
+      "timestamp": "2026-10-05T23:30:10.026Z"
+    }
+  },
+  {
+    "t": 1791243010428,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3971/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjQyOTY5LCJleHAiOjE4MjI3Nzg5Njl9.n5hZAl86Q6_2c3JawfAJrAbwHaF-NIFrCJjA4q78KP4",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "e08ce0b3-acdb-4a6f-a7f0-9c21dd558598",
+      "activityKind": "thinking",
+      "texto": "Crystallizing… (4s · ↓ 11 tokens)",
+      "timestamp": "2026-10-05T23:30:10.426Z"
+    }
+  },
+  {
+    "t": 1791243010432,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3971/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjQyOTY5LCJleHAiOjE4MjI3Nzg5Njl9.n5hZAl86Q6_2c3JawfAJrAbwHaF-NIFrCJjA4q78KP4",
+    "datos": {
+      "kind": "stream_delta",
+      "sessionId": "e08ce0b3-acdb-4a6f-a7f0-9c21dd558598",
+      "messageId": "tmux-borrador:e08ce0b3-acdb-4a6f-a7f0-9c21dd558598",
+      "blockIndex": 0,
+      "content": "Los faros llevan siglos guiando a los navegantes en las noches más oscuras,\n  erguidos sobre acantilados, islotes y puntas rocosas donde el mar golpea sin\n❯\n  5h ?",
+      "timestamp": "2026-10-05T23:30:10.426Z"
+    }
+  },
+  {
+    "t": 1791243010831,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3971/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjQyOTY5LCJleHAiOjE4MjI3Nzg5Njl9.n5hZAl86Q6_2c3JawfAJrAbwHaF-NIFrCJjA4q78KP4",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "e08ce0b3-acdb-4a6f-a7f0-9c21dd558598",
+      "activityKind": "thinking",
+      "texto": "Crystallizing… (4s · ↓ 18 tokens)",
+      "timestamp": "2026-10-05T23:30:10.828Z"
+    }
+  },
+  {
+    "t": 1791243010838,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3971/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjQyOTY5LCJleHAiOjE4MjI3Nzg5Njl9.n5hZAl86Q6_2c3JawfAJrAbwHaF-NIFrCJjA4q78KP4",
+    "datos": {
+      "kind": "stream_delta",
+      "sessionId": "e08ce0b3-acdb-4a6f-a7f0-9c21dd558598",
+      "messageId": "tmux-borrador:e08ce0b3-acdb-4a6f-a7f0-9c21dd558598",
+      "blockIndex": 0,
+      "content": "Los faros llevan siglos guiando a los navegantes en las noches más oscuras,\n  erguidos sobre acantilados, islotes y puntas rocosas donde el mar golpea sin\n  descanso. Su luz giratoria, concentrada por lentes de Fresnel que multiplican\n❯\n  5h ?",
+      "timestamp": "2026-10-05T23:30:10.828Z"
+    }
+  },
+  {
+    "t": 1791243011078,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3971/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjQyOTY5LCJleHAiOjE4MjI3Nzg5Njl9.n5hZAl86Q6_2c3JawfAJrAbwHaF-NIFrCJjA4q78KP4",
+    "datos": {
+      "id": "32533a40-6ef5-4938-ab28-d58559e85b4d",
+      "sessionId": "e08ce0b3-acdb-4a6f-a7f0-9c21dd558598",
+      "timestamp": "2026-10-05T23:30:08.411Z",
+      "provider": "claude",
+      "kind": "text",
+      "role": "user",
+      "content": "Escribí un párrafo de unas 150 palabras sobre faros. Terminá con ntf6sw.",
+      "transcriptAnchorId": "32533a40-6ef5-4938-ab28-d58559e85b4d"
+    }
+  },
+  {
+    "t": 1791243011234,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3971/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjQyOTY5LCJleHAiOjE4MjI3Nzg5Njl9.n5hZAl86Q6_2c3JawfAJrAbwHaF-NIFrCJjA4q78KP4",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "e08ce0b3-acdb-4a6f-a7f0-9c21dd558598",
+      "activityKind": "thinking",
+      "texto": "Crystallizing… (5s · ↓ 47 tokens)",
+      "timestamp": "2026-10-05T23:30:11.230Z"
+    }
+  },
+  {
+    "t": 1791243011234,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3971/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjQyOTY5LCJleHAiOjE4MjI3Nzg5Njl9.n5hZAl86Q6_2c3JawfAJrAbwHaF-NIFrCJjA4q78KP4",
+    "datos": {
+      "kind": "stream_delta",
+      "sessionId": "e08ce0b3-acdb-4a6f-a7f0-9c21dd558598",
+      "messageId": "tmux-borrador:e08ce0b3-acdb-4a6f-a7f0-9c21dd558598",
+      "blockIndex": 0,
+      "content": "Los faros llevan siglos guiando a los navegantes en las noches más oscuras,\n  erguidos sobre acantilados, islotes y puntas rocosas donde el mar golpea sin\n  descanso. Su luz giratoria, concentrada por lentes de Fresnel que multiplican\n  el brillo de una sola llama o bombilla, puede verse a decenas de kilómetros y\n  le advierte al barco dónde está la costa y dónde el peligro. Cada faro tiene\n❯\n  5h ?",
+      "timestamp": "2026-10-05T23:30:11.230Z"
+    }
+  },
+  {
+    "t": 1791243011554,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3971/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjQyOTY5LCJleHAiOjE4MjI3Nzg5Njl9.n5hZAl86Q6_2c3JawfAJrAbwHaF-NIFrCJjA4q78KP4",
+    "datos": {
+      "kind": "session_upserted",
+      "sessionId": "e08ce0b3-acdb-4a6f-a7f0-9c21dd558598",
+      "providerSessionId": "e08ce0b3-acdb-4a6f-a7f0-9c21dd558598",
+      "provider": "claude",
+      "session": {
+        "id": "e08ce0b3-acdb-4a6f-a7f0-9c21dd558598",
+        "summary": "Párrafo sobre faros",
+        "messageCount": 0,
+        "lastActivity": "2026-10-05T23:30:09.490Z",
+        "tmux": {
+          "nombre": "e2e-f7-envivo-ejecutora-1",
+          "vivo": true
+        }
+      },
+      "project": {
+        "projectId": "2c1ce853-6f8c-4ce9-ba50-c027cb2257b4",
+        "path": "/home/leantejado/.cache/cloudcli-e2e/proyecto-f7",
+        "fullPath": "/home/leantejado/.cache/cloudcli-e2e/proyecto-f7",
+        "displayName": "e2e-proyecto",
+        "isStarred": false
+      },
+      "timestamp": "2026-10-05T23:30:11.551Z"
+    }
+  },
+  {
+    "t": 1791243011638,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3971/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjQyOTY5LCJleHAiOjE4MjI3Nzg5Njl9.n5hZAl86Q6_2c3JawfAJrAbwHaF-NIFrCJjA4q78KP4",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "e08ce0b3-acdb-4a6f-a7f0-9c21dd558598",
+      "activityKind": "thinking",
+      "texto": "Crystallizing… (5s · ↓ 66 tokens)",
+      "timestamp": "2026-10-05T23:30:11.633Z"
+    }
+  },
+  {
+    "t": 1791243011643,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3971/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjQyOTY5LCJleHAiOjE4MjI3Nzg5Njl9.n5hZAl86Q6_2c3JawfAJrAbwHaF-NIFrCJjA4q78KP4",
+    "datos": {
+      "kind": "stream_delta",
+      "sessionId": "e08ce0b3-acdb-4a6f-a7f0-9c21dd558598",
+      "messageId": "tmux-borrador:e08ce0b3-acdb-4a6f-a7f0-9c21dd558598",
+      "blockIndex": 0,
+      "content": "Los faros llevan siglos guiando a los navegantes en las noches más oscuras,\n  erguidos sobre acantilados, islotes y puntas rocosas donde el mar golpea sin\n  descanso. Su luz giratoria, concentrada por lentes de Fresnel que multiplican\n  el brillo de una sola llama o bombilla, puede verse a decenas de kilómetros y\n  le advierte al barco dónde está la costa y dónde el peligro. Cada faro tiene\n  su propio ritmo de destellos, una especie de firma que permite reconocerlo y\n  saber exactamente qué tramo del litoral se está recorriendo. Durante\n❯\n  5h ?",
+      "timestamp": "2026-10-05T23:30:11.633Z"
+    }
+  },
+  {
+    "t": 1791243012034,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3971/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjQyOTY5LCJleHAiOjE4MjI3Nzg5Njl9.n5hZAl86Q6_2c3JawfAJrAbwHaF-NIFrCJjA4q78KP4",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": null,
+      "sevenDay": null
+    }
+  },
+  {
+    "t": 1791243012040,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3971/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjQyOTY5LCJleHAiOjE4MjI3Nzg5Njl9.n5hZAl86Q6_2c3JawfAJrAbwHaF-NIFrCJjA4q78KP4",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "e08ce0b3-acdb-4a6f-a7f0-9c21dd558598",
+      "activityKind": "thinking",
+      "texto": "Crystallizing… (5s · ↓ 71 tokens)",
+      "timestamp": "2026-10-05T23:30:12.033Z"
+    }
+  },
+  {
+    "t": 1791243012435,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3971/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjQyOTY5LCJleHAiOjE4MjI3Nzg5Njl9.n5hZAl86Q6_2c3JawfAJrAbwHaF-NIFrCJjA4q78KP4",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "e08ce0b3-acdb-4a6f-a7f0-9c21dd558598",
+      "activityKind": "thinking",
+      "texto": "Crystallizing… (6s · ↓ 125 tokens)",
+      "timestamp": "2026-10-05T23:30:12.432Z"
+    }
+  },
+  {
+    "t": 1791243012436,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3971/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjQyOTY5LCJleHAiOjE4MjI3Nzg5Njl9.n5hZAl86Q6_2c3JawfAJrAbwHaF-NIFrCJjA4q78KP4",
+    "datos": {
+      "kind": "stream_delta",
+      "sessionId": "e08ce0b3-acdb-4a6f-a7f0-9c21dd558598",
+      "messageId": "tmux-borrador:e08ce0b3-acdb-4a6f-a7f0-9c21dd558598",
+      "blockIndex": 0,
+      "content": "Los faros llevan siglos guiando a los navegantes en las noches más oscuras,\n  erguidos sobre acantilados, islotes y puntas rocosas donde el mar golpea sin\n  descanso. Su luz giratoria, concentrada por lentes de Fresnel que multiplican\n  el brillo de una sola llama o bombilla, puede verse a decenas de kilómetros y\n  le advierte al barco dónde está la costa y dónde el peligro. Cada faro tiene\n  su propio ritmo de destellos, una especie de firma que permite reconocerlo y\n  saber exactamente qué tramo del litoral se está recorriendo. Durante\n  generaciones, los fareros vivieron junto a ellos, cuidando la lámpara,\n❯\n  5h ?",
+      "timestamp": "2026-10-05T23:30:12.432Z"
+    }
+  },
+  {
+    "t": 1791243012836,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3971/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjQyOTY5LCJleHAiOjE4MjI3Nzg5Njl9.n5hZAl86Q6_2c3JawfAJrAbwHaF-NIFrCJjA4q78KP4",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "e08ce0b3-acdb-4a6f-a7f0-9c21dd558598",
+      "activityKind": "thinking",
+      "texto": "Crystallizing… (6s · ↓ 130 tokens)",
+      "timestamp": "2026-10-05T23:30:12.832Z"
+    }
+  },
+  {
+    "t": 1791243012840,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3971/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjQyOTY5LCJleHAiOjE4MjI3Nzg5Njl9.n5hZAl86Q6_2c3JawfAJrAbwHaF-NIFrCJjA4q78KP4",
+    "datos": {
+      "kind": "stream_delta",
+      "sessionId": "e08ce0b3-acdb-4a6f-a7f0-9c21dd558598",
+      "messageId": "tmux-borrador:e08ce0b3-acdb-4a6f-a7f0-9c21dd558598",
+      "blockIndex": 0,
+      "content": "Los faros llevan siglos guiando a los navegantes en las noches más oscuras,\n  erguidos sobre acantilados, islotes y puntas rocosas donde el mar golpea sin\n  descanso. Su luz giratoria, concentrada por lentes de Fresnel que multiplican\n  el brillo de una sola llama o bombilla, puede verse a decenas de kilómetros y\n  le advierte al barco dónde está la costa y dónde el peligro. Cada faro tiene\n  su propio ritmo de destellos, una especie de firma que permite reconocerlo y\n  saber exactamente qué tramo del litoral se está recorriendo. Durante\n  generaciones, los fareros vivieron junto a ellos, cuidando la lámpara,\n  limpiando los cristales y registrando el clima en soledad. Hoy la mayoría\n  funciona de forma automática y el GPS ha reducido su papel práctico, pero\n❯\n  5h ?",
+      "timestamp": "2026-10-05T23:30:12.832Z"
+    }
+  },
+  {
+    "t": 1791243013236,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3971/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjQyOTY5LCJleHAiOjE4MjI3Nzg5Njl9.n5hZAl86Q6_2c3JawfAJrAbwHaF-NIFrCJjA4q78KP4",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "e08ce0b3-acdb-4a6f-a7f0-9c21dd558598",
+      "activityKind": "thinking",
+      "texto": "Crystallizing… (7s · ↓ 180 tokens)",
+      "timestamp": "2026-10-05T23:30:13.233Z"
+    }
+  },
+  {
+    "t": 1791243013242,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3971/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjQyOTY5LCJleHAiOjE4MjI3Nzg5Njl9.n5hZAl86Q6_2c3JawfAJrAbwHaF-NIFrCJjA4q78KP4",
+    "datos": {
+      "kind": "stream_delta",
+      "sessionId": "e08ce0b3-acdb-4a6f-a7f0-9c21dd558598",
+      "messageId": "tmux-borrador:e08ce0b3-acdb-4a6f-a7f0-9c21dd558598",
+      "blockIndex": 0,
+      "content": "Los faros llevan siglos guiando a los navegantes en las noches más oscuras,\n  erguidos sobre acantilados, islotes y puntas rocosas donde el mar golpea sin\n  descanso. Su luz giratoria, concentrada por lentes de Fresnel que multiplican\n  el brillo de una sola llama o bombilla, puede verse a decenas de kilómetros y\n  le advierte al barco dónde está la costa y dónde el peligro. Cada faro tiene\n  su propio ritmo de destellos, una especie de firma que permite reconocerlo y\n  saber exactamente qué tramo del litoral se está recorriendo. Durante\n  generaciones, los fareros vivieron junto a ellos, cuidando la lámpara,\n  limpiando los cristales y registrando el clima en soledad. Hoy la mayoría\n  funciona de forma automática y el GPS ha reducido su papel práctico, pero\n  siguen siendo símbolos de resistencia, de esperanza y de orientación. Su\n❯\n  5h ?",
+      "timestamp": "2026-10-05T23:30:13.233Z"
+    }
+  },
+  {
+    "t": 1791243013639,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3971/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjQyOTY5LCJleHAiOjE4MjI3Nzg5Njl9.n5hZAl86Q6_2c3JawfAJrAbwHaF-NIFrCJjA4q78KP4",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "e08ce0b3-acdb-4a6f-a7f0-9c21dd558598",
+      "activityKind": "thinking",
+      "texto": "Crystallizing… (7s · ↓ 185 tokens)",
+      "timestamp": "2026-10-05T23:30:13.633Z"
+    }
+  },
+  {
+    "t": 1791243013940,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3971/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjQyOTY5LCJleHAiOjE4MjI3Nzg5Njl9.n5hZAl86Q6_2c3JawfAJrAbwHaF-NIFrCJjA4q78KP4",
+    "datos": {
+      "id": "dfc6483d-836a-4b62-bc23-0f9a6e074494_0",
+      "sessionId": "e08ce0b3-acdb-4a6f-a7f0-9c21dd558598",
+      "timestamp": "2026-10-05T23:30:13.560Z",
+      "provider": "claude",
+      "kind": "text",
+      "role": "assistant",
+      "content": "Los faros llevan siglos guiando a los navegantes en las noches más oscuras, erguidos sobre acantilados, islotes y puntas rocosas donde el mar golpea sin descanso. Su luz giratoria, concentrada por lentes de Fresnel que multiplican el brillo de una sola llama o bombilla, puede verse a decenas de kilómetros y le advierte al barco dónde está la costa y dónde el peligro. Cada faro tiene su propio ritmo de destellos, una especie de firma que permite reconocerlo y saber exactamente qué tramo del litoral se está recorriendo. Durante generaciones, los fareros vivieron junto a ellos, cuidando la lámpara, limpiando los cristales y registrando el clima en soledad. Hoy la mayoría funciona de forma automática y el GPS ha reducido su papel práctico, pero siguen siendo símbolos de resistencia, de esperanza y de orientación. Su silueta blanca contra el cielo tormentoso nos recuerda que, incluso en medio de la oscuridad, alguien dejó una luz encendida para que otros lleguen a salvo. ntf6sw",
+      "messageId": "msg_011CfjxefWUYVrBWtB3zajo8",
+      "blockIndex": 0
+    }
+  },
+  {
+    "t": 1791243013994,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3971/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjQyOTY5LCJleHAiOjE4MjI3Nzg5Njl9.n5hZAl86Q6_2c3JawfAJrAbwHaF-NIFrCJjA4q78KP4",
+    "datos": {
+      "id": "tmux_complete_e08ce0b3-acdb-4a6f-a7f0-9c21dd558598_1791243013950",
+      "sessionId": "e08ce0b3-acdb-4a6f-a7f0-9c21dd558598",
+      "provider": "claude",
+      "timestamp": "2026-10-05T23:30:13.950Z",
+      "kind": "complete",
+      "success": true
+    }
+  },
+  {
+    "t": 1791243014044,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3971/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjQyOTY5LCJleHAiOjE4MjI3Nzg5Njl9.n5hZAl86Q6_2c3JawfAJrAbwHaF-NIFrCJjA4q78KP4",
+    "datos": {
+      "kind": "stream_reemplazo",
+      "sessionId": "e08ce0b3-acdb-4a6f-a7f0-9c21dd558598",
+      "messageId": "tmux-borrador:e08ce0b3-acdb-4a6f-a7f0-9c21dd558598",
+      "blockIndex": 0,
+      "timestamp": "2026-10-05T23:30:14.034Z"
+    }
+  },
+  {
+    "t": 1791243014047,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3971/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjQyOTY5LCJleHAiOjE4MjI3Nzg5Njl9.n5hZAl86Q6_2c3JawfAJrAbwHaF-NIFrCJjA4q78KP4",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "e08ce0b3-acdb-4a6f-a7f0-9c21dd558598",
+      "idle": true,
+      "timestamp": "2026-10-05T23:30:14.034Z"
+    }
+  },
+  {
+    "t": 1791243017551,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3971/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjQyOTY5LCJleHAiOjE4MjI3Nzg5Njl9.n5hZAl86Q6_2c3JawfAJrAbwHaF-NIFrCJjA4q78KP4",
+    "datos": {
+      "kind": "session_upserted",
+      "sessionId": "e08ce0b3-acdb-4a6f-a7f0-9c21dd558598",
+      "providerSessionId": "e08ce0b3-acdb-4a6f-a7f0-9c21dd558598",
+      "provider": "claude",
+      "session": {
+        "id": "e08ce0b3-acdb-4a6f-a7f0-9c21dd558598",
+        "summary": "Párrafo sobre faros",
+        "messageCount": 0,
+        "lastActivity": "2026-10-05T23:30:13.743Z",
+        "tmux": {
+          "nombre": "e2e-f7-envivo-ejecutora-1",
+          "vivo": true
+        }
+      },
+      "project": {
+        "projectId": "2c1ce853-6f8c-4ce9-ba50-c027cb2257b4",
+        "path": "/home/leantejado/.cache/cloudcli-e2e/proyecto-f7",
+        "fullPath": "/home/leantejado/.cache/cloudcli-e2e/proyecto-f7",
+        "displayName": "e2e-proyecto",
+        "isStarred": false
+      },
+      "timestamp": "2026-10-05T23:30:17.547Z"
+    }
+  },
+  {
+    "t": 1791243018039,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3971/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjQyOTY5LCJleHAiOjE4MjI3Nzg5Njl9.n5hZAl86Q6_2c3JawfAJrAbwHaF-NIFrCJjA4q78KP4",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": null,
+      "sevenDay": null
+    }
+  },
+  {
+    "t": 1791243029103,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3971/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjQyOTY5LCJleHAiOjE4MjI3Nzg5Njl9.n5hZAl86Q6_2c3JawfAJrAbwHaF-NIFrCJjA4q78KP4",
+    "datos": {
+      "kind": "recursos",
+      "ram": {
+        "porcentajePct": 32.602963977364844,
+        "usadaGb": 2.52838134765625,
+        "totalGb": 7.75506591796875
+      },
+      "disco": {
+        "usadoPct": 23.206476935299282,
+        "usadoGb": 22.23691177368164,
+        "totalGb": 95.82200622558594
+      },
+      "sesionesTmux": 4,
+      "techoRam": 90
+    }
+  },
+  {
+    "t": 1791243029319,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3971/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjQyOTY5LCJleHAiOjE4MjI3Nzg5Njl9.n5hZAl86Q6_2c3JawfAJrAbwHaF-NIFrCJjA4q78KP4",
+    "datos": {
+      "kind": "heartbeat",
+      "timestamp": 1791243029317
+    }
+  },
+  {
+    "t": 1791243030104,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3971/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjQyOTY5LCJleHAiOjE4MjI3Nzg5Njl9.n5hZAl86Q6_2c3JawfAJrAbwHaF-NIFrCJjA4q78KP4",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": null,
+      "sevenDay": null
+    }
+  }
+]
