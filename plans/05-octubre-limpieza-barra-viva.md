@@ -205,9 +205,9 @@ Hoy la barra tiene 15 proyectos activos (`prueba-e2e`, `prueba-env`, `prueba-ask
 4. Tests: `fiesta-music` archivado + una entrada `viva` en el registro termina con el proyecto activo y el evento emitido; un `.jsonl` viejo re-escaneado no reactiva; una sesión `sdk-cli` nueva no reactiva.
 
 #### Estado (arranca todo en fail)
-- [fail] Una sesión viva nueva en un proyecto archivado lo desarchiva | valida: `NODE_ENV=test npx vitest run server/modules/providers/tests/tmux-registry-sessions.service.test.ts`
-- [fail] Un re-escaneo viejo no resucita | valida: idem, synchronizer
-- [fail] Una headless no resucita | valida: idem
+- [pass] Una sesión viva nueva en un proyecto archivado lo desarchiva | valida: `NODE_ENV=test npx vitest run server/modules/providers/tests/tmux-registry-sessions.service.test.ts`
+- [pass] Un re-escaneo viejo no resucita | valida: idem, synchronizer
+- [pass] Una headless no resucita | valida: idem
 
 ---
 
@@ -223,9 +223,9 @@ Hoy la barra tiene 15 proyectos activos (`prueba-e2e`, `prueba-env`, `prueba-ask
 4. Test del reducer con un proyecto y una sesión archivados.
 
 #### Estado (arranca todo en fail)
-- [fail] El evento tiene tipo en las dos puntas | valida: `npx tsc --noEmit -p .` sin errores nuevos
-- [fail] El frontend saca proyecto y sesión en el lugar | valida: `NODE_ENV=test npx vitest run src/modules/project-workspace`
-- [fail] La sesión abierta no se cierra al archivarse | valida: idem
+- [pass] El evento tiene tipo en las dos puntas | valida: `npx tsc --noEmit -p .` sin errores nuevos
+- [pass] El frontend saca proyecto y sesión en el lugar | valida: `NODE_ENV=test npx vitest run src/modules/project-workspace`
+- [pass] La sesión abierta no se cierra al archivarse | valida: idem
 
 ---
 
@@ -324,6 +324,8 @@ Con la barra abierta y sin recargar:
 - **Tests del server:** corren con `node:test` vía `tsx` (`NODE_ENV=test npx tsx --tsconfig server/tsconfig.json --test <archivo>`), no con vitest. Los `valida:` del server que dicen vitest están mal; vitest es solo para `src/`.
 - **Fase 1, fuente nueva:** se agregó una fuente 0 para el sid de una sesión viva: `pane_pid → claude principal → ~/.claude/sessions/<pid>.json → sessionId`. Es exacta y gana sobre el hook y sobre el cwd. Cada entrada lleva `sid_fuente` (`proceso` / `hook` / `cwd`). La lógica del hook pasó a `sesiones.py hook` (testeable) y `registro-sesion.sh` quedó como envoltorio. Hay `flock` sobre `sesiones.json.lock` (sugerencia 2, incorporada). El filtro de transcripts excluye todo `sdk*` del respaldo por cwd. `hibernar.py` no se tocó. Mergeado a `master` de workspace-leandro (`968cf78`).
 - **Fase 2:** `por` es obligatorio en las funciones de archivado. Por eso también se tocó `sessions.service.ts`, y los tipos `ArchivedBy`/`archived_*` van en `server/shared/types.ts` como opcionales. Hay 6 tests del server que ya fallaban en la base `c92c5dc1`, antes del plan: `shell-tmux.test.ts` (2) y `claude-cli-path.test.ts` (4).
+- **Fase 3:** también se tocó `sessions-watcher.service.ts`: encola `reactivadas` además de `indexadas`, para que una fila que ya existía y solo se reactivó emita `session_upserted`. Una fila archivada con `archived_at` NULL (archivada antes de la migración) no se reactiva, así que la Fase 5 agrega un backfill (`archived_at` = momento de la migración). La reactivación por `.jsonl` solo aplica al provider claude.
+- **Fase 4:** el productor nuevo está en `sidebar-archived-broadcast.service.ts`, exportado desde `websocket/index.ts`. Se agregó el caso `sidebar_archived` en `useChatRealtimeHandlers.ts`. Mergeada en `feat/limpieza-barra` (`d57a35fa`).
 - **Ruido de cloudcli (sugerencia 1):** se revirtió `package-lock.json` (re-resolución de npm, sin cambios en `package.json`) y `dist.old/` pasó a `.gitignore`.
 
 ---
