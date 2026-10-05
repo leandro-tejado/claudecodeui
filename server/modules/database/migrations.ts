@@ -435,17 +435,16 @@ const addForkedFromSessionIdColumn = (db: Database): void => {
  * quién archivó algo y de qué origen es una sesión.
  *
  * - `archived_at` / `archived_by` (en `projects` y en `sessions`): cuándo se
- *   archivó y quién lo hizo, `'user'` | `'auto'`. Quedan en NULL para las filas
- *   archivadas antes de esta migración y para todo lo que está activo: sin
- *   fecha ni autor no hay forma de saber si la limpieza puede restaurarlo, así
- *   que no se inventa un valor.
+ *   archivó y quién lo hizo, `'user'` | `'auto'`. Quedan en NULL para todo lo que
+ *   está activo; lo que ya estaba archivado se sella al final (ver el backfill).
  * - `sessions.entrypoint`: `'cli'` (tmux/`ct`), `'sdk-ts'` (chat de CloudCLI) o
  *   `'sdk-cli'` (`claude -p` headless), tal como lo escribe Claude Code en el
  *   `.jsonl`. NULL hasta que el synchronizer lo lea; la próxima sincronización
  *   completa lo llena para las filas que ya existen.
  *
- * Idempotente por `addColumnToTableIfNotExists`: corre en cada arranque contra
- * la DB viva y no toca ninguna fila.
+ * Idempotente: corre en cada arranque contra la DB viva; las columnas por
+ * `addColumnToTableIfNotExists` y el backfill porque solo toca filas archivadas
+ * sin `archived_at`.
  */
 const addArchiveAndEntrypointColumns = (db: Database): void => {
   const projectColumns = getTableInfo(db, 'projects').map((column) => column.name);
@@ -456,6 +455,23 @@ const addArchiveAndEntrypointColumns = (db: Database): void => {
   addColumnToTableIfNotExists(db, 'sessions', sessionColumns, 'archived_at', 'DATETIME');
   addColumnToTableIfNotExists(db, 'sessions', sessionColumns, 'archived_by', 'TEXT');
   addColumnToTableIfNotExists(db, 'sessions', sessionColumns, 'entrypoint', 'TEXT');
+
+  // Backfill: lo archivado antes de esta migración quedó sin fecha ni autor, y
+  // sin `archived_at` la reactivación por actividad nueva no lo compara contra
+  // nada: un proyecto archivado hace meses no volvería con una sesión nueva.
+  // Se sella con el momento de la migración y `'user'` (antes solo archivaba el
+  // usuario). Idempotente: después de la primera pasada no queda ninguna fila
+  // archivada con `archived_at` NULL, y la limpieza automática siempre lo escribe.
+  db.exec(`
+    UPDATE projects
+    SET archived_at = CURRENT_TIMESTAMP, archived_by = 'user'
+    WHERE isArchived = 1 AND archived_at IS NULL
+  `);
+  db.exec(`
+    UPDATE sessions
+    SET archived_at = CURRENT_TIMESTAMP, archived_by = 'user'
+    WHERE isArchived = 1 AND archived_at IS NULL
+  `);
 };
 
 /**

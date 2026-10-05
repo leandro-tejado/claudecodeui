@@ -104,18 +104,25 @@ test('una DB anterior migra las columnas nuevas sin perder filas, y volver a mig
     const projects = db
       .prepare('SELECT project_id, custom_project_name, isStarred, isArchived, archived_at, archived_by FROM projects ORDER BY project_id')
       .all();
-    assert.deepEqual(projects, [
-      { project_id: 'p-active', custom_project_name: 'Active', isStarred: 1, isArchived: 0, archived_at: null, archived_by: null },
-      { project_id: 'p-archived', custom_project_name: 'Archived', isStarred: 0, isArchived: 1, archived_at: null, archived_by: null },
-    ]);
+    // Lo que ya estaba archivado queda sellado por el backfill (ver el test de abajo).
+    assert.deepEqual(
+      projects.map((row) => ({ ...(row as object), archived_at: (row as { archived_at: string | null }).archived_at ? 'sellado' : null })),
+      [
+        { project_id: 'p-active', custom_project_name: 'Active', isStarred: 1, isArchived: 0, archived_at: null, archived_by: null },
+        { project_id: 'p-archived', custom_project_name: 'Archived', isStarred: 0, isArchived: 1, archived_at: 'sellado', archived_by: 'user' },
+      ],
+    );
 
     const sessions = db
       .prepare('SELECT session_id, custom_name, jsonl_path, isArchived, archived_at, archived_by, entrypoint FROM sessions ORDER BY session_id')
       .all();
-    assert.deepEqual(sessions, [
-      { session_id: 's-active', custom_name: 'Sesion activa', jsonl_path: '/tmp/a.jsonl', isArchived: 0, archived_at: null, archived_by: null, entrypoint: null },
-      { session_id: 's-archived', custom_name: 'Sesion archivada', jsonl_path: '/tmp/b.jsonl', isArchived: 1, archived_at: null, archived_by: null, entrypoint: null },
-    ]);
+    assert.deepEqual(
+      sessions.map((row) => ({ ...(row as object), archived_at: (row as { archived_at: string | null }).archived_at ? 'sellado' : null })),
+      [
+        { session_id: 's-active', custom_name: 'Sesion activa', jsonl_path: '/tmp/a.jsonl', isArchived: 0, archived_at: null, archived_by: null, entrypoint: null },
+        { session_id: 's-archived', custom_name: 'Sesion archivada', jsonl_path: '/tmp/b.jsonl', isArchived: 1, archived_at: 'sellado', archived_by: 'user', entrypoint: null },
+      ],
+    );
 
     // Segundo arranque sobre la misma DB: idempotente, mismas filas y columnas.
     await initializeDatabase();
@@ -197,5 +204,35 @@ test('createSession guarda entrypoint solo si la columna estaba en NULL', async 
     // Nace con el valor cuando la fila no existía.
     sessionsDb.createSession('s-2', 'claude', '/workspace/demo', 'Dos', undefined, undefined, null, 'sdk-ts');
     assert.equal(sessionsDb.getSessionById('s-2')?.entrypoint, 'sdk-ts');
+  });
+});
+
+test('el backfill sella lo archivado antes de la migración, una sola vez, y deja intacto lo demás', async () => {
+  await withTempDatabasePath(async (databasePath) => {
+    createPreviousSchemaDatabase(databasePath);
+
+    await initializeDatabase();
+    const db = getConnection();
+
+    const sello = (tabla: string, idColumna: string, id: string) =>
+      db.prepare(`SELECT archived_at, archived_by FROM ${tabla} WHERE ${idColumna} = ?`).get(id) as {
+        archived_at: string | null;
+        archived_by: string | null;
+      };
+
+    const proyecto = sello('projects', 'project_id', 'p-archived');
+    assert.match(proyecto.archived_at ?? '', /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/);
+    assert.equal(proyecto.archived_by, 'user');
+    assert.deepEqual(sello('projects', 'project_id', 'p-active'), { archived_at: null, archived_by: null });
+    assert.equal(sello('sessions', 'session_id', 's-archived').archived_by, 'user');
+    assert.ok(sello('sessions', 'session_id', 's-archived').archived_at);
+    assert.deepEqual(sello('sessions', 'session_id', 's-active'), { archived_at: null, archived_by: null });
+
+    // Segunda pasada: no cambia la fecha ni pisa un archivado 'auto' posterior.
+    db.prepare("UPDATE projects SET archived_at = '2026-01-01 00:00:00' WHERE project_id = 'p-archived'").run();
+    projectsDb.updateProjectIsArchivedById('p-active', true, 'auto');
+    await initializeDatabase();
+    assert.deepEqual(sello('projects', 'project_id', 'p-archived'), { archived_at: '2026-01-01 00:00:00', archived_by: 'user' });
+    assert.equal(sello('projects', 'project_id', 'p-active').archived_by, 'auto');
   });
 });

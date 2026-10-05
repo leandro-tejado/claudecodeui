@@ -35,6 +35,7 @@ import { taskmasterRoutes } from './modules/taskmaster/index.js';
 import { commandsRoutes } from './modules/commands/index.js';
 import { settingsRoutes } from './modules/settings/index.js';
 import { createSystemModule, startRecursosBroadcast, stopRecursosBroadcast } from './modules/system/index.js';
+import { iniciarLimpieza, detenerLimpieza } from './modules/limpieza/index.js';
 import { createAgentModule } from './modules/agent/index.js';
 import projectModuleRoutes from './modules/projects/projects.routes.js';
 import notificationRoutes from './modules/notifications/notifications.routes.js';
@@ -435,6 +436,9 @@ async function startServer() {
             // RAM/disco/sesiones para el header (Fase 3): la métrica cambia sola con
             // el tiempo, así que el propio intervalo es el disparador, no un evento.
             startRecursosBroadcast();
+            // Limpieza de la barra: archiva lo inactivo cada hora. En `simular`
+            // (el defecto, ver LIMPIEZA_MODO) solo deja una línea en el log.
+            iniciarLimpieza();
             // Las preguntas de permiso de los panes de tmux: no dejan rastro en
             // el transcript, así que se leen de la pantalla cada 2 s.
             iniciarVigiaPromptsTmux();
@@ -448,6 +452,7 @@ async function startServer() {
         await closeSessionsWatcher();
         closeScheduledMessageDispatcher();
         stopRecursosBroadcast();
+        detenerLimpieza();
         detenerVigiaPromptsTmux();
         // Clean up plugin processes on shutdown
         const shutdownRuntimeServices = async () => {
