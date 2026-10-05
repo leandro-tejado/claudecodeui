@@ -7,7 +7,8 @@ import type { ServerEvent,
   LLMProvider,
   LoadingProgress,
   Project,
-  ProjectSession,IsSessionProcessing } from '@/shared/types';
+  ProjectSession,IsSessionProcessing,
+  SidebarArchivedEvent } from '@/shared/types';
 import { mergeProjectSelectionMetadata } from '@/modules/project-workspace/utils/projectSelectionMetadata';
 import { readSelectedProvider } from '@/shared/selectedProvider';
 
@@ -344,6 +345,40 @@ const removeSessionFromProject = (project: Project, sessionIdToDelete: string): 
   };
 
   return updatedProject;
+};
+
+/**
+ * Aplica un `sidebar_archived` a la lista de proyectos: saca los proyectos
+ * archivados y, dentro de los que quedan, las sesiones archivadas. No toca
+ * `selectedProject` ni `selectedSession`: lo que está abierto sigue abierto,
+ * solo desaparece de la lista. Devuelve la misma referencia si no cambia nada.
+ */
+const removeArchivedFromProjects = (
+  projects: Project[],
+  projectIds: readonly string[],
+  sessionIds: readonly string[],
+): Project[] => {
+  const archivedProjects = new Set(projectIds);
+  let changed = false;
+  const next: Project[] = [];
+
+  for (const project of projects) {
+    if (archivedProjects.has(project.projectId)) {
+      changed = true;
+      continue;
+    }
+
+    let updated = project;
+    for (const archivedSessionId of sessionIds) {
+      updated = removeSessionFromProject(updated, archivedSessionId);
+    }
+    if (updated !== project) {
+      changed = true;
+    }
+    next.push(updated);
+  }
+
+  return changed ? next : projects;
 };
 
 const VALID_TABS: Set<string> = new Set(['chat', 'files', 'shell', 'git', 'tasks', 'browser']);
@@ -746,6 +781,7 @@ export function useProjectsState({
         && event.kind !== 'chat_subscribed'
         && event.kind !== 'loading_progress'
         && event.kind !== 'session_upserted'
+        && event.kind !== 'sidebar_archived'
         && event.kind !== 'status'
         && event.kind !== 'stream_end'
         && event.kind !== 'permission_resolved'
@@ -754,6 +790,21 @@ export function useProjectsState({
         && event.kind !== 'tmux_prompt_error'
       ) {
         markSessionAttention(eventSessionId);
+      }
+
+      // Archivado en vivo (a mano desde otra pestaña, o la limpieza automática):
+      // se saca de la lista sin volver a pedirla. La sesión que está abierta no
+      // se cierra, solo deja de aparecer en la barra.
+      if (event.kind === 'sidebar_archived') {
+        const archived = event as SidebarArchivedEvent;
+        const projectIds = Array.isArray(archived.projectIds) ? archived.projectIds : [];
+        const sessionIds = Array.isArray(archived.sessionIds) ? archived.sessionIds : [];
+        if (projectIds.length === 0 && sessionIds.length === 0) {
+          return;
+        }
+
+        setProjects((previousProjects) => removeArchivedFromProjects(previousProjects, projectIds, sessionIds));
+        return;
       }
 
       if (event.kind !== 'session_upserted') {

@@ -242,7 +242,7 @@ export type SessionActivitySnapshot = {
 /**
  * One frame received from the chat websocket. The server guarantees every
  * frame carries a `kind` (provider message kinds plus gateway kinds such as
- * `chat_subscribed`, `session_upserted`, `loading_progress`,
+ * `chat_subscribed`, `session_upserted`, `sidebar_archived`, `loading_progress`,
  * `protocol_error`). The synthetic `websocket_reconnected` kind is injected
  * client-side when the socket re-opens after a drop.
  */
@@ -254,6 +254,18 @@ export type ServerEvent = {
   [key: string]: unknown;
 };
 
+
+/**
+ * The `sidebar_archived` delta: projects and sessions that were just archived
+ * and that the sidebar must drop from its list without refetching it. Mirror of
+ * `SidebarArchivedEvent` in `server/shared/types.ts`.
+ */
+export type SidebarArchivedEvent = ServerEvent & {
+  kind: 'sidebar_archived';
+  projectIds: string[];
+  sessionIds: string[];
+  timestamp?: string;
+};
 
 // ---------------------------
 

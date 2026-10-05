@@ -205,6 +205,7 @@ export type MessageKind =
 export type GatewayEventKind =
   | 'chat_subscribed'
   | 'session_upserted'
+  | 'sidebar_archived'
   | 'loading_progress'
   | 'usage_window'
   | 'recursos'
@@ -254,6 +255,21 @@ export type SessionUpsertedEvent = {
     tmux?: { nombre: string; vivo: boolean; fija?: boolean } | null;
   };
   project: SessionUpsertedProject | null;
+  timestamp: string;
+};
+
+/**
+ * El delta `sidebar_archived`: proyectos y sesiones que acaban de archivarse y
+ * que la barra tiene que sacar de su lista sin volver a pedir el listado.
+ * Lo emite solo `modules/websocket/services/sidebar-archived-broadcast.service.ts`.
+ *
+ * Es solo la lista: una sesión archivada que alguien tiene abierta sigue
+ * abierta en esa pestaña, el cliente nada más la saca de la barra.
+ */
+export type SidebarArchivedEvent = {
+  kind: 'sidebar_archived';
+  projectIds: string[];
+  sessionIds: string[];
   timestamp: string;
 };
 

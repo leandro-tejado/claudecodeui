@@ -2,6 +2,7 @@ import { promises as fs } from 'node:fs';
 import path from 'node:path';
 
 import { projectsDb, sessionsDb } from '@/modules/database/index.js';
+import { broadcastSidebarArchived } from '@/modules/websocket/index.js';
 import { AppError } from '@/shared/utils.js';
 
 function uniqueJsonlPathsFromSessions(
@@ -63,7 +64,8 @@ export async function deleteSessionJsonlFilesForProjectPath(projectPath: string)
 }
 
 /**
- * - **Soft delete** (`force` false): set `isArchived` on the `projects` row (hide from the active list; DB only).
+ * - **Soft delete** (`force` false): set `isArchived` on the `projects` row (hide from the active list; DB only)
+ *   and announce it as `sidebar_archived` so open sidebars drop it live.
  * - **Force** (`force` true): for each session row for that `project_path`, delete the file at `jsonl_path`
  *   (when set), then remove session rows and the `projects` row.
  */
@@ -78,6 +80,9 @@ export async function deleteOrArchiveProject(projectId: string, force: boolean):
 
   if (!force) {
     projectsDb.updateProjectIsArchivedById(projectId, true, 'user');
+    // Las otras pestañas sacan el proyecto de la barra sin recargar el listado.
+    // El proyecto se lleva sus sesiones, así que alcanza con su id.
+    broadcastSidebarArchived({ projectIds: [projectId] });
     return;
   }
 
