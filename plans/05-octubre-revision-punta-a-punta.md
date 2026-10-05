@@ -99,12 +99,12 @@ Las sesiones nuevas del orquestador llegan por polling de 3 s sobre `~/.cache/ao
 - [x] Helpers `e2e/sesiones.mjs`: crear y cerrar sesiones `e2e-*` (headless por la UI, tmux por `orquestar.py crear`), con teardown que se niega a tocar nada sin prefijo — acepta: después del teardown, `tmux ls | grep -c '^e2e-'` = 0 y las sesiones de Leandro siguen idénticas | valida: `node e2e/sesiones.mjs prueba-teardown`
 - [x] CLI falso `e2e/claude-falso.mjs` con guiones (`subagente-a-mitad`, `stderr-a-mitad`, `6000-deltas`, `pensamiento`, `pregunta`) y una instancia `:3902` con `CLAUDE_CLI_PATH` — acepta: un turno en `:3902` reproduce el guion entero sin gastar cuota | valida: `node e2e/correr.mjs falso/humo`
 - [x] Línea base: correr los escenarios de los 8 puntos y de los 7 commits de hoy contra el código actual — acepta: `e2e/evidencia/00-linea-base/informe.md` con una fila por check (pasa/falla + captura o log) | valida: `node e2e/correr.mjs linea-base`
-- [ ] Cuota: releer `cuota.json` en cada `getUsageWindow` y quedarse con la lectura más nueva; ruta por `RUTA_CUOTA_JSON` — acepta: test de server verde | valida: `NODE_ENV=test npm test -- usage-window`
-- [ ] Cuota: `fs.watch` sobre el archivo → `scheduleUsageWindowBroadcast` — acepta: escribir el archivo cambia el header abierto en ≤ 3 s sin recargar | valida: `node e2e/correr.mjs cuota/en-vivo`
-- [ ] Cuota en el cliente: nunca "sin dato" si hay una lectura; antigüedad visible (> 15 min) y refetch al volver a la pestaña — acepta: con un archivo de hace 2 h, el header muestra los dos porcentajes y la antigüedad | valida: `node e2e/correr.mjs cuota/vieja`
-- [ ] Protocolo: `stream_delta` con `messageId` + `blockIndex`; eventos `thinking_delta` y `activity` (`pensando` / `tool:<nombre>`) — acepta: test del normalizador con los `stream_event` reales grabados de un turno | valida: `NODE_ENV=test npm test -- claude-sessions`
+- [x] Cuota: releer `cuota.json` en cada `getUsageWindow` y quedarse con la lectura más nueva; ruta por `RUTA_CUOTA_JSON` — acepta: test de server verde | valida: `NODE_ENV=test npm test -- usage-window`
+- [x] Cuota: `fs.watch` sobre el archivo → `scheduleUsageWindowBroadcast` — acepta: escribir el archivo cambia el header abierto en ≤ 3 s sin recargar | valida: `node e2e/correr.mjs cuota/en-vivo`
+- [x] Cuota en el cliente: nunca "sin dato" si hay una lectura; antigüedad visible (> 15 min) y refetch al volver a la pestaña — acepta: con un archivo de hace 2 h, el header muestra los dos porcentajes y la antigüedad | valida: `node e2e/correr.mjs cuota/vieja`
+- [x] Protocolo: `stream_delta` con `messageId` + `blockIndex`; eventos `thinking_delta` y `activity` (`pensando` / `tool:<nombre>`) — acepta: test del normalizador con los `stream_event` reales grabados de un turno | valida: `NODE_ENV=test npm test -- claude-sessions`
 - [ ] `thinking: {type:'adaptive', display:'summarized'}` en `query()` cuando el modelo lo soporta — acepta: un turno real con Sonnet trae `thinking_delta` con texto | valida: `node e2e/correr.mjs headless/pensamiento`
-- [ ] Coalescer los deltas del mismo bloque en el replay — acepta: un run de 6000 deltas, reconectado a mitad, se rearma sin `history_truncated` y sin duplicados | valida: `node e2e/correr.mjs falso/6000-deltas`
+- [x] Coalescer los deltas del mismo bloque en el replay — acepta: un run de 6000 deltas, reconectado a mitad, se rearma sin `history_truncated` y sin duplicados | valida: `node e2e/correr.mjs falso/6000-deltas`
 - [ ] Store del cliente: una fila por `(messageId, blockIndex)`, key = id; el `text` final reemplaza el contenido de esa fila; borrar `dropStreamFragmentsOf`, `isEchoOfFullText` y `dedupeAdjacentAssistantEchoes` — acepta: vitest verde y cero referencias a esas tres funciones | valida: `NODE_ENV=test npx vitest run && ! grep -rn "dropStreamFragmentsOf\|isEchoOfFullText\|dedupeAdjacentAssistantEchoes" src`
 - [ ] Tipeo real: la fila en streaming no se remonta — acepta: en un turno real, el largo del texto visible crece en ≥ 5 muestras distintas y el nodo DOM es el mismo de principio a fin | valida: `node e2e/correr.mjs headless/tipeo`
 - [ ] Indicador de actividad estilo Optimum (tool en curso, "pensando", reaparece tras 800 ms sin texto) — acepta: captura con el indicador antes del primer token y durante una tool | valida: `node e2e/correr.mjs headless/actividad`
@@ -116,14 +116,14 @@ Las sesiones nuevas del orquestador llegan por polling de 3 s sobre `~/.cache/ao
 - [ ] Tmux: la cola y el dispatcher nunca resumen por SDK una sesión con pane vivo; sin caída a `chat.send` tras `TMUX_*` — acepta: test de server + E2E con 5 mensajes seguidos (2 durante el turno): cada uno aparece exactamente 1 vez en el pane y en el JSONL, y hay un solo proceso `claude` en la sesión | valida: `node e2e/correr.mjs tmux/rafaga`
 - [ ] Tmux: `queued_command` se reconcilia como mensaje del usuario — acepta: el mensaje enviado con el turno en curso se ve una vez y con estado "Enviado" | valida: incluido en `tmux/rafaga`
 - [ ] Tmux: el ack de `chat.subscribe` trae el estado real del pane — acepta: recargar a mitad de un turno mantiene el indicador | valida: `node e2e/correr.mjs tmux/recarga`
-- [ ] Barra: `fs.watch` sobre `~/.cache/aos/sesiones.json` — acepta: `orquestar.py crear e2e-orq ejecutora /tmp/cloudcli-e2e/proyecto` aparece en la barra abierta en ≤ 3 s sin recargar | valida: `node e2e/correr.mjs barra/orquestador`
-- [ ] Inventario `docs/actualizacion-en-vivo.md`: cada componente con estado del servidor, su fuente de actualización y si es en vivo — acepta: tabla completa y cero filas "ninguna" sin justificar | valida: lectura + `node e2e/correr.mjs barra/componentes`
+- [x] Barra: `fs.watch` sobre `~/.cache/aos/sesiones.json` — acepta: `orquestar.py crear e2e-orq ejecutora /tmp/cloudcli-e2e/proyecto` aparece en la barra abierta en ≤ 3 s sin recargar | valida: `node e2e/correr.mjs barra/orquestador`
+- [x] Inventario `docs/actualizacion-en-vivo.md`: cada componente con estado del servidor, su fuente de actualización y si es en vivo — acepta: tabla completa y cero filas "ninguna" sin justificar | valida: lectura + `node e2e/correr.mjs barra/componentes`
 - [ ] Cuestionario headless en los modos `default`, `auto` y `bypassPermissions` — acepta: en los tres modos la pregunta llega a la UI y Claude recibe la respuesta elegida (la repite literal) | valida: `node e2e/correr.mjs pregunta/modos`
 - [ ] Cuestionario tmux: la selección se compone en el cliente y se teclea de una vez; la huella no incluye lo tildado — acepta: 3 casillas marcadas con clics a 100 ms de distancia llegan las 3 | valida: `node e2e/correr.mjs pregunta/tmux-multi`
 - [ ] Una sola representación de la pregunta: pendiente = cuestionario; respondida = resumen Pregunta → Respuesta, una vez — acepta: cero textos de pregunta repetidos en el DOM antes y después de contestar, en headless y en tmux | valida: `node e2e/correr.mjs pregunta/sin-repetidos`
 - [ ] Respuestas del historial desde `toolUseResult`, no por regex — acepta: una pregunta con comillas se muestra bien tras recargar | valida: `NODE_ENV=test npm test -- message-unification`
 - [ ] Recibir de Leandro el prompt de ejemplo del cuestionario — acepta: guardado en `design-system/visual-refs/05-octubre-cuestionario-ejemplo.md` | valida: el archivo existe
-- [ ] Design system persistido (`design-system/README.md`, `branding.md`, `typography.md`, `tokens.md`) a partir de Optimum + `apple-design` + `ui-ux-pro-max --design-system` — acepta: los cuatro archivos existen con hex, escala y tokens concretos | valida: `ls design-system/*.md`
+- [x] Design system persistido (`design-system/README.md`, `branding.md`, `typography.md`, `tokens.md`) a partir de Optimum + `apple-design` + `ui-ux-pro-max --design-system` — acepta: los cuatro archivos existen con hex, escala y tokens concretos | valida: `ls design-system/*.md`
 - [ ] Boceto del chat (recorrido: barra → sesión → enviar → pensando → tool → subagente → respuesta escribiéndose → fin) — acepta: OK de Leandro por AskUserQuestion | valida: `design-system/visual-refs/05-octubre-chat.html`
 - [ ] Boceto del cuestionario (simple, múltiple, "Otra", revisión, enviado, resumen; headless y tmux; 1280 y 390, claro y oscuro) — acepta: OK de Leandro | valida: `design-system/visual-refs/05-octubre-cuestionario.html`
 - [ ] Boceto del header de cuota y de la barra lateral — acepta: OK de Leandro | valida: `design-system/visual-refs/05-octubre-header-barra.html`
@@ -261,12 +261,12 @@ Las sesiones nuevas del orquestador llegan por polling de 3 s sobre `~/.cache/ao
 6. Tests: server (lectura más nueva, archivo inexistente, archivo corrupto, rename) y cliente (vieja, reseteada, en vivo).
 
 #### Estado (arranca todo en fail)
-- [fail] Tests de server verdes | valida: `NODE_ENV=test npm test -- usage-window`
-- [fail] Tests de cliente verdes | valida: `NODE_ENV=test npx vitest run src/modules/usage-window`
-- [fail] Escribir `cuota.json` con 5h=41 y 7d=22 cambia el header abierto en ≤ 3 s, sin recargar | valida: `node e2e/correr.mjs cuota/en-vivo`
-- [fail] Sin ningún turno durante 20 min, el header sigue mostrando los dos porcentajes con su antigüedad | valida: `node e2e/correr.mjs cuota/sin-turnos` (con `ts` envejecido a mano, no esperando 20 min)
-- [fail] Ventana reseteada muestra "ventana nueva" y la hora | valida: `node e2e/correr.mjs cuota/vieja`
-- [fail] El texto "sin dato" no aparece en ningún escenario con archivo presente | valida: `grep -L "sin dato" e2e/evidencia/03-cuota/*.html`
+- [pass] Tests de server verdes | valida: `NODE_ENV=test npm test -- usage-window`
+- [pass] Tests de cliente verdes | valida: `NODE_ENV=test npx vitest run src/modules/usage-window`
+- [pass] Escribir `cuota.json` con 5h=41 y 7d=22 cambia el header abierto en ≤ 3 s, sin recargar | valida: `node e2e/correr.mjs cuota/en-vivo`
+- [pass] Sin ningún turno durante 20 min, el header sigue mostrando los dos porcentajes con su antigüedad | valida: `node e2e/correr.mjs cuota/sin-turnos` (con `ts` envejecido a mano, no esperando 20 min)
+- [pass] Ventana reseteada muestra "ventana nueva" y la hora | valida: `node e2e/correr.mjs cuota/vieja`
+- [pass] El texto "sin dato" no aparece en ningún escenario con archivo presente | valida: `grep -L "sin dato" e2e/evidencia/03-cuota/*.html`
 
 #### Peligros
 - `fs.watch` sobre un archivo que se reemplaza por rename deja de disparar: por eso se vigila el directorio.
@@ -294,11 +294,11 @@ Las sesiones nuevas del orquestador llegan por polling de 3 s sobre `~/.cache/ao
 8. Tests con los fixtures.
 
 #### Estado (arranca todo en fail)
-- [fail] Contrato escrito y tipado | valida: `docs/architecture/protocolo-streaming.md` existe y `npm run build:server` compila
-- [fail] Normalizador emite los eventos nuevos con ids, a partir de los fixtures reales | valida: `NODE_ENV=test npm test -- claude-sessions`
-- [fail] Turno real con Sonnet trae `thinking_delta` con texto en los frames WS | valida: `node e2e/correr.mjs headless/pensamiento` (frames en la evidencia)
-- [fail] 6000 deltas + reconexión a mitad: sin `history_truncated` | valida: `node e2e/correr.mjs falso/6000-deltas`
-- [fail] Providers codex/cursor/opencode compilan y sus tests siguen verdes | valida: `NODE_ENV=test npm test`
+- [pass] Contrato escrito y tipado | valida: `docs/architecture/protocolo-streaming.md` existe y `npm run build:server` compila
+- [pass] Normalizador emite los eventos nuevos con ids, a partir de los fixtures reales | valida: `NODE_ENV=test npm test -- claude-sessions`
+- [bloqueado: sin token en :3901, decide Leandro] Turno real con Sonnet trae `thinking_delta` con texto en los frames WS | valida: `node e2e/correr.mjs headless/pensamiento` (frames en la evidencia)
+- [pass] 6000 deltas + reconexión a mitad: sin `history_truncated` | valida: `node e2e/correr.mjs falso/6000-deltas`
+- [pass] Providers codex/cursor/opencode compilan y sus tests siguen verdes | valida: `NODE_ENV=test npm test`
 
 #### Peligros
 - El `message.id` de la API no es el `uuid` de la fila JSONL. Se usa el `message.id` porque es lo que comparten el delta y el mensaje final; el historial recargado tiene que traerlo también (está en `message.id` de cada fila assistant del JSONL).
@@ -412,11 +412,11 @@ Las sesiones nuevas del orquestador llegan por polling de 3 s sobre `~/.cache/ao
 6. Al reconectar el WS, refresco completo (ya existe, `useProjectsState.ts:750`): verificarlo con la pestaña oculta 5 min.
 
 #### Estado (arranca todo en fail)
-- [fail] Inventario sin filas "nada" sin justificar | valida: lectura de `docs/actualizacion-en-vivo.md`
-- [fail] `orquestar.py crear e2e-orq …` aparece en la barra abierta en ≤ 3 s, 5 de 5 | valida: `node e2e/correr.mjs barra/orquestador`
-- [fail] `orquestar.py dormir e2e-orq` cambia el estado en vivo | valida: mismo escenario
-- [fail] Cada componente del inventario se actualiza sin recargar | valida: `node e2e/correr.mjs barra/componentes`
-- [fail] Pestaña oculta 5 min y vuelta: la barra está al día | valida: `node e2e/correr.mjs barra/pestana-oculta`
+- [pass] Inventario sin filas "nada" sin justificar | valida: lectura de `docs/actualizacion-en-vivo.md`
+- [pass] `orquestar.py crear e2e-orq …` aparece en la barra abierta en ≤ 3 s, 5 de 5 | valida: `node e2e/correr.mjs barra/orquestador`
+- [pass] `orquestar.py dormir e2e-orq` cambia el estado en vivo | valida: mismo escenario
+- [pass] Cada componente del inventario se actualiza sin recargar | valida: `node e2e/correr.mjs barra/componentes`
+- [pass] Pestaña oculta 5 min y vuelta: la barra está al día | valida: `node e2e/correr.mjs barra/pestana-oculta`
 
 ---
 
@@ -462,7 +462,7 @@ Las sesiones nuevas del orquestador llegan por polling de 3 s sobre `~/.cache/ao
 
 #### Estado (arranca todo en fail)
 - [fail] Ejemplo de cuestionario de Leandro guardado | valida: `test -s design-system/visual-refs/05-octubre-cuestionario-ejemplo.md`
-- [fail] Cuatro archivos del design system con valores concretos | valida: `grep -c '#[0-9A-Fa-f]\{6\}' design-system/branding.md` ≥ 10
+- [pass] Cuatro archivos del design system con valores concretos | valida: `grep -c '#[0-9A-Fa-f]\{6\}' design-system/branding.md` ≥ 10
 - [fail] Tres bocetos a 390 px sin scroll horizontal, en los dos temas | valida: `node e2e/correr.mjs visual/bocetos` (Playwright sobre los HTML)
 - [fail] Boceto del chat aprobado por Leandro | valida: respuesta de AskUserQuestion
 - [fail] Boceto del cuestionario aprobado por Leandro | valida: respuesta de AskUserQuestion
@@ -567,12 +567,20 @@ Fase 1 (arnés) → Fase 2 (línea base)
 - Los checks sin evidencia propia guardan los frames del WS (`frames-0.json`) como respaldo, así ninguna fila queda sin enlace.
 - Resultado: 8267cbe1 y 62d63c69 pasan; 4158e887 falla; 373dc739 pasa headless y falla en tmux; 1329d865 parcial; ed997afa/36795114 seleccionan bien pero la barra abierta no se entera.
 
+**Grupo A — Fases 3, 4, 8 y 10 (05/06-oct), en cuatro worktrees en paralelo:**
+- Para correr en paralelo, el arnés tomó `E2E_RAIZ`, `E2E_PUERTO_BASE`, `E2E_PROYECTO_DIR` y `E2E_PREFIJO` (`06c0fc09`): cada worktree con su instancia, sus puertos y su prefijo de tmux.
+- Revalidado por el orquestador sobre `diseno/propio` con las cuatro ramas mergeadas (corrida `e2e/evidencia/revalida-grupo-a/`, 75 filas, 0 problemas en `verificar-informe.mjs`). Server 831/834 (las 2 fallas viejas de `shell-tmux.test.ts` + 1 skip); cliente 717/717.
+- Fase 3: `cuota.json` se relee y se vigila (`fs.watch` del directorio, debounce 300 ms, respaldo 60 s); por ventana gana la lectura más nueva. El header cambia en 1,4 s sin recargar; lectura vieja = "% hace N min"; ventana vencida = "ventana nueva (se renovó a las …)". El check de "sin dato" se corre sobre `label*.txt` (el arnés no guarda HTML).
+- Fase 4: contrato en `docs/architecture/protocolo-streaming.md`; `headless/actividad` pasa de 0 a 11 deltas de pensamiento. El fixture `e2e/fixtures/turnos/completo.jsonl` es **sintético** (sin token para grabar uno real); `modelSupportsAdaptiveThinking` es una aproximación estática (excluye Haiku). Lo que sigue en rojo del lado del cliente (remontaje, razonamiento visible, pregunta duplicada) es de las Fases 5 y 9.
+- Fase 8: además del `fs.watch` de `~/.cache/aos`, tres arreglos fuera de lo previsto: archivar/restaurar y renombrar no emitían nada a la barra, y `mergeExpandedSessionPages` volvía a pegar una sesión archivada en el refresco de reconexión. Orquestador: 5 de 5 en ≤ 3 s (1,6 s; la línea base daba 4,45 s). El escenario tenía un error propio que corregí al revalidar: medía la siguiente creación antes de que saliera la fila de la anterior dormida, y las dos se compensaban en el conteo.
+- Fase 10: design system y dos bocetos (chat, header y barra); el del cuestionario espera el ejemplo de Leandro. 16/16 sin scroll horizontal ni errores de consola.
+
 ---
 
 ## Continuación de Sesión
 
-**Fases completadas:** Fase 1, Fase 2
-**Fase actual:** Grupo A en paralelo (Fases 3, 4, 8 y 10, en worktrees), después Fase 7 server (grupo B)
-**Próximo paso exacto:** despachar el grupo A con `aos-core:ejecutar-plan` (reparto ya aprobado por Leandro) y revalidar cada check con su escenario contra `:3901`/`:3902` reconstruidas desde la rama de cada fase.
-**Bloqueantes:** la Fase 10 necesita el prompt de ejemplo del cuestionario. `headless/pensamiento` necesita que Leandro decida si `:3901` lleva el token. La Fase 12 necesita que Leandro reinicie `:3001` (y ese reinicio también aplica `esProyectoDePrueba`).
-**Micro-tasks pendientes:** 36 de 41
+**Fases completadas:** 1, 2, 3, 8. La 4 tiene un check bloqueado (turno real con token). La 10 espera el ejemplo del cuestionario y las tres aprobaciones.
+**Fase actual:** Fase 7 server (grupo B), después 5 → 6 → 7 cliente → 9 → 11 → 12.
+**Próximo paso exacto:** despachar la Fase 7 server en un worktree con el mismo prompt del grupo A (`E2E_PUERTO_BASE=3970`, `E2E_PREFIJO=e2e-f7-`), y en paralelo arrancar la Fase 5 en la sesión (cliente: una fila por `(messageId, blockIndex)`).
+**Bloqueantes:** el prompt de ejemplo del cuestionario (Fase 10); el token de `:3901` para `headless/pensamiento` (Fase 4), solo lo puede levantar Leandro; las aprobaciones de los bocetos de chat y de header y barra.
+**Micro-tasks pendientes:** 28 de 41

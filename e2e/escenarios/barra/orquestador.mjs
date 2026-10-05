@@ -60,8 +60,12 @@ export async function correr(ctx) {
 
     // Se duerme ya: la próxima iteración no necesita verla viva, y el
     // check de "dormir cambia el estado" se mide aparte, sobre la última.
+    // Antes de la próxima se espera a que esta fila se vaya: si no, la baja de
+    // esta y el alta de la próxima se compensan y el conteo nunca supera `antes`.
     if (i < 4) {
+      const vivas = await filasDeSesion(s);
       dormirTmux(nombre);
+      intentos[i].tBajaMs = await esperarFilaMasBaja(s, vivas, 15_000);
     }
   }
 

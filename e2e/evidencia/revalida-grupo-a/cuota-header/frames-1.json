@@ -1,0 +1,66 @@
+[
+  {
+    "t": 1791237324041,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3902/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjM3MzE3LCJleHAiOjE4MjI3NzMzMTd9.650JmDbB4cFiqF2NXj46km7MvqWJWQdTZhD167kADtU",
+    "datos": {
+      "type": "chat.tmux-prompts"
+    }
+  },
+  {
+    "t": 1791237324086,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3902/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjM3MzE3LCJleHAiOjE4MjI3NzMzMTd9.650JmDbB4cFiqF2NXj46km7MvqWJWQdTZhD167kADtU",
+    "datos": {
+      "kind": "tmux_prompts",
+      "prompts": [],
+      "timestamp": "2026-10-05T21:55:24.081Z"
+    }
+  },
+  {
+    "t": 1791237324508,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3902/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjM3MzE3LCJleHAiOjE4MjI3NzMzMTd9.650JmDbB4cFiqF2NXj46km7MvqWJWQdTZhD167kADtU",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": {
+        "porcentaje": 52,
+        "resetsAt": 1791248121000,
+        "leidoEn": 1791237321000
+      },
+      "sevenDay": {
+        "porcentaje": 23,
+        "resetsAt": 1791582921000,
+        "leidoEn": 1791237321000
+      }
+    }
+  },
+  {
+    "t": 1791237324550,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3902/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjM3MzE3LCJleHAiOjE4MjI3NzMzMTd9.650JmDbB4cFiqF2NXj46km7MvqWJWQdTZhD167kADtU",
+    "datos": {
+      "type": "chat.subscribe",
+      "sessions": [
+        {
+          "sessionId": "3b78d2ba-f688-4abc-9ebf-50f862c93d6f",
+          "lastSeq": 0
+        }
+      ]
+    }
+  },
+  {
+    "t": 1791237324558,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3902/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjM3MzE3LCJleHAiOjE4MjI3NzMzMTd9.650JmDbB4cFiqF2NXj46km7MvqWJWQdTZhD167kADtU",
+    "datos": {
+      "kind": "chat_subscribed",
+      "sessionId": "3b78d2ba-f688-4abc-9ebf-50f862c93d6f",
+      "isProcessing": false,
+      "lastSeq": 0,
+      "pendingPermissions": [],
+      "runsInTmux": false,
+      "timestamp": "2026-10-05T21:55:24.553Z"
+    }
+  }
+]

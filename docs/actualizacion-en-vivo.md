@@ -83,9 +83,7 @@ a nadie — ni a la propia pestaña que lo pidió. Arreglado agregando el mismo
 
 ## Header de cuota (ventana de 5h / 7d)
 
-**Nada, confirmado roto en la línea base** ("Ventana de 5 horas: sin dato" con `cuota.json`
-recién escrito) — pero es la Fase 3 del mismo plan ("Cuota del header siempre con dato real"),
-que corre en paralelo en otro worktree. No se toca acá.
+**Evento WS + `fs.watch`** desde la Fase 3: el server vigila el directorio de `cuota.json` (debounce de 300 ms, respaldo cada 60 s) y emite `usage_window`. En la línea base estaba roto ("Ventana de 5 horas: sin dato" con el archivo recién escrito); verificado con `cuota/en-vivo` (1,4 s sin recargar).
 
 ## Panel git
 

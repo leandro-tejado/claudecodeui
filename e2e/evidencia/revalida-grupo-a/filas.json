@@ -1,0 +1,951 @@
+[
+  {
+    "escenario": "cuota/header",
+    "nombre": "5 h muestra la lectura fresca del archivo (≤ 15 s, sin reiniciar)",
+    "resultado": "pasa",
+    "evidencia": [
+      "cuota-header/primera-lectura.png"
+    ],
+    "datos": {
+      "ok": true,
+      "ms": 12,
+      "ultima": "Ventana de 5 horas: 37% real, se renueva a las 02:55 AM · Semanal: 21% real, se renueva a las 11:55 PM"
+    },
+    "ms": 6666
+  },
+  {
+    "escenario": "cuota/header",
+    "nombre": "la semanal muestra % (no solo la hora de renovación)",
+    "resultado": "pasa",
+    "evidencia": [
+      "cuota-header/frames-0.json"
+    ],
+    "datos": {
+      "etiqueta": "Ventana de 5 horas: 37% real, se renueva a las 02:55 AM · Semanal: 21% real, se renueva a las 11:55 PM"
+    },
+    "ms": 6666
+  },
+  {
+    "escenario": "cuota/header",
+    "nombre": "el header sigue el cambio sin recargar (≤ 15 s)",
+    "resultado": "pasa",
+    "evidencia": [
+      "cuota-header/segunda-lectura.png"
+    ],
+    "datos": {
+      "ok": true,
+      "ms": 1544,
+      "ultima": "Ventana de 5 horas: 52% real, se renueva a las 02:55 AM · Semanal: 23% real, se renueva a las 11:55 PM"
+    },
+    "ms": 6666
+  },
+  {
+    "escenario": "cuota/header",
+    "nombre": "el detalle no dice \"sin dato\" en ninguna ventana",
+    "resultado": "pasa",
+    "evidencia": [
+      "cuota-header/detalle.png"
+    ],
+    "ms": 6666
+  },
+  {
+    "escenario": "cuota/header",
+    "nombre": "movil: el header muestra la cuota",
+    "resultado": "pasa",
+    "evidencia": [
+      "cuota-header/movil-header.png"
+    ],
+    "datos": {
+      "ok": true,
+      "ms": 5,
+      "ultima": "Ventana de 5 horas: 52% real, se renueva a las 02:55 AM · Semanal: 23% real, se renueva a las 11:55 PM"
+    },
+    "ms": 6666
+  },
+  {
+    "escenario": "cuota/en-vivo",
+    "nombre": "el header abre con la primera lectura del archivo",
+    "resultado": "pasa",
+    "evidencia": [
+      "cuota-en-vivo/primera-lectura.png"
+    ],
+    "datos": {
+      "ok": true,
+      "ms": 10,
+      "ultima": "Ventana de 5 horas: 41% real, se renueva a las 02:55 AM · Semanal: 22% real, se renueva a las 11:55 PM"
+    },
+    "ms": 4141
+  },
+  {
+    "escenario": "cuota/en-vivo",
+    "nombre": "el header sigue el cambio del archivo en ≤ 3 s, sin recargar",
+    "resultado": "pasa",
+    "evidencia": [
+      "cuota-en-vivo/segunda-lectura.png"
+    ],
+    "datos": {
+      "ok": true,
+      "ms": 1426,
+      "ultima": "Ventana de 5 horas: 52% real, se renueva a las 02:55 AM · Semanal: 23% real, se renueva a las 11:55 PM",
+      "msReales": 1426
+    },
+    "ms": 4141
+  },
+  {
+    "escenario": "cuota/en-vivo",
+    "nombre": "la semanal también se actualizó (23%)",
+    "resultado": "pasa",
+    "evidencia": [
+      "cuota-en-vivo/frames-0.json"
+    ],
+    "datos": {
+      "etiqueta": "Ventana de 5 horas: 52% real, se renueva a las 02:55 AM · Semanal: 23% real, se renueva a las 11:55 PM"
+    },
+    "ms": 4141
+  },
+  {
+    "escenario": "cuota/en-vivo",
+    "nombre": "el label no dice \"sin dato\" habiendo archivo",
+    "resultado": "pasa",
+    "evidencia": [
+      "cuota-en-vivo/frames-0.json"
+    ],
+    "datos": {
+      "etiqueta": "Ventana de 5 horas: 52% real, se renueva a las 02:55 AM · Semanal: 23% real, se renueva a las 11:55 PM"
+    },
+    "ms": 4141
+  },
+  {
+    "escenario": "cuota/sin-turnos",
+    "nombre": "la ventana de 5 h muestra el % con su antigüedad (\"hace N min\"), no \"sin dato\"",
+    "resultado": "pasa",
+    "evidencia": [
+      "cuota-sin-turnos/vieja-20min.png"
+    ],
+    "datos": {
+      "ok": true,
+      "ms": 11,
+      "ultima": "Ventana de 5 horas: 37% hace 20 min, se renueva a las 02:55 AM · Semanal: 21% hace 20 min, se renueva a las 11:55 PM"
+    },
+    "ms": 2807
+  },
+  {
+    "escenario": "cuota/sin-turnos",
+    "nombre": "la antigüedad reportada ronda los 20 min",
+    "resultado": "pasa",
+    "evidencia": [
+      "cuota-sin-turnos/frames-0.json"
+    ],
+    "datos": {
+      "etiqueta": "Ventana de 5 horas: 37% hace 20 min, se renueva a las 02:55 AM · Semanal: 21% hace 20 min, se renueva a las 11:55 PM"
+    },
+    "ms": 2808
+  },
+  {
+    "escenario": "cuota/sin-turnos",
+    "nombre": "la semanal también muestra % con antigüedad, no \"sin dato\"",
+    "resultado": "pasa",
+    "evidencia": [
+      "cuota-sin-turnos/frames-0.json"
+    ],
+    "datos": {
+      "etiqueta": "Ventana de 5 horas: 37% hace 20 min, se renueva a las 02:55 AM · Semanal: 21% hace 20 min, se renueva a las 11:55 PM"
+    },
+    "ms": 2808
+  },
+  {
+    "escenario": "cuota/sin-turnos",
+    "nombre": "no aparece \"sin dato\" en ningún lado habiendo una lectura (vieja) en el archivo",
+    "resultado": "pasa",
+    "evidencia": [
+      "cuota-sin-turnos/frames-0.json"
+    ],
+    "datos": {
+      "etiqueta": "Ventana de 5 horas: 37% hace 20 min, se renueva a las 02:55 AM · Semanal: 21% hace 20 min, se renueva a las 11:55 PM"
+    },
+    "ms": 2808
+  },
+  {
+    "escenario": "cuota/vieja",
+    "nombre": "la ventana de 5 h muestra \"ventana nueva\" en vez de un % inventado",
+    "resultado": "pasa",
+    "evidencia": [
+      "cuota-vieja/reseteada.png"
+    ],
+    "datos": {
+      "ok": true,
+      "ms": 11,
+      "ultima": "Ventana de 5 horas: ventana nueva (se renovó a las 11:50 PM) · Semanal: 30% real, se renueva a las 11:55 PM"
+    },
+    "ms": 2658
+  },
+  {
+    "escenario": "cuota/vieja",
+    "nombre": "no muestra el 97% de la ventana ya cerrada",
+    "resultado": "pasa",
+    "evidencia": [
+      "cuota-vieja/frames-0.json"
+    ],
+    "datos": {
+      "etiqueta": "Ventana de 5 horas: ventana nueva (se renovó a las 11:50 PM) · Semanal: 30% real, se renueva a las 11:55 PM"
+    },
+    "ms": 2658
+  },
+  {
+    "escenario": "cuota/vieja",
+    "nombre": "trae la hora en que se renovó",
+    "resultado": "pasa",
+    "evidencia": [
+      "cuota-vieja/frames-0.json"
+    ],
+    "datos": {
+      "etiqueta": "Ventana de 5 horas: ventana nueva (se renovó a las 11:50 PM) · Semanal: 30% real, se renueva a las 11:55 PM"
+    },
+    "ms": 2658
+  },
+  {
+    "escenario": "cuota/vieja",
+    "nombre": "la semanal, que no pasó su reset, sigue mostrando su % real",
+    "resultado": "pasa",
+    "evidencia": [
+      "cuota-vieja/frames-0.json"
+    ],
+    "datos": {
+      "etiqueta": "Ventana de 5 horas: ventana nueva (se renovó a las 11:50 PM) · Semanal: 30% real, se renueva a las 11:55 PM"
+    },
+    "ms": 2658
+  },
+  {
+    "escenario": "cuota/vieja",
+    "nombre": "no aparece \"sin dato\" en ningún lado (hay lectura para las dos ventanas)",
+    "resultado": "pasa",
+    "evidencia": [
+      "cuota-vieja/frames-0.json"
+    ],
+    "datos": {
+      "etiqueta": "Ventana de 5 horas: ventana nueva (se renovó a las 11:50 PM) · Semanal: 30% real, se renueva a las 11:55 PM"
+    },
+    "ms": 2658
+  },
+  {
+    "escenario": "falso/humo",
+    "nombre": "llega `complete` en ≤ 10 s",
+    "resultado": "pasa",
+    "evidencia": [
+      "falso-humo/frames-0.json"
+    ],
+    "datos": {
+      "ms": 593
+    },
+    "ms": 4665
+  },
+  {
+    "escenario": "falso/humo",
+    "nombre": "la respuesta aparece exactamente una vez",
+    "resultado": "pasa",
+    "evidencia": [
+      "falso-humo/final.png"
+    ],
+    "datos": {
+      "filas": 1
+    },
+    "ms": 4665
+  },
+  {
+    "escenario": "falso/intercalados",
+    "nombre": "subagente-a-mitad: a mitad, el texto principal está en una sola fila",
+    "resultado": "pasa",
+    "evidencia": [
+      "falso-intercalados/subagente-a-mitad-a-mitad.png"
+    ],
+    "datos": {
+      "filas": 1
+    },
+    "ms": 17433
+  },
+  {
+    "escenario": "falso/intercalados",
+    "nombre": "subagente-a-mitad: al terminar, una fila con el texto completo y ningún fragmento suelto",
+    "resultado": "pasa",
+    "evidencia": [
+      "falso-intercalados/subagente-a-mitad-al-terminar.png"
+    ],
+    "datos": {
+      "completas": 1,
+      "conElComienzo": 1
+    },
+    "ms": 17433
+  },
+  {
+    "escenario": "falso/intercalados",
+    "nombre": "subagente-a-mitad: tras refrescar el historial sigue en una fila",
+    "resultado": "pasa",
+    "evidencia": [
+      "falso-intercalados/subagente-a-mitad-refrescado.png"
+    ],
+    "datos": {
+      "filas": 1
+    },
+    "ms": 17433
+  },
+  {
+    "escenario": "falso/intercalados",
+    "nombre": "stderr-a-mitad: a mitad, el texto principal está en una sola fila",
+    "resultado": "pasa",
+    "evidencia": [
+      "falso-intercalados/stderr-a-mitad-a-mitad.png"
+    ],
+    "datos": {
+      "filas": 1
+    },
+    "ms": 17433
+  },
+  {
+    "escenario": "falso/intercalados",
+    "nombre": "stderr-a-mitad: al terminar, una fila con el texto completo y ningún fragmento suelto",
+    "resultado": "pasa",
+    "evidencia": [
+      "falso-intercalados/stderr-a-mitad-al-terminar.png"
+    ],
+    "datos": {
+      "completas": 1,
+      "conElComienzo": 1
+    },
+    "ms": 17433
+  },
+  {
+    "escenario": "falso/intercalados",
+    "nombre": "stderr-a-mitad: tras refrescar el historial sigue en una fila",
+    "resultado": "pasa",
+    "evidencia": [
+      "falso-intercalados/stderr-a-mitad-refrescado.png"
+    ],
+    "datos": {
+      "filas": 1
+    },
+    "ms": 17433
+  },
+  {
+    "escenario": "falso/6000-deltas",
+    "nombre": "sin `history_truncated` al reconectar",
+    "resultado": "pasa",
+    "evidencia": [
+      "falso-6000-deltas/frames-0.json"
+    ],
+    "ms": 8537
+  },
+  {
+    "escenario": "falso/6000-deltas",
+    "nombre": "el final del run (\"6000\") aparece exactamente una vez",
+    "resultado": "pasa",
+    "evidencia": [
+      "falso-6000-deltas/final.png"
+    ],
+    "datos": {
+      "finales": 1,
+      "msFin": 3262
+    },
+    "ms": 8537
+  },
+  {
+    "escenario": "falso/6000-deltas",
+    "nombre": "el run entero está en una sola fila",
+    "resultado": "pasa",
+    "evidencia": [
+      "falso-6000-deltas/frames-0.json"
+    ],
+    "datos": {
+      "filas": 1
+    },
+    "ms": 8537
+  },
+  {
+    "escenario": "headless/tipeo",
+    "nombre": "el texto visible crece en ≥ 5 muestras distintas",
+    "resultado": "pasa",
+    "evidencia": [
+      "headless-tipeo/a-mitad.png"
+    ],
+    "datos": {
+      "distintas": 19,
+      "largos": "31,37,49,55,60,72,79,79,79,79,79,79,79,62,68,74,86,91,103,110,116,128,134,145,151"
+    },
+    "ms": 9163
+  },
+  {
+    "escenario": "headless/tipeo",
+    "nombre": "la fila en streaming no se remonta mientras se escribe",
+    "resultado": "falla",
+    "evidencia": [
+      "headless-tipeo/frames-0.json"
+    ],
+    "datos": {
+      "mismoDuranteStream": false
+    },
+    "ms": 9163
+  },
+  {
+    "escenario": "headless/tipeo",
+    "nombre": "al terminar sigue siendo el mismo nodo (el final no pinta otra fila)",
+    "resultado": "falla",
+    "evidencia": [
+      "headless-tipeo/frames-0.json"
+    ],
+    "datos": {
+      "mismoAlFinal": false,
+      "msFin": 4741
+    },
+    "ms": 9163
+  },
+  {
+    "escenario": "headless/tipeo",
+    "nombre": "una sola fila con la respuesta",
+    "resultado": "pasa",
+    "evidencia": [
+      "headless-tipeo/final.png"
+    ],
+    "datos": {
+      "filas": 1
+    },
+    "ms": 9163
+  },
+  {
+    "escenario": "headless/actividad",
+    "nombre": "hay un indicador de actividad visible antes del primer token",
+    "resultado": "pasa",
+    "evidencia": [
+      "headless-actividad/antes-del-primer-token.png"
+    ],
+    "datos": {
+      "indicador": [
+        "Thinking…\n0s\nStop\nesc",
+        "Thinking…\n0s",
+        "Stop\nesc"
+      ]
+    },
+    "ms": 7138
+  },
+  {
+    "escenario": "headless/actividad",
+    "nombre": "el razonamiento se ve mientras se genera (≤ 2,3 s)",
+    "resultado": "falla",
+    "evidencia": [
+      "headless-actividad/razonamiento-en-vivo.png"
+    ],
+    "datos": {
+      "tRazon": 2593,
+      "tResp": 2892
+    },
+    "ms": 7138
+  },
+  {
+    "escenario": "headless/actividad",
+    "nombre": "el server reenvía deltas de pensamiento",
+    "resultado": "pasa",
+    "evidencia": [
+      "headless-actividad/frames-0.json"
+    ],
+    "datos": {
+      "deltas": 11
+    },
+    "ms": 7138
+  },
+  {
+    "escenario": "headless/actividad",
+    "nombre": "la respuesta final aparece una vez",
+    "resultado": "pasa",
+    "evidencia": [
+      "headless-actividad/final.png"
+    ],
+    "ms": 7138
+  },
+  {
+    "escenario": "headless/recarga",
+    "nombre": "tras recargar a mitad, el indicador de actividad sigue",
+    "resultado": "pasa",
+    "evidencia": [
+      "headless-recarga/tras-recargar.png"
+    ],
+    "ms": 9241
+  },
+  {
+    "escenario": "headless/recarga",
+    "nombre": "una sola fila completa y sin fragmentos",
+    "resultado": "pasa",
+    "evidencia": [
+      "headless-recarga/final.png"
+    ],
+    "datos": {
+      "completas": 1,
+      "conElComienzo": 1
+    },
+    "ms": 9241
+  },
+  {
+    "escenario": "headless/subagente",
+    "nombre": "el texto del subagente se ve antes de que termine el turno",
+    "resultado": "pasa",
+    "evidencia": [
+      "headless-subagente/subagente-en-vivo.png"
+    ],
+    "datos": {
+      "tSub": 1791,
+      "fin": 3264
+    },
+    "ms": 5826
+  },
+  {
+    "escenario": "headless/subagente",
+    "nombre": "hay una tarjeta del subagente con su descripción",
+    "resultado": "pasa",
+    "evidencia": [
+      "headless-subagente/final.png"
+    ],
+    "datos": {
+      "tarjeta": 1
+    },
+    "ms": 5826
+  },
+  {
+    "escenario": "cola/headless",
+    "nombre": "el mensaje encolado se contesta",
+    "resultado": "pasa",
+    "evidencia": [
+      "cola-headless/frames-0.json"
+    ],
+    "datos": {
+      "segundos": 11
+    },
+    "ms": 15045
+  },
+  {
+    "escenario": "cola/headless",
+    "nombre": "cada mensaje del usuario aparece una vez",
+    "resultado": "pasa",
+    "evidencia": [
+      "cola-headless/frames-0.json"
+    ],
+    "datos": {
+      "u2": 1
+    },
+    "ms": 15045
+  },
+  {
+    "escenario": "cola/headless",
+    "nombre": "cada respuesta aparece una vez",
+    "resultado": "pasa",
+    "evidencia": [
+      "cola-headless/final.png"
+    ],
+    "datos": {
+      "r1": 1,
+      "r2": 1
+    },
+    "ms": 15045
+  },
+  {
+    "escenario": "cola/headless",
+    "nombre": "el segundo mensaje se manda una sola vez por el WS",
+    "resultado": "pasa",
+    "evidencia": [
+      "cola-headless/frames-0.json"
+    ],
+    "datos": {
+      "envios": 0
+    },
+    "ms": 15045
+  },
+  {
+    "escenario": "pregunta/headless",
+    "nombre": "escritorio: la pregunta llega a la UI",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-headless/escritorio-pregunta.png"
+    ],
+    "ms": 13749
+  },
+  {
+    "escenario": "pregunta/headless",
+    "nombre": "escritorio: la pregunta pendiente se ve una sola vez",
+    "resultado": "falla",
+    "evidencia": [
+      "pregunta-headless/frames-0.json"
+    ],
+    "datos": {
+      "apariciones": 2
+    },
+    "ms": 13749
+  },
+  {
+    "escenario": "pregunta/headless",
+    "nombre": "escritorio: Claude recibe exactamente lo elegido",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-headless/frames-0.json"
+    ],
+    "datos": {
+      "linea": "Elegiste: Azul | Manzana, Uva | Sí"
+    },
+    "ms": 13749
+  },
+  {
+    "escenario": "pregunta/headless",
+    "nombre": "escritorio: después de contestar, la pregunta y la respuesta aparecen una vez cada una",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-headless/escritorio-respondida.png"
+    ],
+    "datos": {
+      "pregunta": 1,
+      "respuesta": 1,
+      "filasEco": 1
+    },
+    "ms": 13749
+  },
+  {
+    "escenario": "pregunta/headless",
+    "nombre": "movil: la pregunta llega a la UI",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-headless/movil-pregunta.png"
+    ],
+    "ms": 13749
+  },
+  {
+    "escenario": "pregunta/headless",
+    "nombre": "movil: la pregunta pendiente se ve una sola vez",
+    "resultado": "falla",
+    "evidencia": [
+      "pregunta-headless/frames-0.json"
+    ],
+    "datos": {
+      "apariciones": 2
+    },
+    "ms": 13749
+  },
+  {
+    "escenario": "pregunta/headless",
+    "nombre": "movil: Claude recibe exactamente lo elegido",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-headless/frames-0.json"
+    ],
+    "datos": {
+      "linea": "Elegiste: Azul | Manzana, Uva | Sí"
+    },
+    "ms": 13749
+  },
+  {
+    "escenario": "pregunta/headless",
+    "nombre": "movil: después de contestar, la pregunta y la respuesta aparecen una vez cada una",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-headless/movil-respondida.png"
+    ],
+    "datos": {
+      "pregunta": 1,
+      "respuesta": 1,
+      "filasEco": 1
+    },
+    "ms": 13749
+  },
+  {
+    "escenario": "barra/archivar",
+    "nombre": "la sesión archivada sale de la barra ≤ 3 s sin recargar",
+    "resultado": "pasa",
+    "evidencia": [
+      "barra-archivar/antes.png",
+      "barra-archivar/despues.png"
+    ],
+    "datos": {
+      "status": 200,
+      "antes": 1,
+      "tBajaMs": 63,
+      "trasRecargar": 0
+    },
+    "ms": 5490
+  },
+  {
+    "escenario": "barra/componentes",
+    "nombre": "renombrar una sesión actualiza su fila en la barra en ≤ 3 s sin recargar",
+    "resultado": "pasa",
+    "evidencia": [
+      "barra-componentes/antes-de-renombrar.png",
+      "barra-componentes/despues-de-renombrar.png"
+    ],
+    "datos": {
+      "status": 200,
+      "antes": 1,
+      "tCambioMs": 48,
+      "nuevoTitulo": "Renombrada en vivo lrxfop"
+    },
+    "ms": 2279
+  },
+  {
+    "escenario": "barra/pestana-oculta",
+    "nombre": "socket mudo ≥ 70 s (sin cerrarse): al volver, la barra refleja lo que pasó mientras estaba muda, sin recargar",
+    "resultado": "pasa",
+    "evidencia": [
+      "barra-pestana-oculta/1-visible-antes-de-silenciar.png",
+      "barra-pestana-oculta/2-muda-recien-archivada.png",
+      "barra-pestana-oculta/3-vuelta-al-dia.png"
+    ],
+    "datos": {
+      "statusArchivar": 200,
+      "antes": 1,
+      "tBajaMs": 5,
+      "hayRefrescoDeCatchUp": true,
+      "silencioMs": 85000
+    },
+    "ms": 87423
+  },
+  {
+    "escenario": "visual/bocetos",
+    "nombre": "chat: movil/light sin scroll horizontal",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-bocetos/chat-movil-light.png"
+    ],
+    "datos": {
+      "desborde": 0
+    },
+    "ms": 2713
+  },
+  {
+    "escenario": "visual/bocetos",
+    "nombre": "chat: movil/light consola sin errores",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-bocetos/chat-movil-light.png"
+    ],
+    "datos": [],
+    "ms": 2713
+  },
+  {
+    "escenario": "visual/bocetos",
+    "nombre": "chat: movil/dark sin scroll horizontal",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-bocetos/chat-movil-dark.png"
+    ],
+    "datos": {
+      "desborde": 0
+    },
+    "ms": 2713
+  },
+  {
+    "escenario": "visual/bocetos",
+    "nombre": "chat: movil/dark consola sin errores",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-bocetos/chat-movil-dark.png"
+    ],
+    "datos": [],
+    "ms": 2713
+  },
+  {
+    "escenario": "visual/bocetos",
+    "nombre": "chat: escritorio/light sin scroll horizontal",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-bocetos/chat-escritorio-light.png"
+    ],
+    "datos": {
+      "desborde": 0
+    },
+    "ms": 2713
+  },
+  {
+    "escenario": "visual/bocetos",
+    "nombre": "chat: escritorio/light consola sin errores",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-bocetos/chat-escritorio-light.png"
+    ],
+    "datos": [],
+    "ms": 2713
+  },
+  {
+    "escenario": "visual/bocetos",
+    "nombre": "chat: escritorio/dark sin scroll horizontal",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-bocetos/chat-escritorio-dark.png"
+    ],
+    "datos": {
+      "desborde": 0
+    },
+    "ms": 2713
+  },
+  {
+    "escenario": "visual/bocetos",
+    "nombre": "chat: escritorio/dark consola sin errores",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-bocetos/chat-escritorio-dark.png"
+    ],
+    "datos": [],
+    "ms": 2713
+  },
+  {
+    "escenario": "visual/bocetos",
+    "nombre": "header-barra: movil/light sin scroll horizontal",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-bocetos/header-barra-movil-light.png"
+    ],
+    "datos": {
+      "desborde": 0
+    },
+    "ms": 2713
+  },
+  {
+    "escenario": "visual/bocetos",
+    "nombre": "header-barra: movil/light consola sin errores",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-bocetos/header-barra-movil-light.png"
+    ],
+    "datos": [],
+    "ms": 2713
+  },
+  {
+    "escenario": "visual/bocetos",
+    "nombre": "header-barra: movil/dark sin scroll horizontal",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-bocetos/header-barra-movil-dark.png"
+    ],
+    "datos": {
+      "desborde": 0
+    },
+    "ms": 2713
+  },
+  {
+    "escenario": "visual/bocetos",
+    "nombre": "header-barra: movil/dark consola sin errores",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-bocetos/header-barra-movil-dark.png"
+    ],
+    "datos": [],
+    "ms": 2713
+  },
+  {
+    "escenario": "visual/bocetos",
+    "nombre": "header-barra: escritorio/light sin scroll horizontal",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-bocetos/header-barra-escritorio-light.png"
+    ],
+    "datos": {
+      "desborde": 0
+    },
+    "ms": 2713
+  },
+  {
+    "escenario": "visual/bocetos",
+    "nombre": "header-barra: escritorio/light consola sin errores",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-bocetos/header-barra-escritorio-light.png"
+    ],
+    "datos": [],
+    "ms": 2713
+  },
+  {
+    "escenario": "visual/bocetos",
+    "nombre": "header-barra: escritorio/dark sin scroll horizontal",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-bocetos/header-barra-escritorio-dark.png"
+    ],
+    "datos": {
+      "desborde": 0
+    },
+    "ms": 2713
+  },
+  {
+    "escenario": "visual/bocetos",
+    "nombre": "header-barra: escritorio/dark consola sin errores",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-bocetos/header-barra-escritorio-dark.png"
+    ],
+    "datos": [],
+    "ms": 2713
+  },
+  {
+    "escenario": "visual/bocetos",
+    "nombre": "cuestionario: boceto todavía no existe (paso 6 de la Fase 10, bloqueado por el ejemplo de Leandro)",
+    "resultado": "bloqueado",
+    "evidencia": [],
+    "datos": "05-octubre-cuestionario.html no existe todavía (Fase 10, paso 6: espera el prompt de ejemplo de Leandro)",
+    "ms": 2713
+  },
+  {
+    "escenario": "barra/orquestador",
+    "nombre": "orquestar.py crear aparece en la barra abierta en ≤ 3 s, 5 de 5",
+    "resultado": "pasa",
+    "evidencia": [
+      "barra-orquestador/cinco-creaciones.png"
+    ],
+    "datos": {
+      "exitos": 5,
+      "intentos": [
+        {
+          "intento": 0,
+          "nombre": "e2e-orq-0-ejecutora-1",
+          "sid": "5a6cc6b9-748e-4e24-ba3a-49d0defb14c0",
+          "tFilaMs": 1613,
+          "tBajaMs": 321
+        },
+        {
+          "intento": 1,
+          "nombre": "e2e-orq-1-ejecutora-1",
+          "sid": "3fa5c149-c532-4aa6-b441-7a35068ca305",
+          "tFilaMs": 644,
+          "tBajaMs": 324
+        },
+        {
+          "intento": 2,
+          "nombre": "e2e-orq-2-ejecutora-1",
+          "sid": "09a729ed-efb3-4f91-99ff-07738eb27191",
+          "tFilaMs": 1617,
+          "tBajaMs": 316
+        },
+        {
+          "intento": 3,
+          "nombre": "e2e-orq-3-ejecutora-1",
+          "sid": "21050b9a-c7aa-4e0e-be24-6ea8c5d0cec8",
+          "tFilaMs": 1878,
+          "tBajaMs": 317
+        },
+        {
+          "intento": 4,
+          "nombre": "e2e-orq-4-ejecutora-1",
+          "sid": "7fc460e3-78d6-41dc-b629-24bebf9852d5",
+          "tFilaMs": 2267
+        }
+      ]
+    },
+    "ms": 16451
+  },
+  {
+    "escenario": "barra/orquestador",
+    "nombre": "orquestar.py dormir cambia el estado en vivo (la fila sale de la barra sin recargar)",
+    "resultado": "pasa",
+    "evidencia": [
+      "barra-orquestador/antes-dormir.png",
+      "barra-orquestador/despues-dormir.png"
+    ],
+    "datos": {
+      "antesDormir": 21,
+      "tBajaMs": 317,
+      "nombre": "e2e-orq-4-ejecutora-1",
+      "sid": "7fc460e3-78d6-41dc-b629-24bebf9852d5",
+      "dormidaOk": true
+    },
+    "ms": 16451
+  }
+]
