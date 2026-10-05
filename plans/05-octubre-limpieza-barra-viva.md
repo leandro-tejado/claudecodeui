@@ -1,7 +1,7 @@
 # Limpieza automática de la barra y barra que se actualiza sola
 
 **Fecha:** 05 de Octubre 2026
-**Estado:** borrador
+**Estado:** en-ejecucion
 
 La barra lateral de CloudCLI pasa a mostrar pocos proyectos: lo que lleva más de 72 h sin actividad interactiva se archiva solo, y antes se duermen sus sesiones de tmux. Además, toda sesión que cree el orquestador aparece en la barra sin recargar, incluso si cae en un proyecto archivado o reusa un nombre de tmux viejo.
 
@@ -56,8 +56,8 @@ Hoy la barra tiene 15 proyectos activos (`prueba-e2e`, `prueba-env`, `prueba-ask
 | Archivo | Cambio |
 |---|---|
 | `workspace-leandro/.claude/hooks/registro-sesion.sh` | modificar: escribir solo si el claude que dispara el hook es el proceso principal del pane |
-| `workspace-leandro/.claude/bin/sesiones.py` | modificar: merge contra el registro fresco antes de guardar, conservar `hook_ts`, descartar el sid de un nombre reusado y no repetir sids |
-| `workspace-leandro/.claude/bin/hibernar.py` | modificar (mínimo): `sid_para_cwd` ignora transcripts `sdk-cli` |
+| `workspace-leandro/.claude/bin/sesiones.py` | modificar: merge contra el registro fresco antes de guardar, conservar `hook_ts`, descartar el sid de un nombre reusado, no repetir sids y filtrar transcripts `sdk-cli` antes de `hibernar.sid_para_cwd` |
+| `workspace-leandro/.claude/bin/hibernar.py` | **no se toca** (otra sesión lo edita el 5-oct): el filtro `sdk-cli` vive en `sesiones.py` |
 | `workspace-leandro/.claude/bin/test-sesiones.py` | crear: tests de las tres reglas del registro |
 | `server/modules/database/schema.ts` + `migrations.ts` | modificar: `projects.archived_at`, `projects.archived_by`, `sessions.archived_at`, `sessions.archived_by`, `sessions.entrypoint` |
 | `server/modules/database/repositories/projects.db.ts`, `sessions.db.ts` | modificar: archivar con sello, desarchivar si hay actividad nueva, consultas de actividad |
@@ -139,7 +139,7 @@ Hoy la barra tiene 15 proyectos activos (`prueba-e2e`, `prueba-env`, `prueba-ask
 
 ### Fase 1 - Registro de sesiones confiable
 **Goal (done-criterion):** Existe `workspace-leandro/.claude/bin/test-sesiones.py` con los casos `hijo_no_pisa`, `hook_concurrente`, `nombre_reusado` y `cwd_compartido`, todos verdes, Y `sesiones.py listar --json` no muestra dos sesiones vivas con el mismo `session_id`, Y está commiteado y pusheado en `workspace-leandro`.
-**Alcance:** Tocar: `.claude/hooks/registro-sesion.sh`, `.claude/bin/sesiones.py`, `.claude/bin/hibernar.py` (solo `sid_para_cwd`), `.claude/bin/test-sesiones.py`. Ignorar: `orquestar.py`, `ciclo.py`, `claude-tmux`, todo `cloudcli/`.
+**Alcance:** Tocar: `.claude/hooks/registro-sesion.sh`, `.claude/bin/sesiones.py`, `.claude/bin/test-sesiones.py`. Ignorar: `hibernar.py` (se invoca, no se edita), `orquestar.py`, `ciclo.py`, `claude-tmux`, todo `cloudcli/`.
 **Paralelizable:** Sí, con la Fase 2: repos distintos, sin archivos en común.
 
 #### Pasos
@@ -149,7 +149,7 @@ Hoy la barra tiene 15 proyectos activos (`prueba-e2e`, `prueba-env`, `prueba-ask
 4. En `sesiones.construir()`, el sid previo se usa solo si `previo.creada` coincide con la `creada` de la sesión de tmux viva. Si la sesión viva es más nueva, el sid previo es de otra sesión con el mismo nombre y se descarta.
 5. En `sesiones._guardar()` (o un `guardar_con_merge`), releer el archivo justo antes de escribir. Por cada entrada, si la del disco tiene `hook_ts` más nuevo que el arranque de `construir`, su `session_id` gana. Conservar `hook_ts` en la entrada final.
 6. En `construir()`, después de resolver todo, si un sid aparece en más de una sesión viva, queda solo en la que lo trae del hook. En las demás va `null`, que es mejor que un sid equivocado.
-7. En `hibernar.sid_para_cwd`, excluir transcripts cuyo `entrypoint` sea `sdk-cli`.
+7. En `sesiones.construir()`, antes de llamar a `hibernar.sid_para_cwd`, sacar de `ultimo_ctx`/`ultimo_prompt` los sids cuyo transcript sea `entrypoint: sdk-cli` (lectura acotada de las primeras líneas del `.jsonl`).
 8. Escribir `test-sesiones.py` con el mismo estilo que `test-hibernar-*.py` (registro en un tmpdir y tmux simulado).
 9. Prueba en vivo: `orquestar.py crear zzz-hook guia /tmp`. Adentro corre un `claude -p 'di hola'` y se verifica que el sid de `zzz-hook-guia-1` sigue siendo el del pane. Después `orquestar.py cerrar zzz-hook-guia-1`.
 10. Correr `sesiones.py listar` y verificar que no quedan sids repetidos. Commit y push.
@@ -172,7 +172,7 @@ Hoy la barra tiene 15 proyectos activos (`prueba-e2e`, `prueba-env`, `prueba-ask
 
 ### Fase 2 - Esquema: sello de archivado y entrypoint
 **Goal (done-criterion):** Existen las columnas `projects.archived_at`, `projects.archived_by`, `sessions.archived_at`, `sessions.archived_by` y `sessions.entrypoint`, creadas por una migración idempotente, Y el synchronizer de claude llena `entrypoint`, Y `NODE_ENV=test npx vitest run server/modules/database server/modules/providers` pasa.
-**Alcance:** Tocar: `server/modules/database/{schema,migrations}.ts`, `repositories/{projects,sessions}.db.ts`, el synchronizer y adapter de claude en `server/modules/providers/`. Ignorar: `src/`, `server/modules/websocket/`, `server/modules/limpieza/`.
+**Alcance:** Tocar: `server/modules/database/{schema,migrations}.ts`, `repositories/{projects,sessions}.db.ts`, el synchronizer y adapter de claude en `server/modules/providers/`, `server/modules/projects/services/project-delete.service.ts` (solo pasar `por`). Ignorar: `src/`, `server/modules/websocket/`, `server/modules/limpieza/`.
 **Paralelizable:** Sí, con la Fase 1.
 
 #### Pasos
@@ -195,7 +195,7 @@ Hoy la barra tiene 15 proyectos activos (`prueba-e2e`, `prueba-env`, `prueba-ask
 
 ### Fase 3 - Lo nuevo siempre aparece (falla b)
 **Goal (done-criterion):** Un upsert de sesión interactiva con actividad posterior a `archived_at` desarchiva la sesión y su proyecto y emite `session_upserted`, mientras que un re-escaneo con actividad anterior no lo hace, Y el test que reproduce el caso `fiesta-music` (proyecto archivado + sesión viva nueva en el registro) pasa, Y está commiteado.
-**Alcance:** Tocar: `repositories/{projects,sessions}.db.ts`, `tmux-registry-sessions.service.ts`, `session-synchronizer.service.ts`, `session-upsert-broadcast.service.ts`. Ignorar: `src/`, `server/modules/limpieza/`.
+**Alcance:** Tocar: `repositories/{projects,sessions}.db.ts`, `tmux-registry-sessions.service.ts`, `session-synchronizer.service.ts` y sus tests. Ignorar: `src/`, `server/modules/limpieza/`, `server/modules/websocket/` (el `session_upserted` sale igual que hoy; ese módulo es de la Fase 4).
 **Paralelizable:** Sí, con la Fase 4: archivos distintos. Depende de la Fase 2.
 
 #### Pasos
@@ -213,11 +213,11 @@ Hoy la barra tiene 15 proyectos activos (`prueba-e2e`, `prueba-env`, `prueba-ask
 
 ### Fase 4 - Archivar se ve en vivo
 **Goal (done-criterion):** Existe el evento `sidebar_archived { projectIds: string[], sessionIds: string[] }` en `server/shared/types.ts` y `src/shared/types.ts`, con su productor `broadcastSidebarArchived()`, Y `useProjectsState` lo aplica sacando proyectos y sesiones del estado sin llamar a `fetchProjects`, Y su test pasa.
-**Alcance:** Tocar: tipos compartidos, `session-upsert-broadcast.service.ts` (productor nuevo al lado del existente), `src/modules/project-workspace/hooks/useProjectsState.ts` y su test. Ignorar: `SkinSidebar.tsx` (consume `projects`, no hace falta tocarlo), `server/modules/limpieza/`.
-**Paralelizable:** Sí, con la Fase 3. Depende de la Fase 2 solo por orden de merge.
+**Alcance:** Tocar: tipos compartidos, `server/modules/websocket/services/sidebar-archived-broadcast.service.ts` (archivo NUEVO, recorre `connectedClients` como el productor de `session_upserted`), `server/modules/projects/services/project-delete.service.ts` (solo emitir el evento), `src/modules/project-workspace/hooks/useProjectsState.ts` y su test. Ignorar: `SkinSidebar.tsx`, `server/modules/limpieza/`, `session-upsert-broadcast.service.ts` y `tmux-prompt.service.ts` (lo edita `cloudcli-diseno-guia-1`).
+**Paralelizable:** Sí, con la Fase 3 (sin archivos en común desde el ajuste del 5-oct). Depende de la Fase 2.
 
 #### Pasos
-1. Definir el tipo y el productor `broadcastSidebarArchived({projectIds, sessionIds})`, que usa el mismo `sendToConnectedClients`.
+1. Definir el tipo y el productor `broadcastSidebarArchived({projectIds, sessionIds})` en `sidebar-archived-broadcast.service.ts`.
 2. En `useProjectsState`, en el handler de eventos: filtrar los `projectIds` y, dentro de los proyectos que quedan, las `sessionIds`. Si la sesión seleccionada quedó archivada, no se la saca de la vista abierta: solo se la saca de la lista.
 3. El archivado manual (`deleteOrArchiveProject`) también emite el evento, para que otras pestañas se enteren.
 4. Test del reducer con un proyecto y una sesión archivados.
