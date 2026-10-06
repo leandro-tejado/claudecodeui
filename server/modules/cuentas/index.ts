@@ -5,6 +5,7 @@ export { default as cuentasRoutes } from './cuentas.routes.js';
 export {
   CUENTA_DEL_PROCESO,
   asegurarCuentaUsable,
+  cuentaParaRuta,
   cuentaDeTmux,
   entornoParaCuenta,
   esIdDeCuentaValido,

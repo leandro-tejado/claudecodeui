@@ -7,6 +7,7 @@ export {
   cuentaDeLaSesionNueva,
   elegirCuentaNueva,
   reiniciarCuentaNueva,
+  sugerirCuentaParaProyecto,
   useCuentasState,
 } from '@/modules/cuentas/cuentasStore';
 export {

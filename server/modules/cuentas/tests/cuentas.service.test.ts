@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -8,6 +8,7 @@ import {
   CUENTA_DEL_PROCESO,
   asegurarCuentaUsable,
   cuentaDeTmux,
+  cuentaParaRuta,
   entornoParaCuenta,
   listarCuentas,
   prefijoShellDeCuenta,
@@ -178,4 +179,33 @@ test('rutaArchivoCuota: optimum en cuota.json, el resto en cuota/<id>.json', () 
 test('cuentaDeTmux rechaza nombres que no son un nombre de sesion', async () => {
   assert.equal(await cuentaDeTmux('a b; rm -rf /'), null);
   assert.equal(await cuentaDeTmux(''), null);
+});
+
+test('cuentaParaRuta: la cuenta sale de `rutas` via `cuenta para`, nunca de la cuota', async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), 'cuentas-rutas-'));
+  const servidor = path.join(dir, 'servidor');
+  await mkdir(path.join(servidor, 'sub'), { recursive: true });
+  await mkdir(path.join(dir, 'servidor-viejo'));
+  const registro = path.join(dir, 'cuentas.json');
+  await writeFile(registro, JSON.stringify({
+    cuentas: [
+      { id: 'optimum', credencial: '~/.claude/token.env', defecto: true },
+      { id: 'personal', credencial: path.join(dir, 'personal.env') },
+    ],
+    rutas: [{ prefijo: servidor, cuenta: 'personal' }],
+  }));
+  process.env.AOS_CUENTAS_JSON = registro;
+  try {
+    assert.equal(await cuentaParaRuta(servidor), 'personal');
+    assert.equal(await cuentaParaRuta(path.join(servidor, 'sub')), 'personal');
+    assert.equal(await cuentaParaRuta(path.join(dir, 'servidor-viejo')), 'optimum');
+    assert.equal(await cuentaParaRuta('relativa/servidor'), 'optimum');
+    assert.equal(await cuentaParaRuta(undefined), 'optimum');
+    process.env.AOS_CUENTA_BIN = path.join(dir, 'no-existe');
+    assert.equal(await cuentaParaRuta(servidor), 'optimum', 'sin el CLI, la del proceso');
+  } finally {
+    delete process.env.AOS_CUENTA_BIN;
+    delete process.env.AOS_CUENTAS_JSON;
+    await rm(dir, { recursive: true, force: true });
+  }
 });

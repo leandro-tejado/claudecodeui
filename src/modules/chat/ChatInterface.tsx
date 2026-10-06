@@ -28,7 +28,7 @@ import {
 import ChatMessagesPane from '@/modules/chat/transcript/ChatMessagesPane';
 import ChatComposer from '@/modules/chat/composer/ChatComposer';
 import ComposerCuentaMenu from '@/modules/chat/composer/ComposerCuentaMenu';
-import { cuentaDeSesion, useCuentasState } from '@/modules/cuentas';
+import { cuentaDeSesion, sugerirCuentaParaProyecto, useCuentasState } from '@/modules/cuentas';
 import CommandResultModal from '@/modules/chat/modals/CommandResultModal';
 import PanelSalidas from '@/modules/chat/panel-salidas/PanelSalidas';
 import { SkinSubagentBridge, useTmuxPrompts } from '@/modules/skin';
@@ -398,6 +398,13 @@ function ChatInterface({
   const { prompts: allTmuxPrompts, errors: tmuxPromptErrors } = useTmuxPrompts();
   const viewedSessionId = currentSessionId || selectedSession?.id || null;
   const { nuevaCuenta: cuentaNueva } = useCuentasState();
+  // La cuenta por defecto de una sesión nueva es la del dueño del proyecto
+  // (`rutas` de cuentas.json, Fase 5). Se pide al cambiar de proyecto; elegir a
+  // mano sigue mandando. Nunca cambia por la cuota.
+  const rutaDelProyecto = selectedProject?.fullPath || selectedProject?.path || null;
+  useEffect(() => {
+    void sugerirCuentaParaProyecto(rutaDelProyecto);
+  }, [rutaDelProyecto]);
   const tmuxPrompts = useMemo(
     () => allTmuxPrompts.filter((prompt) => prompt.sessionId === viewedSessionId),
     [allTmuxPrompts, viewedSessionId],
