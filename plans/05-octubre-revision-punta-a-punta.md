@@ -103,7 +103,7 @@ Las sesiones nuevas del orquestador llegan por polling de 3 s sobre `~/.cache/ao
 - [x] Cuota: `fs.watch` sobre el archivo → `scheduleUsageWindowBroadcast` — acepta: escribir el archivo cambia el header abierto en ≤ 3 s sin recargar | valida: `node e2e/correr.mjs cuota/en-vivo`
 - [x] Cuota en el cliente: nunca "sin dato" si hay una lectura; antigüedad visible (> 15 min) y refetch al volver a la pestaña — acepta: con un archivo de hace 2 h, el header muestra los dos porcentajes y la antigüedad | valida: `node e2e/correr.mjs cuota/vieja`
 - [x] Protocolo: `stream_delta` con `messageId` + `blockIndex`; eventos `thinking_delta` y `activity` (`pensando` / `tool:<nombre>`) — acepta: test del normalizador con los `stream_event` reales grabados de un turno | valida: `NODE_ENV=test npm test -- claude-sessions`
-- [ ] `thinking: {type:'adaptive', display:'summarized'}` en `query()` cuando el modelo lo soporta — acepta: un turno real con Sonnet trae `thinking_delta` con texto | valida: `node e2e/correr.mjs headless/pensamiento`
+- [x] `thinking: {type:'adaptive', display:'summarized'}` en `query()` cuando el modelo lo soporta — acepta: un turno real con Sonnet trae `thinking_delta` con texto | valida: `node e2e/correr.mjs headless/pensamiento`
 - [x] Coalescer los deltas del mismo bloque en el replay — acepta: un run de 6000 deltas, reconectado a mitad, se rearma sin `history_truncated` y sin duplicados | valida: `node e2e/correr.mjs falso/6000-deltas`
 - [ ] Store del cliente: una fila por `(messageId, blockIndex)`, key = id; el `text` final reemplaza el contenido de esa fila; borrar `dropStreamFragmentsOf`, `isEchoOfFullText` y `dedupeAdjacentAssistantEchoes` — acepta: vitest verde y cero referencias a esas tres funciones | valida: `NODE_ENV=test npx vitest run && ! grep -rn "dropStreamFragmentsOf\|isEchoOfFullText\|dedupeAdjacentAssistantEchoes" src`
 - [ ] Tipeo real: la fila en streaming no se remonta — acepta: en un turno real, el largo del texto visible crece en ≥ 5 muestras distintas y el nodo DOM es el mismo de principio a fin | valida: `node e2e/correr.mjs headless/tipeo`
@@ -296,7 +296,7 @@ Las sesiones nuevas del orquestador llegan por polling de 3 s sobre `~/.cache/ao
 #### Estado (arranca todo en fail)
 - [pass] Contrato escrito y tipado | valida: `docs/architecture/protocolo-streaming.md` existe y `npm run build:server` compila
 - [pass] Normalizador emite los eventos nuevos con ids, a partir de los fixtures reales | valida: `NODE_ENV=test npm test -- claude-sessions`
-- [bloqueado: sin token en :3901, decide Leandro] Turno real con Sonnet trae `thinking_delta` con texto en los frames WS | valida: `node e2e/correr.mjs headless/pensamiento` (frames en la evidencia)
+- [pass] Turno real con Sonnet trae `thinking_delta` con texto en los frames WS | valida: `node e2e/correr.mjs headless/pensamiento` (frames en la evidencia)
 - [pass] 6000 deltas + reconexión a mitad: sin `history_truncated` | valida: `node e2e/correr.mjs falso/6000-deltas`
 - [pass] Providers codex/cursor/opencode compilan y sus tests siguen verdes | valida: `NODE_ENV=test npm test`
 
@@ -582,12 +582,14 @@ Fase 1 (arnés) → Fase 2 (línea base)
 - `npm test -- <filtro>` no filtra en este repo: corre la suite entera.
 - Fase 10: Leandro aprobó los bocetos del chat y del header y la barra. **No pasa ejemplo de cuestionario**: el boceto lo propone el orquestador y él lo aprueba o no.
 
+**Fase 4, check del turno real (06-oct):** Leandro levantó `:3901` con el token desde su shell. Turno real con Sonnet: 13 `thinking_delta` con texto en los frames (`e2e/evidencia/revalida-fase-4/`). Dos cambios al escenario: (1) la sesión inicial la escribe el CLI falso con `E2E_FALSO_MODELO=sonnet`, porque el `claude -p` del shell de la suite no tiene token y la UI hereda el modelo de la sesión; (2) el prompt ya no pide "pensalo paso a paso": el safeguard de Sonnet lo cortó como `reasoning_extraction`. El thinking resumido lo pide el server por protocolo, no hace falta pedirlo en el texto. El segundo check (razonamiento visible) hoy detecta el "Thinking…" del indicador: lo endurece la revalidación de la Fase 5.
+
 ---
 
 ## Continuación de Sesión
 
-**Fases completadas:** 1, 2, 3, 8. 7-server cerrada (falta su parte de cliente). 4 con un check bloqueado (token). 10 con el boceto del cuestionario pendiente.
+**Fases completadas:** 1, 2, 3, 8. 7-server cerrada (falta su parte de cliente). 4. 10 con el boceto del cuestionario pendiente.
 **Fase actual:** Fase 5 (cliente: una fila por `(messageId, blockIndex)`) y, en paralelo, el boceto del cuestionario (Fase 10, paso 6).
 **Próximo paso exacto:** Fase 5 en un worktree. Después, la 6 y el cliente de la 7 (consumir `activity`/borrador/`stream_reemplazo` de tmux y que el composer mande durante el turno: `tmux/rafaga`). Después, la 9 y la 11.
-**Bloqueantes:** el token de `:3901` para `headless/pensamiento` (solo Leandro); la aprobación del boceto del cuestionario.
-**Micro-tasks pendientes:** 22 de 41
+**Bloqueantes:** la aprobación del boceto del cuestionario.
+**Micro-tasks pendientes:** 21 de 41

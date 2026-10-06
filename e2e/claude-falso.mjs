@@ -19,7 +19,8 @@ log('argv', argv);
 
 const arg = (nombre) => { const i = argv.indexOf(nombre); return i >= 0 ? argv[i + 1] : undefined; };
 const sessionId = arg('--resume') || arg('--session-id') || crypto.randomUUID();
-const modelo = 'claude-falso-1';
+// Un escenario que después sigue la sesión con el Claude real necesita un modelo de verdad.
+const modelo = process.env.E2E_FALSO_MODELO || 'claude-falso-1';
 const cwd = process.cwd();
 const dirTranscript = path.join(os.homedir(), '.claude/projects', cwd.replace(/[^a-zA-Z0-9]/g, '-'));
 const transcript = path.join(dirTranscript, `${sessionId}.jsonl`);
