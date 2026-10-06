@@ -386,7 +386,7 @@ Las sesiones nuevas del orquestador llegan por polling de 3 s sobre `~/.cache/ao
 - [pass] "Respondé solo OK" pasa a libre en ≤ 3 s, 10 de 10 | valida: `node e2e/correr.mjs tmux/turno-corto`
 - [pass] Primera fila del JSONL en el navegador en ≤ 1,5 s | valida: `node e2e/correr.mjs tmux/latencia`
 - [pass] "Pensando" ≤ 2 s después de "Enviado"; texto creciendo en ≥ 3 muestras; al final, una sola fila de respuesta | valida: `node e2e/correr.mjs tmux/en-vivo`
-- [fail: server ok, falta el cliente — el composer no manda durante el turno] 5 mensajes seguidos (2 durante el turno): cada uno 1 vez en el pane, en el JSONL y en el DOM; un solo proceso `claude` en la sesión (`pgrep -f` por `session_id`) | valida: `node e2e/correr.mjs tmux/rafaga`
+- [fail: server y cliente hechos y con tests en rojo-verde; falta correr el E2E, bloqueado por el gobernador en rojo] 5 mensajes seguidos (2 durante el turno): cada uno 1 vez en el pane, en el JSONL y en el DOM; un solo proceso `claude` en la sesión (`pgrep -f` por `session_id`) | valida: `node e2e/correr.mjs tmux/rafaga`
 - [pass] Recargar a mitad del turno mantiene el indicador | valida: `node e2e/correr.mjs tmux/recarga`
 - [pass] Mensajes programados de sesiones no tmux siguen saliendo | valida: `NODE_ENV=test npm test -- scheduled-messages`
 - [pass] Tests de server verdes | valida: `NODE_ENV=test npm test`
@@ -488,7 +488,7 @@ Las sesiones nuevas del orquestador llegan por polling de 3 s sobre `~/.cache/ao
 6. Capturas comparadas con los bocetos y auditoría axe.
 
 #### Estado (arranca todo en fail)
-- [fail] Cero `font-serif` / Merriweather en `src/` | valida: `! grep -rn "font-serif\|Merriweather" src`
+- [pass] Cero `font-serif` / Merriweather en `src/` | valida: `! grep -rn "font-serif\|Merriweather" src`
 - [fail] Capturas `visual/chat`, `visual/cuestionario`, `visual/header-barra` en 4 variantes cada una, revisadas contra el boceto | valida: `node e2e/correr.mjs visual`
 - [fail] Escenarios funcionales de las fases 3 a 9 verdes con el diseño nuevo | valida: `node e2e/correr.mjs cuota headless tmux barra pregunta`
 - [fail] axe sin violaciones `serious`/`critical` en chat y cuestionario | valida: `node e2e/correr.mjs a11y`
@@ -592,6 +592,10 @@ Fase 1 (arnés) → Fase 2 (línea base)
 
 **Fase 7, cliente, parcial (06-oct):** paso 5 del cliente hecho: un `protocol_error` `TMUX_*` ya no hace `setRunsInTmux(false)` (solo `TMUX_PROVIDER_UNSUPPORTED` vuelve a stream-json); el mensaje queda `failed`. Test en `messageDeliveryStatus.test.tsx`, rojo sin el cambio. Falta: que el composer mande durante el turno, `queued_command` como "Enviado", indicador y borrador tmux; y todo el E2E `tmux/*`, que no corre con el gobernador en rojo.
 
+**Fase 7, cliente, resto (06-oct), worktree `wf_da5db4bc-5d1-1`, merge `fc4be5eb`:** el composer manda por `chat.send-tmux` durante el turno si la sesión corre en tmux (sin adjuntos ni edición en curso; headless sigue encolando). `removeQueuedCommandEchoes` retira la fila `tmux_queued_<uuid>` cuando el turno real queda en el historial. Un `activity` idle del pane ya no fija "Pensando". El borrador `tmux-borrador:` se reemplaza con `setStreamDraft` en vez de concatenarse, y `stream_reemplazo` lo descarta con `discardStreamDraft`. 9 tests nuevos: los 5 que cubren el arreglo dan rojo sin él (revalidado desde el orquestador revirtiendo los cinco archivos de `hooks/` y `utils/`) y los otros 4 son guardas de regresión. La regresión headless en la instancia aislada `:3950` dio 8/8, 4/4 y 6/6 (`e2e/evidencia/fase-7-cliente/`). **No corrió ningún `tmux/*`:** `rafaga` y las micro-tasks de la cola y de `queued_command` siguen abiertas hasta que el gobernador salga del rojo. `e2e/evidencia/fase-5-actividad2/` es la corrida del verde falso de la Fase 5: se conserva como antecedente, no como prueba.
+
+**Fase 11, paso 1 (06-oct), worktree `agent-a45bb82d…`, merge `3725b4d4`:** namespace `ds` y screens `ds-*` en `tailwind.config.js`, variables `--ds-*` claro/oscuro y materiales `.ds-material-*` en `index.css`, fuera Merriweather de `index.html` y `font-serif` → `font-sans` en los 5 archivos que lo usaban. Los 35 avisos `css-syntax-error` del build están también en `diseno/propio` sin este cambio (dos builds comparados): no son nuevos. Falta una captura en oscuro: el humo con CLI falso solo sacó el claro.
+
 **Corte de tmux del 06-oct:** no lo causó esta ejecución. El servidor de tmux murió a las 04:13 por OOM (un pane del 30-sep llegó a 4,1 GB; cayeron también `cloudcli`, `norte`, `servidor-code` y `syncthing`, y el systemd de usuario se reinició a las 04:17). Entre 04:17 y 15:09 no se abrió ningún pane. Ningún transcript ejecutó `kill-server`; vitest solo corre `src/`. Queda el riesgo latente de que los tests de server usen el socket por defecto.
 
 **Fase 4, check del turno real (06-oct):** Leandro levantó `:3901` con el token desde su shell. Turno real con Sonnet: 13 `thinking_delta` con texto en los frames (`e2e/evidencia/revalida-fase-4/`). Dos cambios al escenario: (1) la sesión inicial la escribe el CLI falso con `E2E_FALSO_MODELO=sonnet`, porque el `claude -p` del shell de la suite no tiene token y la UI hereda el modelo de la sesión; (2) el prompt ya no pide "pensalo paso a paso": el safeguard de Sonnet lo cortó como `reasoning_extraction`. El thinking resumido lo pide el server por protocolo, no hace falta pedirlo en el texto. El segundo check (razonamiento visible) hoy detecta el "Thinking…" del indicador: lo endurece la revalidación de la Fase 5.
@@ -600,8 +604,8 @@ Fase 1 (arnés) → Fase 2 (línea base)
 
 ## Continuación de Sesión
 
-**Fases completadas:** 1, 2, 3, 4, 5, 6, 8, 10. 7-server cerrada (falta su parte de cliente).
-**Fase actual:** cliente de la Fase 7 (`tmux/rafaga`: el composer manda durante el turno; `queued_command` como mensaje del usuario "Enviado"; indicador y borrador tmux con los componentes de la Fase 5). Ya hecho: un error `TMUX_*` no hace `setRunsInTmux(false)`.
-**Próximo paso exacto:** cliente de la 7 en un worktree (sus escenarios crean sesiones de tmux reales: gobernador no rojo y prefijo propio); después la 9 y la 11. El check "razonamiento visible" de `headless/pensamiento` sigue por endurecer (necesita `:3901` con token).
-**Bloqueantes:** los escenarios `tmux/*` no corren con el gobernador en rojo (`exigirGobernadorNoRojo`).
-**Micro-tasks pendientes:** 14 de 41
+**Fases completadas:** 1, 2, 3, 4, 5, 6, 8, 10. La 7 tiene server y cliente hechos y le falta solo el E2E `tmux/*`. De la 11 está hecho el paso 1 (tokens).
+**Fase actual:** 9 (cuestionario) y 11, pasos 2 a 6.
+**Próximo paso exacto:** Fase 9 en un worktree. Su paso 1 necesita un turno real, o sea `:3901` con token, y los escenarios `pregunta/tmux-*` crean panes, así que esperan al gobernador. Después la 11, pasos 2 a 4: chat, `Cuestionario` y header+barra. Los tres comparten los tokens que ya están mergeados, así que pueden ir en worktrees separados.
+**Bloqueantes:** los escenarios `tmux/*` y `pregunta/tmux-*` no corren con el gobernador en rojo (`exigirGobernadorNoRojo`). La Fase 12 necesita que Leandro reinicie `:3001` (con `npm run build` antes).
+**Micro-tasks pendientes:** 14 de 41 (las dos de tmux esperan `tmux/rafaga`).
