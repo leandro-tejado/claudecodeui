@@ -1,0 +1,163 @@
+[
+  {
+    "escenario": "linea-base/4158e887",
+    "nombre": "simple: la pregunta llega a la tarjeta",
+    "resultado": "pasa",
+    "evidencia": [
+      "linea-base-4158e887/simple-pregunta.png"
+    ],
+    "ms": 179889
+  },
+  {
+    "escenario": "linea-base/4158e887",
+    "nombre": "simple: llega la elegida",
+    "resultado": "pasa",
+    "evidencia": [
+      "linea-base-4158e887/frames-0.json"
+    ],
+    "datos": {
+      "ultima": "ELEGISTE Pera\nMD"
+    },
+    "ms": 179889
+  },
+  {
+    "escenario": "linea-base/4158e887",
+    "nombre": "múltiple: llegan las 3 tildadas",
+    "resultado": "falla",
+    "evidencia": [
+      "linea-base-4158e887/multi-pregunta.png"
+    ],
+    "datos": {
+      "ultima": "ELEGISTE Pera\nMD"
+    },
+    "ms": 179889
+  },
+  {
+    "escenario": "linea-base/4158e887",
+    "nombre": "la pregunta y la respuesta se ven una vez",
+    "resultado": "pasa",
+    "evidencia": [
+      "linea-base-4158e887/final.png"
+    ],
+    "datos": {
+      "pregunta": 1
+    },
+    "ms": 179889
+  },
+  {
+    "escenario": "pregunta/tmux-multi",
+    "nombre": "llegan las 3 tildadas",
+    "resultado": "falla",
+    "evidencia": [
+      "pregunta-tmux-multi/pregunta.png"
+    ],
+    "datos": {
+      "ultima": ""
+    },
+    "ms": 141115
+  },
+  {
+    "escenario": "pregunta/tmux-multi",
+    "nombre": "la pregunta y la respuesta se ven una vez",
+    "resultado": "falla",
+    "evidencia": [
+      "pregunta-tmux-multi/final.png"
+    ],
+    "datos": {
+      "pregunta": 2
+    },
+    "ms": 141115
+  },
+  {
+    "escenario": "pregunta/tmux-simple",
+    "nombre": "la pregunta llega a la tarjeta",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-tmux-simple/pregunta.png"
+    ],
+    "ms": 43360
+  },
+  {
+    "escenario": "pregunta/tmux-simple",
+    "nombre": "llega la elegida",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-tmux-simple/final.png"
+    ],
+    "datos": {
+      "ultima": "ELEGISTE Pera\nMD"
+    },
+    "ms": 43360
+  },
+  {
+    "escenario": "tmux/rafaga",
+    "nombre": "cada mensaje 1 vez en el JSONL",
+    "resultado": "pasa",
+    "evidencia": [
+      "tmux-rafaga/frames-0.json"
+    ],
+    "datos": {
+      "enJsonl": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    "ms": 18439
+  },
+  {
+    "escenario": "tmux/rafaga",
+    "nombre": "cada mensaje 1 vez en el DOM",
+    "resultado": "pasa",
+    "evidencia": [
+      "tmux-rafaga/final.png"
+    ],
+    "datos": {
+      "enDom": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    "ms": 18439
+  },
+  {
+    "escenario": "tmux/rafaga",
+    "nombre": "un solo proceso claude en el proyecto",
+    "resultado": "pasa",
+    "evidencia": [
+      "tmux-rafaga/frames-0.json"
+    ],
+    "datos": {
+      "durante": [
+        "1284160"
+      ],
+      "despues": [
+        "1284160"
+      ]
+    },
+    "ms": 18439
+  },
+  {
+    "escenario": "tmux/rafaga",
+    "nombre": "todos contestados",
+    "resultado": "pasa",
+    "evidencia": [
+      "tmux-rafaga/frames-0.json"
+    ],
+    "datos": {
+      "respondidos": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    "ms": 18439
+  }
+]

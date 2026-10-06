@@ -91,6 +91,49 @@ test('an option label containing ", " is kept as one answer', () => {
   assert.ok(!html.includes('(custom)'));
 });
 
+// Fase 9, paso 4: while a question has no answer yet, the interactive
+// AskUserQuestionPanel above the composer already shows its text — this
+// transcript card repeating it is the "se ve dos veces" bug the plan calls
+// out. Until an answer exists it must collapse to one line instead.
+
+test('a pending question (no answers yet) does not repeat the question text', () => {
+  const html = renderToStaticMarkup(
+    React.createElement(QuestionAnswerContent, {
+      questions: [{ question: 'Is "blue" your favorite color?', header: 'H', options: [{ label: 'Yes' }, { label: 'No' }] }],
+      answers: {},
+    }),
+  );
+  assert.ok(!html.includes('Is &quot;blue&quot; your favorite color?') && !html.includes('Is "blue" your favorite color?'));
+  assert.ok(html.toLowerCase().includes('open question'));
+});
+
+test('a pending multi-question set collapses to one line, not one per question', () => {
+  const html = renderToStaticMarkup(
+    React.createElement(QuestionAnswerContent, {
+      questions: [
+        { question: 'A or B?', options: [{ label: 'A' }, { label: 'B' }] },
+        { question: 'X, Y or Z?', options: [{ label: 'X' }, { label: 'Y' }, { label: 'Z' }] },
+      ],
+      answers: {},
+    }),
+  );
+  assert.ok(!html.includes('A or B?'));
+  assert.ok(!html.includes('X, Y or Z?'));
+  assert.ok(html.includes('2 open questions'));
+});
+
+test('once answered, the question text is shown exactly once (the full summary)', () => {
+  const html = renderToStaticMarkup(
+    React.createElement(QuestionAnswerContent, {
+      questions: [{ question: 'A or B?', options: [{ label: 'A' }, { label: 'B' }] }],
+      answers: { 'A or B?': 'A' },
+    }),
+  );
+  const occurrences = html.split('A or B?').length - 1;
+  assert.equal(occurrences, 1);
+  assert.ok(!html.toLowerCase().includes('open question'));
+});
+
 test('a multi-select answer with no exact option still splits on ", "', () => {
   const html = renderToStaticMarkup(
     React.createElement(QuestionAnswerContent, {

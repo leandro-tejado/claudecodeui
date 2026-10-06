@@ -1,0 +1,65 @@
+[
+  {
+    "escenario": "pregunta/modos",
+    "nombre": "default: la pregunta llega a la UI (no se contesta sola)",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-modos/default-pregunta.png"
+    ],
+    "ms": 19726
+  },
+  {
+    "escenario": "pregunta/modos",
+    "nombre": "default: Claude repite exactamente lo elegido",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-modos/default-respondida.png"
+    ],
+    "datos": {
+      "linea": "Elegiste: Azul | Manzana, Uva | Sí"
+    },
+    "ms": 19726
+  },
+  {
+    "escenario": "pregunta/modos",
+    "nombre": "auto: la pregunta llega a la UI (no se contesta sola)",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-modos/auto-pregunta.png"
+    ],
+    "ms": 19726
+  },
+  {
+    "escenario": "pregunta/modos",
+    "nombre": "auto: Claude repite exactamente lo elegido",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-modos/auto-respondida.png"
+    ],
+    "datos": {
+      "linea": "Elegiste: Azul | Manzana, Uva | Sí"
+    },
+    "ms": 19726
+  },
+  {
+    "escenario": "pregunta/modos",
+    "nombre": "bypassPermissions: la pregunta llega a la UI (no se contesta sola)",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-modos/bypassPermissions-pregunta.png"
+    ],
+    "ms": 19726
+  },
+  {
+    "escenario": "pregunta/modos",
+    "nombre": "bypassPermissions: Claude repite exactamente lo elegido",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-modos/bypassPermissions-respondida.png"
+    ],
+    "datos": {
+      "linea": "Elegiste: Azul | Manzana, Uva | Sí"
+    },
+    "ms": 19726
+  }
+]

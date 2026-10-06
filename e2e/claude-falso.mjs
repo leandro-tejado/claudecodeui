@@ -27,21 +27,53 @@ const transcript = path.join(dirTranscript, `${sessionId}.jsonl`);
 fs.mkdirSync(dirTranscript, { recursive: true });
 
 let ultimoUuid = null;
-const pendientes = new Map(); // request_id -> resolve, para can_use_tool
+const pendientes = new Map(); // request_id -> resolve, para can_use_tool y hook_callback
+// Capturado del `initialize` que manda el host (server/claude-runtime.provider.js)
+// al arrancar la query: { <eventName>: [{ matcher, hookCallbackIds, timeout }] }.
+// Fase 9 paso 1: así el guion `pregunta` puede saber si hay un hook
+// `PreToolUse` registrado para `AskUserQuestion` y, si lo hay, usarlo en vez
+// de (o además de) `can_use_tool` — igual que hace el host real.
+let hooksRegistrados = null;
+const permissionModeInicial = arg('--permission-mode') || 'default';
 
 const enviar = (obj) => process.stdout.write(`${JSON.stringify(obj)}\n`);
 const dormir = (ms) => new Promise((r) => setTimeout(r, ms));
 const uuid = () => crypto.randomUUID();
 
+// Subagentes lanzados en esta corrida: id del tool_use de Agent -> su agentId
+// y lo que va al meta.json. Como el Claude real, las filas de un subagente NO
+// van al JSONL de la sesión: van a `<sesión>/subagents/agent-<agentId>.jsonl`
+// (el server las cuelga de la fila con `toolUseResult.agentId`).
+const agentes = new Map();
+function registrarAgente(toolUseId, input = {}) {
+  if (agentes.has(toolUseId)) return agentes.get(toolUseId);
+  const a = { agentId: `a${crypto.randomBytes(8).toString('hex')}`, input, ultimoUuid: null };
+  agentes.set(toolUseId, a);
+  return a;
+}
+
 function fila(tipo, message, extra = {}) {
   const u = uuid();
+  const { sidechainDe, ...resto } = extra;
+  const agente = sidechainDe ? registrarAgente(sidechainDe) : null;
   const row = {
-    parentUuid: ultimoUuid, isSidechain: false, userType: 'external', cwd, sessionId,
+    parentUuid: agente ? agente.ultimoUuid : ultimoUuid, isSidechain: Boolean(agente), userType: 'external', cwd, sessionId,
     // sdk-cli: no es actividad interactiva, así que la limpieza de :3001 (que
     // comparte ~/.claude) no le da al proyecto de prueba un lugar del tope.
     version: '2.0.0-falso', gitBranch: '', entrypoint: 'sdk-cli', type: tipo, message, uuid: u,
-    timestamp: new Date().toISOString(), ...extra,
+    timestamp: new Date().toISOString(), ...(agente ? { agentId: agente.agentId } : {}), ...resto,
   };
+  if (agente) {
+    const dir = path.join(dirTranscript, sessionId, 'subagents');
+    fs.mkdirSync(dir, { recursive: true });
+    const base = path.join(dir, `agent-${agente.agentId}`);
+    if (!fs.existsSync(`${base}.meta.json`)) {
+      fs.writeFileSync(`${base}.meta.json`, JSON.stringify({ agentType: agente.input.subagent_type || 'general-purpose', description: agente.input.description || '', toolUseId: sidechainDe }));
+    }
+    fs.appendFileSync(`${base}.jsonl`, `${JSON.stringify(row)}\n`);
+    agente.ultimoUuid = u;
+    return u;
+  }
   fs.appendFileSync(transcript, `${JSON.stringify(row)}\n`);
   ultimoUuid = u;
   return u;
@@ -91,7 +123,8 @@ async function mensaje(bloques, { pausa = 40, parent = null, stopReason = 'end_t
   // el mismo (messageId, blockIndex) y por lo tanto la misma fila —
   // encontrado al correr `headless/actividad` en Fase 5.
   const msg = { ...base, content: bloquesFinales, stop_reason: stopReason };
-  fila('assistant', msg, { requestId: `req_falso_${id}`, ...(parent ? { isSidechain: true } : {}) });
+  for (const b of bloques) if (b.type === 'tool_use' && b.name === 'Agent') registrarAgente(b.id, b.input);
+  fila('assistant', msg, { requestId: `req_falso_${id}`, ...(parent ? { sidechainDe: parent } : {}) });
   enviar({ type: 'assistant', message: msg, parent_tool_use_id: parent, session_id: sessionId, uuid: ultimoUuid });
   ev({ type: 'message_delta', delta: { stop_reason: stopReason, stop_sequence: null }, usage: uso }, parent);
   ev({ type: 'message_stop' }, parent);
@@ -102,13 +135,40 @@ async function mensaje(bloques, { pausa = 40, parent = null, stopReason = 'end_t
 // un resultado del hilo principal, como el que resuelve el propio Agent/Task).
 function resultadoHerramienta(toolUseId, contenido, toolUseResult, parent = null) {
   const msg = { role: 'user', content: [{ type: 'tool_result', tool_use_id: toolUseId, content: contenido }] };
-  fila('user', msg, { ...(toolUseResult ? { toolUseResult } : {}), ...(parent ? { isSidechain: true } : {}) });
+  // El resultado del propio Agent lleva el `agentId`, como el real: es lo que
+  // le dice al server qué transcript de subagents/ leer.
+  const agente = !parent && !toolUseResult ? agentes.get(toolUseId) : null;
+  if (agente) {
+    toolUseResult = agente.input.run_in_background
+      ? { isAsync: true, status: 'async_launched', agentId: agente.agentId, description: agente.input.description, prompt: agente.input.prompt }
+      : { status: 'completed', agentId: agente.agentId, prompt: agente.input.prompt, content: [{ type: 'text', text: contenido }] };
+  }
+  fila('user', msg, { ...(toolUseResult ? { toolUseResult } : {}), ...(parent ? { sidechainDe: parent } : {}) });
   enviar({ type: 'user', message: msg, parent_tool_use_id: parent, session_id: sessionId, uuid: ultimoUuid });
 }
 
 function pedirPermiso(toolName, input, toolUseId) {
   const requestId = `req_${uuid()}`;
   enviar({ type: 'control_request', request_id: requestId, request: { subtype: 'can_use_tool', tool_name: toolName, input, tool_use_id: toolUseId, permission_suggestions: [] } });
+  return new Promise((resolve) => pendientes.set(requestId, resolve));
+}
+
+// Busca, entre los hooks que el host registró en `initialize`, uno de
+// `eventName` cuyo `matcher` coincida con `toolName` (match exacto o vacío:
+// mismo criterio laxo que usa el SDK real para un string simple).
+function buscarHook(eventName, toolName) {
+  const entradas = hooksRegistrados?.[eventName];
+  if (!Array.isArray(entradas)) return null;
+  return entradas.find((e) => !e.matcher || e.matcher === toolName) ?? null;
+}
+
+// Protocolo `hook_callback` (ver sdk.mjs: `handleHookCallbacks`): el CLI
+// manda el `callback_id` que el host le dio en `initialize` y el host
+// responde con el valor que devolvió esa función — mismo mecanismo de
+// `pendientes` que ya usa `pedirPermiso` para `can_use_tool`.
+function pedirHook(callbackId, hookInput, toolUseId) {
+  const requestId = `req_${uuid()}`;
+  enviar({ type: 'control_request', request_id: requestId, request: { subtype: 'hook_callback', callback_id: callbackId, input: hookInput, tool_use_id: toolUseId } });
   return new Promise((resolve) => pendientes.set(requestId, resolve));
 }
 
@@ -210,11 +270,11 @@ const GUIONES = {
     // `parent_tool_use_id` — así llega "ya pasa" por la rama normal de
     // assistant/tool_use, no por streaming parcial.
     const msgA = { id: `msg_falso_${crypto.randomBytes(6).toString('hex')}`, type: 'message', role: 'assistant', model: modelo, stop_reason: 'tool_use', usage: uso, content: [{ type: 'tool_use', id: innerA, name: 'Bash', input: { command: 'echo a' } }] };
-    fila('assistant', msgA, { requestId: `req_falso_${msgA.id}`, isSidechain: true });
+    fila('assistant', msgA, { requestId: `req_falso_${msgA.id}`, sidechainDe: tidA });
     enviar({ type: 'assistant', message: msgA, parent_tool_use_id: tidA, session_id: sessionId, uuid: ultimoUuid });
 
     const msgB = { id: `msg_falso_${crypto.randomBytes(6).toString('hex')}`, type: 'message', role: 'assistant', model: modelo, stop_reason: 'tool_use', usage: uso, content: [{ type: 'tool_use', id: innerB, name: 'Read', input: { file_path: '/tmp/b.txt' } }] };
-    fila('assistant', msgB, { requestId: `req_falso_${msgB.id}`, isSidechain: true });
+    fila('assistant', msgB, { requestId: `req_falso_${msgB.id}`, sidechainDe: tidB });
     enviar({ type: 'assistant', message: msgB, parent_tool_use_id: tidB, session_id: sessionId, uuid: ultimoUuid });
 
     resultadoHerramienta(innerA, 'a\n', undefined, tidA);
@@ -277,8 +337,29 @@ const GUIONES = {
       ],
     };
     await mensaje([{ type: 'tool_use', id: tid, name: 'AskUserQuestion', input }], { stopReason: 'tool_use' });
-    const r = await pedirPermiso('AskUserQuestion', input, tid);
-    const respuestas = r?.updatedInput?.answers ?? {};
+
+    // Fase 9 paso 1: si el host registró un hook `PreToolUse` para esta tool
+    // (lo hace `claude-runtime.provider.js` en cualquier modo de permiso),
+    // usarlo — así valida en un E2E real, sin cuota, que el hook espera a la
+    // UI en `auto`/`bypassPermissions` y no se contesta solo (línea base,
+    // commit previo a Fase 9: en esos modos no había hook y el turno seguía
+    // sin preguntar nada).
+    const hook = buscarHook('PreToolUse', 'AskUserQuestion');
+    let respuestas;
+    if (hook) {
+      const callbackId = hook.hookCallbackIds?.[0];
+      const r = await pedirHook(callbackId, { hook_event_name: 'PreToolUse', tool_name: 'AskUserQuestion', tool_input: input, tool_use_id: tid }, tid);
+      respuestas = r?.hookSpecificOutput?.updatedInput?.answers ?? {};
+    } else if (permissionModeInicial === 'auto' || permissionModeInicial === 'bypassPermissions') {
+      // Línea base (sin el hook): estos modos saltan `canUseTool` y la
+      // pregunta se contesta sola, con la primera opción de cada una. Es el
+      // bug que el paso 1 pide confirmar y corregir.
+      respuestas = {};
+      for (const q of input.questions) respuestas[q.question] = q.options?.[0]?.label ?? '';
+    } else {
+      const r = await pedirPermiso('AskUserQuestion', input, tid);
+      respuestas = r?.updatedInput?.answers ?? {};
+    }
     const texto = Object.entries(respuestas).map(([q, a]) => `"${q}"="${a}"`).join(', ');
     resultadoHerramienta(tid, `User has answered your questions: ${texto}. You can now continue with the user's answers in mind.`, { questions: input.questions, answers: respuestas });
     await mensaje([{ type: 'text', text: `Elegiste: ${Object.values(respuestas).join(' | ') || '(nada)'}` }]);
@@ -304,7 +385,7 @@ async function turno(textoUsuario, contenido) {
 
 enviar({
   type: 'system', subtype: 'init', session_id: sessionId, cwd, tools: ['Agent', 'AskUserQuestion', 'Bash', 'Read'],
-  mcp_servers: [], model: modelo, permissionMode: arg('--permission-mode') || 'default', slash_commands: [],
+  mcp_servers: [], model: modelo, permissionMode: permissionModeInicial, slash_commands: [],
   apiKeySource: 'none', claude_code_version: '2.0.0-falso', output_style: 'default', agents: [], skills: [], plugins: [], uuid: uuid(),
 });
 
@@ -316,6 +397,13 @@ rl.on('line', (linea) => {
   log('in', msg.type, msg.request?.subtype ?? msg.response?.subtype ?? '');
   if (msg.type === 'control_request') {
     // initialize, set_permission_mode, interrupt, etc.: todo se acepta.
+    if (msg.request?.subtype === 'initialize') {
+      // El host (sdk.mjs: `initialize()`) manda sus hooks acá, serializados
+      // como { <eventName>: [{ matcher, hookCallbackIds, timeout }] } — ver
+      // `buscarHook`/`pedirHook` más arriba.
+      hooksRegistrados = msg.request.hooks ?? null;
+      log('hooks registrados', hooksRegistrados);
+    }
     enviar({ type: 'control_response', response: { subtype: 'success', request_id: msg.request_id, response: msg.request?.subtype === 'initialize' ? { commands: [], output_style: 'default', available_output_styles: ['default'], models: [], account: {} } : {} } });
     if (msg.request?.subtype === 'interrupt') process.exit(0);
     return;

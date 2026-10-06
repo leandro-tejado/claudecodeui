@@ -31,6 +31,20 @@ export const QuestionAnswerContent: React.FC<QuestionAnswerContentProps> = ({
   const hasAnyAnswer = Object.keys(answers || {}).length > 0;
   const total = questions.length;
 
+  // While nothing has an answer yet, the question text is already on screen
+  // in the interactive AskUserQuestionPanel above the composer (Fase 9): this
+  // transcript card showing it too is the exact duplication the plan calls
+  // out. `answers` only gets populated once a result exists — either folded
+  // in live or, at the latest, after the next read of history — so until
+  // then this collapses to one line instead of repeating the question.
+  if (!hasAnyAnswer) {
+    return (
+      <div className={`text-xs italic text-gray-400 dark:text-gray-500 ${className}`}>
+        {total > 1 ? `${total} open questions ↓` : 'Open question ↓'}
+      </div>
+    );
+  }
+
   return (
     <div className={`space-y-2 ${className}`}>
       {questions.map((rawQuestion, idx) => {
@@ -202,12 +216,6 @@ export const QuestionAnswerContent: React.FC<QuestionAnswerContentProps> = ({
           </div>
         );
       })}
-
-      {!hasAnyAnswer && total === 1 && (
-        <div className="text-[11px] italic text-gray-400 dark:text-gray-500">
-          Skipped
-        </div>
-      )}
     </div>
   );
 };

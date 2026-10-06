@@ -1,0 +1,69 @@
+[
+  {
+    "escenario": "headless/subagente",
+    "nombre": "a mitad del subagente, su tarjeta muestra la tool en curso (antes del mensaje completo)",
+    "resultado": "pasa",
+    "evidencia": [
+      "headless-subagente/a-mitad.png"
+    ],
+    "datos": {
+      "vistoBash": true,
+      "vistoRead": true,
+      "cruzado": false
+    },
+    "ms": 9483
+  },
+  {
+    "escenario": "headless/subagente",
+    "nombre": "dos subagentes en paralelo: una tarjeta por cada uno, cada una con su propio texto",
+    "resultado": "pasa",
+    "evidencia": [
+      "headless-subagente/paralelo.png"
+    ],
+    "datos": {
+      "tarjetaA": 1,
+      "tarjetaB": 1,
+      "vistoTextoA": true,
+      "vistoTextoB": true
+    },
+    "ms": 9483
+  },
+  {
+    "escenario": "headless/subagente",
+    "nombre": "cada tarjeta se cierra con el resultado de su propio subagente",
+    "resultado": "pasa",
+    "evidencia": [
+      "headless-subagente/final.png"
+    ],
+    "datos": {
+      "resultadoA": 1,
+      "resultadoB": 1
+    },
+    "ms": 9483
+  },
+  {
+    "escenario": "headless/subagente",
+    "nombre": "el texto de cada subagente no se escapa al hilo principal",
+    "resultado": "falla",
+    "evidencia": [
+      "headless-subagente/final.png"
+    ],
+    "datos": {
+      "sueltasA": 1,
+      "sueltasB": 1
+    },
+    "ms": 9483
+  },
+  {
+    "escenario": "headless/subagente",
+    "nombre": "la respuesta principal no se parte ni se duplica con subagentes de por medio",
+    "resultado": "pasa",
+    "evidencia": [
+      "headless-subagente/final.png"
+    ],
+    "datos": {
+      "apariciones": 1
+    },
+    "ms": 9483
+  }
+]
