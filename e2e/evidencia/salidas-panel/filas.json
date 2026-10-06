@@ -1,0 +1,70 @@
+[
+  {
+    "escenario": "visual/salidas",
+    "nombre": "arrastrar el borde izquierdo agranda el panel de Salidas",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-salidas/antes-de-arrastrar.png",
+      "visual-salidas/panel-agrandado.png"
+    ],
+    "datos": {
+      "panelAntes": 320,
+      "panelDespues": 620
+    },
+    "ms": 7340
+  },
+  {
+    "escenario": "visual/salidas",
+    "nombre": "arrastrar la manija entre lista y vista previa agranda la lista",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-salidas/lista-agrandada.png"
+    ],
+    "datos": {
+      "listaAntes": 144,
+      "listaDespues": 264
+    },
+    "ms": 7340
+  },
+  {
+    "escenario": "visual/salidas",
+    "nombre": "los dos anchos sobreviven a recargar la página",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-salidas/despues-de-recargar.png"
+    ],
+    "datos": {
+      "panelDespues": 620,
+      "panelRecarga": 620,
+      "listaDespues": 264,
+      "listaRecarga": 264
+    },
+    "ms": 7340
+  },
+  {
+    "escenario": "visual/salidas",
+    "nombre": "\"Pestaña nueva\" abre la salida HTML renderizada en otra pestaña",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-salidas/pestana-nueva.png"
+    ],
+    "datos": {
+      "url": "blob:http://127.0.0.1:3902/4181349e-cde5",
+      "titulo": "Salida de prueba ewd6ov"
+    },
+    "ms": 7340
+  },
+  {
+    "escenario": "visual/salidas",
+    "nombre": "el HTML abierto en la pestaña nueva no puede leer el localStorage de la app",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-salidas/pestana-nueva.png"
+    ],
+    "datos": {
+      "origen": "BLOQUEADO",
+      "sandbox": "allow-scripts allow-popups"
+    },
+    "ms": 7340
+  }
+]

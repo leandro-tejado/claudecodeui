@@ -1,11 +1,21 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ChevronRightIcon, FileTextIcon, ImageIcon, RefreshCwIcon, TableIcon } from 'lucide-react';
 
 import { Button, ScrollArea } from '@/shared/ui';
 import { cn } from '@/shared/utils';
 import type { SalidaInfo, SalidaTipo } from '@/shared/types';
-import { usePanelSalidasOpen, togglePanelSalidas } from '@/modules/chat/panel-salidas/panelSalidasStore';
+import {
+  SALIDAS_LISTA_MAX_WIDTH,
+  SALIDAS_LISTA_MIN_WIDTH,
+  SALIDAS_PANEL_MAX_WIDTH,
+  SALIDAS_PANEL_MIN_WIDTH,
+  setSalidasListaWidth,
+  setSalidasPanelWidth,
+  togglePanelSalidas,
+  usePanelSalidasAnchos,
+  usePanelSalidasOpen,
+} from '@/modules/chat/panel-salidas/panelSalidasStore';
 import { useSalidasList } from '@/modules/chat/panel-salidas/useSalidasList';
 import SalidaPreview from '@/modules/chat/panel-salidas/SalidaPreview';
 
@@ -22,6 +32,39 @@ const ICON_BY_TIPO: Record<SalidaTipo, React.ComponentType<{ className?: string 
   tabla: TableIcon,
   texto: FileTextIcon,
 };
+
+/**
+ * Arrastre de una manija vertical con Pointer Events, para que funcione igual
+ * con mouse y con el dedo. `signo` es -1 cuando la manija está en el borde
+ * izquierdo de lo que crece (el panel crece hacia la izquierda) y 1 cuando
+ * está en el borde derecho (la lista crece hacia la derecha).
+ */
+function useArrastreAncho(ancho: number, signo: 1 | -1, aplicar: (width: number) => void) {
+  return useCallback((event: React.PointerEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    const manija = event.currentTarget;
+    manija.setPointerCapture(event.pointerId);
+    const inicioX = event.clientX;
+    const inicioAncho = ancho;
+
+    const onMove = (moveEvent: PointerEvent) => {
+      aplicar(inicioAncho + signo * (moveEvent.clientX - inicioX));
+    };
+    const onUp = () => {
+      manija.removeEventListener('pointermove', onMove);
+      manija.removeEventListener('pointerup', onUp);
+      manija.removeEventListener('pointercancel', onUp);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    };
+
+    manija.addEventListener('pointermove', onMove);
+    manija.addEventListener('pointerup', onUp);
+    manija.addEventListener('pointercancel', onUp);
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+  }, [ancho, signo, aplicar]);
+}
 
 function formatBytes(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
@@ -43,6 +86,9 @@ function formatBytes(bytes: number): string {
 export default function PanelSalidas({ projectId, refreshSignal }: PanelSalidasProps) {
   const { t } = useTranslation('chat');
   const open = usePanelSalidasOpen();
+  const anchos = usePanelSalidasAnchos();
+  const arrastrarPanel = useArrastreAncho(anchos.panel, -1, setSalidasPanelWidth);
+  const arrastrarLista = useArrastreAncho(anchos.lista, 1, setSalidasListaWidth);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const { salidas, loading, error, refresh } = useSalidasList({
     projectId,
@@ -83,7 +129,20 @@ export default function PanelSalidas({ projectId, refreshSignal }: PanelSalidasP
   const selected = salidas.find((salida) => salida.id === selectedId) ?? null;
 
   return (
-    <div className="flex h-full w-[320px] flex-shrink-0 flex-col border-l border-border bg-card">
+    <div
+      className="relative flex h-full flex-shrink-0 flex-col border-l border-border bg-card"
+      style={{ width: anchos.panel, maxWidth: '85vw' }}
+    >
+      <div
+        role="separator"
+        aria-orientation="vertical"
+        aria-label={t('salidasPanel.resizePanel', { defaultValue: 'Ajustar el ancho del panel de Salidas' })}
+        aria-valuemin={SALIDAS_PANEL_MIN_WIDTH}
+        aria-valuemax={SALIDAS_PANEL_MAX_WIDTH}
+        aria-valuenow={anchos.panel}
+        onPointerDown={arrastrarPanel}
+        className="absolute -left-1 top-0 z-10 h-full w-2 cursor-col-resize touch-none transition-colors hover:bg-primary/40"
+      />
       <div className="flex items-center justify-between gap-2 border-b border-border px-3 py-2">
         <span className="text-sm font-medium">{t('salidasPanel.title', { defaultValue: 'Salidas' })}</span>
         <div className="flex items-center gap-1">
@@ -110,7 +169,10 @@ export default function PanelSalidas({ projectId, refreshSignal }: PanelSalidasP
       </div>
 
       <div className="min-h-0 flex-1 flex-col overflow-hidden md:flex md:flex-row">
-        <ScrollArea className="h-40 flex-shrink-0 border-b border-border md:h-full md:w-36 md:border-b-0 md:border-r">
+        <ScrollArea
+          className="h-40 flex-shrink-0 border-b border-border md:h-full md:w-[var(--salidas-lista)] md:border-b-0"
+          style={{ '--salidas-lista': `${anchos.lista}px` } as React.CSSProperties}
+        >
           {error && (
             <p className="p-3 text-xs text-destructive">{error}</p>
           )}
@@ -147,7 +209,19 @@ export default function PanelSalidas({ projectId, refreshSignal }: PanelSalidasP
           </ul>
         </ScrollArea>
 
-        <div className="min-h-0 flex-1 overflow-auto">
+        {/* Entre la lista y la vista previa; solo en md+, donde van lado a lado. */}
+        <div
+          role="separator"
+          aria-orientation="vertical"
+          aria-label={t('salidasPanel.resizeList', { defaultValue: 'Ajustar el ancho de la lista de salidas' })}
+          aria-valuemin={SALIDAS_LISTA_MIN_WIDTH}
+          aria-valuemax={SALIDAS_LISTA_MAX_WIDTH}
+          aria-valuenow={anchos.lista}
+          onPointerDown={arrastrarLista}
+          className="hidden w-1 flex-shrink-0 cursor-col-resize touch-none bg-border transition-colors hover:bg-primary/40 md:block"
+        />
+
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
           {selected
             ? <SalidaPreview key={selected.id} projectId={projectId ?? ''} salida={selected} />
             : (
