@@ -45,11 +45,14 @@ perder el resto. Solo al confirmar ahí se manda.
 
 ## Resumen en el transcript (una sola vez)
 
-Tras "Enviado", el transcript deja **una** línea de resumen — no la tarjeta de actividad con el
+Tras "Enviado", el transcript deja **una** línea de actividad genérica ("Alcance de la exportación · listo") y la respuesta de Claude, una sola vez — no la tarjeta de actividad con el
 texto pendiente *y* un bloque aparte repitiendo lo mismo (el bug del punto 6 de
 `e2e/evidencia/00-linea-base/lectura.md`):
 
-> Alcance de la exportación: sesión activa · nombre+estado+tokens · descarga del navegador · CSV
+> Listo — exporto la sesión activa con nombre, estado y tokens, a `~/.cache/aos/export-sesiones.csv`, en CSV.
+
+Las respuestas de este recorrido son las del boceto: sesión activa · nombre y rol + estado + tokens ·
+"Otra" → `~/.cache/aos/export-sesiones.csv` · CSV. (Alineado al boceto aprobado por Leandro el 06-oct.)
 
 Misma cara en headless y en tmux: el componente no cambia según de dónde vino el turno, solo
 una etiqueta chica de sesión arriba del todo lo distingue.
