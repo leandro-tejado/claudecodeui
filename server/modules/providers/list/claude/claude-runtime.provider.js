@@ -82,7 +82,7 @@ const TOOL_APPROVAL_TIMEOUT_MS = parseInt(process.env.CLAUDE_TOOL_APPROVAL_TIMEO
 // forever. The timer resets on every message, so it measures silence, not total time.
 const BG_WAIT_CEILING_MS = 30 * 60 * 1000;
 
-const TOOLS_REQUIRING_INTERACTION = new Set(['AskUserQuestion', 'ExitPlanMode']);
+const TOOLS_REQUIRING_INTERACTION = new Set(['ExitPlanMode']);
 
 // Ultracode is a session-scoped setting rather than an SDK effort level: it pairs xhigh
 // effort with standing dynamic-workflow orchestration, and the CLI only honours it when
@@ -1125,15 +1125,93 @@ async function queryClaudeSDK(command, options = {}, ws, context) {
           }));
           return {};
         }]
+      }],
+      // In 'auto' and 'bypassPermissions' modes the SDK resolves approval at the
+      // permission-mode step and skips canUseTool entirely, so AskUserQuestion
+      // never reached the UI there — the classifier/bypass auto-answered it with
+      // a generated answer instead of asking. A PreToolUse hook runs *before*
+      // that mode check and, when it returns an explicit allow/deny decision,
+      // bypasses canUseTool in any mode — so this is the one path that makes
+      // AskUserQuestion wait for the UI's answer regardless of permissionMode.
+      PreToolUse: [{
+        matcher: 'AskUserQuestion',
+        hooks: [async (hookInput, toolUseId, hookOptions) => {
+          const toolName = hookInput?.tool_name || 'AskUserQuestion';
+          const input = hookInput?.tool_input;
+          const requestId = toolUseId || hookInput?.tool_use_id || createRequestId();
+
+          ws.send(createNormalizedMessage({ kind: 'permission_request', requestId, toolName, input, sessionId: capturedSessionId || sessionId || null, provider: 'claude' }));
+          emitNotification(createNotificationEvent({
+            provider: 'claude',
+            sessionId: sessionId || capturedSessionId || null,
+            kind: 'action_required',
+            code: 'permission.required',
+            meta: { toolName, sessionName: sessionSummary },
+            severity: 'warning',
+            requiresUserAction: true,
+            dedupeKey: `claude:permission:${sessionId || capturedSessionId || 'none'}:${requestId}`
+          }));
+
+          const decision = await waitForToolApproval(requestId, {
+            // Interactive: this tool only resolves when the UI answers.
+            timeoutMs: 0,
+            signal: hookOptions?.signal,
+            metadata: {
+              _sessionId: sessionId || capturedSessionId || null,
+              _toolName: toolName,
+              _input: input,
+              _receivedAt: new Date(),
+            },
+            onCancel: (reason) => {
+              ws.send(createNormalizedMessage({ kind: 'permission_cancelled', requestId, reason, sessionId: capturedSessionId || sessionId || null, provider: 'claude' }));
+            }
+          });
+
+          if (!decision || decision.cancelled) {
+            return {
+              continue: true,
+              hookSpecificOutput: {
+                hookEventName: 'PreToolUse',
+                permissionDecision: 'deny',
+                permissionDecisionReason: decision?.cancelled ? 'Permission request cancelled' : 'Permission request timed out',
+              }
+            };
+          }
+
+          // A client answered. Announce it on the run stream so the replay
+          // buffer and every other attached tab drop the prompt (same reason
+          // as the canUseTool path below: a mid-run refresh must not replay
+          // an already-answered permission_request with nothing to retract it).
+          ws.send(createNormalizedMessage({ kind: 'permission_resolved', requestId, sessionId: capturedSessionId || sessionId || null, provider: 'claude' }));
+
+          if (decision.allow) {
+            return {
+              continue: true,
+              hookSpecificOutput: {
+                hookEventName: 'PreToolUse',
+                permissionDecision: 'allow',
+                updatedInput: decision.updatedInput ?? input,
+              }
+            };
+          }
+
+          return {
+            continue: true,
+            hookSpecificOutput: {
+              hookEventName: 'PreToolUse',
+              permissionDecision: 'deny',
+              permissionDecisionReason: decision.message ?? 'User denied tool use',
+            }
+          };
+        }]
       }]
     };
 
     // Caveat: in 'auto' and 'bypassPermissions' modes the SDK resolves approval
-    // at the permission-mode step and skips this callback, so interactive tools
-    // (AskUserQuestion, ExitPlanMode) won't reach the UI — the classifier/bypass
-    // auto-approves them and the model acts on a generated answer. Move these
-    // tools to a PreToolUse hook (runs before the mode check) if we need them
-    // to work in those modes.
+    // at the permission-mode step and skips this callback, so ExitPlanMode
+    // won't reach the UI there — the classifier/bypass auto-approves it. This
+    // is the same bypass that used to catch AskUserQuestion too; see the
+    // PreToolUse hook above for why that one moved out.
     sdkOptions.canUseTool = async (toolName, input, context) => {
       const requiresInteraction = TOOLS_REQUIRING_INTERACTION.has(toolName);
 
