@@ -1356,6 +1356,18 @@ export function SkinSidebar({
                           {activityDot}
                           {indicadorEstado}
                           <span className="min-w-0 flex-1 truncate">{title}</span>
+                          {/* Rótulo visible, como en el boceto aprobado: el estado no
+                              depende solo del color ni de un tooltip. Si ya está la
+                              píldora "esperando respuesta", no se repite. */}
+                          {!(estadoSesion === 'esperando' && waitingQuestion !== undefined) && (
+                            <span
+                              data-testid="session-estado-rotulo"
+                              className="flex-none whitespace-nowrap text-ds-faint"
+                              style={{ fontSize: 'var(--skin-text-xs)' }}
+                            >
+                              {ROTULO_ESTADO_SESION[estadoSesion]}
+                            </span>
+                          )}
                           {waitingQuestion !== undefined && (
                             <span
                               data-testid="session-waiting-answer"

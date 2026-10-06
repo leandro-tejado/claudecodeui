@@ -84,9 +84,9 @@ function VentanaBarra({ rotulo, estado, now }: { rotulo: string; estado: EstadoV
           />
         )}
       </div>
-      <div className="hidden min-w-0 flex-col leading-tight sm:flex">
+      <div className="flex min-w-0 flex-col leading-tight">
         <span className="whitespace-nowrap text-ds-muted" style={{ fontSize: 'var(--skin-text-xs)' }}>
-          {rotulo}{' '}
+          <span className="hidden sm:inline">{rotulo}{' '}</span>
           <b className={cn('font-semibold text-ds-ink', stale && 'opacity-60')}>
             {esDato
               ? `${Math.round(estado.porcentaje)}%`
@@ -95,7 +95,7 @@ function VentanaBarra({ rotulo, estado, now }: { rotulo: string; estado: EstadoV
                 : 'sin leer aún'}
           </b>
         </span>
-        <span className="whitespace-nowrap text-ds-faint" style={{ fontSize: '10px' }}>
+        <span className="hidden whitespace-nowrap text-ds-faint sm:inline" style={{ fontSize: '10px' }}>
           {detalleVentana(estado, now)}
         </span>
       </div>
