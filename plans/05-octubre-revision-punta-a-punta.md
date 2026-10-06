@@ -105,10 +105,10 @@ Las sesiones nuevas del orquestador llegan por polling de 3 s sobre `~/.cache/ao
 - [x] Protocolo: `stream_delta` con `messageId` + `blockIndex`; eventos `thinking_delta` y `activity` (`pensando` / `tool:<nombre>`) — acepta: test del normalizador con los `stream_event` reales grabados de un turno | valida: `NODE_ENV=test npm test -- claude-sessions`
 - [x] `thinking: {type:'adaptive', display:'summarized'}` en `query()` cuando el modelo lo soporta — acepta: un turno real con Sonnet trae `thinking_delta` con texto | valida: `node e2e/correr.mjs headless/pensamiento`
 - [x] Coalescer los deltas del mismo bloque en el replay — acepta: un run de 6000 deltas, reconectado a mitad, se rearma sin `history_truncated` y sin duplicados | valida: `node e2e/correr.mjs falso/6000-deltas`
-- [ ] Store del cliente: una fila por `(messageId, blockIndex)`, key = id; el `text` final reemplaza el contenido de esa fila; borrar `dropStreamFragmentsOf`, `isEchoOfFullText` y `dedupeAdjacentAssistantEchoes` — acepta: vitest verde y cero referencias a esas tres funciones | valida: `NODE_ENV=test npx vitest run && ! grep -rn "dropStreamFragmentsOf\|isEchoOfFullText\|dedupeAdjacentAssistantEchoes" src`
-- [ ] Tipeo real: la fila en streaming no se remonta — acepta: en un turno real, el largo del texto visible crece en ≥ 5 muestras distintas y el nodo DOM es el mismo de principio a fin | valida: `node e2e/correr.mjs headless/tipeo`
-- [ ] Indicador de actividad estilo Optimum (tool en curso, "pensando", reaparece tras 800 ms sin texto) — acepta: captura con el indicador antes del primer token y durante una tool | valida: `node e2e/correr.mjs headless/actividad`
-- [ ] Sin partidos ni duplicados en los guiones `subagente-a-mitad` y `stderr-a-mitad` — acepta: exactamente una fila por bloque y el texto igual al final | valida: `node e2e/correr.mjs falso/intercalados`
+- [x] Store del cliente: una fila por `(messageId, blockIndex)`, key = id; el `text` final reemplaza el contenido de esa fila; borrar `dropStreamFragmentsOf`, `isEchoOfFullText` y `dedupeAdjacentAssistantEchoes` — acepta: vitest verde y cero referencias a esas tres funciones | valida: `NODE_ENV=test npx vitest run && ! grep -rn "dropStreamFragmentsOf\|isEchoOfFullText\|dedupeAdjacentAssistantEchoes" src`
+- [x] Tipeo real: la fila en streaming no se remonta — acepta: en un turno real, el largo del texto visible crece en ≥ 5 muestras distintas y el nodo DOM es el mismo de principio a fin | valida: `node e2e/correr.mjs headless/tipeo`
+- [x] Indicador de actividad estilo Optimum (tool en curso, "pensando", reaparece tras 800 ms sin texto) — acepta: captura con el indicador antes del primer token y durante una tool | valida: `node e2e/correr.mjs headless/actividad`
+- [x] Sin partidos ni duplicados en los guiones `subagente-a-mitad` y `stderr-a-mitad` — acepta: exactamente una fila por bloque y el texto igual al final | valida: `node e2e/correr.mjs falso/intercalados`
 - [ ] Subagentes en vivo: la tarjeta de la tool Agent/Task muestra la actividad del subagente mientras corre (tool en curso, texto) — acepta: captura a mitad del subagente con su actividad, en headless real | valida: `node e2e/correr.mjs headless/subagente`
 - [x] Tmux: fin de turno por id de la última fila user (no por el flag `complecionAnunciada`) — acepta: un turno "respondé solo OK" pasa a libre en ≤ 3 s, 10 de 10 veces | valida: `node e2e/correr.mjs tmux/turno-corto`
 - [x] Tmux: inotify sobre el JSONL y corte por id en vez de por cantidad — acepta: la primera fila llega en ≤ 1,5 s desde que se escribe | valida: `node e2e/correr.mjs tmux/latencia`
@@ -324,9 +324,9 @@ Las sesiones nuevas del orquestador llegan por polling de 3 s sobre `~/.cache/ao
 
 #### Estado (arranca todo en fail)
 - [pass] Cero referencias a las tres funciones de dedupe | valida: `! grep -rn "dropStreamFragmentsOf\|isEchoOfFullText\|dedupeAdjacentAssistantEchoes" src`
-- [pass] Vitest verde (723/723) | valida: `NODE_ENV=test npx vitest run`
+- [pass] Vitest verde (726/726) | valida: `NODE_ENV=test npx vitest run`
 - [pass] Turno real: el nodo de la respuesta es el mismo de principio a fin y el largo crece en ≥ 5 muestras | valida: `node e2e/correr.mjs headless/tipeo`
-- [fail: a medias — el indicador aparece antes del primer token, pero sigue siendo el "Thinking…" de siempre; el paso 7 (portar `revelado.ts`, nombre de la tool, reaparece a los 800 ms) no se hizo y el escenario no mide el nombre de la tool] Indicador visible antes del primer token y con el nombre de la tool durante una tool | valida: `node e2e/correr.mjs headless/actividad`
+- [pass] Indicador visible antes del primer token y con el nombre de la tool durante una tool (8/8; "Thinking…" reaparece a los 852 ms sin texto) | valida: `node e2e/correr.mjs headless/actividad`
 - [pass] Guiones `subagente-a-mitad` y `stderr-a-mitad`: una fila por bloque, texto igual al final, cero duplicados | valida: `node e2e/correr.mjs falso/intercalados`
 - [pass] Recargar a mitad del turno y al final da el mismo DOM de mensajes que sin recargar | valida: `node e2e/correr.mjs headless/recarga`
 
@@ -586,14 +586,18 @@ Fase 1 (arnés) → Fase 2 (línea base)
 
 **Fase 5 (06-oct), worktree `wf_da5db4bc-5d1-1`, merge `b2336399`:** filas de streaming con id `stream:<messageId>:<blockIndex>`; el `text` final reemplaza esa fila; las tres funciones de dedupe borradas y reemplazadas por `streamIdentity.test.tsx`. Dos arreglos fuera del texto del plan: (1) la fila que vuelve por REST después de `complete` traía su uuid de transcript y remontaba el nodo; ahora `withStreamRowIdentity` se aplica también en `requestSessionHistoryPage`; (2) el CLI falso mandaba un evento `assistant` por bloque, y dos bloques del mismo mensaje caían en el mismo `blockIndex`: ahora manda uno con todo el `content`, como el SDK real. Revalidado por el orquestador (`e2e/evidencia/revalida-fase-5/`, 21/21, incluye `falso/humo` y `falso/6000-deltas` por el cambio al CLI falso). **No se hicieron** los pasos 3 (`messageKeys.ts`), 7 (indicador portado de `revelado.ts`) y 8 (`useRevelado`): los escenarios pasan sin ellos, pero el indicador sigue siendo "Thinking…".
 
+**Fase 5, paso 7 (06-oct), merge `80a50075`:** la línea de actividad dice "Thinking" o el nombre de la tool, sin palabras rotando; mientras llega la respuesta `statusText: ''` calla la etiqueta (quedan el tiempo y el Stop) y a los 800 ms sin texto vuelve "Thinking…". Guion `herramienta` en el CLI falso y 3 checks nuevos en `headless/actividad`. El primer verde del agente era falso: el check de reaparición veía "Thinking…" porque era la palabra rotada de turno, y al sacar la rotación dio 24 ms; se corrigió el componente, no el check (`e2e/evidencia/revalida-fase-5-paso7/`). Los pasos 3 y 8 ya estaban hechos (`messageKeys.ts` usa `message.id` primero; `arrancarVacio` en la fila viva).
+
+**Corte de tmux del 06-oct:** no lo causó esta ejecución. El servidor de tmux murió a las 04:13 por OOM (un pane del 30-sep llegó a 4,1 GB; cayeron también `cloudcli`, `norte`, `servidor-code` y `syncthing`, y el systemd de usuario se reinició a las 04:17). Entre 04:17 y 15:09 no se abrió ningún pane. Ningún transcript ejecutó `kill-server`; vitest solo corre `src/`. Queda el riesgo latente de que los tests de server usen el socket por defecto.
+
 **Fase 4, check del turno real (06-oct):** Leandro levantó `:3901` con el token desde su shell. Turno real con Sonnet: 13 `thinking_delta` con texto en los frames (`e2e/evidencia/revalida-fase-4/`). Dos cambios al escenario: (1) la sesión inicial la escribe el CLI falso con `E2E_FALSO_MODELO=sonnet`, porque el `claude -p` del shell de la suite no tiene token y la UI hereda el modelo de la sesión; (2) el prompt ya no pide "pensalo paso a paso": el safeguard de Sonnet lo cortó como `reasoning_extraction`. El thinking resumido lo pide el server por protocolo, no hace falta pedirlo en el texto. El segundo check (razonamiento visible) hoy detecta el "Thinking…" del indicador: lo endurece la revalidación de la Fase 5.
 
 ---
 
 ## Continuación de Sesión
 
-**Fases completadas:** 1, 2, 3, 4, 8, 10. 7-server cerrada (falta su parte de cliente). 5 con 5 de 6 checks: falta el indicador (paso 7).
-**Fase actual:** cerrar la Fase 5 (paso 7: indicador con el nombre de la tool, portado de `revelado.ts`, más un check en `headless/actividad` con un guion que use una tool).
-**Próximo paso exacto:** paso 7 de la Fase 5 (y revisar si 3 y 8 siguen haciendo falta); después la 6, el cliente de la 7 (`tmux/rafaga`), la 9 y la 11. El check "razonamiento visible" de `headless/pensamiento` sigue por endurecer (necesita `:3901` con token).
+**Fases completadas:** 1, 2, 3, 4, 5, 8, 10. 7-server cerrada (falta su parte de cliente).
+**Fase actual:** Fase 6 (subagentes en vivo).
+**Próximo paso exacto:** Fase 6 en un worktree con instancia propia; después el cliente de la 7 (`tmux/rafaga`: que el composer mande durante el turno), la 9 y la 11. El check "razonamiento visible" de `headless/pensamiento` sigue por endurecer (necesita `:3901` con token).
 **Bloqueantes:** ninguno.
-**Micro-tasks pendientes:** 19 de 41
+**Micro-tasks pendientes:** 15 de 41
