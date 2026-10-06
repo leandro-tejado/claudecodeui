@@ -6,9 +6,12 @@ import {
   ArchiveRestore,
   Bot,
   Check,
+  CircleDot,
   ExternalLink,
   Folder,
   FolderPlus,
+  Loader2,
+  Moon,
   Pencil,
   Pin,
   PinOff,
@@ -39,6 +42,9 @@ import {
   getSuggestionRootPath,
 } from '@/modules/project-creation-wizard';
 import { api } from '@/shared/api';
+import { cn } from '@/shared/utils';
+import { COLOR_ESTADO_SESION, ROTULO_ESTADO_SESION, estadoDeSesion } from '@/modules/sidebar';
+import type { EstadoSesion } from '@/modules/sidebar';
 import { Dialog, DialogContent, DialogTitle, TreeChevron, TreeCollapse, TreeItem } from '@/shared/ui';
 import type {
   ArchivedProjectListItem,
@@ -191,6 +197,28 @@ const formatAge = (session: ProjectSession): string => {
 
 const sessionTitle = (session: ProjectSession): string =>
   (session.title || session.summary || session.name || 'Sesión sin título') as string;
+
+/*
+ * Fase 11, paso 4 (boceto `05-octubre-header-barra.html`): si la sesión se
+ * tocó hace menos de 10 min cuenta como "libre" y no "dormida" — mismo umbral
+ * que `isActive` en `sidebarProjectFormatting.ts`, calculado acá porque esta
+ * sidebar no pasa por ese módulo.
+ */
+const estaTocadaRecientemente = (session: ProjectSession): boolean => {
+  const raw = session.lastActivity ?? session.updated_at ?? session.createdAt ?? session.created_at;
+  if (!raw) return false;
+  const then = new Date(raw as string).getTime();
+  if (!Number.isFinite(then)) return false;
+  return Date.now() - then < 10 * 60_000;
+};
+
+/** Ícono por estado de sesión (Fase 11, paso 4) — el color viene de `COLOR_ESTADO_SESION`. */
+const ICONO_ESTADO_SESION: Record<EstadoSesion, typeof Loader2> = {
+  pensando: Loader2,
+  esperando: CircleDot,
+  libre: Check,
+  dormida: Moon,
+};
 
 /** El proyecto viene con la ruta completa; en el sidebar sólo cabe el final. */
 const shortPath = (project: Project): string => {
@@ -478,6 +506,32 @@ export function SkinSidebar({
 
   const tmuxFilterActive = sidebarOnlyTmux && tmuxStats.conocido;
   const ocultasPorTmux = tmuxFilterActive ? tmuxStats.total - tmuxStats.vivas : 0;
+
+  /*
+   * Qué sesiones ya se dibujaron, para la entrada animada de una nueva
+   * (Fase 11, paso 4 — boceto `05-octubre-header-barra.html`). Mismo patrón
+   * que `SidebarProjectSessions.tsx`: `null` hasta el primer render con
+   * sesiones (esa carga inicial se siembra entera como "ya vista", sin
+   * animar nada); solo una sesión que aparece DESPUÉS cuenta como nueva. Se
+   * mira `projects` entero y no `visibleProjects`: que la búsqueda o el
+   * filtro de tmux oculten y vuelvan a mostrar una fila no la debe marcar
+   * como nueva otra vez.
+   */
+  const todosLosIds = useMemo(
+    () => projects.flatMap((project) => (project.sessions ?? []).map((session) => session.id)),
+    [projects],
+  );
+  const vistasRef = useRef<Set<string> | null>(null);
+  if (vistasRef.current === null && todosLosIds.length > 0) {
+    vistasRef.current = new Set(todosLosIds);
+  }
+  const idsNuevas = vistasRef.current ? todosLosIds.filter((id) => !vistasRef.current!.has(id)) : [];
+
+  useEffect(() => {
+    if (!vistasRef.current || idsNuevas.length === 0) return;
+    for (const id of idsNuevas) vistasRef.current.add(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [idsNuevas.join(',')]);
 
   /*
    * La sesión orquestadora fija (23-sep, Fase 7 de
@@ -1184,6 +1238,37 @@ export function SkinSidebar({
                       />
                     );
 
+                    /*
+                     * Fase 11, paso 4 (boceto `05-octubre-header-barra.html`):
+                     * pensando/esperando/libre/dormida, aparte del badge de
+                     * arriba — ese badge ya existía (Fase 4 del 17-sep) con su
+                     * propia precedencia de 5 estados y su contrato de test
+                     * (`skinSidebarBadge.test.tsx`), que no se toca. Este es
+                     * el vocabulario del boceto, reusando el mismo helper y
+                     * las mismas señales que ya tiene la fila: el ícono lleva
+                     * el color y el rótulo va en el `title` — la fila ya es
+                     * densa (título, cuenta, tmux, subagentes, edad) y un
+                     * texto fijo de más se superpone a esa información.
+                     */
+                    const estadoSesion = estadoDeSesion({
+                      isProcessing: isRunning,
+                      tieneTrabajoDeFondo: liveRows.length > 0,
+                      necesitaAtencion: waitingQuestion !== undefined || attention.has(session.id),
+                      tocadaRecientemente: estaTocadaRecientemente(session),
+                    });
+                    const IconoEstadoSesion = ICONO_ESTADO_SESION[estadoSesion];
+                    const indicadorEstado = (
+                      <span
+                        title={ROTULO_ESTADO_SESION[estadoSesion]}
+                        className={cn('flex-none', COLOR_ESTADO_SESION[estadoSesion])}
+                      >
+                        <IconoEstadoSesion
+                          className={cn('h-3 w-3', estadoSesion === 'pensando' && 'animate-spin')}
+                        />
+                      </span>
+                    );
+                    const esFilaNueva = idsNuevas.includes(session.id);
+
                     // Mientras se renombra no hay ancla: el input y sus botones
                     // ocupan la fila entera.
                     if (isRenaming) {
@@ -1239,7 +1324,7 @@ export function SkinSidebar({
                     return (
                       <TreeItem key={session.id} level={1}>
                       <div
-                        className="relative"
+                        className={cn('relative', esFilaNueva && 'ds-fila-nueva')}
                         ref={(node) => {
                           if (node) subagentRowRefs.current.set(session.id, node);
                           else subagentRowRefs.current.delete(session.id);
@@ -1269,6 +1354,7 @@ export function SkinSidebar({
                           }}
                         >
                           {activityDot}
+                          {indicadorEstado}
                           <span className="min-w-0 flex-1 truncate">{title}</span>
                           {waitingQuestion !== undefined && (
                             <span

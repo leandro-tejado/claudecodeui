@@ -1,5 +1,5 @@
 import { memo, useState } from 'react';
-import { Check, Edit2, Loader2, MoreHorizontal, Trash2, X } from 'lucide-react';
+import { Check, Edit2, Loader2, Moon, MoreHorizontal, Trash2, X } from 'lucide-react';
 import type { TFunction } from 'i18next';
 
 import { Badge, Dialog, DialogContent, DialogTitle, LLMProviderLogo, Tooltip, buttonVariants } from '@/shared/ui';
@@ -9,6 +9,7 @@ import { PROVIDER_LABELS, createSessionViewModel, formatCompactAge } from '@/mod
 import { useCompactSidebar } from '@/modules/sidebar/hooks/useCompactSidebar';
 import { useProviderSessionIdCopy } from '@/modules/sidebar/hooks/useProviderSessionIdCopy';
 import SessionOptions from '@/modules/sidebar/SessionOptions';
+import { COLOR_ESTADO_SESION, ROTULO_ESTADO_SESION, estadoDeSesion } from '@/modules/sidebar/estadoSesion';
 
 type SidebarSessionItemProps = {
   project: Project;
@@ -18,6 +19,13 @@ type SidebarSessionItemProps = {
   /** The session's turn has ended but the agents, workflows or commands it launched still run. */
   hasBackgroundWork: boolean;
   needsAttention: boolean;
+  /**
+   * Recién apareció en esta lista (sesión creada por `ct`/el orquestador, viva
+   * en vivo — Fase 8) y todavía no se mostró ni una vez: entra con la
+   * animación del boceto (Fase 11, paso 4). `SidebarProjectSessions` la marca
+   * una sola vez por sesión, nunca en la carga inicial.
+   */
+  isNueva?: boolean;
   currentTime: Date;
   /** Resolved for this row, so a keystroke elsewhere does not invalidate it. */
   isEditing: boolean;
@@ -42,6 +50,7 @@ function SidebarSessionItem({
   isProcessing,
   hasBackgroundWork,
   needsAttention,
+  isNueva = false,
   currentTime,
   isEditing,
   renameDraft,
@@ -71,6 +80,21 @@ function SidebarSessionItem({
       ? t('tooltips.backgroundWorkIndicator', { defaultValue: 'Background work running' })
       : t('tooltips.activeSessionIndicator');
   const providerLabel = PROVIDER_LABELS[session.__provider];
+
+  // Los cuatro estados del boceto (Fase 11, paso 4), a partir de las mismas
+  // señales que ya decidían el punto de color de arriba — así el rótulo de
+  // texto nunca puede contradecir al color.
+  const estadoSesion = estadoDeSesion({
+    isProcessing,
+    tieneTrabajoDeFondo: showBackgroundIndicator,
+    necesitaAtencion: showAttentionIndicator,
+    tocadaRecientemente: showRecentIndicator,
+  });
+  const rotuloEstado = (
+    <span className={cn('whitespace-nowrap text-[10px] font-medium', COLOR_ESTADO_SESION[estadoSesion])}>
+      {ROTULO_ESTADO_SESION[estadoSesion]}
+    </span>
+  );
 
   // The desktop controls live in SessionOptions, which owns the rename panel and
   // its outside-click dismissal. The mobile rename sits inside the bottom sheet,
@@ -111,7 +135,11 @@ function SidebarSessionItem({
   };
 
   return (
-    <div className="group relative">
+    // `ds-fila-nueva`: entrada animada de una sesión nueva (Fase 11, paso 4;
+    // spring en `index.css`, cross-fade con `prefers-reduced-motion`). Solo la
+    // primera vez que esta fila se dibuja — `SidebarProjectSessions` no vuelve
+    // a marcarla.
+    <div className={cn('group relative', isNueva && 'ds-fila-nueva')}>
       {(showAttentionIndicator || showBackgroundIndicator || showRecentIndicator) && (
         <div className="absolute left-0 top-1/2 -translate-x-1 -translate-y-1/2 transform">
           <Tooltip content={indicatorLabel} position="right">
@@ -164,15 +192,20 @@ function SidebarSessionItem({
                   {sessionView.sessionName}
                 </div>
                 {isProcessing ? (
-                  <span className="ml-auto flex-shrink-0">
+                  <span className="ml-auto flex flex-shrink-0 items-center gap-1">
+                    {rotuloEstado}
                     <Tooltip content={t('tooltips.processingSessionIndicator', 'Processing session')} position="top">
                       <span className="flex h-5 w-5 items-center justify-center rounded-md text-muted-foreground">
                         <Loader2 className="h-3 w-3 animate-spin" />
                       </span>
                     </Tooltip>
                   </span>
-                ) : compactSessionAge && (
-                  <span className="ml-auto flex-shrink-0 text-[11px] text-muted-foreground">{compactSessionAge}</span>
+                ) : (
+                  <span className="ml-auto flex flex-shrink-0 items-center gap-1">
+                    {estadoSesion === 'dormida' && <Moon className="h-3 w-3 text-ds-faint" aria-hidden="true" />}
+                    {rotuloEstado}
+                    {compactSessionAge && <span className="text-[11px] text-muted-foreground">{compactSessionAge}</span>}
+                  </span>
                 )}
               </div>
               <div className="mt-0.5 flex items-center">
@@ -373,24 +406,27 @@ function SidebarSessionItem({
                 {isProcessing ? (
                   <span
                     className={cn(
-                      'ml-auto flex-shrink-0 transition-opacity duration-200',
+                      'ml-auto flex flex-shrink-0 items-center gap-1 transition-opacity duration-200',
                       isEditing ? 'opacity-0' : 'group-hover:opacity-0',
                     )}
                   >
+                    {rotuloEstado}
                     <Tooltip content={t('tooltips.processingSessionIndicator', 'Processing session')} position="top">
                       <span className="flex h-5 w-5 items-center justify-center rounded-md text-muted-foreground">
                         <Loader2 className="h-3 w-3 animate-spin" />
                       </span>
                     </Tooltip>
                   </span>
-                ) : compactSessionAge && (
+                ) : (
                   <span
                     className={cn(
-                      'ml-auto flex-shrink-0 text-[11px] text-muted-foreground transition-opacity duration-200',
+                      'ml-auto flex flex-shrink-0 items-center gap-1 transition-opacity duration-200',
                       isEditing ? 'opacity-0' : 'group-hover:opacity-0',
                     )}
                   >
-                    {compactSessionAge}
+                    {estadoSesion === 'dormida' && <Moon className="h-3 w-3 text-ds-faint" aria-hidden="true" />}
+                    {rotuloEstado}
+                    {compactSessionAge && <span className="text-[11px] text-muted-foreground">{compactSessionAge}</span>}
                   </span>
                 )}
               </div>
