@@ -278,37 +278,54 @@ export function rutaArchivoCuota(idCuenta: string | null | undefined, rutaBase: 
 
 const TMUX_NOMBRE_PATTERN = /^[A-Za-z0-9_-]+$/;
 const CACHE_TMUX_MS = 5000;
-const cacheTmux = new Map<string, { cuenta: string | null; leidoEn: number }>();
+let cacheTmux: { cuentas: Map<string, string> | null; leidoEn: number } | null = null;
 
 /**
- * La cuenta de una sesion de tmux: `@cuenta` (vacio = la cuenta del proceso).
- * `null` si la sesion no existe o tmux no responde — ausente no es optimum.
- * El target lleva `:` al final para que `=nombre` sea match exacto.
+ * `nombre de sesion -> @cuenta` de TODAS las sesiones vivas, en una sola
+ * llamada a tmux (cacheada unos segundos: el sidebar pregunta por cada fila).
+ * `null` si tmux no responde o no hay servidor.
+ *
+ * Se lista en vez de `show-options -t =<n>: -qv @cuenta` porque con `-q`
+ * tmux calla tambien cuando la sesion NO existe y devuelve vacio, y vacio
+ * significa optimum: una sesion muerta pasaba por una de optimum.
  */
-export async function cuentaDeTmux(nombre: string): Promise<string | null> {
-  if (!TMUX_NOMBRE_PATTERN.test(nombre)) return null;
-
+async function leerCuentasDeTmux(): Promise<Map<string, string> | null> {
   const ahora = Date.now();
-  const cacheado = cacheTmux.get(nombre);
-  if (cacheado && ahora - cacheado.leidoEn < CACHE_TMUX_MS) return cacheado.cuenta;
+  if (cacheTmux && ahora - cacheTmux.leidoEn < CACHE_TMUX_MS) return cacheTmux.cuentas;
 
-  let cuenta: string | null;
+  let cuentas: Map<string, string> | null;
   try {
     const { stdout } = await execFileAsync(
       'tmux',
-      ['show-options', '-t', `=${nombre}:`, '-qv', '@cuenta'],
+      ['list-sessions', '-F', '#{session_name}\t#{@cuenta}'],
       { timeout: 2_000 },
     );
-    const valor = stdout.trim();
-    cuenta = valor === '' ? CUENTA_DEL_PROCESO : esIdDeCuentaValido(valor) ? valor : CUENTA_DEL_PROCESO;
+    cuentas = new Map();
+    for (const linea of stdout.split('\n')) {
+      if (!linea.trim()) continue;
+      const [nombre, marca = ''] = linea.replace(/\r$/, '').split('\t');
+      const valor = marca.trim();
+      cuentas.set(nombre, valor !== '' && esIdDeCuentaValido(valor) ? valor : CUENTA_DEL_PROCESO);
+    }
   } catch {
-    cuenta = null;
+    cuentas = null;
   }
-  cacheTmux.set(nombre, { cuenta, leidoEn: ahora });
-  return cuenta;
+  cacheTmux = { cuentas, leidoEn: ahora };
+  return cuentas;
+}
+
+/**
+ * La cuenta de una sesion de tmux: su `@cuenta` (vacio = la cuenta del
+ * proceso). `null` si la sesion no existe o tmux no responde — ausente no es
+ * optimum.
+ */
+export async function cuentaDeTmux(nombre: string): Promise<string | null> {
+  if (!TMUX_NOMBRE_PATTERN.test(nombre)) return null;
+  const cuentas = await leerCuentasDeTmux();
+  return cuentas?.get(nombre) ?? null;
 }
 
 /** Solo para tests. */
 export function _vaciarCacheTmuxParaTests(): void {
-  cacheTmux.clear();
+  cacheTmux = null;
 }
