@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import type { ServerEvent,MarkSessionIdle,MarkSessionProcessing,PendingPermissionRequest,ProjectSession,LLMProvider,NormalizedMessage,GetSessionActivity,MarkSessionBackground } from '@/shared/types';
 import { showCompletionTitleIndicator } from '@/modules/chat/utils/pageTitleNotification';
@@ -8,8 +9,16 @@ import { publishSessionBudget } from '@/modules/skin';
 import type { SessionStore } from '@/modules/chat/hooks/useSessionStore';
 import { normalizedToChatMessages } from '@/modules/chat/hooks/useChatMessages';
 import { collectRunningBackgroundTasks } from '@/modules/chat/utils/backgroundTasks';
-import { appendStreamDelta, finalizeStreamBuffer, settleStreamBuffer } from '@/modules/chat/utils/streamBuffers';
+import { appendStreamDelta, appendThinkingDelta, finalizeStreamBuffer, settleStreamBuffer } from '@/modules/chat/utils/streamBuffers';
 import type { StreamBuffers } from '@/modules/chat/utils/streamBuffers';
+
+/**
+ * How long a session's main-thread activity label stays pinned to the
+ * rotating action words' absence (no further delta) before "Pensando…"/the
+ * tool name reappears. Mirrors `revelado.ts`'s `debeMostrarActividad` from
+ * app-optimum-mkt (ported as a timer here, not imported — separate repos).
+ */
+const ACTIVITY_GAP_MS = 800;
 
 const isActionablePermissionRequest = (request: { toolName?: unknown } | null | undefined): boolean => {
   return request?.toolName !== 'ExitPlanMode' && request?.toolName !== 'exit_plan_mode';
@@ -101,6 +110,26 @@ export function useChatRealtimeHandlers({
   const isActiveRef = useRef(isActive);
   isActiveRef.current = isActive;
 
+  const { t } = useTranslation('chat');
+  const thinkingLabelRef = useRef(t('claudeStatus.actions.thinking', { defaultValue: 'Thinking' }));
+  thinkingLabelRef.current = t('claudeStatus.actions.thinking', { defaultValue: 'Thinking' });
+
+  // Per-session "no token in the last 800ms" timers that bring "Pensando…"
+  // (or the tool name) back once real answer text stops flowing. One map for
+  // the whole hook lifetime, not per-effect-run, so a resubscribe never loses
+  // track of a timer already armed for a session mid-turn.
+  const activityGapTimersRef = useRef(new Map<string, ReturnType<typeof setTimeout>>());
+
+  useEffect(() => {
+    const timers = activityGapTimersRef.current;
+    return () => {
+      for (const timer of timers.values()) {
+        clearTimeout(timer);
+      }
+      timers.clear();
+    };
+  }, []);
+
   // Keep the latest pending-permission snapshot available to the websocket
   // listener so back-to-back permission events can dedupe and re-arm the
   // notification sound before React finishes a rerender.
@@ -117,6 +146,44 @@ export function useChatRealtimeHandlers({
     // from, so this reads the same answer they draw.
     const reportRemainingBackgroundWork = (sid: string) => {
       onSessionBackground?.(sid, collectRunningBackgroundTasks(normalizedToChatMessages(sessionStore.getMessages(sid))));
+    };
+
+    const clearActivityGapTimer = (sid: string) => {
+      const timer = activityGapTimersRef.current.get(sid);
+      if (timer) {
+        clearTimeout(timer);
+        activityGapTimersRef.current.delete(sid);
+      }
+    };
+
+    // Pins the indicator to `label` (a tool name, or "Pensando…"), replacing
+    // the rotating action words — the block just started, before its first
+    // token, so this is what makes the indicator appear ahead of it (Fase 5,
+    // paso 7). Cancels any pending reappear-after-gap timer: an explicit pin
+    // always wins over one that was only guessing.
+    const pinActivity = (sid: string, label: string) => {
+      clearActivityGapTimer(sid);
+      onSessionProcessing?.(sid, { statusText: label });
+    };
+
+    // Arms the 800ms-with-no-token timer that brings "Pensando…" back once a
+    // text block that had started goes quiet again (a tool call starting
+    // mid-answer, extended thinking resuming).
+    const armActivityGap = (sid: string) => {
+      clearActivityGapTimer(sid);
+      const timer = setTimeout(() => {
+        activityGapTimersRef.current.delete(sid);
+        onSessionProcessing?.(sid, { statusText: thinkingLabelRef.current });
+      }, ACTIVITY_GAP_MS);
+      activityGapTimersRef.current.set(sid, timer);
+    };
+
+    // A real answer token just arrived: the indicator reverts to the
+    // rotating words (Fase 5, paso 7 — "reemplaza las palabras rotando"),
+    // and the 800ms gap timer is (re)armed in case the answer stalls again.
+    const clearActivityPin = (sid: string) => {
+      onSessionProcessing?.(sid, { statusText: null });
+      armActivityGap(sid);
     };
 
     const handleEvent = (msg: ServerEvent) => {
@@ -281,13 +348,39 @@ export function useChatRealtimeHandlers({
       /*  Provider NormalizedMessage handling                            */
       /* -------------------------------------------------------------- */
 
+      // --- Block-start notice: pins the indicator before the block's first
+      // token (Fase 5, paso 7). Only the main thread drives the floating
+      // indicator; a subagent's own activity (`parentToolUseId` set) is the
+      // Agent/Task card's concern (Fase 6), not handled here.
+      if (msg.kind === 'activity') {
+        if (sid && !msg.parentToolUseId) {
+          const label = msg.activityKind === 'tool' && typeof msg.toolName === 'string' && msg.toolName
+            ? msg.toolName
+            : thinkingLabelRef.current;
+          pinActivity(sid, label);
+        }
+        return;
+      }
+
       // --- Streaming: buffer for performance ---
       // Every delta, viewed session or not, grows the session's single
       // streaming row; a delta is never stored as a message of its own.
       if (msg.kind === 'stream_delta') {
         const text = (msg.content as string) || '';
         if (!text || !sid) return;
-        appendStreamDelta(streamBuffersRef.current, sid, text, provider, sessionStore);
+        appendStreamDelta(streamBuffersRef.current, sid, text, provider, msg.messageId as string | undefined, msg.blockIndex as number | undefined, sessionStore);
+        // Real answer text streaming in: the tool/thinking label yields to
+        // the rotating words until a gap reopens it.
+        clearActivityPin(sid);
+        return;
+      }
+
+      if (msg.kind === 'thinking_delta') {
+        const text = (msg.content as string) || '';
+        if (!text || !sid) return;
+        appendThinkingDelta(streamBuffersRef.current, sid, text, provider, msg.messageId as string | undefined, msg.blockIndex as number | undefined, sessionStore);
+        // Thinking text is not the answer: keep "Pensando…" pinned while it streams.
+        pinActivity(sid, thinkingLabelRef.current);
         return;
       }
 
@@ -307,17 +400,21 @@ export function useChatRealtimeHandlers({
         && msg.kind !== 'permission_cancelled';
 
       if (sid && shouldPersist) {
-        // Anything the run persists after streamed text (the full message, a
-        // tool call) closes that text block first, so the rows keep their
-        // order and the full message lands right after its streamed copy.
-        // Background-task bookkeeping is not part of the reply: it can land
-        // in the middle of a block, and closing the block there is what cut
-        // one reply into a fragment, the full message and a leftover.
+        // The block's full message is here: the rows it streamed in as are
+        // now redundant, however the stream closed (its own `stream_end`,
+        // normally). Only *that* retires the open buffer — an unrelated event
+        // interleaved mid-stream (a subagent's activity/text, a stderr-born
+        // `error`, a tool call) must not, or one continuous block came apart
+        // into a fragment, the full message and a leftover (00-linea-base;
+        // Fase 5, paso 4).
         if (streamBuffersRef.current.has(sid) && msg.kind !== 'task_status') {
-          if (msg.kind === 'text' && msg.role === 'assistant' && !msg.parentToolUseId) {
+          const buffer = streamBuffersRef.current.get(sid);
+          const isMainThreadFinalBlock = !msg.parentToolUseId && (
+            (buffer?.kind === 'stream_delta' && msg.kind === 'text' && msg.role === 'assistant')
+            || (buffer?.kind === 'thinking_delta' && msg.kind === 'thinking')
+          );
+          if (isMainThreadFinalBlock) {
             settleStreamBuffer(streamBuffersRef.current, sid, String(msg.content || ''));
-          } else {
-            finalizeStreamBuffer(streamBuffersRef.current, sid, sessionStore);
           }
         }
         sessionStore.appendRealtime(sid, msg as unknown as NormalizedMessage);
@@ -329,6 +426,11 @@ export function useChatRealtimeHandlers({
           // Flush any remaining streaming state
           if (sid && streamBuffersRef.current.has(sid)) {
             finalizeStreamBuffer(streamBuffersRef.current, sid, sessionStore);
+          }
+          // The turn is over: a gap timer armed for it must not resurrect
+          // "Pensando…" after the indicator itself is about to disappear.
+          if (sid) {
+            clearActivityGapTimer(sid);
           }
 
           // `complete` is the unified terminal event — every provider run ends
