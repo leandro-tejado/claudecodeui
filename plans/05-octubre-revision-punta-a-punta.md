@@ -113,15 +113,15 @@ Las sesiones nuevas del orquestador llegan por polling de 3 s sobre `~/.cache/ao
 - [x] Tmux: fin de turno por id de la última fila user (no por el flag `complecionAnunciada`) — acepta: un turno "respondé solo OK" pasa a libre en ≤ 3 s, 10 de 10 veces | valida: `node e2e/correr.mjs tmux/turno-corto`
 - [x] Tmux: inotify sobre el JSONL y corte por id en vez de por cantidad — acepta: la primera fila llega en ≤ 1,5 s desde que se escribe | valida: `node e2e/correr.mjs tmux/latencia`
 - [x] Tmux: lector del pane cada ~400 ms → `activity` (spinner, tool) y borrador de texto — acepta: "pensando" visible ≤ 2 s después de "Enviado"; texto creciendo en ≥ 3 muestras; el borrador lo reemplaza la versión del JSONL sin dejar dos filas | valida: `node e2e/correr.mjs tmux/en-vivo`
-- [ ] Tmux: la cola y el dispatcher nunca resumen por SDK una sesión con pane vivo; sin caída a `chat.send` tras `TMUX_*` — acepta: test de server + E2E con 5 mensajes seguidos (2 durante el turno): cada uno aparece exactamente 1 vez en el pane y en el JSONL, y hay un solo proceso `claude` en la sesión | valida: `node e2e/correr.mjs tmux/rafaga`
-- [ ] Tmux: `queued_command` se reconcilia como mensaje del usuario — acepta: el mensaje enviado con el turno en curso se ve una vez y con estado "Enviado" | valida: incluido en `tmux/rafaga`
+- [x] Tmux: la cola y el dispatcher nunca resumen por SDK una sesión con pane vivo; sin caída a `chat.send` tras `TMUX_*` — acepta: test de server + E2E con 5 mensajes seguidos (2 durante el turno): cada uno aparece exactamente 1 vez en el pane y en el JSONL, y hay un solo proceso `claude` en la sesión | valida: `node e2e/correr.mjs tmux/rafaga`
+- [x] Tmux: `queued_command` se reconcilia como mensaje del usuario — acepta: el mensaje enviado con el turno en curso se ve una vez y con estado "Enviado" | valida: incluido en `tmux/rafaga`
 - [x] Tmux: el ack de `chat.subscribe` trae el estado real del pane — acepta: recargar a mitad de un turno mantiene el indicador | valida: `node e2e/correr.mjs tmux/recarga`
 - [x] Barra: `fs.watch` sobre `~/.cache/aos/sesiones.json` — acepta: `orquestar.py crear e2e-orq ejecutora /tmp/cloudcli-e2e/proyecto` aparece en la barra abierta en ≤ 3 s sin recargar | valida: `node e2e/correr.mjs barra/orquestador`
 - [x] Inventario `docs/actualizacion-en-vivo.md`: cada componente con estado del servidor, su fuente de actualización y si es en vivo — acepta: tabla completa y cero filas "ninguna" sin justificar | valida: lectura + `node e2e/correr.mjs barra/componentes`
-- [ ] Cuestionario headless en los modos `default`, `auto` y `bypassPermissions` — acepta: en los tres modos la pregunta llega a la UI y Claude recibe la respuesta elegida (la repite literal) | valida: `node e2e/correr.mjs pregunta/modos`
+- [x] Cuestionario headless en los modos `default`, `auto` y `bypassPermissions` — acepta: en los tres modos la pregunta llega a la UI y Claude recibe la respuesta elegida (la repite literal) | valida: `node e2e/correr.mjs pregunta/modos`
 - [ ] Cuestionario tmux: la selección se compone en el cliente y se teclea de una vez; la huella no incluye lo tildado — acepta: 3 casillas marcadas con clics a 100 ms de distancia llegan las 3 | valida: `node e2e/correr.mjs pregunta/tmux-multi`
-- [ ] Una sola representación de la pregunta: pendiente = cuestionario; respondida = resumen Pregunta → Respuesta, una vez — acepta: cero textos de pregunta repetidos en el DOM antes y después de contestar, en headless y en tmux | valida: `node e2e/correr.mjs pregunta/sin-repetidos`
-- [ ] Respuestas del historial desde `toolUseResult`, no por regex — acepta: una pregunta con comillas se muestra bien tras recargar | valida: `NODE_ENV=test npm test -- message-unification`
+- [x] Una sola representación de la pregunta: pendiente = cuestionario; respondida = resumen Pregunta → Respuesta, una vez — acepta: cero textos de pregunta repetidos en el DOM antes y después de contestar, en headless y en tmux | valida: `node e2e/correr.mjs pregunta/sin-repetidos`
+- [x] Respuestas del historial desde `toolUseResult`, no por regex — acepta: una pregunta con comillas se muestra bien tras recargar | valida: `NODE_ENV=test npm test -- message-unification`
 - [x] Recibir de Leandro el prompt de ejemplo del cuestionario (lo propuso el orquestador, por decisión de Leandro) — acepta: guardado en `design-system/visual-refs/05-octubre-cuestionario-ejemplo.md` | valida: el archivo existe
 - [x] Design system persistido (`design-system/README.md`, `branding.md`, `typography.md`, `tokens.md`) a partir de Optimum + `apple-design` + `ui-ux-pro-max --design-system` — acepta: los cuatro archivos existen con hex, escala y tokens concretos | valida: `ls design-system/*.md`
 - [x] Boceto del chat (recorrido: barra → sesión → enviar → pensando → tool → subagente → respuesta escribiéndose → fin) — acepta: OK de Leandro por AskUserQuestion | valida: `design-system/visual-refs/05-octubre-chat.html`
@@ -386,7 +386,7 @@ Las sesiones nuevas del orquestador llegan por polling de 3 s sobre `~/.cache/ao
 - [pass] "Respondé solo OK" pasa a libre en ≤ 3 s, 10 de 10 | valida: `node e2e/correr.mjs tmux/turno-corto`
 - [pass] Primera fila del JSONL en el navegador en ≤ 1,5 s | valida: `node e2e/correr.mjs tmux/latencia`
 - [pass] "Pensando" ≤ 2 s después de "Enviado"; texto creciendo en ≥ 3 muestras; al final, una sola fila de respuesta | valida: `node e2e/correr.mjs tmux/en-vivo`
-- [fail: server y cliente hechos y con tests en rojo-verde; falta correr el E2E, bloqueado por el gobernador en rojo] 5 mensajes seguidos (2 durante el turno): cada uno 1 vez en el pane, en el JSONL y en el DOM; un solo proceso `claude` en la sesión (`pgrep -f` por `session_id`) | valida: `node e2e/correr.mjs tmux/rafaga`
+- [pass] 5 mensajes seguidos (2 durante el turno): cada uno 1 vez en el pane, en el JSONL y en el DOM; un solo proceso `claude` en la sesión (`pgrep -f` por `session_id`) | valida: `node e2e/correr.mjs tmux/rafaga`
 - [pass] Recargar a mitad del turno mantiene el indicador | valida: `node e2e/correr.mjs tmux/recarga`
 - [pass] Mensajes programados de sesiones no tmux siguen saliendo | valida: `NODE_ENV=test npm test -- scheduled-messages`
 - [pass] Tests de server verdes | valida: `NODE_ENV=test npm test`
@@ -434,13 +434,13 @@ Las sesiones nuevas del orquestador llegan por polling de 3 s sobre `~/.cache/ao
 6. Prompt de prueba que obliga a Claude a repetir lo elegido, para verificar que la respuesta llegó: "Usá AskUserQuestion con una pregunta de opción única (A/B/C), una múltiple (X/Y/Z) y una con comillas en el texto; después respondé solo con lo elegido, literal".
 
 #### Estado (arranca todo en fail)
-- [fail] Headless, modos `default`/`auto`/`bypassPermissions`: la pregunta aparece y Claude repite exactamente lo elegido | valida: `node e2e/correr.mjs pregunta/modos`
-- [fail] Tmux, opción única: llega la elegida | valida: `node e2e/correr.mjs pregunta/tmux-simple`
-- [fail] Tmux, múltiple con clics a 100 ms: llegan las 3 | valida: `node e2e/correr.mjs pregunta/tmux-multi`
-- [fail] "Otra" con texto libre llega literal (headless y tmux) | valida: `node e2e/correr.mjs pregunta/otra`
-- [fail] Cero textos de pregunta repetidos en el DOM antes y después de contestar | valida: `node e2e/correr.mjs pregunta/sin-repetidos`
-- [fail] Pregunta con comillas bien tras recargar | valida: `NODE_ENV=test npm test -- message-unification` + `pregunta/recarga`
-- [fail] Línea base de `4158e887` sigue verde | valida: `node e2e/correr.mjs linea-base/4158e887`
+- [pass: con CLI falso; sin turno real en auto] Headless, modos `default`/`auto`/`bypassPermissions`: la pregunta aparece y Claude repite exactamente lo elegido | valida: `node e2e/correr.mjs pregunta/modos`
+- [pass] Tmux, opción única: llega la elegida | valida: `node e2e/correr.mjs pregunta/tmux-simple`
+- [fail: las 3 llegan al pane pero queda en la revisión de la TUI; la orden compuesta del server no está cableada a la UI → Fase 11 paso 3] Tmux, múltiple con clics a 100 ms: llegan las 3 | valida: `node e2e/correr.mjs pregunta/tmux-multi`
+- [fail: headless pasa; tmux sin escenario] "Otra" con texto libre llega literal (headless y tmux) | valida: `node e2e/correr.mjs pregunta/otra`
+- [pass] Cero textos de pregunta repetidos en el DOM antes y después de contestar | valida: `node e2e/correr.mjs pregunta/sin-repetidos`
+- [pass] Pregunta con comillas bien tras recargar | valida: `NODE_ENV=test npm test -- message-unification` + `pregunta/recarga`
+- [fail: simple verde, múltiple roja por lo mismo que tmux-multi] Línea base de `4158e887` sigue verde | valida: `node e2e/correr.mjs linea-base/4158e887`
 
 ---
 
@@ -600,6 +600,8 @@ Fase 1 (arnés) → Fase 2 (línea base)
 **Hallazgo al revisar las capturas (resuelto, `0b3a471c`):** las filas internas de los subagentes aparecían también en el hilo principal. Era un artefacto del CLI falso, que escribía las filas `isSidechain` en el JSONL de la sesión. Claude Code las escribe en `<sesión>/subagents/agent-<id>.jsonl`: los JSONL reales del VPS tienen cero filas sidechain, y las 47 que aparecían eran todas del falso. Ahora el falso las escribe ahí y les pone `toolUseResult.agentId`. Check nuevo en `headless/subagente` ("el texto de cada subagente no se escapa al hilo principal"): rojo con el falso viejo y verde con el nuevo.
 **`headless/recarga` (06-oct, `08800af1`):** daba rojo desde la Fase 5 paso 7 sin que hubiera regresión. La etiqueta se calla mientras llega texto, el guion `lento` tipea enseguida y el check buscaba la palabra "Thinking". Ahora mira el Stop del indicador (el único con atajo `esc`) y tiene un control negativo: al cerrar el turno, el Stop se va. Verde los 3 checks (`e2e/evidencia/revalida-recarga-stop/`), con la captura mostrando el indicador vivo.
 
+**Fase 9 (06-oct), merge `a7e3a2d6`:** hook `PreToolUse` para AskUserQuestion: en `auto` y `bypassPermissions` la pregunta espera a la UI. La pregunta pendiente ya no repite su texto en la tarjeta. Las comillas se leen bien del `toolUseResult`. Y `teclasParaSeleccionCompuesta`/`responderSeleccionCompuestaTmux` componen toda la selección en una orden, con la huella sin lo tildado. Revalidado: vitest 747, tsc limpio, server sin fallas nuevas (las 6 de pty y `resolveClaudeCodeExecutablePath` ya fallaban en `diseno/propio`), y rojo sin el arreglo. Con el gobernador en verde corrieron `pregunta/*` falso 33/33, `tmux-simple` verde y **`tmux/rafaga` verde (cierra la Fase 7)**. **Abierto:** la orden compuesta no está cableada a la UI, que sigue mandando un pedido por clic. Las 3 tildadas llegan al pane, pero el flujo queda en la pantalla "Review and submit" de la TUI. Se cablea en la Fase 11 paso 3, porque `Cuestionario` reemplaza a `TmuxPromptBanner`. `pregunta/modos` solo corrió con el CLI falso. **Boceto de header y barra:** Leandro no lo había visto; está publicado en https://claude.ai/artifact/HNkzePDQ2QkNPJFStuZiEK y el paso 4 espera su OK.
+
 **Corte de tmux del 06-oct:** no lo causó esta ejecución. El servidor de tmux murió a las 04:13 por OOM (un pane del 30-sep llegó a 4,1 GB; cayeron también `cloudcli`, `norte`, `servidor-code` y `syncthing`, y el systemd de usuario se reinició a las 04:17). Entre 04:17 y 15:09 no se abrió ningún pane. Ningún transcript ejecutó `kill-server`; vitest solo corre `src/`. Queda el riesgo latente de que los tests de server usen el socket por defecto.
 
 **Fase 4, check del turno real (06-oct):** Leandro levantó `:3901` con el token desde su shell. Turno real con Sonnet: 13 `thinking_delta` con texto en los frames (`e2e/evidencia/revalida-fase-4/`). Dos cambios al escenario: (1) la sesión inicial la escribe el CLI falso con `E2E_FALSO_MODELO=sonnet`, porque el `claude -p` del shell de la suite no tiene token y la UI hereda el modelo de la sesión; (2) el prompt ya no pide "pensalo paso a paso": el safeguard de Sonnet lo cortó como `reasoning_extraction`. El thinking resumido lo pide el server por protocolo, no hace falta pedirlo en el texto. El segundo check (razonamiento visible) hoy detecta el "Thinking…" del indicador: lo endurece la revalidación de la Fase 5.
@@ -608,8 +610,7 @@ Fase 1 (arnés) → Fase 2 (línea base)
 
 ## Continuación de Sesión
 
-**Fases completadas:** 1, 2, 3, 4, 5, 6, 8, 10. La 7 tiene server y cliente hechos y le falta solo el E2E `tmux/*`. De la 11 están hechos los pasos 1 (tokens) y 2 (chat).
-**Fase actual:** 9 (cuestionario, en un worktree) y 11, pasos 3 a 6.
-**Próximo paso exacto:** Fase 9 en un worktree. Su paso 1 necesita un turno real, o sea `:3901` con token, y los escenarios `pregunta/tmux-*` crean panes, así que esperan al gobernador. Después la 11: el paso 4 (header+barra) puede ir ya, y el 3 (`Cuestionario`) va después de la 9 porque comparte el composer.
-**Bloqueantes:** los escenarios `tmux/*` y `pregunta/tmux-*` no corren con el gobernador en rojo (`exigirGobernadorNoRojo`). La Fase 12 necesita que Leandro reinicie `:3001` (con `npm run build` antes).
-**Micro-tasks pendientes:** 14 de 41 (las dos de tmux esperan `tmux/rafaga`).
+**Fases completadas:** 1, 2, 3, 4, 5, 6, 7, 8, 10. La 9 está hecha salvo tmux múltiple, que pasa a la 11 paso 3. De la 11 están hechos los pasos 1 y 2.
+**Fase actual:** 11, pasos 3 a 6.
+**Próximo paso exacto:** (1) Leandro aprueba o corrige el boceto de header y barra (link arriba). (2) Paso 3: `Cuestionario`, que cablea la orden compuesta de tmux; vuelven a correr `pregunta/tmux-multi` y `linea-base/4158e887`. (3) Paso 4 con el boceto aprobado. (4) Pasos 5 y 6: bundle, `visual/*` y axe. Después la 12, que necesita que Leandro reinicie `:3001` con `npm run build` antes.
+**Bloqueantes:** el OK del boceto de header y barra, y la cuota semanal (proyecta 169 %).
