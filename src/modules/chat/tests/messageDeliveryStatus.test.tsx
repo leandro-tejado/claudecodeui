@@ -67,6 +67,8 @@ function renderPane() {
       assert.ok(emit, 'subscribe listener was never registered');
       act(() => { emit!(event); });
     },
+    runsInTmux: () => hook.result.current.runsInTmux(SID),
+    setRunsInTmux: (value: boolean) => act(() => { hook.result.current.setRunsInTmux(SID, value); }),
     rendered: () => normalizedToChatMessages(hook.result.current.getMessages(SID))
       .map((message) => [message.type, String(message.content), message.deliveryState ?? null]),
   };
@@ -158,4 +160,28 @@ test('un mensaje que el pane no tomó queda "no enviado"', () => {
     clientMessageId: 'local_1_a',
   } as ServerEvent);
   assert.deepEqual(pane.rendered().filter(([type]) => type === 'user'), [['user', 'hola', 'failed']]);
+});
+
+/*
+ * Fase 7, paso 5: un error de tmux no pasa la sesión a `chat.send`. Si lo
+ * hiciera, el reintento resumiría por SDK al lado de un pane vivo: dos
+ * procesos escribiendo el mismo transcript. Solo un provider que tmux no
+ * soporta cae a stream-json.
+ */
+test('un error TMUX_* deja la sesión en tmux y el mensaje como no enviado', () => {
+  const pane = renderPane();
+  pane.setRunsInTmux(true);
+  pane.echo('local_1_a', 'hola');
+  pane.emitEvent({ kind: 'protocol_error', code: 'TMUX_SEND_FAILED', error: 'pane gone', sessionId: SID, clientMessageId: 'local_1_a' } as ServerEvent);
+
+  assert.equal(pane.runsInTmux(), true);
+  assert.deepEqual(pane.rendered()[0], ['user', 'hola', 'failed']);
+});
+
+test('un provider que tmux no soporta sí vuelve a stream-json', () => {
+  const pane = renderPane();
+  pane.setRunsInTmux(true);
+  pane.emitEvent({ kind: 'protocol_error', code: 'TMUX_PROVIDER_UNSUPPORTED', error: 'codex', sessionId: SID } as ServerEvent);
+
+  assert.equal(pane.runsInTmux(), false);
 });

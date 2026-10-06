@@ -257,12 +257,12 @@ export function useChatRealtimeHandlers({
         case 'protocol_error': {
           console.error('[Chat] Protocol error:', msg.code, msg.error);
           if (sid) {
-            // A tmux-mode failure (dead pane, creation failed, unsupported
-            // provider) falls back to `chat.send` on the next attempt rather
-            // than repeating a send that cannot work — `stream-json` is the
-            // backup path exactly for this ("el camino viejo... pasa a ser
-            // el respaldo, no el default").
-            if (typeof msg.code === 'string' && msg.code.startsWith('TMUX_')) {
+            // A tmux failure no longer flips the session to `chat.send`: a
+            // resume by SDK next to a live pane is two writers on one
+            // transcript (Fase 7, paso 5). The error shows and the message is
+            // marked as not sent; only a provider tmux cannot run at all
+            // falls back to stream-json.
+            if (msg.code === 'TMUX_PROVIDER_UNSUPPORTED') {
               sessionStore.setRunsInTmux(sid, false);
             }
             // Surface the failure in the conversation and stop the spinner —
