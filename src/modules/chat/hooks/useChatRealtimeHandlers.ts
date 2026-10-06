@@ -348,10 +348,18 @@ export function useChatRealtimeHandlers({
 
       // --- Block-start notice: pins the indicator before the block's first
       // token (Fase 5, paso 7). Only the main thread drives the floating
-      // indicator; a subagent's own activity (`parentToolUseId` set) is the
-      // Agent/Task card's concern (Fase 6), not handled here.
+      // indicator this way; a subagent's own activity (`parentToolUseId` set)
+      // is the Agent/Task card's concern (Fase 6) — it is persisted instead,
+      // so `normalizedToChatMessages` can fold it into that card's own live
+      // state. The main thread's indicator is deliberately left alone here.
       if (msg.kind === 'activity') {
-        if (sid && !msg.parentToolUseId) {
+        if (msg.parentToolUseId) {
+          if (sid) {
+            sessionStore.appendRealtime(sid, msg as unknown as NormalizedMessage);
+          }
+          return;
+        }
+        if (sid) {
           const label = msg.activityKind === 'tool' && typeof msg.toolName === 'string' && msg.toolName
             ? msg.toolName
             : thinkingLabelRef.current;

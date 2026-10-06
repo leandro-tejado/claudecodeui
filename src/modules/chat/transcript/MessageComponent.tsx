@@ -295,6 +295,7 @@ const MessageComponent = memo(({ message, prevMessage, createDiff, onFileOpen, s
                   subagent={message.subagent}
                   taskStatus={message.taskStatus}
                   activity={message.subagentActivity}
+                  currentActivity={message.subagentCurrentActivity}
                   onFileOpen={onFileOpen}
                   createDiff={createDiff}
                   selectedProject={selectedProject}

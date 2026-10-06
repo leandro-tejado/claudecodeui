@@ -16,6 +16,8 @@ type SubagentPanelProps = {
   /** The latest live word on a background agent, from the run's task events. */
   taskStatus?: LiveTaskStatus;
   activity?: SubagentActivity[];
+  /** The tool (or "thinking") the subagent is using right now, from its latest unresolved `activity` event (Fase 6). */
+  currentActivity?: { activityKind?: 'thinking' | 'tool'; toolName?: string };
   onFileOpen?: (filePath: string, diffInfo?: unknown) => void;
   createDiff: (oldStr: string, newStr: string) => DiffLine[];
   selectedProject?: Project | null;
@@ -79,6 +81,7 @@ export const SubagentPanel = memo(({
   subagent,
   taskStatus,
   activity,
+  currentActivity,
   onFileOpen,
   createDiff,
   selectedProject,
@@ -93,6 +96,18 @@ export const SubagentPanel = memo(({
   const resultText = useMemo(() => readResultText(toolResult?.content), [toolResult?.content]);
 
   const entries = activity ?? [];
+  // The newest text or thinking entry the subagent has said so far, so it
+  // stays readable while the card is collapsed (Fase 6, paso 2) instead of
+  // only on demand inside the timeline below.
+  const lastTextEntry = useMemo(() => {
+    for (let index = entries.length - 1; index >= 0; index -= 1) {
+      const entry = entries[index];
+      if (entry.kind === 'text' || entry.kind === 'thinking') {
+        return entry;
+      }
+    }
+    return null;
+  }, [entries]);
   // A background agent's tool result is only its launch acknowledgement — the
   // real answer arrives later as a task notification — so its arrival says
   // nothing about whether the agent finished. Treating it as an outcome marked
@@ -105,6 +120,11 @@ export const SubagentPanel = memo(({
   );
   const status = resolveBackgroundTaskStatus(subagent?.status, taskStatus?.status)
     ?? (toolResult && !isAsyncAgentLaunch ? 'completed' : 'running');
+  // A background launch's live `task_status` notification settles `status`
+  // above well before the server round-trip `requestLatestMessages` triggers
+  // ever lands; showing its summary here means the result reads live too,
+  // instead of staying blank until that resync (Fase 6, paso 4).
+  const liveResultText = !resultText && status !== 'running' ? taskStatus?.summary : undefined;
   const toolCount = entries.filter((entry) => entry.kind === 'tool').length;
   // Claude names its agent presets (Explore, Plan); Codex has none, so the
   // neutral label carries and the assigned nickname shows alongside it.
@@ -137,7 +157,11 @@ export const SubagentPanel = memo(({
           {status === 'running' ? (
             <>
               <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-purple-500 dark:bg-purple-400" />
-              running
+              {currentActivity?.toolName
+                ? currentActivity.toolName
+                : currentActivity?.activityKind === 'thinking'
+                  ? 'Thinking…'
+                  : 'running'}
             </>
           ) : status === 'failed' ? (
             <>
@@ -160,6 +184,16 @@ export const SubagentPanel = memo(({
         </span>
       </button>
 
+      {/* The subagent's latest word, kept readable while the card is
+          collapsed (Fase 6, paso 2) — the full timeline below is only
+          mounted on demand. Hidden once the timeline is showing the same
+          entry in place. */}
+      {!showTimeline && lastTextEntry?.content && (
+        <div className="line-clamp-1 pl-[18px] pr-2 text-[11px] text-muted-foreground/70">
+          {lastTextEntry.content}
+        </div>
+      )}
+
       {showTimeline && (
         <div className="mt-1.5 space-y-2 pl-[18px]">
           {subagent?.model && (
@@ -181,10 +215,10 @@ export const SubagentPanel = memo(({
             selectedProject={selectedProject}
           />
 
-          {resultText && (
+          {(resultText || liveResultText) && (
             <div className="rounded border border-border/40 bg-muted/30 p-2">
               <div className="mb-1 text-[10px] uppercase tracking-wide text-muted-foreground/60">Result</div>
-              <MarkdownContent content={resultText} className="prose prose-sm max-w-none dark:prose-invert" />
+              <MarkdownContent content={resultText || liveResultText || ''} className="prose prose-sm max-w-none dark:prose-invert" />
             </div>
           )}
         </div>

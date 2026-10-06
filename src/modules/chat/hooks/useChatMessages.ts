@@ -244,6 +244,13 @@ export function normalizedToChatMessages(messages: NormalizedMessage[]): ChatMes
   const liveSubagentToolsById = new Map<string, SubagentActivity>();
   /** Newest folded row per container, so its cached projection knows to rebuild. */
   const lastSubagentSourceByParent = new Map<string, NormalizedMessage>();
+  /**
+   * The tool (or "thinking") each subagent is using right now, from its
+   * latest unresolved `activity` event — cleared as soon as that activity's
+   * full entry (tool_use, tool_result, text or thinking) is folded in below,
+   * so it never shows a stale tool once the real content has arrived (Fase 6).
+   */
+  const liveSubagentCurrentActivity = new Map<string, { activityKind?: 'thinking' | 'tool'; toolName?: string }>();
   // The latest live word on each background task, keyed by the tool call that
   // launched it. Built here, beside the subagent fold, because both answer the
   // same question — what has this call's work done since it launched — from
@@ -268,6 +275,17 @@ export function normalizedToChatMessages(messages: NormalizedMessage[]): ChatMes
       }
 
       switch (msg.kind) {
+        // The subagent just started a tool call or a reasoning block: the
+        // live "in progress" signal (Fase 6, paso 1). Superseded by the
+        // cases below once that block resolves into a full entry.
+        case 'activity': {
+          liveSubagentCurrentActivity.set(parentId, {
+            activityKind: msg.activityKind,
+            toolName: msg.toolName,
+          });
+          lastSubagentSourceByParent.set(parentId, msg);
+          break;
+        }
         case 'tool_use': {
           const tool: SubagentActivity = {
             kind: 'tool',
@@ -280,6 +298,7 @@ export function normalizedToChatMessages(messages: NormalizedMessage[]): ChatMes
           if (msg.toolId) {
             liveSubagentToolsById.set(msg.toolId, tool);
           }
+          liveSubagentCurrentActivity.delete(parentId);
           lastSubagentSourceByParent.set(parentId, msg);
           break;
         }
@@ -290,6 +309,7 @@ export function normalizedToChatMessages(messages: NormalizedMessage[]): ChatMes
               content: formatToolResultContent(msg.content ?? ''),
               isError: Boolean(msg.isError),
             };
+            liveSubagentCurrentActivity.delete(parentId);
             lastSubagentSourceByParent.set(parentId, msg);
           }
           break;
@@ -305,6 +325,7 @@ export function normalizedToChatMessages(messages: NormalizedMessage[]): ChatMes
               content: msg.content,
               timestamp: msg.timestamp,
             });
+            liveSubagentCurrentActivity.delete(parentId);
             lastSubagentSourceByParent.set(parentId, msg);
           }
           break;
@@ -480,6 +501,10 @@ export function normalizedToChatMessages(messages: NormalizedMessage[]): ChatMes
         const subagentActivity = liveActivity && liveActivity.length > (serverActivity?.length ?? 0)
           ? liveActivity
           : serverActivity;
+        // Only meaningful while the live stream is still ahead of the last
+        // history load — a reloaded container has no running subagent to
+        // report on, so nothing here would be fresher than `serverActivity`.
+        const subagentCurrentActivity = msg.toolId ? liveSubagentCurrentActivity.get(msg.toolId) : undefined;
 
         converted.push({
           type: 'assistant',
@@ -494,6 +519,7 @@ export function normalizedToChatMessages(messages: NormalizedMessage[]): ChatMes
           isSubagentContainer,
           subagent: msg.subagent,
           subagentActivity,
+          subagentCurrentActivity: isSubagentContainer ? subagentCurrentActivity : undefined,
           workflow: msg.workflow,
           taskStatus: msg.toolId ? liveTasksByToolUseId.get(msg.toolId) : undefined,
           memoryCitations: msg.memoryCitations,
@@ -563,11 +589,13 @@ export function normalizedToChatMessages(messages: NormalizedMessage[]): ChatMes
         break;
 
       // stream_end, activity, complete, status, permission_*, session_created
-      // are control events — not rendered as messages. `activity` (a block
-      // just started) only ever reaches the store with a `parentToolUseId`
-      // (the main thread's own activity drives the indicator directly from
-      // useChatRealtimeHandlers and is never persisted); folding it onto the
-      // Agent/Task card's own timeline is Fase 6, not this one.
+      // are control events — not rendered as messages. A subagent's `activity`
+      // (`parentToolUseId` set) was already folded into its container's
+      // `subagentCurrentActivity` in the first pass above and never reaches
+      // this loop (the `continue` for `msg.parentToolUseId` further up skips
+      // it); the main thread's own `activity` drives the indicator directly
+      // from useChatRealtimeHandlers and is never persisted at all, so this
+      // case only exists to keep the switch exhaustive.
       case 'stream_end':
       case 'activity':
       case 'complete':
