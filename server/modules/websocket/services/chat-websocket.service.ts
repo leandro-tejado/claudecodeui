@@ -67,6 +67,34 @@ export function filterAttachmentsToUploadStore(
   });
 }
 
+/**
+ * Un pane de tmux solo recibe texto: no hay canal para base64 como en el SDK.
+ * Los adjuntos (ya revalidados contra el store de subidas) viajan como la ruta
+ * absoluta de cada archivo al final del mensaje, que Claude Code lee con su
+ * propia herramienta. 6-oct: con un adjunto el cliente caía a `chat.send` y el
+ * servidor lo rechazaba con TMUX_PANE_VIVO.
+ *
+ * Exportada para tests; `assetsRootOverride` existe solo para ellos.
+ */
+export function contenidoConAdjuntosParaTmux(
+  content: string,
+  options: unknown,
+  assetsRootOverride?: string,
+): string {
+  const opciones = (options ?? {}) as AnyRecord;
+  const candidatos = [
+    ...normalizeAttachmentDescriptors(opciones.images),
+    ...normalizeAttachmentDescriptors(opciones.files),
+    ...normalizeAttachmentDescriptors(opciones.attachments),
+  ];
+  const assetsRoot = path.resolve(assetsRootOverride ?? getGlobalImageAssetsDir());
+  const rutas = filterAttachmentsToUploadStore(candidatos, assetsRoot)
+    .map((descriptor) => path.resolve(assetsRoot, descriptor.path))
+    .filter((ruta, indice, todas) => todas.indexOf(ruta) === indice);
+  if (rutas.length === 0) return content;
+  return `${content}\n\nArchivos adjuntos (leelos desde estas rutas):\n${rutas.map((ruta) => `- ${ruta}`).join('\n')}`;
+}
+
 /** Backward-compatible image filter consumed by existing websocket tests. */
 export function filterImagesToUploadStore(
   images: unknown,
@@ -405,7 +433,13 @@ async function handleChatSendTmux(
   // no serializa un frame contra el siguiente de todos modos (cada mensaje
   // dispara su propio callback async, sin que el emisor espere al anterior),
   // así que no hay ninguna garantía de orden que perder acá.
-  void entregarPorTmux(ws, sessionId, session, content, clientMessageId);
+  void entregarPorTmux(
+    ws,
+    sessionId,
+    session,
+    contenidoConAdjuntosParaTmux(content, data.options),
+    clientMessageId,
+  );
 }
 
 /**
@@ -1216,7 +1250,13 @@ export async function runDetachedChatTurn(
   // `scheduled-message-dispatcher.service.ts`) marque el mensaje fallido en
   // vez de darlo por enviado.
   if (provider === 'claude' && tmuxBridgeService.resolverPaneTmux(session)) {
-    const { entregado, error } = await entregarPorTmux(null, input.sessionId, session, input.content, null);
+    const { entregado, error } = await entregarPorTmux(
+      null,
+      input.sessionId,
+      session,
+      contenidoConAdjuntosParaTmux(input.content, input.options),
+      null,
+    );
     return { started: entregado, error };
   }
 
