@@ -466,7 +466,7 @@ Las sesiones nuevas del orquestador llegan por polling de 3 s sobre `~/.cache/ao
 - [pass] Tres bocetos a 390 px sin scroll horizontal, en los dos temas | valida: `node e2e/correr.mjs visual/bocetos` (Playwright sobre los HTML)
 - [pass] Boceto del chat aprobado por Leandro | valida: respuesta de AskUserQuestion
 - [pass] Boceto del cuestionario aprobado por Leandro | valida: respuesta de AskUserQuestion (06-oct, por chat: "me parece bien el boceto")
-- [pass] Boceto de header y barra aprobado por Leandro | valida: respuesta de AskUserQuestion
+- [sin-verificar] Boceto de header y barra aprobado por Leandro | valida: respuesta de AskUserQuestion — 06-oct: Leandro dice que nunca lo vio; recién publicado en https://claude.ai/artifact/HNkzePDQ2QkNPJFStuZiEK. El paso 4 de la Fase 11 espera su OK
 
 #### Peligros
 - Diseñar el cuestionario sin el ejemplo de Leandro: el paso 1 lo bloquea.
