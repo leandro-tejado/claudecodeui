@@ -1,0 +1,32 @@
+[
+  {
+    "escenario": "pregunta/recarga",
+    "nombre": "la pregunta llega a la UI",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-recarga/pregunta.png"
+    ],
+    "ms": 8512
+  },
+  {
+    "escenario": "pregunta/recarga",
+    "nombre": "tras recargar, la pregunta con comillas aparece una sola vez y completa",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-recarga/tras-recargar.png"
+    ],
+    "datos": {
+      "apariciones": 1
+    },
+    "ms": 8512
+  },
+  {
+    "escenario": "pregunta/recarga",
+    "nombre": "tras recargar, se ve la respuesta elegida (\"Sí\") junto a esa pregunta",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-recarga/tras-recargar-respuesta.png"
+    ],
+    "ms": 8512
+  }
+]
