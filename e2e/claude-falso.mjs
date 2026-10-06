@@ -5,7 +5,7 @@
 //
 // El guion sale del prompt: "guion:<nombre>". Sin guion, corre `humo`.
 // Guiones: humo, lento, pensamiento, herramienta, subagente-a-mitad,
-//          subagentes-paralelos, stderr-a-mitad, 6000-deltas, pregunta.
+//          subagentes-paralelos, stderr-a-mitad, 6000-deltas, pregunta, markdown.
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -242,6 +242,30 @@ const GUIONES = {
     const trozos = Array.from({ length: 6000 }, (_, i) => (i % 100 === 99 ? `${i + 1}\n` : 'x '));
     // En tandas de 100 con 50 ms entre tandas (~3 s): da tiempo a recargar a mitad.
     await mensaje([{ type: 'text', text: trozos.join(''), trozos }], { pausa: 0, cadaTanda: 100, pausaTanda: 50 });
+  },
+  // Fase 11 paso 2: una respuesta con los elementos de markdown que el chat
+  // tiene que estilar (design-system/visual-refs/05-octubre-chat.html) —
+  // encabezados, negrita, blockquote con el acento, tabla compacta y lista —
+  // para comparar capturas de pantalla contra el boceto.
+  async markdown() {
+    const texto = [
+      '## Resumen de la corrida',
+      '',
+      'Encontré **tres** archivos que hay que tocar antes de cerrar la fase.',
+      '',
+      '> El acento de la cita tiene que ser el color de marca, no gris.',
+      '',
+      '| Archivo | Estado | Líneas |',
+      '| --- | --- | --- |',
+      '| `Markdown.tsx` | listo | 390 |',
+      '| `MessageComponent.tsx` | listo | 446 |',
+      '| `BashCommandDisplay.tsx` | listo | 170 |',
+      '',
+      '- Columna de lectura en `max-w-3xl`.',
+      '- Sin burbuja ni avatar en la respuesta de Claude.',
+      '- Tools en una línea de actividad, no en tarjetas grandes.',
+    ].join('\n');
+    await mensaje([{ type: 'text', text: marca(texto) }], { pausa: 15 });
   },
   async pregunta() {
     const tid = `toolu_falso_${crypto.randomBytes(4).toString('hex')}`;

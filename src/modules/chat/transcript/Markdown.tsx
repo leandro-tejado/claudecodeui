@@ -217,13 +217,43 @@ const markdownComponents = {
     }
     return <>{children}</>;
   },
+  // El acento del design system (design-system/visual-refs/05-octubre-chat.html,
+  // `.turno-claude blockquote`): borde completo en `ds-primary`, texto en
+  // `ds-ink`, sin cursiva — no el borde atenuado/itálica que traía antes.
   blockquote: ({ children }: { children?: React.ReactNode }) => (
-    <blockquote className="my-3 border-l-2 border-primary/50 pl-4 italic text-muted-foreground">
+    <blockquote className="my-3 border-l-2 border-ds-primary pl-4 text-ds-ink">
       {children}
     </blockquote>
   ),
-  hr: () => <hr className="my-4 border-t border-border" />,
+  hr: () => <hr className="my-4 border-t border-ds-line" />,
+  // typography.md: "strong dentro de una respuesta es font-bold text-ink
+  // (como en MensajeMarkdown.tsx:51), no un cambio de color" — Tailwind
+  // Typography's default `--tw-prose-bold` would otherwise win.
+  strong: ({ children }: { children?: React.ReactNode }) => (
+    <strong className="font-bold text-ds-ink">{children}</strong>
+  ),
   p: ({ children }: { children?: React.ReactNode }) => <div className="mb-2 last:mb-0">{children}</div>,
+  // Escala de design-system/typography.md: h1 de Markdown es el tope
+  // (`ds-h2`, nunca un <h1> de navegador a tamaño completo); h2 y h3 van en
+  // `ds-h3`; h4-h6 en `ds-h4`.
+  h1: ({ children }: { children?: React.ReactNode }) => (
+    <div className="mb-2 mt-5 text-ds-h2 text-ds-ink first:mt-0">{children}</div>
+  ),
+  h2: ({ children }: { children?: React.ReactNode }) => (
+    <div className="mb-2 mt-5 text-ds-h3 text-ds-ink first:mt-0">{children}</div>
+  ),
+  h3: ({ children }: { children?: React.ReactNode }) => (
+    <div className="mb-2 mt-5 text-ds-h3 text-ds-ink first:mt-0">{children}</div>
+  ),
+  h4: ({ children }: { children?: React.ReactNode }) => (
+    <div className="mb-1.5 mt-4 text-ds-h4 text-ds-ink first:mt-0">{children}</div>
+  ),
+  h5: ({ children }: { children?: React.ReactNode }) => (
+    <div className="mb-1.5 mt-4 text-ds-h4 text-ds-ink first:mt-0">{children}</div>
+  ),
+  h6: ({ children }: { children?: React.ReactNode }) => (
+    <div className="mb-1.5 mt-4 text-ds-h4 text-ds-ink first:mt-0">{children}</div>
+  ),
   ul: ({ children }: { children?: React.ReactNode }) => (
     <ul className="mb-2 list-outside list-disc space-y-1 pl-5 marker:text-current last:mb-0">{children}</ul>
   ),
@@ -231,21 +261,23 @@ const markdownComponents = {
     <ol className="mb-2 list-outside list-decimal space-y-1 pl-5 marker:text-current last:mb-0">{children}</ol>
   ),
   li: ({ children }: { children?: React.ReactNode }) => <li className="[&>div:last-child]:mb-0 [&>div]:mb-1">{children}</li>,
+  // Tablas compactas (plan Fase 11, paso 2): menos padding que una tabla de
+  // UI de chrome — `ds-compact` en vez de `text-sm`, celdas a `px-2 py-1`.
   table: ({ children }: { children?: React.ReactNode }) => (
-    <div className="my-3 overflow-x-auto rounded-lg border border-border">
+    <div className="my-3 overflow-x-auto rounded-ds-md border border-ds-line">
       {/* my-0 cancels Tailwind Typography's table margin, which would show as blank bands inside the border */}
-      <table className="my-0 min-w-full border-collapse text-sm">{children}</table>
+      <table className="my-0 min-w-full border-collapse text-ds-compact">{children}</table>
     </div>
   ),
-  thead: ({ children }: { children?: React.ReactNode }) => <thead className="bg-muted/60">{children}</thead>,
+  thead: ({ children }: { children?: React.ReactNode }) => <thead className="bg-ds-surface-2">{children}</thead>,
   tr: ({ children }: { children?: React.ReactNode }) => (
     <tr className="[&:last-child>td]:border-b-0">{children}</tr>
   ),
   th: ({ children }: { children?: React.ReactNode }) => (
-    <th className="border-b border-border px-3 py-2 text-left font-semibold text-foreground">{children}</th>
+    <th className="border-b border-ds-line px-2 py-1 text-left font-semibold text-ds-ink">{children}</th>
   ),
   td: ({ children }: { children?: React.ReactNode }) => (
-    <td className="border-b border-border/60 px-3 py-2 align-top">{children}</td>
+    <td className="border-b border-ds-line px-2 py-1 align-top text-ds-ink">{children}</td>
   ),
 };
 
