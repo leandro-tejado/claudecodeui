@@ -1,7 +1,8 @@
 import { Folder, GitBranch, Menu, MessageSquare, ClipboardCheck, MonitorPlay, Moon, PanelLeft, Sun, type LucideIcon } from 'lucide-react';
-import { useCallback, useRef, type Dispatch, type MouseEvent, type SetStateAction, type TouchEvent } from 'react';
+import { useCallback, useEffect, useRef, type Dispatch, type MouseEvent, type SetStateAction, type TouchEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { AccountChip, InfoCuenta, TopeAviso, cuentaDeSesion, reiniciarCuentaNueva, useCuentasState } from '@/modules/cuentas';
 import { usePlugins, PluginIcon } from '@/modules/plugins';
 import SkinCompactBar from '@/modules/skin/SkinCompactBar';
 import SkinContextRing from '@/modules/skin/SkinContextRing';
@@ -36,6 +37,11 @@ type SkinHeaderProps = {
   shouldShowBrowserTab: boolean;
   isMobile: boolean;
   onMenuClick: () => void;
+  /**
+   * Abre una sesión nueva con la cuenta indicada. Lo usa el aviso de tope: es la
+   * única vía para pasar a otra cuenta, y es una sesión nueva a propósito.
+   */
+  onNewSessionWithCuenta?: (cuentaId: string) => void;
 };
 
 type BuiltInTab = { id: AppTab; labelKey: string; icon: LucideIcon };
@@ -118,11 +124,25 @@ export default function SkinHeader({
   shouldShowBrowserTab,
   isMobile,
   onMenuClick,
+  onNewSessionWithCuenta,
 }: SkinHeaderProps) {
   const { t } = useTranslation();
   const { plugins } = usePlugins();
   const { isDarkMode, toggleDarkMode } = useTheme();
   const { filesPanelOpen } = useSkinUi();
+
+  /* La cuenta de lo que se está mirando: la de la sesión abierta o, si todavía
+     no hay sesión, la que se eligió para la nueva. El anillo de cuota y el chip
+     leen de acá, así que los dos hablan siempre de la misma cuenta. */
+  const { nuevaCuenta } = useCuentasState();
+  const cuentaActiva = selectedSession ? cuentaDeSesion(selectedSession) : nuevaCuenta;
+
+  /* La elección de cuenta de una sesión nueva vale hasta que esa sesión existe:
+     al quedar seleccionada una sesión, la siguiente nueva vuelve a Optimum. */
+  const selectedSessionId = selectedSession?.id ?? null;
+  useEffect(() => {
+    if (selectedSessionId) reiniciarCuentaNueva();
+  }, [selectedSessionId]);
 
   const tabs: BuiltInTab[] = [
     ...BASE_TABS,
@@ -173,10 +193,18 @@ export default function SkinHeader({
             {title}
           </h2>
           <div
-            className="truncate leading-tight text-muted-foreground"
+            className="flex min-w-0 items-center gap-1.5 leading-tight text-muted-foreground"
             style={{ fontSize: 'var(--skin-text-xs)' }}
           >
-            {selectedProject.displayName}
+            <span className="truncate">{selectedProject.displayName}</span>
+            {activeTab === 'chat' && (
+              <>
+                <AccountChip cuenta={cuentaActiva} size="md" />
+                <InfoCuenta etiqueta="Qué es la cuenta de la sesión">
+                  Cuenta de IA con la que corre esta sesión. El anillo muestra la cuota de esa cuenta, no de la máquina.
+                </InfoCuenta>
+              </>
+            )}
           </div>
         </div>
 
@@ -194,7 +222,7 @@ export default function SkinHeader({
         <div className="flex flex-none items-center gap-2">
           <SkinContextRing />
           <SkinCompactBar />
-          <UsageWindowIndicator />
+          <UsageWindowIndicator cuenta={cuentaActiva} />
           <SkinRecursos />
         </div>
 
@@ -282,6 +310,10 @@ export default function SkinHeader({
           })}
         </nav>
       </div>
+
+      {activeTab === 'chat' && (
+        <TopeAviso cuenta={cuentaActiva} onAbrirConCuenta={onNewSessionWithCuenta} />
+      )}
     </header>
   );
 }

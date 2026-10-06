@@ -36,8 +36,21 @@ function etiquetaVentana(nombre: string, estado: EstadoVentana): string {
   return `${nombre}: ${pct} ${antiguedad}${reset}`;
 }
 
-export default function UsageWindowIndicator() {
-  const snapshot = useUsageWindow();
+/** "optimum" -> "Optimum": cómo se habla de la cuenta en el texto del anillo. */
+function nombreCuenta(id: string): string {
+  return id ? id.charAt(0).toUpperCase() + id.slice(1) : id;
+}
+
+type Props = {
+  /**
+   * Cuenta de IA cuya cuota se muestra: la de la sesión activa. Sin ella es
+   * optimum, que es lo único que existía antes de la Fase 3 del plan multi-cuenta.
+   */
+  cuenta?: string;
+};
+
+export default function UsageWindowIndicator({ cuenta }: Props = {}) {
+  const snapshot = useUsageWindow(cuenta);
   const [open, setOpen] = useState(false);
   // El panel vive en un portal, así que necesita saber contra qué anclarse.
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -61,7 +74,8 @@ export default function UsageWindowIndicator() {
 
   // Los dos valores, siempre: nunca se esconde la ventana semanal, aunque no
   // tenga reset conocido o directamente no haya llegado ninguna lectura.
-  const label = `${etiquetaVentana('Ventana de 5 horas', estadoCincoHoras)} · ${etiquetaVentana('Semanal', estadoSemanal)}`;
+  const ventanas = `${etiquetaVentana('Ventana de 5 horas', estadoCincoHoras)} · ${etiquetaVentana('Semanal', estadoSemanal)}`;
+  const label = cuenta ? `Cuenta ${nombreCuenta(cuenta)} · ${ventanas}` : ventanas;
 
   return (
     <div className="relative flex-shrink-0">
@@ -123,6 +137,7 @@ export default function UsageWindowIndicator() {
       {open && (
         <UsageWindowPopover
           snapshot={snapshot}
+          cuenta={cuenta}
           now={now}
           anchor={anchor}
           anchorEl={buttonRef.current}

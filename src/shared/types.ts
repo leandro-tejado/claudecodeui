@@ -83,6 +83,8 @@ export type ProjectSession = {
   // Tags the session with the owning project's DB `projectId` so UI handlers
   // (session switching, sidebar focus, etc.) can match against selectedProject.
   __projectId?: string;
+  /** Cuenta de IA con la que corre (id de cuentas.json); ausente = optimum. */
+  cuenta?: string;
   [key: string]: unknown;
 };
 
@@ -507,6 +509,8 @@ export type SessionEstablishedContext = {
   provider: LLMProvider;
   project: Project;
   summary?: string | null;
+  /** Cuenta de IA con la que se creó la sesión; ausente = optimum. */
+  cuenta?: string | null;
 };
 
 /** The result returned for a tool call, carrying its content, error flag, timestamp and any provider-specific extras that the tool renderers read. */

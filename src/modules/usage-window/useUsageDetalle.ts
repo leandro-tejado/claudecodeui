@@ -19,7 +19,7 @@ const VACIO: Estado = { detalle: null, gobernador: null };
  * simple, disparado cuando el popover se monta — que es cuando alguien lo
  * pidió, no antes.
  */
-export function useUsageDetalle(activo: boolean): Estado {
+export function useUsageDetalle(activo: boolean, cuenta?: string): Estado {
   const [estado, setEstado] = useState<Estado>(VACIO);
 
   useEffect(() => {
@@ -29,7 +29,8 @@ export function useUsageDetalle(activo: boolean): Estado {
     void (async () => {
       const [detalleRes, gobernadorRes] = await Promise.allSettled([
         authenticatedFetch('/api/usage-window/detalle'),
-        authenticatedFetch('/api/system/gobernador'),
+        // El semáforo es el de la cuenta de la sesión; sin cuenta, el de optimum de siempre.
+        authenticatedFetch(cuenta ? `/api/system/gobernador?cuenta=${encodeURIComponent(cuenta)}` : '/api/system/gobernador'),
       ]);
 
       const detalle =
@@ -47,7 +48,7 @@ export function useUsageDetalle(activo: boolean): Estado {
     return () => {
       cancelled = true;
     };
-  }, [activo]);
+  }, [activo, cuenta]);
 
   return estado;
 }

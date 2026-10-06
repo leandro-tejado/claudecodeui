@@ -28,6 +28,7 @@ import { useTabTitle } from '@/modules/skin/hooks/useTabTitle';
 import { useSkinUi } from '@/modules/skin/skinUiStore';
 import { useSubagents } from '@/modules/skin/subagentStore';
 import type { SubagentRow, SubagentStatus } from '@/modules/skin/subagentStore';
+import { AccountChip, cuentaDeSesion } from '@/modules/cuentas';
 import { useSessionBudgets } from '@/modules/skin/sessionBudgetStore';
 import { useTmuxPrompts } from '@/modules/skin/tmuxPromptStore';
 import { AMBER_AT, RED_AT } from '@/modules/skin/compactBarThresholds';
@@ -1318,6 +1319,9 @@ export function SkinSidebar({
                               </span>
                             )
                           )}
+                          {/* La cuenta de IA de la sesión (O = Optimum, P = Personal). Siempre
+                              presente: una sesión sin dato es de Optimum, la de siempre. */}
+                          <AccountChip cuenta={cuentaDeSesion(session)} />
                           <span
                             title={`Último turno escrito hace ${formatAge(session)}`}
                             className="flex-none text-muted-foreground"

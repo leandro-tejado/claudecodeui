@@ -125,6 +125,8 @@ type ChatComposerProps = {
   placeholder: string;
   isTextareaExpanded: boolean;
   sendByCtrlEnter?: boolean;
+  /** Cuenta de IA del turno (selector en sesión nueva, etiqueta en una existente). Va junto al modelo. */
+  cuentaSlot?: ReactNode;
 };
 
 /**
@@ -133,6 +135,7 @@ type ChatComposerProps = {
  * model/permission popovers that drive the next turn.
  */
 export default function ChatComposer({
+  cuentaSlot,
   pendingPermissionRequests,
   tmuxPrompts = EMPTY_TMUX_PROMPTS,
   tmuxPromptErrors = EMPTY_TMUX_PROMPT_ERRORS,
@@ -500,6 +503,8 @@ export default function ChatComposer({
               disabled={!input.trim()}
               onSchedule={onScheduleMessage}
             />
+
+            {cuentaSlot}
 
             <ComposerModelMenu
               effort={effort}

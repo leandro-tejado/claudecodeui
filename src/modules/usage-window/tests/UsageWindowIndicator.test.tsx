@@ -94,3 +94,21 @@ describe('UsageWindowIndicator — nunca "sin dato" habiendo una lectura, y la s
     expect(screen.queryByText('97%')).toBeNull();
   });
 });
+
+describe('UsageWindowIndicator — una ventana por cuenta (Fase 3 de 06-octubre-vps-multi-cuenta)', () => {
+  it('sin cuenta el label queda como siempre, sin prefijo', () => {
+    useUsageWindowMock.mockReturnValue(snapshot());
+    render(<UsageWindowIndicator />);
+
+    expect(label()).not.toContain('Cuenta');
+  });
+
+  it('con cuenta lee la ventana de esa cuenta y la nombra en el label', () => {
+    useUsageWindowMock.mockClear();
+    useUsageWindowMock.mockReturnValue(snapshot());
+    render(<UsageWindowIndicator cuenta="personal" />);
+
+    expect(useUsageWindowMock).toHaveBeenCalledWith('personal');
+    expect(label()).toContain('Cuenta Personal · Ventana de 5 horas: 40% real');
+  });
+});

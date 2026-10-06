@@ -396,6 +396,8 @@ export const api = {
       provider: string;
       projectPath: string;
       initialMessage?: unknown;
+      /** Cuenta de IA de la sesión (id de cuentas.json); ausente = optimum. */
+      cuenta?: string;
     }) => post('/api/providers/sessions', payload),
     sessionMessages: (
       sessionId: string,

@@ -104,3 +104,37 @@ describe('filtro "solo tmux"', () => {
     expect(screen.queryByText(/ocultas/)).toBeNull();
   });
 });
+
+describe('chip de cuenta en la fila (Fase 3 de 06-octubre-vps-multi-cuenta)', () => {
+  const conCuenta = (id: string, title: string, cuenta: string | undefined, vivo = true) => ({
+    ...session(id, title, { nombre: `cloudcli-${id}`, vivo }),
+    ...(cuenta ? { cuenta } : {}),
+  });
+
+  it('una sesión de tmux de la cuenta personal muestra el chip P', () => {
+    renderSidebar([conCuenta('ses-1', 'Trabajo propio', 'personal')]);
+
+    const fila = screen.getByText('Trabajo propio').closest('a') as HTMLElement;
+    const chip = fila.querySelector('[data-testid="account-chip"]');
+    expect(chip?.textContent).toBe('P');
+    expect(chip?.getAttribute('data-cuenta')).toBe('personal');
+    expect(fila.querySelector('[title="tmux: cloudcli-ses-1"]')).not.toBeNull();
+  });
+
+  it('sin campo cuenta la fila es de optimum: chip O', () => {
+    renderSidebar([conCuenta('ses-1', 'Trabajo de Optimum', undefined)]);
+
+    const chip = screen.getByTestId('account-chip');
+    expect(chip.textContent).toBe('O');
+    expect(chip.getAttribute('data-cuenta')).toBe('optimum');
+  });
+
+  it('cada fila lleva el chip de su propia cuenta', () => {
+    renderSidebar([
+      conCuenta('ses-1', 'Una', 'personal'),
+      conCuenta('ses-2', 'Otra', 'optimum'),
+    ]);
+
+    expect(screen.getAllByTestId('account-chip').map((c) => c.getAttribute('data-cuenta'))).toEqual(['personal', 'optimum']);
+  });
+});

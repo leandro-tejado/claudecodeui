@@ -27,6 +27,8 @@ import {
 } from '@/shared/context/SessionProtectionContext';
 import ChatMessagesPane from '@/modules/chat/transcript/ChatMessagesPane';
 import ChatComposer from '@/modules/chat/composer/ChatComposer';
+import ComposerCuentaMenu from '@/modules/chat/composer/ComposerCuentaMenu';
+import { cuentaDeSesion, useCuentasState } from '@/modules/cuentas';
 import CommandResultModal from '@/modules/chat/modals/CommandResultModal';
 import PanelSalidas from '@/modules/chat/panel-salidas/PanelSalidas';
 import { SkinSubagentBridge, useTmuxPrompts } from '@/modules/skin';
@@ -395,6 +397,7 @@ function ChatInterface({
   // persona; contestarlas teclea la opción en el pane.
   const { prompts: allTmuxPrompts, errors: tmuxPromptErrors } = useTmuxPrompts();
   const viewedSessionId = currentSessionId || selectedSession?.id || null;
+  const { nuevaCuenta: cuentaNueva } = useCuentasState();
   const tmuxPrompts = useMemo(
     () => allTmuxPrompts.filter((prompt) => prompt.sessionId === viewedSessionId),
     [allTmuxPrompts, viewedSessionId],
@@ -552,6 +555,12 @@ function ChatInterface({
           )}
 
           <ChatComposer
+          cuentaSlot={provider === 'claude' ? (
+            <ComposerCuentaMenu
+              puedeElegir={!viewedSessionId}
+              cuenta={viewedSessionId ? cuentaDeSesion(selectedSession) : cuentaNueva}
+            />
+          ) : undefined}
           pendingPermissionRequests={pendingPermissionRequests}
           handlePermissionDecision={handlePermissionDecision}
           handleGrantToolPermission={handleGrantToolPermission}

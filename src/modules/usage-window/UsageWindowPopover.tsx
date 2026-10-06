@@ -42,6 +42,8 @@ function textoAntiguedad(estado: EstadoVentana): string {
 
 type Props = {
   snapshot: UsageWindowSnapshot | null;
+  /** Cuenta de IA a la que pertenece esta cuota; sin ella, la de siempre (optimum) y el título no la nombra. */
+  cuenta?: string;
   /** Reloj del indicador: así el popover no necesita su propio timer para revisar frescura. */
   now: number;
   onClose: () => void;
@@ -51,9 +53,9 @@ type Props = {
   anchorEl: HTMLElement | null;
 };
 
-export default function UsageWindowPopover({ snapshot, now, onClose, anchor, anchorEl }: Props) {
+export default function UsageWindowPopover({ snapshot, cuenta, now, onClose, anchor, anchorEl }: Props) {
   const ref = useRef<HTMLDivElement>(null);
-  const { detalle, gobernador } = useUsageDetalle(true);
+  const { detalle, gobernador } = useUsageDetalle(true, cuenta);
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -102,7 +104,14 @@ export default function UsageWindowPopover({ snapshot, now, onClose, anchor, anc
       className="z-[100] max-h-[70vh] overflow-y-auto rounded-lg border border-border bg-popover p-3 text-popover-foreground shadow-xl"
     >
       <div className="flex items-baseline justify-between gap-2">
-        <span className="text-sm font-semibold">Ventana de 5 horas</span>
+        <span className="text-sm font-semibold">
+          Ventana de 5 horas
+          {cuenta && (
+            <span className="ml-1.5 font-normal text-muted-foreground">
+              · cuenta {cuenta.charAt(0).toUpperCase() + cuenta.slice(1)}
+            </span>
+          )}
+        </span>
         <span
           className={cn(
             'text-sm font-semibold',

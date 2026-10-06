@@ -12,6 +12,7 @@ import type {
 import { useDropzone } from 'react-dropzone';
 import { useTranslation } from 'react-i18next';
 
+import { CUENTA_POR_DEFECTO, cuentaDeLaSesionNueva } from '@/modules/cuentas';
 import { api } from '@/shared/api';
 import { PROVIDER_PERMISSION_PREFERENCE_KEYS } from '@/shared/constants';
 import { readUserPreference } from '@/shared/userSettings';
@@ -998,11 +999,16 @@ export function useChatComposerState({
 
         if (!targetSessionId) {
           let createdSessionName = sessionSummary;
+          // La cuenta se lee ahora, al crear, y queda fija en la sesión.
+          // Las cuentas son de Claude: los demás proveedores no las tienen.
+          const cuentaElegida = provider === 'claude' ? cuentaDeLaSesionNueva() : CUENTA_POR_DEFECTO;
           try {
             const response = await api.providers.createSession({
               provider,
               projectPath: resolvedProjectPath,
               initialMessage: messageContent,
+              // Solo viaja si no es la de siempre: el payload de optimum queda idéntico.
+              ...(cuentaElegida !== CUENTA_POR_DEFECTO && { cuenta: cuentaElegida }),
             });
             if (!response.ok) {
               throw new Error(`Failed to create session (${response.status})`);
@@ -1033,6 +1039,7 @@ export function useChatComposerState({
             provider,
             project: selectedProject,
             summary: createdSessionName,
+            ...(cuentaElegida !== CUENTA_POR_DEFECTO && { cuenta: cuentaElegida }),
           });
           // Paso 7: una sesion nueva nace en modo tmux — stream-json queda de
           // respaldo (se activa solo si un protocol_error TMUX_* lo revierte).

@@ -12,7 +12,9 @@ import type { AppTab, DirectoryRevealRequest, Project, ProjectSession, SessionEs
 import { useUiPreferences } from '@/shared/context/UiPreferencesContext';
 import { useFileOpenResolver } from '@/modules/project-workspace/hooks/useFileOpenResolver';
 import { EditorSidebar, useEditorSidebar } from '@/modules/code-editor';
+import { elegirCuentaNueva } from '@/modules/cuentas';
 import { SkinFilesPanel, SkinHeader as WorkspaceHeader, toggleFilesPanel, useSkinUi } from '@/modules/skin';
+import { useProjectCommandState } from '@/modules/project-workspace/context/ProjectsStateContext';
 import WorkspaceStateView from '@/modules/project-workspace/WorkspaceStateView';
 import WorkspaceErrorBoundary from '@/modules/project-workspace/WorkspaceErrorBoundary';
 
@@ -59,6 +61,18 @@ function WorkspaceMain({
   const preferences = useUiPreferences();
   const { showRawParameters, showThinking, sendByCtrlEnter } = preferences;
   const { filesPanelOpen } = useSkinUi();
+  const { handleNewSession } = useProjectCommandState();
+
+  // "Nueva con <otra cuenta>" del aviso de tope: fija la cuenta y abre la sesión
+  // nueva del mismo proyecto. Es la única vía de cambio de cuenta, y es explícita.
+  const handleNewSessionWithCuenta = useCallback(
+    (cuentaId: string) => {
+      if (!selectedProject) return;
+      elegirCuentaNueva(cuentaId);
+      handleNewSession(selectedProject);
+    },
+    [handleNewSession, selectedProject],
+  );
 
   const { tasksEnabled, isTaskMasterInstalled } = useTasksSettings();
   const browserUseEnabled = useBrowserUseEnabled();
@@ -160,6 +174,7 @@ function WorkspaceMain({
         shouldShowBrowserTab={shouldShowBrowserTab}
         isMobile={isMobile}
         onMenuClick={onMenuClick}
+        onNewSessionWithCuenta={handleNewSessionWithCuenta}
       />
 
       <div className="flex min-h-0 flex-1 overflow-hidden">

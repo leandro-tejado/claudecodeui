@@ -12,6 +12,8 @@ export type UsageWindowSnapshot = {
   kind: 'usage_window';
   fiveHour: UsageWindowReading | null;
   sevenDay: UsageWindowReading | null;
+  /** Cuenta de IA a la que pertenece la ventana; ausente = optimum (servidor anterior a la Fase 3). */
+  cuenta?: string;
 };
 
 /** Mirror of `DetalleSesion` en server/modules/usage-window/services/usage-detalle.service.ts. */

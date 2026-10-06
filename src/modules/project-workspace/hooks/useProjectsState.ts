@@ -53,6 +53,7 @@ type RegisterOptimisticSessionArgs = {
   provider: LLMProvider;
   project: Project;
   summary?: string | null;
+  cuenta?: string | null;
 };
 
 /**
@@ -619,6 +620,7 @@ export function useProjectsState({
     provider,
     project,
     summary,
+    cuenta,
   }: RegisterOptimisticSessionArgs) => {
     if (!newSessionId || !project?.projectId) {
       return;
@@ -635,6 +637,7 @@ export function useProjectsState({
       lastActivity: now,
       __provider: provider,
       __projectId: project.projectId,
+      ...(cuenta && { cuenta }),
     };
     // A purely local record that reuses the wire shape to feed
     // `upsertSessionIntoProject`; it is never dispatched onto the socket. It
