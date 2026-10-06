@@ -27,7 +27,14 @@ const transcript = path.join(dirTranscript, `${sessionId}.jsonl`);
 fs.mkdirSync(dirTranscript, { recursive: true });
 
 let ultimoUuid = null;
-const pendientes = new Map(); // request_id -> resolve, para can_use_tool
+const pendientes = new Map(); // request_id -> resolve, para can_use_tool y hook_callback
+// Capturado del `initialize` que manda el host (server/claude-runtime.provider.js)
+// al arrancar la query: { <eventName>: [{ matcher, hookCallbackIds, timeout }] }.
+// Fase 9 paso 1: así el guion `pregunta` puede saber si hay un hook
+// `PreToolUse` registrado para `AskUserQuestion` y, si lo hay, usarlo en vez
+// de (o además de) `can_use_tool` — igual que hace el host real.
+let hooksRegistrados = null;
+const permissionModeInicial = arg('--permission-mode') || 'default';
 
 const enviar = (obj) => process.stdout.write(`${JSON.stringify(obj)}\n`);
 const dormir = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -109,6 +116,25 @@ function resultadoHerramienta(toolUseId, contenido, toolUseResult, parent = null
 function pedirPermiso(toolName, input, toolUseId) {
   const requestId = `req_${uuid()}`;
   enviar({ type: 'control_request', request_id: requestId, request: { subtype: 'can_use_tool', tool_name: toolName, input, tool_use_id: toolUseId, permission_suggestions: [] } });
+  return new Promise((resolve) => pendientes.set(requestId, resolve));
+}
+
+// Busca, entre los hooks que el host registró en `initialize`, uno de
+// `eventName` cuyo `matcher` coincida con `toolName` (match exacto o vacío:
+// mismo criterio laxo que usa el SDK real para un string simple).
+function buscarHook(eventName, toolName) {
+  const entradas = hooksRegistrados?.[eventName];
+  if (!Array.isArray(entradas)) return null;
+  return entradas.find((e) => !e.matcher || e.matcher === toolName) ?? null;
+}
+
+// Protocolo `hook_callback` (ver sdk.mjs: `handleHookCallbacks`): el CLI
+// manda el `callback_id` que el host le dio en `initialize` y el host
+// responde con el valor que devolvió esa función — mismo mecanismo de
+// `pendientes` que ya usa `pedirPermiso` para `can_use_tool`.
+function pedirHook(callbackId, hookInput, toolUseId) {
+  const requestId = `req_${uuid()}`;
+  enviar({ type: 'control_request', request_id: requestId, request: { subtype: 'hook_callback', callback_id: callbackId, input: hookInput, tool_use_id: toolUseId } });
   return new Promise((resolve) => pendientes.set(requestId, resolve));
 }
 
@@ -253,8 +279,29 @@ const GUIONES = {
       ],
     };
     await mensaje([{ type: 'tool_use', id: tid, name: 'AskUserQuestion', input }], { stopReason: 'tool_use' });
-    const r = await pedirPermiso('AskUserQuestion', input, tid);
-    const respuestas = r?.updatedInput?.answers ?? {};
+
+    // Fase 9 paso 1: si el host registró un hook `PreToolUse` para esta tool
+    // (lo hace `claude-runtime.provider.js` en cualquier modo de permiso),
+    // usarlo — así valida en un E2E real, sin cuota, que el hook espera a la
+    // UI en `auto`/`bypassPermissions` y no se contesta solo (línea base,
+    // commit previo a Fase 9: en esos modos no había hook y el turno seguía
+    // sin preguntar nada).
+    const hook = buscarHook('PreToolUse', 'AskUserQuestion');
+    let respuestas;
+    if (hook) {
+      const callbackId = hook.hookCallbackIds?.[0];
+      const r = await pedirHook(callbackId, { hook_event_name: 'PreToolUse', tool_name: 'AskUserQuestion', tool_input: input, tool_use_id: tid }, tid);
+      respuestas = r?.hookSpecificOutput?.updatedInput?.answers ?? {};
+    } else if (permissionModeInicial === 'auto' || permissionModeInicial === 'bypassPermissions') {
+      // Línea base (sin el hook): estos modos saltan `canUseTool` y la
+      // pregunta se contesta sola, con la primera opción de cada una. Es el
+      // bug que el paso 1 pide confirmar y corregir.
+      respuestas = {};
+      for (const q of input.questions) respuestas[q.question] = q.options?.[0]?.label ?? '';
+    } else {
+      const r = await pedirPermiso('AskUserQuestion', input, tid);
+      respuestas = r?.updatedInput?.answers ?? {};
+    }
     const texto = Object.entries(respuestas).map(([q, a]) => `"${q}"="${a}"`).join(', ');
     resultadoHerramienta(tid, `User has answered your questions: ${texto}. You can now continue with the user's answers in mind.`, { questions: input.questions, answers: respuestas });
     await mensaje([{ type: 'text', text: `Elegiste: ${Object.values(respuestas).join(' | ') || '(nada)'}` }]);
@@ -280,7 +327,7 @@ async function turno(textoUsuario, contenido) {
 
 enviar({
   type: 'system', subtype: 'init', session_id: sessionId, cwd, tools: ['Agent', 'AskUserQuestion', 'Bash', 'Read'],
-  mcp_servers: [], model: modelo, permissionMode: arg('--permission-mode') || 'default', slash_commands: [],
+  mcp_servers: [], model: modelo, permissionMode: permissionModeInicial, slash_commands: [],
   apiKeySource: 'none', claude_code_version: '2.0.0-falso', output_style: 'default', agents: [], skills: [], plugins: [], uuid: uuid(),
 });
 
@@ -292,6 +339,13 @@ rl.on('line', (linea) => {
   log('in', msg.type, msg.request?.subtype ?? msg.response?.subtype ?? '');
   if (msg.type === 'control_request') {
     // initialize, set_permission_mode, interrupt, etc.: todo se acepta.
+    if (msg.request?.subtype === 'initialize') {
+      // El host (sdk.mjs: `initialize()`) manda sus hooks acá, serializados
+      // como { <eventName>: [{ matcher, hookCallbackIds, timeout }] } — ver
+      // `buscarHook`/`pedirHook` más arriba.
+      hooksRegistrados = msg.request.hooks ?? null;
+      log('hooks registrados', hooksRegistrados);
+    }
     enviar({ type: 'control_response', response: { subtype: 'success', request_id: msg.request_id, response: msg.request?.subtype === 'initialize' ? { commands: [], output_style: 'default', available_output_styles: ['default'], models: [], account: {} } : {} } });
     if (msg.request?.subtype === 'interrupt') process.exit(0);
     return;
