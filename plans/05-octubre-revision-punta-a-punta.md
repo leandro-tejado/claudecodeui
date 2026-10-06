@@ -109,7 +109,7 @@ Las sesiones nuevas del orquestador llegan por polling de 3 s sobre `~/.cache/ao
 - [x] Tipeo real: la fila en streaming no se remonta — acepta: en un turno real, el largo del texto visible crece en ≥ 5 muestras distintas y el nodo DOM es el mismo de principio a fin | valida: `node e2e/correr.mjs headless/tipeo`
 - [x] Indicador de actividad estilo Optimum (tool en curso, "pensando", reaparece tras 800 ms sin texto) — acepta: captura con el indicador antes del primer token y durante una tool | valida: `node e2e/correr.mjs headless/actividad`
 - [x] Sin partidos ni duplicados en los guiones `subagente-a-mitad` y `stderr-a-mitad` — acepta: exactamente una fila por bloque y el texto igual al final | valida: `node e2e/correr.mjs falso/intercalados`
-- [ ] Subagentes en vivo: la tarjeta de la tool Agent/Task muestra la actividad del subagente mientras corre (tool en curso, texto) — acepta: captura a mitad del subagente con su actividad, en headless real | valida: `node e2e/correr.mjs headless/subagente`
+- [x] Subagentes en vivo: la tarjeta de la tool Agent/Task muestra la actividad del subagente mientras corre (tool en curso, texto) — acepta: captura a mitad del subagente con su actividad, en headless real | valida: `node e2e/correr.mjs headless/subagente`
 - [x] Tmux: fin de turno por id de la última fila user (no por el flag `complecionAnunciada`) — acepta: un turno "respondé solo OK" pasa a libre en ≤ 3 s, 10 de 10 veces | valida: `node e2e/correr.mjs tmux/turno-corto`
 - [x] Tmux: inotify sobre el JSONL y corte por id en vez de por cantidad — acepta: la primera fila llega en ≤ 1,5 s desde que se escribe | valida: `node e2e/correr.mjs tmux/latencia`
 - [x] Tmux: lector del pane cada ~400 ms → `activity` (spinner, tool) y borrador de texto — acepta: "pensando" visible ≤ 2 s después de "Enviado"; texto creciendo en ≥ 3 muestras; el borrador lo reemplaza la versión del JSONL sin dejar dos filas | valida: `node e2e/correr.mjs tmux/en-vivo`
@@ -349,10 +349,10 @@ Las sesiones nuevas del orquestador llegan por polling de 3 s sobre `~/.cache/ao
 5. E2E con un turno real que delega 2 subagentes en paralelo con una tarea trivial.
 
 #### Estado (arranca todo en fail)
-- [fail] Captura a mitad del subagente con su tool en curso visible | valida: `node e2e/correr.mjs headless/subagente`
-- [fail] Dos subagentes en paralelo, dos tarjetas con estado propio | valida: mismo escenario, captura `paralelo.png`
-- [fail] La respuesta principal no se parte ni se duplica con subagentes | valida: mismo escenario, `contarApariciones` = 1
-- [fail] Vitest verde | valida: `NODE_ENV=test npx vitest run`
+- [pass] Captura a mitad del subagente con su tool en curso visible (rojo sin el arreglo, verde con él) | valida: `node e2e/correr.mjs headless/subagente`
+- [pass] Dos subagentes en paralelo, dos tarjetas con estado propio (Bash en A, Read en B, sin cruzarse) | valida: mismo escenario, captura `paralelo.png`
+- [pass] La respuesta principal no se parte ni se duplica con subagentes | valida: mismo escenario, `contarApariciones` = 1
+- [pass] Vitest verde (733/733) | valida: `NODE_ENV=test npx vitest run`
 
 ---
 
@@ -588,6 +588,8 @@ Fase 1 (arnés) → Fase 2 (línea base)
 
 **Fase 5, paso 7 (06-oct), merge `80a50075`:** la línea de actividad dice "Thinking" o el nombre de la tool, sin palabras rotando; mientras llega la respuesta `statusText: ''` calla la etiqueta (quedan el tiempo y el Stop) y a los 800 ms sin texto vuelve "Thinking…". Guion `herramienta` en el CLI falso y 3 checks nuevos en `headless/actividad`. El primer verde del agente era falso: el check de reaparición veía "Thinking…" porque era la palabra rotada de turno, y al sacar la rotación dio 24 ms; se corrigió el componente, no el check (`e2e/evidencia/revalida-fase-5-paso7/`). Los pasos 3 y 8 ya estaban hechos (`messageKeys.ts` usa `message.id` primero; `arrancarVacio` en la fila viva).
 
+**Fase 6 (06-oct), worktree `wf_da5db4bc-5d1-1`:** las `activity` con `parentToolUseId` se guardan en el store (el indicador principal las sigue ignorando) y `useChatMessages` arma `subagentCurrentActivity` por tarjeta, que se limpia con la entrada que la resuelve. `SubagentPanel` muestra la tool en curso en el encabezado, el último texto con la tarjeta plegada y el resultado de una tarea en background desde `taskStatus.summary`. Guion `subagentes-paralelos` en el CLI falso (el plan pedía un turno real; con el gobernador en rojo se usó el falso). El check 1 del agente buscaba "Read" en todo el panel y daba verde a medias sin el arreglo; se endureció a leer el encabezado de cada tarjeta (`e2e/evidencia/revalida-fase-6/`).
+
 **Corte de tmux del 06-oct:** no lo causó esta ejecución. El servidor de tmux murió a las 04:13 por OOM (un pane del 30-sep llegó a 4,1 GB; cayeron también `cloudcli`, `norte`, `servidor-code` y `syncthing`, y el systemd de usuario se reinició a las 04:17). Entre 04:17 y 15:09 no se abrió ningún pane. Ningún transcript ejecutó `kill-server`; vitest solo corre `src/`. Queda el riesgo latente de que los tests de server usen el socket por defecto.
 
 **Fase 4, check del turno real (06-oct):** Leandro levantó `:3901` con el token desde su shell. Turno real con Sonnet: 13 `thinking_delta` con texto en los frames (`e2e/evidencia/revalida-fase-4/`). Dos cambios al escenario: (1) la sesión inicial la escribe el CLI falso con `E2E_FALSO_MODELO=sonnet`, porque el `claude -p` del shell de la suite no tiene token y la UI hereda el modelo de la sesión; (2) el prompt ya no pide "pensalo paso a paso": el safeguard de Sonnet lo cortó como `reasoning_extraction`. El thinking resumido lo pide el server por protocolo, no hace falta pedirlo en el texto. El segundo check (razonamiento visible) hoy detecta el "Thinking…" del indicador: lo endurece la revalidación de la Fase 5.
@@ -596,8 +598,8 @@ Fase 1 (arnés) → Fase 2 (línea base)
 
 ## Continuación de Sesión
 
-**Fases completadas:** 1, 2, 3, 4, 5, 8, 10. 7-server cerrada (falta su parte de cliente).
-**Fase actual:** Fase 6 (subagentes en vivo).
-**Próximo paso exacto:** Fase 6 en un worktree con instancia propia; después el cliente de la 7 (`tmux/rafaga`: que el composer mande durante el turno), la 9 y la 11. El check "razonamiento visible" de `headless/pensamiento` sigue por endurecer (necesita `:3901` con token).
-**Bloqueantes:** ninguno.
-**Micro-tasks pendientes:** 15 de 41
+**Fases completadas:** 1, 2, 3, 4, 5, 6, 8, 10. 7-server cerrada (falta su parte de cliente).
+**Fase actual:** cliente de la Fase 7 (`tmux/rafaga`: el composer manda durante el turno; `queued_command` como mensaje del usuario "Enviado"; un error `TMUX_*` no hace `setRunsInTmux(false)`; indicador y borrador tmux con los componentes de la Fase 5).
+**Próximo paso exacto:** cliente de la 7 en un worktree (sus escenarios crean sesiones de tmux reales: gobernador no rojo y prefijo propio); después la 9 y la 11. El check "razonamiento visible" de `headless/pensamiento` sigue por endurecer (necesita `:3901` con token).
+**Bloqueantes:** los escenarios `tmux/*` no corren con el gobernador en rojo (`exigirGobernadorNoRojo`).
+**Micro-tasks pendientes:** 14 de 41

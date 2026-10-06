@@ -5,7 +5,7 @@
 //
 // El guion sale del prompt: "guion:<nombre>". Sin guion, corre `humo`.
 // Guiones: humo, lento, pensamiento, herramienta, subagente-a-mitad,
-//          stderr-a-mitad, 6000-deltas, pregunta.
+//          subagentes-paralelos, stderr-a-mitad, 6000-deltas, pregunta.
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -98,10 +98,12 @@ async function mensaje(bloques, { pausa = 40, parent = null, stopReason = 'end_t
   return id;
 }
 
-function resultadoHerramienta(toolUseId, contenido, toolUseResult) {
+// `parent`: id del tool_use del subagente dueño de este resultado (null para
+// un resultado del hilo principal, como el que resuelve el propio Agent/Task).
+function resultadoHerramienta(toolUseId, contenido, toolUseResult, parent = null) {
   const msg = { role: 'user', content: [{ type: 'tool_result', tool_use_id: toolUseId, content: contenido }] };
-  fila('user', msg, toolUseResult ? { toolUseResult } : {});
-  enviar({ type: 'user', message: msg, parent_tool_use_id: null, session_id: sessionId, uuid: ultimoUuid });
+  fila('user', msg, { ...(toolUseResult ? { toolUseResult } : {}), ...(parent ? { isSidechain: true } : {}) });
+  enviar({ type: 'user', message: msg, parent_tool_use_id: parent, session_id: sessionId, uuid: ultimoUuid });
 }
 
 function pedirPermiso(toolName, input, toolUseId) {
@@ -167,6 +169,68 @@ const GUIONES = {
         enviar({ type: 'system', subtype: 'task_notification', task_id: tid, status: 'running', summary: 'Tarea falsa', session_id: sessionId, uuid: uuid() });
       },
     });
+  },
+  // Fase 6: dos subagentes a la vez, cada uno con su propia tool en curso,
+  // su propio texto y su propio resultado — lo más fiel posible a lo que el
+  // SDK real manda (docs/architecture/protocolo-streaming.md, "Subagentes:
+  // solo activity cruza, nunca su texto"): el `content_block_start` de cada
+  // uno cruza con su `parent_tool_use_id` tal cual, sin pasar por `mensaje()`
+  // (que no deja una ventana abierta entre el inicio del bloque y su cierre);
+  // el resto de cada subagente — su tool completa, su texto, su resultado —
+  // sí va por la ruta normal de mensajes completos con `parent`.
+  async 'subagentes-paralelos'() {
+    const tidA = `toolu_falso_${crypto.randomBytes(4).toString('hex')}`;
+    const tidB = `toolu_falso_${crypto.randomBytes(4).toString('hex')}`;
+    const innerA = `toolu_falso_${crypto.randomBytes(4).toString('hex')}`;
+    const innerB = `toolu_falso_${crypto.randomBytes(4).toString('hex')}`;
+
+    // Texto principal antes de delegar, y las dos delegaciones en el mismo
+    // mensaje (así llega un turno real con varios tool_use juntos).
+    await mensaje([
+      { type: 'text', text: 'Antes de delegar, reviso lo que hay que hacer.' },
+      { type: 'tool_use', id: tidA, name: 'Agent', input: { description: 'Tarea A en paralelo', prompt: 'contar A', subagent_type: 'general-purpose' } },
+      { type: 'tool_use', id: tidB, name: 'Agent', input: { description: 'Tarea B en paralelo', prompt: 'contar B', subagent_type: 'general-purpose' } },
+    ], { stopReason: 'tool_use' });
+
+    // Los dos subagentes arrancan su propia tool al mismo tiempo: la
+    // `activity` (`content_block_start`) que tiene que cruzar con el
+    // `parentToolUseId` de cada uno, antes de que llegue su mensaje completo.
+    ev({ type: 'content_block_start', index: 0, content_block: { type: 'tool_use', id: innerA, name: 'Bash', input: {} } }, tidA);
+    ev({ type: 'content_block_start', index: 0, content_block: { type: 'tool_use', id: innerB, name: 'Read', input: {} } }, tidB);
+
+    await dormir(1800); // ventana "a mitad": las dos tarjetas muestran su tool en curso
+
+    ev({ type: 'content_block_delta', index: 0, delta: { type: 'input_json_delta', partial_json: JSON.stringify({ command: 'echo a' }) } }, tidA);
+    ev({ type: 'content_block_stop', index: 0 }, tidA);
+    ev({ type: 'content_block_delta', index: 0, delta: { type: 'input_json_delta', partial_json: JSON.stringify({ file_path: '/tmp/b.txt' }) } }, tidB);
+    ev({ type: 'content_block_stop', index: 0 }, tidB);
+
+    // El mensaje completo de cada subagente con la tool que acaba de cerrar
+    // — misma forma que un `tool_use` del hilo principal, pero con
+    // `parent_tool_use_id` — así llega "ya pasa" por la rama normal de
+    // assistant/tool_use, no por streaming parcial.
+    const msgA = { id: `msg_falso_${crypto.randomBytes(6).toString('hex')}`, type: 'message', role: 'assistant', model: modelo, stop_reason: 'tool_use', usage: uso, content: [{ type: 'tool_use', id: innerA, name: 'Bash', input: { command: 'echo a' } }] };
+    fila('assistant', msgA, { requestId: `req_falso_${msgA.id}`, isSidechain: true });
+    enviar({ type: 'assistant', message: msgA, parent_tool_use_id: tidA, session_id: sessionId, uuid: ultimoUuid });
+
+    const msgB = { id: `msg_falso_${crypto.randomBytes(6).toString('hex')}`, type: 'message', role: 'assistant', model: modelo, stop_reason: 'tool_use', usage: uso, content: [{ type: 'tool_use', id: innerB, name: 'Read', input: { file_path: '/tmp/b.txt' } }] };
+    fila('assistant', msgB, { requestId: `req_falso_${msgB.id}`, isSidechain: true });
+    enviar({ type: 'assistant', message: msgB, parent_tool_use_id: tidB, session_id: sessionId, uuid: ultimoUuid });
+
+    resultadoHerramienta(innerA, 'a\n', undefined, tidA);
+    resultadoHerramienta(innerB, 'contenido de b\n', undefined, tidB);
+
+    // Cada subagente habla por su cuenta, en su propia tarjeta.
+    await mensaje([{ type: 'text', text: 'Soy el subagente A y ya usé mi tool.' }], { pausa: 0, parent: tidA });
+    await mensaje([{ type: 'text', text: 'Soy el subagente B y ya usé mi tool.' }], { pausa: 0, parent: tidB });
+
+    // Cada tarjeta se cierra con el resultado de su propio subagente.
+    resultadoHerramienta(tidA, 'Resultado final de la tarea A.');
+    resultadoHerramienta(tidB, 'Resultado final de la tarea B.');
+
+    // Texto principal después: no se parte ni se duplica por los eventos de
+    // los subagentes que llegaron intercalados.
+    await mensaje([{ type: 'text', text: marca(`Las dos tareas terminaron. ${textoLargo}`) }], { pausa: 60 });
   },
   async 'stderr-a-mitad'() {
     await mensaje([{ type: 'text', text: marca(`Una respuesta que se cruza con stderr. ${textoLargo}`) }], {

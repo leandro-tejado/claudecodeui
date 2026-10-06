@@ -433,6 +433,14 @@ export type ChatMessage = {
   subagent?: SubagentInfo;
   /** What that agent did, in order. Empty while the agent is still starting up. */
   subagentActivity?: SubagentActivity[];
+  /**
+   * The tool (or "thinking") the spawned subagent is using right now, from
+   * its latest `activity` event (a `content_block_start` the server lets
+   * cross with `parentToolUseId`, Fase 6). Cleared the moment that activity
+   * resolves into a full entry in `subagentActivity` — a tool call, its
+   * result, or a text/thinking block — so it never lags behind the timeline.
+   */
+  subagentCurrentActivity?: { activityKind?: 'thinking' | 'tool'; toolName?: string };
   /** The workflow run this row launched, as the backend read it on the last history load. */
   workflow?: WorkflowInfo;
   /** The latest live word on the background task this row launched, while the run is in flight. */
