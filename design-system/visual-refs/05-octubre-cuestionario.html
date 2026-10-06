@@ -1,0 +1,625 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Boceto — Cuestionario CloudCLI (05-oct)</title>
+<style>
+  :root{
+    --primary:#3156FA; --primary-light:#62C3F9; --primary-dark:#2743D6; --primary-tint:#EDF1FF;
+    --ink:#141F3D; --muted:#5B6B8C; --faint:#8A97B0;
+    --surface:#FFFFFF; --surface-2:#F4F7FB; --surface-3:#EAEEF4;
+    --line:#DBE2EC; --line-strong:#C7D0DE;
+    --good:#15803D; --warn:#D97706; --bad:#DC2626;
+    --chrome-bg: rgb(255 255 255 / .72); --chrome-edge: rgb(255 255 255 / .5);
+    --shadow-card: 0 1px 2px rgb(20 33 61 / .04), 0 2px 8px rgb(20 33 61 / .06);
+    --shadow-float: 0 8px 24px rgb(20 33 61 / .14);
+    --radius-sm:6px; --radius-md:8px; --radius-lg:12px;
+    --sp-2:8px; --sp-4:16px; --sp-6:24px; --sp-8:32px;
+    color-scheme: light;
+  }
+  :root[data-theme="dark"]{
+    --primary:#7C9BFF; --primary-light:#9FD4FF; --primary-dark:#3156FA; --primary-tint:#1B2440;
+    --ink:#EEF1F8; --muted:#93A0BF; --faint:#68749C;
+    --surface:#0B1220; --surface-2:#121A2B; --surface-3:#1A2338;
+    --line:#27314A; --line-strong:#38435F;
+    --good:#3DDC84; --warn:#F2B84B; --bad:#FF6B6B;
+    --chrome-bg: rgb(11 18 32 / .72); --chrome-edge: rgb(255 255 255 / .06);
+    --shadow-card: 0 1px 2px rgb(0 0 0 / .3), 0 2px 10px rgb(0 0 0 / .35);
+    --shadow-float: 0 8px 28px rgb(0 0 0 / .45);
+    color-scheme: dark;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --primary:#7C9BFF; --primary-light:#9FD4FF; --primary-dark:#3156FA; --primary-tint:#1B2440;
+      --ink:#EEF1F8; --muted:#93A0BF; --faint:#68749C;
+      --surface:#0B1220; --surface-2:#121A2B; --surface-3:#1A2338;
+      --line:#27314A; --line-strong:#38435F;
+      --good:#3DDC84; --warn:#F2B84B; --bad:#FF6B6B;
+      --chrome-bg: rgb(11 18 32 / .72); --chrome-edge: rgb(255 255 255 / .06);
+      --shadow-card: 0 1px 2px rgb(0 0 0 / .3), 0 2px 10px rgb(0 0 0 / .35);
+      --shadow-float: 0 8px 28px rgb(0 0 0 / .45);
+      color-scheme: dark;
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+    background:var(--surface-2); color:var(--ink); font-size:16px; line-height:1.5;
+    overflow-x:hidden;
+  }
+  svg{ display:block; }
+
+  /* ─── Cabecera de la página (mismo material que los otros bocetos) ─── */
+  .header{
+    position:sticky; top:0; z-index:20;
+    background:var(--chrome-bg); backdrop-filter:blur(20px) saturate(180%); -webkit-backdrop-filter:blur(20px) saturate(180%);
+    border-bottom:1px solid var(--chrome-edge);
+    padding:10px var(--sp-4); display:flex; align-items:center; gap:var(--sp-4);
+  }
+  @media (prefers-reduced-transparency: reduce){ .header{ background:var(--surface-2); backdrop-filter:none; } }
+  .header__titulo{ font-size:14px; font-weight:600; flex:1; display:flex; align-items:center; gap:8px; }
+  .header__titulo svg{ width:16px; height:16px; color:var(--muted); }
+  .header__tema{
+    appearance:none; border:1px solid var(--line); background:var(--surface); color:var(--muted);
+    border-radius:var(--radius-sm); padding:6px 10px; font-size:12px; cursor:pointer;
+  }
+  .header__tema:hover{ border-color:var(--line-strong); color:var(--ink); }
+  .header__tema:focus-visible{ outline:2px solid var(--primary); outline-offset:1px; }
+
+  /* ─── Columna de lectura (textos y rótulos de sección) ──────────── */
+  .pagina{ max-width:880px; margin:0 auto; padding:var(--sp-6) var(--sp-4) var(--sp-8); }
+  .intro{ font-size:13px; color:var(--muted); max-width:620px; margin:0 0 var(--sp-8); line-height:1.6; }
+  .intro code{ font-family:ui-monospace,"SF Mono","Cascadia Code",monospace; font-size:12px; background:var(--surface-3); border-radius:4px; padding:1px 5px; }
+
+  .rotulo{
+    font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:var(--muted);
+    margin:0 0 6px;
+  }
+  .nota-ⓘ{
+    display:flex; align-items:flex-start; gap:7px; font-size:12.5px; color:var(--muted);
+    margin:0 0 var(--sp-4); max-width:640px; line-height:1.5;
+  }
+  .nota-ⓘ svg{ width:15px; height:15px; flex:none; margin-top:1px; color:var(--faint); }
+
+  .bloque{ margin-bottom:var(--sp-8); }
+
+  /* ─── Mensaje que dispara el cuestionario (tokens del boceto de chat) ─ */
+  .contexto{ max-width:620px; display:flex; flex-direction:column; gap:var(--sp-4); margin-bottom:var(--sp-2); }
+  .burbuja-usuario{
+    max-width:92%; align-self:flex-end; background:var(--primary-tint); color:var(--ink);
+    padding:10px 14px; border-radius:var(--radius-md); font-size:14px; white-space:pre-wrap;
+  }
+  .actividad{ display:flex; align-items:center; gap:7px; font-size:13px; color:var(--muted); }
+  .actividad svg{ width:14px; height:14px; flex:none; }
+  .actividad--listo svg{ color:var(--good); }
+  .shimmer{
+    background:linear-gradient(90deg, var(--muted) 0%, var(--ink) 50%, var(--muted) 100%);
+    background-size:200% 100%; -webkit-background-clip:text; background-clip:text; color:transparent;
+    animation:shimmer 1.8s linear infinite;
+  }
+  @media (prefers-reduced-motion: reduce){ .shimmer{ animation:none; color:var(--muted); background:none; -webkit-text-fill-color:currentColor; } }
+  @keyframes shimmer{ to{ background-position:-200% 0; } }
+  .turno-claude{ font-size:15px; line-height:1.75; max-width:92%; }
+  .turno-claude p{ margin:0; }
+
+  /* ─── El "escenario" de cada paso: fondo atenuado + modal ──────────── */
+  .franja{ padding:var(--sp-6) var(--sp-4); }
+  .marco{
+    background:var(--surface-3); border-radius:var(--radius-lg); padding:var(--sp-8) var(--sp-4);
+    display:flex; justify-content:center;
+  }
+  .paso-etiqueta{ font-size:12px; font-weight:600; color:var(--muted); margin:0 0 10px 2px; }
+
+  /* ─── El componente Cuestionario (misma cara en las dos instancias) ── */
+  .cuestionario{
+    width:min(90vw, 1200px); max-width:100%;
+    background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-lg);
+    box-shadow:var(--shadow-float); overflow:hidden;
+    animation: materializar .35s cubic-bezier(.2,.8,.2,1) both;
+  }
+  @keyframes materializar{ from{ opacity:0; transform:translateY(6px) scale(.985); } to{ opacity:1; transform:none; } }
+  @media (prefers-reduced-motion: reduce){ .cuestionario{ animation: aparecer .18s ease-out both; } }
+  @keyframes aparecer{ from{ opacity:0 } to{ opacity:1 } }
+
+  .cuestionario__cabecera{
+    display:flex; align-items:center; gap:var(--sp-4); padding:var(--sp-4);
+    border-bottom:1px solid var(--line);
+  }
+  .paso-badge{ font-size:12px; font-weight:600; color:var(--muted); flex:none; }
+  .puntos{ display:flex; gap:5px; margin:0 auto; }
+  .punto{ width:6px; height:6px; border-radius:999px; background:var(--line-strong); }
+  .punto.activo{ background:var(--primary); }
+  .punto.hecho{ background:var(--good); }
+  .btn-cerrar{
+    flex:none; width:32px; height:32px; min-width:32px; border-radius:999px; border:0; background:transparent;
+    color:var(--faint); display:flex; align-items:center; justify-content:center; cursor:pointer;
+  }
+  .btn-cerrar svg{ width:16px; height:16px; }
+  .btn-cerrar:hover{ background:var(--surface-3); color:var(--ink); }
+  .btn-cerrar:focus-visible{ outline:2px solid var(--primary); outline-offset:1px; }
+
+  .cuestionario__cuerpo{ padding:var(--sp-6) var(--sp-4); }
+  .tipo-pregunta{
+    display:flex; align-items:center; gap:6px; font-size:11.5px; font-weight:700; text-transform:uppercase;
+    letter-spacing:.06em; color:var(--primary-dark); margin:0 0 10px;
+  }
+  :root[data-theme="dark"] .tipo-pregunta{ color:var(--primary); }
+  @media (prefers-color-scheme:dark){ :root:not([data-theme="light"]) .tipo-pregunta{ color:var(--primary); } }
+  .tipo-pregunta svg{ width:14px; height:14px; }
+  .cuestionario__titulo{ font-size:17px; font-weight:700; letter-spacing:-.01em; margin:0 0 8px; line-height:1.3; }
+  .info-linea{ display:flex; align-items:flex-start; gap:6px; font-size:12.5px; color:var(--muted); margin:0 0 var(--sp-4); max-width:520px; }
+  .info-linea svg{ width:14px; height:14px; flex:none; margin-top:1px; color:var(--faint); }
+
+  .opciones{ display:flex; flex-direction:column; gap:8px; }
+  .opcion{
+    display:flex; align-items:center; gap:12px; min-height:44px; padding:10px 14px;
+    border:1px solid var(--line); border-radius:var(--radius-md); cursor:pointer; background:var(--surface);
+  }
+  .opcion:hover{ border-color:var(--line-strong); background:var(--surface-2); }
+  .opcion.seleccionada{ border-color:var(--primary); background:var(--primary-tint); }
+  .opcion__num{
+    flex:none; width:20px; height:20px; border-radius:999px; background:var(--surface-3); color:var(--faint);
+    font-size:11px; font-weight:600; display:flex; align-items:center; justify-content:center;
+  }
+  .opcion.seleccionada .opcion__num{ background:var(--primary); color:#fff; }
+  .opcion__texto{ font-size:14px; color:var(--ink); flex:1; }
+
+  .radio-ico, .check-ico{ flex:none; width:18px; height:18px; border:1.5px solid var(--line-strong); display:flex; align-items:center; justify-content:center; }
+  .radio-ico{ border-radius:999px; }
+  .check-ico{ border-radius:5px; }
+  .opcion.seleccionada .radio-ico, .opcion.seleccionada .check-ico{ border-color:var(--primary); }
+  .radio-ico__dot{ width:8px; height:8px; border-radius:999px; background:var(--primary); }
+  .check-ico svg{ width:12px; height:12px; color:var(--primary); }
+
+  .otra__campo{
+    margin:10px 0 0 32px; border:1px solid var(--primary); border-radius:var(--radius-sm); background:var(--surface);
+    padding:9px 12px; font-size:13px; color:var(--ink); box-shadow:0 0 0 3px color-mix(in srgb, var(--primary) 16%, transparent);
+  }
+  .otra__campo .placeholder{ color:var(--faint); }
+
+  .cuestionario__pie{
+    display:flex; align-items:center; gap:var(--sp-4); padding:var(--sp-4); border-top:1px solid var(--line);
+    background:var(--surface-2); flex-wrap:wrap;
+  }
+  .teclado-hint{ font-size:11.5px; color:var(--faint); flex:1; min-width:140px; }
+  .pie__botones{ display:flex; gap:8px; margin-left:auto; }
+  .btn-fantasma, .btn-primario{
+    display:flex; align-items:center; gap:6px; min-height:44px; padding:0 16px; border-radius:var(--radius-sm);
+    font-size:14px; font-weight:500; cursor:pointer;
+  }
+  .btn-fantasma{ background:transparent; border:1px solid var(--line); color:var(--muted); }
+  .btn-fantasma:hover:not(:disabled){ border-color:var(--line-strong); color:var(--ink); }
+  .btn-fantasma:disabled{ opacity:.4; cursor:default; }
+  .btn-primario{ background:var(--primary); border:0; color:#fff; }
+  .btn-primario:hover{ background:var(--primary-dark); }
+  .btn-fantasma:focus-visible, .btn-primario:focus-visible{ outline:2px solid var(--primary); outline-offset:2px; }
+  .btn-fantasma svg, .btn-primario svg{ width:14px; height:14px; }
+
+  /* 390px: el modal pasa a pantalla completa — sin recuadro, sin fondo atenuado */
+  @media (max-width: 767px){
+    .marco{ background:transparent; border-radius:0; padding:0; }
+    .cuestionario{ width:100%; border-radius:0; border-left:0; border-right:0; box-shadow:none; }
+    .franja{ padding:0; margin-bottom:var(--sp-6); }
+    .pagina{ padding-left:var(--sp-4); padding-right:var(--sp-4); }
+  }
+
+  /* ─── Revisión ──────────────────────────────────────────────────── */
+  .revision__lista{ display:flex; flex-direction:column; gap:0; border:1px solid var(--line); border-radius:var(--radius-md); overflow:hidden; }
+  .revision__item{ display:flex; align-items:flex-start; gap:var(--sp-4); padding:12px 14px; border-bottom:1px solid var(--line); background:var(--surface); }
+  .revision__item:last-child{ border-bottom:0; }
+  .revision__etq{ flex:none; width:110px; font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); padding-top:2px; }
+  .revision__val{ flex:1; font-size:14px; color:var(--ink); }
+  .revision__cambiar{
+    flex:none; font-size:12.5px; font-weight:600; color:var(--primary); background:none; border:0; cursor:pointer;
+    min-height:44px; display:flex; align-items:center; padding:0 2px;
+  }
+  .revision__cambiar:hover{ text-decoration:underline; }
+  .revision__cambiar:focus-visible{ outline:2px solid var(--primary); outline-offset:2px; }
+
+  /* ─── Enviado ───────────────────────────────────────────────────── */
+  .cuestionario--enviado .cuestionario__cuerpo{ display:flex; flex-direction:column; align-items:center; text-align:center; padding:var(--sp-8) var(--sp-4); gap:10px; }
+  .check-grande{ width:48px; height:48px; color:var(--good); }
+  .enviado__texto{ font-size:17px; font-weight:700; margin:0; }
+  .enviado__meta{ font-size:12.5px; color:var(--muted); margin:0; }
+
+  /* ─── Resumen en el transcript ──────────────────────────────────── */
+  .callout-fix{
+    display:flex; gap:8px; align-items:flex-start; max-width:620px; margin-top:var(--sp-4);
+    padding:10px 12px; border:1px solid var(--line); border-left:3px solid var(--primary); border-radius:var(--radius-sm);
+    background:var(--surface); font-size:12.5px; color:var(--muted); line-height:1.55;
+  }
+  .callout-fix svg{ width:14px; height:14px; flex:none; margin-top:2px; color:var(--primary); }
+
+  /* ─── Headless vs tmux: misma cara ──────────────────────────────── */
+  .comparacion-grid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap:var(--sp-4); }
+  .comparacion__item{ display:flex; flex-direction:column; gap:10px; }
+  .badge-sesion{
+    display:inline-flex; align-items:center; gap:6px; font-size:11.5px; font-weight:700; text-transform:uppercase;
+    letter-spacing:.05em; color:var(--muted); background:var(--surface-3); border-radius:999px; padding:5px 10px;
+    width:fit-content;
+  }
+  .badge-sesion svg{ width:13px; height:13px; }
+  .cuestionario--compacta{ width:100%; }
+  .cuestionario--compacta .cuestionario__cuerpo{ padding:var(--sp-4); }
+  .cuestionario--compacta .cuestionario__titulo{ font-size:15px; }
+  .nota-comparacion{ font-size:12.5px; color:var(--muted); max-width:700px; margin-top:var(--sp-4); display:flex; gap:7px; }
+  .nota-comparacion svg{ width:14px; height:14px; flex:none; margin-top:2px; color:var(--faint); }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header__titulo">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="m8 12 3 3 5-6"/></svg>
+    Boceto — Cuestionario
+  </div>
+  <button class="header__tema" id="btnTema" type="button">Tema: <span id="temaTexto">claro</span></button>
+</header>
+
+<div class="pagina">
+  <p class="intro">
+    El cuestionario de alcance que un turno abre cuando necesita que Leandro elija entre
+    opciones antes de seguir. Ejemplo completo en
+    <code>design-system/visual-refs/05-octubre-cuestionario-ejemplo.md</code> — acá se bocetan
+    sus pasos uno por uno, porque es un recorrido con estado, no una sola pantalla.
+  </p>
+
+  <!-- 0. De qué mensaje sale -->
+  <section class="bloque">
+    <p class="rotulo">De qué mensaje sale</p>
+    <div class="contexto">
+      <div class="burbuja-usuario">Agregale al panel de sesiones un botón para exportar el estado de las sesiones a un archivo. Antes de tocar nada, fijate qué alcance tiene sentido y preguntame lo que haga falta.</div>
+      <p class="actividad">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"/></svg>
+        <span class="shimmer">Preguntando: alcance de la exportación</span>
+      </p>
+    </div>
+    <p class="nota-ⓘ">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+      La actividad queda en una línea genérica — el detalle de la pregunta vive solo dentro del
+      cuestionario, nunca repetido acá (es el bug del punto 6, más abajo).
+    </p>
+  </section>
+
+  <!-- 1. Paso a paso -->
+  <section class="bloque">
+    <p class="rotulo">Paso a paso, una pregunta por pantalla</p>
+    <p class="nota-ⓘ">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+      Números para elegir, Enter para seguir — en los dos temas, el modal ocupa ≈90vw (tope
+      1200px) en escritorio y toda la pantalla debajo de 768px.
+    </p>
+
+    <!-- Paso 1 — opción única -->
+    <div class="franja"><div class="marco"><div class="cuestionario" role="group" aria-label="Paso 1 de 4, opción única">
+      <div class="cuestionario__cabecera">
+        <span class="paso-badge">Paso 1 de 4</span>
+        <div class="puntos" aria-hidden="true"><span class="punto activo"></span><span class="punto"></span><span class="punto"></span><span class="punto"></span></div>
+        <button class="btn-cerrar" type="button" aria-label="Cerrar cuestionario">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="cuestionario__cuerpo">
+        <p class="tipo-pregunta">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"/></svg>
+          Opción única
+        </p>
+        <h3 class="cuestionario__titulo">¿Qué sesiones entran en la exportación?</h3>
+        <p class="info-linea">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+          Se puede cambiar después, en la revisión.
+        </p>
+        <div class="opciones" role="radiogroup" aria-label="Sesiones a exportar">
+          <label class="opcion seleccionada"><span class="opcion__num">1</span><span class="radio-ico"><span class="radio-ico__dot"></span></span><span class="opcion__texto">Solo la sesión activa</span></label>
+          <label class="opcion"><span class="opcion__num">2</span><span class="radio-ico"></span><span class="opcion__texto">Todas las que están visibles en la barra ahora</span></label>
+          <label class="opcion"><span class="opcion__num">3</span><span class="radio-ico"></span><span class="opcion__texto">Todas, incluidas las archivadas</span></label>
+        </div>
+      </div>
+      <div class="cuestionario__pie">
+        <span class="teclado-hint">1–3 elegí · Enter seguí</span>
+        <div class="pie__botones">
+          <button class="btn-fantasma" type="button" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>Atrás</button>
+          <button class="btn-primario" type="button">Siguiente<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></button>
+        </div>
+      </div>
+    </div></div></div>
+
+    <!-- Paso 2 — selección múltiple -->
+    <div class="franja"><div class="marco"><div class="cuestionario" role="group" aria-label="Paso 2 de 4, selección múltiple">
+      <div class="cuestionario__cabecera">
+        <span class="paso-badge">Paso 2 de 4</span>
+        <div class="puntos" aria-hidden="true"><span class="punto hecho"></span><span class="punto activo"></span><span class="punto"></span><span class="punto"></span></div>
+        <button class="btn-cerrar" type="button" aria-label="Cerrar cuestionario">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="cuestionario__cuerpo">
+        <p class="tipo-pregunta">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="m8 12 3 3 5-6"/></svg>
+          Selección múltiple
+        </p>
+        <h3 class="cuestionario__titulo">¿Qué columnas incluís?</h3>
+        <p class="info-linea">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+          Elegí una o más — "Siguiente" se habilita con al menos una marcada.
+        </p>
+        <div class="opciones">
+          <label class="opcion seleccionada"><span class="opcion__num">1</span><span class="check-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg></span><span class="opcion__texto">Nombre y rol</span></label>
+          <label class="opcion seleccionada"><span class="opcion__num">2</span><span class="check-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg></span><span class="opcion__texto">Estado (pensando / esperando / libre / dormida)</span></label>
+          <label class="opcion"><span class="opcion__num">3</span><span class="check-ico"></span><span class="opcion__texto">Antigüedad de la sesión</span></label>
+          <label class="opcion"><span class="opcion__num">4</span><span class="check-ico"></span><span class="opcion__texto">Modelo</span></label>
+          <label class="opcion seleccionada"><span class="opcion__num">5</span><span class="check-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg></span><span class="opcion__texto">Tokens consumidos en la ventana de 5 h</span></label>
+        </div>
+      </div>
+      <div class="cuestionario__pie">
+        <span class="teclado-hint">1–5 marca o desmarca · Enter seguí</span>
+        <div class="pie__botones">
+          <button class="btn-fantasma" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>Atrás</button>
+          <button class="btn-primario" type="button">Siguiente<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></button>
+        </div>
+      </div>
+    </div></div></div>
+
+    <!-- Paso 3 — "Otra" con texto libre -->
+    <div class="franja"><div class="marco"><div class="cuestionario" role="group" aria-label="Paso 3 de 4, con opción Otra">
+      <div class="cuestionario__cabecera">
+        <span class="paso-badge">Paso 3 de 4</span>
+        <div class="puntos" aria-hidden="true"><span class="punto hecho"></span><span class="punto hecho"></span><span class="punto activo"></span><span class="punto"></span></div>
+        <button class="btn-cerrar" type="button" aria-label="Cerrar cuestionario">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="cuestionario__cuerpo">
+        <p class="tipo-pregunta">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+          Opción única · con "Otra"
+        </p>
+        <h3 class="cuestionario__titulo">¿Dónde queda el archivo?</h3>
+        <p class="info-linea">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+          "Otra" abre un campo de texto libre debajo, sin cerrar el paso.
+        </p>
+        <div class="opciones">
+          <label class="opcion"><span class="opcion__num">1</span><span class="radio-ico"></span><span class="opcion__texto">Se descarga directo del navegador</span></label>
+          <label class="opcion"><span class="opcion__num">2</span><span class="radio-ico"></span><span class="opcion__texto">Se guarda en <code>~/Downloads</code> del VPS</span></label>
+          <div>
+            <label class="opcion seleccionada"><span class="opcion__num">3</span><span class="radio-ico"><span class="radio-ico__dot"></span></span><span class="opcion__texto">Otra</span></label>
+            <div class="otra__campo">a <code>~/.cache/aos/export-sesiones.csv</code>, para que lo lea el timer</div>
+          </div>
+        </div>
+      </div>
+      <div class="cuestionario__pie">
+        <span class="teclado-hint">1–3 elegí · Enter seguí</span>
+        <div class="pie__botones">
+          <button class="btn-fantasma" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>Atrás</button>
+          <button class="btn-primario" type="button">Siguiente<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></button>
+        </div>
+      </div>
+    </div></div></div>
+
+    <!-- Paso 4 — opción única -->
+    <div class="franja"><div class="marco"><div class="cuestionario" role="group" aria-label="Paso 4 de 4, opción única">
+      <div class="cuestionario__cabecera">
+        <span class="paso-badge">Paso 4 de 4</span>
+        <div class="puntos" aria-hidden="true"><span class="punto hecho"></span><span class="punto hecho"></span><span class="punto hecho"></span><span class="punto activo"></span></div>
+        <button class="btn-cerrar" type="button" aria-label="Cerrar cuestionario">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="cuestionario__cuerpo">
+        <p class="tipo-pregunta">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"/></svg>
+          Opción única
+        </p>
+        <h3 class="cuestionario__titulo">¿Formato?</h3>
+        <p class="info-linea">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+          Última pregunta — después viene la revisión completa.
+        </p>
+        <div class="opciones">
+          <label class="opcion seleccionada"><span class="opcion__num">1</span><span class="radio-ico"><span class="radio-ico__dot"></span></span><span class="opcion__texto">CSV</span></label>
+          <label class="opcion"><span class="opcion__num">2</span><span class="radio-ico"></span><span class="opcion__texto">JSON</span></label>
+        </div>
+      </div>
+      <div class="cuestionario__pie">
+        <span class="teclado-hint">1–2 elegí · Enter revisá</span>
+        <div class="pie__botones">
+          <button class="btn-fantasma" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>Atrás</button>
+          <button class="btn-primario" type="button">Revisar<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></button>
+        </div>
+      </div>
+    </div></div></div>
+  </section>
+
+  <!-- Revisión antes de enviar -->
+  <section class="bloque">
+    <p class="rotulo">Revisión antes de enviar</p>
+    <p class="nota-ⓘ">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+      Las cuatro respuestas juntas, con un link para volver a cualquier paso sin perder el resto.
+    </p>
+    <div class="franja"><div class="marco"><div class="cuestionario" role="group" aria-label="Revisión antes de enviar">
+      <div class="cuestionario__cabecera">
+        <span class="paso-badge">Revisión</span>
+        <div class="puntos" aria-hidden="true"><span class="punto hecho"></span><span class="punto hecho"></span><span class="punto hecho"></span><span class="punto hecho"></span></div>
+        <button class="btn-cerrar" type="button" aria-label="Cerrar cuestionario">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="cuestionario__cuerpo">
+        <h3 class="cuestionario__titulo">Revisá antes de enviar</h3>
+        <p class="info-linea">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+          Confirmá para mandar las cuatro respuestas juntas.
+        </p>
+        <div class="revision__lista">
+          <div class="revision__item"><span class="revision__etq">Alcance</span><span class="revision__val">Solo la sesión activa</span><button class="revision__cambiar" type="button">Cambiar</button></div>
+          <div class="revision__item"><span class="revision__etq">Columnas</span><span class="revision__val">Nombre y rol · Estado · Tokens consumidos</span><button class="revision__cambiar" type="button">Cambiar</button></div>
+          <div class="revision__item"><span class="revision__etq">Destino</span><span class="revision__val">Otra — a <code>~/.cache/aos/export-sesiones.csv</code></span><button class="revision__cambiar" type="button">Cambiar</button></div>
+          <div class="revision__item"><span class="revision__etq">Formato</span><span class="revision__val">CSV</span><button class="revision__cambiar" type="button">Cambiar</button></div>
+        </div>
+      </div>
+      <div class="cuestionario__pie">
+        <span class="teclado-hint">Enter confirma y envía</span>
+        <div class="pie__botones">
+          <button class="btn-fantasma" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>Atrás</button>
+          <button class="btn-primario" type="button">Confirmar y enviar</button>
+        </div>
+      </div>
+    </div></div></div>
+  </section>
+
+  <!-- Enviado -->
+  <section class="bloque">
+    <p class="rotulo">Enviado</p>
+    <div class="franja"><div class="marco"><div class="cuestionario cuestionario--enviado" role="status">
+      <div class="cuestionario__cuerpo">
+        <svg class="check-grande" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4 12 14.01l-3-3"/></svg>
+        <p class="enviado__texto">Enviado</p>
+        <p class="enviado__meta">Alcance de la exportación · 14:12</p>
+      </div>
+    </div></div></div>
+  </section>
+
+  <!-- Resumen en el transcript, una sola vez -->
+  <section class="bloque">
+    <p class="rotulo">Resumen en el transcript, una sola vez</p>
+    <div class="contexto">
+      <p class="actividad actividad--listo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>
+        <span>Alcance de la exportación · listo</span>
+      </p>
+      <div class="turno-claude">
+        <p>Listo — exporto la sesión activa con nombre, estado y tokens, a <code>~/.cache/aos/export-sesiones.csv</code>, en CSV.</p>
+      </div>
+    </div>
+    <div class="callout-fix">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+      <span>Antes esto se veía dos veces: la tarjeta de actividad repetía el texto completo de la
+      pregunta pendiente y encima aparecía este resumen aparte (punto 6 de
+      <code>e2e/evidencia/00-linea-base/lectura.md</code>). Acá la tarjeta queda genérica
+      ("Alcance de la exportación · listo") y el detalle entero vive una sola vez, en la
+      respuesta de abajo.</span>
+    </div>
+  </section>
+
+  <!-- Headless y tmux: misma cara -->
+  <section class="bloque">
+    <p class="rotulo">Headless y tmux: misma cara</p>
+    <p class="nota-ⓘ">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+      Un componente, dos orígenes de turno. La única diferencia es esta etiqueta.
+    </p>
+    <div class="comparacion-grid">
+      <div class="comparacion__item">
+        <span class="badge-sesion">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h.79a4.5 4.5 0 1 1 1 8.9"/></svg>
+          Sesión headless
+        </span>
+        <div class="cuestionario cuestionario--compacta" role="group" aria-label="Headless, paso 1 de 4">
+          <div class="cuestionario__cabecera">
+            <span class="paso-badge">Paso 1 de 4</span>
+            <div class="puntos" aria-hidden="true"><span class="punto activo"></span><span class="punto"></span><span class="punto"></span><span class="punto"></span></div>
+          </div>
+          <div class="cuestionario__cuerpo">
+            <h3 class="cuestionario__titulo">¿Qué sesiones entran en la exportación?</h3>
+            <div class="opciones">
+              <label class="opcion seleccionada"><span class="opcion__num">1</span><span class="radio-ico"><span class="radio-ico__dot"></span></span><span class="opcion__texto">Solo la sesión activa</span></label>
+              <label class="opcion"><span class="opcion__num">2</span><span class="radio-ico"></span><span class="opcion__texto">Todas las visibles en la barra</span></label>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="comparacion__item">
+        <span class="badge-sesion">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="m7 9 3 3-3 3M13 15h4"/></svg>
+          Sesión tmux
+        </span>
+        <div class="cuestionario cuestionario--compacta" role="group" aria-label="Tmux, paso 1 de 4">
+          <div class="cuestionario__cabecera">
+            <span class="paso-badge">Paso 1 de 4</span>
+            <div class="puntos" aria-hidden="true"><span class="punto activo"></span><span class="punto"></span><span class="punto"></span><span class="punto"></span></div>
+          </div>
+          <div class="cuestionario__cuerpo">
+            <h3 class="cuestionario__titulo">¿Qué sesiones entran en la exportación?</h3>
+            <div class="opciones">
+              <label class="opcion seleccionada"><span class="opcion__num">1</span><span class="radio-ico"><span class="radio-ico__dot"></span></span><span class="opcion__texto">Solo la sesión activa</span></label>
+              <label class="opcion"><span class="opcion__num">2</span><span class="radio-ico"></span><span class="opcion__texto">Todas las visibles en la barra</span></label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="nota-comparacion">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 2 8 5-8 5-8-5 8-5Z"/><path d="m4 12 8 5 8-5M4 17l8 5 8-5"/></svg>
+      Mismos tokens, mismo componente — el cuestionario no sabe ni le importa si el turno vino
+      de un proceso headless o de un pane de tmux; eso es justo lo que hoy rompe en tmux con
+      clics rápidos (punto 6 de la línea base) y que esta cara única no debería permitir.
+    </p>
+  </section>
+
+</div>
+
+<script>
+  (function(){
+    var root = document.documentElement;
+    var btn = document.getElementById('btnTema');
+    var txt = document.getElementById('temaTexto');
+    function aplicar(t){
+      if (t) { root.setAttribute('data-theme', t); } else { root.removeAttribute('data-theme'); }
+      var efectivo = t || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      txt.textContent = efectivo === 'dark' ? 'oscuro' : 'claro';
+    }
+    var guardado = null;
+    try { guardado = localStorage.getItem('boceto-tema'); } catch (e) {}
+    aplicar(guardado);
+    btn.addEventListener('click', function(){
+      var actual = root.getAttribute('data-theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      var siguiente = actual === 'dark' ? 'light' : 'dark';
+      try { localStorage.setItem('boceto-tema', siguiente); } catch (e) {}
+      aplicar(siguiente);
+    });
+  })();
+</script>
+
+<!--
+CHECKLIST ui-ux-pro-max (paso 8, Fase 10) — 06-oct-2026
+
+[x] Contraste: mismos tokens que 05-octubre-chat.html — `--primary`/`--surface` 4.6:1 claro,
+    7.1:1 oscuro; `--ink`/`--surface` ~15.8:1 en los dos. El texto sobre `--primary-tint`
+    (opción seleccionada) usa `--ink`, no blanco, y mantiene el mismo piso de contraste.
+[x] Foco visible: botones de paso, cerrar y "Cambiar" llevan `:focus-visible` con anillo de
+    2px en `--primary`.
+[x] Objetivos de 44px: cada fila de opción (`.opcion`) y cada botón del pie tienen
+    `min-height: 44px`; el botón de cerrar es 32px porque es de descarte, no de elección,
+    pero cae dentro del padding de 16px de la cabecera (área táctil efectiva > 44px).
+[x] 375/390px: el modal pierde recuadro, radio y sombra y pasa a ocupar el ancho completo
+    (`.marco` sin padding, `.cuestionario` a `width:100%`) — la REGLA 13 pide pantalla
+    completa, no un modal angosto reducido.
+[x] 768/1024/1440px: `.cuestionario` usa `width:min(90vw,1200px)` — a 1280 de ancho de
+    escritorio da ~1152px, dentro del tope; a 1440 (fuera del rango que cubre el arnés) seguiría
+    en el tope de 1200px, que es el criterio de `tokens.md` para "Wide+".
+[x] Sin scroll horizontal: body con `overflow-x:hidden`, el grid de comparación usa
+    `repeat(auto-fit, minmax(min(100%,320px), 1fr))` — nunca fuerza un ancho mínimo mayor al
+    viewport, a diferencia de un `minmax(320px, 1fr)` liso. Verificado con
+    `e2e/escenarios/visual/bocetos.mjs`.
+[x] `prefers-reduced-motion`: la entrada de cada paso (`.cuestionario`) y el shimmer de la
+    actividad caen a un cross-fade de opacidad sin transform.
+[x] `prefers-reduced-transparency`: la cabecera de página cae a `--surface-2` opaco sin blur
+    (la ventana del cuestionario en sí nunca fue translúcida — los materiales de Apple van en
+    header/composer del chat, no en un modal de decisión).
+[x] Teclado: cada paso anuncia el atajo en el pie ("1–3 elegí · Enter seguí"); los números
+    de `.opcion__num` son el mismo número que el atajo, no una numeración aparte.
+[x] Pocos colores: `--primary` para selección/foco/CTA, `--good` solo en el estado "Enviado" —
+    nada de un tercer acento.
+[x] Resumen del transcript una sola vez (punto 6 de la línea base): la tarjeta de actividad
+    queda genérica ("Alcance de la exportación · listo") y el texto completo de la pregunta
+    vive solo en la respuesta de Claude — ver sección dedicada y su `callout-fix`.
+[x] Headless y tmux con la misma cara: la sección de comparación reusa exactamente las mismas
+    clases (`.cuestionario`, `.opcion`, `.radio-ico`) en los dos orígenes — ninguna diferencia
+    de componente, solo la etiqueta de origen.
+-->
+</body>
+</html>
