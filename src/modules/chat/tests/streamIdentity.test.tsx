@@ -11,10 +11,11 @@ import { getIntrinsicMessageKey } from '@/modules/chat/utils/messageKeys';
 /**
  * Fase 5, paso 1/2/3: a Claude block's streaming row and the final
  * `text`/`thinking` row that closes it share the same `(messageId,
- * blockIndex)` pair (protocolo-streaming.md). This is the replacement for
- * the deleted `dropStreamFragmentsOf`/`isEchoOfFullText`/
- * `dedupeAdjacentAssistantEchoes` text-matching tests (Fase 5, paso 5): the
- * row is kept or replaced by id, never by comparing content.
+ * blockIndex)` pair (protocolo-streaming.md). This replaces the old
+ * text-matching dedupe helpers and their tests (Fase 5, paso 5 — the trio
+ * that used to drop a stream fragment or an echo of the full text by
+ * comparing content): the row is kept or replaced by id, never by comparing
+ * content.
  */
 
 const SID = 'session-1';

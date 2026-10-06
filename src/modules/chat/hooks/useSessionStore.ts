@@ -107,6 +107,27 @@ function enqueueHistoryMutation<T>(
   return result;
 }
 
+/**
+ * A Claude block's row — streamed live or read back from the persisted
+ * transcript — is keyed by its own `(messageId, blockIndex)` pair instead of
+ * whatever id it arrived carrying (the synthetic streaming id, or the JSONL
+ * transcript uuid a history page returns). Only this makes the live row and
+ * its eventual persisted replacement resolve to the exact same id — and
+ * therefore the same React key — so the DOM node a reply streamed into
+ * survives the REST refresh `complete` triggers instead of getting unmounted
+ * and remounted when the server copy takes over (Fase 5, pasos 1 y 8).
+ * Subagent rows (`parentToolUseId`) never streamed on this scheme and keep
+ * their own id.
+ */
+function withStreamRowIdentity(message: NormalizedMessage, sessionId: string): NormalizedMessage {
+  return (message.kind === 'text' || message.kind === 'thinking')
+    && !message.parentToolUseId
+    && message.messageId
+    && typeof message.blockIndex === 'number'
+    ? { ...message, id: streamRowId(sessionId, message.messageId, message.blockIndex) }
+    : message;
+}
+
 async function requestSessionHistoryPage(
   sessionId: string,
   options: SessionMessagesRequestOptions,
@@ -118,7 +139,8 @@ async function requestSessionHistoryPage(
 
   const body = await response.json();
   const data = body?.data ?? body;
-  const messages: NormalizedMessage[] = Array.isArray(data.messages) ? data.messages : [];
+  const rawMessages: NormalizedMessage[] = Array.isArray(data.messages) ? data.messages : [];
+  const messages = rawMessages.map((message) => withStreamRowIdentity(message, sessionId));
 
   return {
     messages,
@@ -798,13 +820,7 @@ export function useSessionStore() {
     // streamed fragments" into the ordinary same-id upsert below, with no
     // text-matching involved (protocolo-streaming.md). Subagent rows keep
     // their own id: they never streamed on this id scheme in the first place.
-    const withStreamIdentity =
-      (normalizedMessage.kind === 'text' || normalizedMessage.kind === 'thinking')
-      && !normalizedMessage.parentToolUseId
-      && normalizedMessage.messageId
-      && typeof normalizedMessage.blockIndex === 'number'
-        ? { ...normalizedMessage, id: streamRowId(sessionId, normalizedMessage.messageId, normalizedMessage.blockIndex) }
-        : normalizedMessage;
+    const withStreamIdentity = withStreamRowIdentity(normalizedMessage, sessionId);
     // tmux has no deltas — the bridge only writes a message once it is
     // complete — so this is the one signal MessageComponent has to tell a
     // reply that just arrived apart from one loaded from history, which is

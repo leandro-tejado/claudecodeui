@@ -1,0 +1,841 @@
+[
+  {
+    "t": 1791291708587,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3952/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjkxNzAzLCJleHAiOjE4MjI4Mjc3MDN9.GTorRo9A5TEviTBquo_JTBow6iyHa3-XbnHSTSnX1DQ",
+    "datos": {
+      "type": "chat.tmux-prompts"
+    }
+  },
+  {
+    "t": 1791291708610,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3952/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjkxNzAzLCJleHAiOjE4MjI4Mjc3MDN9.GTorRo9A5TEviTBquo_JTBow6iyHa3-XbnHSTSnX1DQ",
+    "datos": {
+      "kind": "tmux_prompts",
+      "prompts": [],
+      "timestamp": "2026-10-06T13:01:48.601Z"
+    }
+  },
+  {
+    "t": 1791291709063,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3952/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjkxNzAzLCJleHAiOjE4MjI4Mjc3MDN9.GTorRo9A5TEviTBquo_JTBow6iyHa3-XbnHSTSnX1DQ",
+    "datos": {
+      "type": "chat.subscribe",
+      "sessions": [
+        {
+          "sessionId": "d9d72b2b-2c28-43d6-8a75-97e9844a3072",
+          "lastSeq": 0
+        }
+      ]
+    }
+  },
+  {
+    "t": 1791291709067,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3952/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjkxNzAzLCJleHAiOjE4MjI4Mjc3MDN9.GTorRo9A5TEviTBquo_JTBow6iyHa3-XbnHSTSnX1DQ",
+    "datos": {
+      "kind": "session_upserted",
+      "sessionId": "d9d72b2b-2c28-43d6-8a75-97e9844a3072",
+      "providerSessionId": "d9d72b2b-2c28-43d6-8a75-97e9844a3072",
+      "provider": "claude",
+      "session": {
+        "id": "d9d72b2b-2c28-43d6-8a75-97e9844a3072",
+        "summary": "Guion humo creacion",
+        "messageCount": 0,
+        "lastActivity": "2026-10-06T13:01:48.048Z",
+        "tmux": null
+      },
+      "project": {
+        "projectId": "0982549c-b349-4d02-b3d5-0fd65e7b8598",
+        "path": "/home/leantejado/.cache/cloudcli-e2e/proyecto-f5",
+        "fullPath": "/home/leantejado/.cache/cloudcli-e2e/proyecto-f5",
+        "displayName": "e2e-proyecto",
+        "isStarred": false
+      },
+      "timestamp": "2026-10-06T13:01:49.045Z"
+    }
+  },
+  {
+    "t": 1791291709082,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3952/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjkxNzAzLCJleHAiOjE4MjI4Mjc3MDN9.GTorRo9A5TEviTBquo_JTBow6iyHa3-XbnHSTSnX1DQ",
+    "datos": {
+      "kind": "chat_subscribed",
+      "sessionId": "d9d72b2b-2c28-43d6-8a75-97e9844a3072",
+      "isProcessing": false,
+      "lastSeq": 0,
+      "pendingPermissions": [],
+      "runsInTmux": false,
+      "timestamp": "2026-10-06T13:01:49.063Z"
+    }
+  },
+  {
+    "t": 1791291709512,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3952/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjkxNzAzLCJleHAiOjE4MjI4Mjc3MDN9.GTorRo9A5TEviTBquo_JTBow6iyHa3-XbnHSTSnX1DQ",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": null,
+      "sevenDay": null
+    }
+  },
+  {
+    "t": 1791291709901,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3952/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjkxNzAzLCJleHAiOjE4MjI4Mjc3MDN9.GTorRo9A5TEviTBquo_JTBow6iyHa3-XbnHSTSnX1DQ",
+    "datos": {
+      "type": "chat.send",
+      "sessionId": "d9d72b2b-2c28-43d6-8a75-97e9844a3072",
+      "content": "guion:lento nonce:94kjol",
+      "clientMessageId": "local_1791291709882_q8rb8e",
+      "options": {
+        "model": "claude-falso-1",
+        "effort": "default",
+        "permissionMode": "default",
+        "toolsSettings": {
+          "allowedTools": [],
+          "disallowedTools": [],
+          "skipPermissions": false
+        },
+        "skipPermissions": false,
+        "sessionSummary": "Guion humo creacion",
+        "attachments": []
+      }
+    }
+  },
+  {
+    "t": 1791291709926,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3952/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjkxNzAzLCJleHAiOjE4MjI4Mjc3MDN9.GTorRo9A5TEviTBquo_JTBow6iyHa3-XbnHSTSnX1DQ",
+    "datos": {
+      "kind": "message_status",
+      "sessionId": "d9d72b2b-2c28-43d6-8a75-97e9844a3072",
+      "clientMessageId": "local_1791291709882_q8rb8e",
+      "status": "sent",
+      "timestamp": "2026-10-06T13:01:49.896Z"
+    }
+  },
+  {
+    "t": 1791291709989,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3952/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjkxNzAzLCJleHAiOjE4MjI4Mjc3MDN9.GTorRo9A5TEviTBquo_JTBow6iyHa3-XbnHSTSnX1DQ",
+    "datos": {
+      "kind": "stream_delta",
+      "content": "Uno do",
+      "sessionId": "d9d72b2b-2c28-43d6-8a75-97e9844a3072",
+      "provider": "claude",
+      "messageId": "msg_falso_17aa2d5a7ead",
+      "blockIndex": 0,
+      "id": "stream_delta_c664a0bc-8255-49ff-9ef6-925de0ff11a6",
+      "timestamp": "2026-10-06T13:01:49.987Z",
+      "seq": 1
+    }
+  },
+  {
+    "t": 1791291710110,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3952/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjkxNzAzLCJleHAiOjE4MjI4Mjc3MDN9.GTorRo9A5TEviTBquo_JTBow6iyHa3-XbnHSTSnX1DQ",
+    "datos": {
+      "kind": "stream_delta",
+      "content": "s tres",
+      "sessionId": "d9d72b2b-2c28-43d6-8a75-97e9844a3072",
+      "provider": "claude",
+      "messageId": "msg_falso_17aa2d5a7ead",
+      "blockIndex": 0,
+      "id": "stream_delta_c823263d-1be4-49f5-9198-59120e3ac772",
+      "timestamp": "2026-10-06T13:01:50.108Z",
+      "seq": 2
+    }
+  },
+  {
+    "t": 1791291710232,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3952/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjkxNzAzLCJleHAiOjE4MjI4Mjc3MDN9.GTorRo9A5TEviTBquo_JTBow6iyHa3-XbnHSTSnX1DQ",
+    "datos": {
+      "kind": "stream_delta",
+      "content": " cuatr",
+      "sessionId": "d9d72b2b-2c28-43d6-8a75-97e9844a3072",
+      "provider": "claude",
+      "messageId": "msg_falso_17aa2d5a7ead",
+      "blockIndex": 0,
+      "id": "stream_delta_1d0da563-5276-4ad1-9d54-c11026832242",
+      "timestamp": "2026-10-06T13:01:50.228Z",
+      "seq": 3
+    }
+  },
+  {
+    "t": 1791291710351,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3952/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjkxNzAzLCJleHAiOjE4MjI4Mjc3MDN9.GTorRo9A5TEviTBquo_JTBow6iyHa3-XbnHSTSnX1DQ",
+    "datos": {
+      "kind": "stream_delta",
+      "content": "o cinc",
+      "sessionId": "d9d72b2b-2c28-43d6-8a75-97e9844a3072",
+      "provider": "claude",
+      "messageId": "msg_falso_17aa2d5a7ead",
+      "blockIndex": 0,
+      "id": "stream_delta_e202fe58-d3ec-47f9-8e59-509b5f403f6d",
+      "timestamp": "2026-10-06T13:01:50.349Z",
+      "seq": 4
+    }
+  },
+  {
+    "t": 1791291710473,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3952/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjkxNzAzLCJleHAiOjE4MjI4Mjc3MDN9.GTorRo9A5TEviTBquo_JTBow6iyHa3-XbnHSTSnX1DQ",
+    "datos": {
+      "kind": "stream_delta",
+      "content": "o seis",
+      "sessionId": "d9d72b2b-2c28-43d6-8a75-97e9844a3072",
+      "provider": "claude",
+      "messageId": "msg_falso_17aa2d5a7ead",
+      "blockIndex": 0,
+      "id": "stream_delta_46fd4ba8-dce0-4f27-b5ea-4deaeef0ca2b",
+      "timestamp": "2026-10-06T13:01:50.470Z",
+      "seq": 5
+    }
+  },
+  {
+    "t": 1791291710594,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3952/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjkxNzAzLCJleHAiOjE4MjI4Mjc3MDN9.GTorRo9A5TEviTBquo_JTBow6iyHa3-XbnHSTSnX1DQ",
+    "datos": {
+      "kind": "stream_delta",
+      "content": " siete",
+      "sessionId": "d9d72b2b-2c28-43d6-8a75-97e9844a3072",
+      "provider": "claude",
+      "messageId": "msg_falso_17aa2d5a7ead",
+      "blockIndex": 0,
+      "id": "stream_delta_fdc03bc1-d825-44fc-9152-772ba0785fc1",
+      "timestamp": "2026-10-06T13:01:50.591Z",
+      "seq": 6
+    }
+  },
+  {
+    "t": 1791291710714,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3952/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjkxNzAzLCJleHAiOjE4MjI4Mjc3MDN9.GTorRo9A5TEviTBquo_JTBow6iyHa3-XbnHSTSnX1DQ",
+    "datos": {
+      "kind": "stream_delta",
+      "content": " ocho ",
+      "sessionId": "d9d72b2b-2c28-43d6-8a75-97e9844a3072",
+      "provider": "claude",
+      "messageId": "msg_falso_17aa2d5a7ead",
+      "blockIndex": 0,
+      "id": "stream_delta_7dd59b57-b48d-4736-b59f-3df1faa546b8",
+      "timestamp": "2026-10-06T13:01:50.712Z",
+      "seq": 7
+    }
+  },
+  {
+    "t": 1791291710835,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3952/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjkxNzAzLCJleHAiOjE4MjI4Mjc3MDN9.GTorRo9A5TEviTBquo_JTBow6iyHa3-XbnHSTSnX1DQ",
+    "datos": {
+      "kind": "stream_delta",
+      "content": "nueve ",
+      "sessionId": "d9d72b2b-2c28-43d6-8a75-97e9844a3072",
+      "provider": "claude",
+      "messageId": "msg_falso_17aa2d5a7ead",
+      "blockIndex": 0,
+      "id": "stream_delta_e573e46e-347b-4ee6-aef6-f17e81f2df3e",
+      "timestamp": "2026-10-06T13:01:50.833Z",
+      "seq": 8
+    }
+  },
+  {
+    "t": 1791291710955,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3952/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjkxNzAzLCJleHAiOjE4MjI4Mjc3MDN9.GTorRo9A5TEviTBquo_JTBow6iyHa3-XbnHSTSnX1DQ",
+    "datos": {
+      "kind": "stream_delta",
+      "content": "diez. ",
+      "sessionId": "d9d72b2b-2c28-43d6-8a75-97e9844a3072",
+      "provider": "claude",
+      "messageId": "msg_falso_17aa2d5a7ead",
+      "blockIndex": 0,
+      "id": "stream_delta_b58e73a1-6d1e-4784-a53f-22e005382751",
+      "timestamp": "2026-10-06T13:01:50.953Z",
+      "seq": 9
+    }
+  },
+  {
+    "t": 1791291711076,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3952/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjkxNzAzLCJleHAiOjE4MjI4Mjc3MDN9.GTorRo9A5TEviTBquo_JTBow6iyHa3-XbnHSTSnX1DQ",
+    "datos": {
+      "kind": "stream_delta",
+      "content": "Uno do",
+      "sessionId": "d9d72b2b-2c28-43d6-8a75-97e9844a3072",
+      "provider": "claude",
+      "messageId": "msg_falso_17aa2d5a7ead",
+      "blockIndex": 0,
+      "id": "stream_delta_9cb85a0e-fc45-454d-9e52-2557b43b3c44",
+      "timestamp": "2026-10-06T13:01:51.074Z",
+      "seq": 10
+    }
+  },
+  {
+    "t": 1791291711197,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3952/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjkxNzAzLCJleHAiOjE4MjI4Mjc3MDN9.GTorRo9A5TEviTBquo_JTBow6iyHa3-XbnHSTSnX1DQ",
+    "datos": {
+      "kind": "stream_delta",
+      "content": "s tres",
+      "sessionId": "d9d72b2b-2c28-43d6-8a75-97e9844a3072",
+      "provider": "claude",
+      "messageId": "msg_falso_17aa2d5a7ead",
+      "blockIndex": 0,
+      "id": "stream_delta_1b98b0f2-7d9e-434e-b5ee-2b2974495d62",
+      "timestamp": "2026-10-06T13:01:51.195Z",
+      "seq": 11
+    }
+  },
+  {
+    "t": 1791291711318,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3952/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjkxNzAzLCJleHAiOjE4MjI4Mjc3MDN9.GTorRo9A5TEviTBquo_JTBow6iyHa3-XbnHSTSnX1DQ",
+    "datos": {
+      "kind": "stream_delta",
+      "content": " cuatr",
+      "sessionId": "d9d72b2b-2c28-43d6-8a75-97e9844a3072",
+      "provider": "claude",
+      "messageId": "msg_falso_17aa2d5a7ead",
+      "blockIndex": 0,
+      "id": "stream_delta_60004b73-bfc1-4ddf-b10b-e211de65189e",
+      "timestamp": "2026-10-06T13:01:51.316Z",
+      "seq": 12
+    }
+  },
+  {
+    "t": 1791291711438,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3952/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjkxNzAzLCJleHAiOjE4MjI4Mjc3MDN9.GTorRo9A5TEviTBquo_JTBow6iyHa3-XbnHSTSnX1DQ",
+    "datos": {
+      "kind": "stream_delta",
+      "content": "o cinc",
+      "sessionId": "d9d72b2b-2c28-43d6-8a75-97e9844a3072",
+      "provider": "claude",
+      "messageId": "msg_falso_17aa2d5a7ead",
+      "blockIndex": 0,
+      "id": "stream_delta_0b8b6101-82ec-4b13-a618-13486f34ff23",
+      "timestamp": "2026-10-06T13:01:51.436Z",
+      "seq": 13
+    }
+  },
+  {
+    "t": 1791291711558,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3952/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjkxNzAzLCJleHAiOjE4MjI4Mjc3MDN9.GTorRo9A5TEviTBquo_JTBow6iyHa3-XbnHSTSnX1DQ",
+    "datos": {
+      "kind": "stream_delta",
+      "content": "o seis",
+      "sessionId": "d9d72b2b-2c28-43d6-8a75-97e9844a3072",
+      "provider": "claude",
+      "messageId": "msg_falso_17aa2d5a7ead",
+      "blockIndex": 0,
+      "id": "stream_delta_6baa087c-4464-48d8-8bdc-c03b9dc52ee1",
+      "timestamp": "2026-10-06T13:01:51.556Z",
+      "seq": 14
+    }
+  },
+  {
+    "t": 1791291711679,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3952/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjkxNzAzLCJleHAiOjE4MjI4Mjc3MDN9.GTorRo9A5TEviTBquo_JTBow6iyHa3-XbnHSTSnX1DQ",
+    "datos": {
+      "kind": "stream_delta",
+      "content": " siete",
+      "sessionId": "d9d72b2b-2c28-43d6-8a75-97e9844a3072",
+      "provider": "claude",
+      "messageId": "msg_falso_17aa2d5a7ead",
+      "blockIndex": 0,
+      "id": "stream_delta_a85eef7f-1df3-4661-8b63-269932315459",
+      "timestamp": "2026-10-06T13:01:51.677Z",
+      "seq": 15
+    }
+  },
+  {
+    "t": 1791291711801,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3952/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjkxNzAzLCJleHAiOjE4MjI4Mjc3MDN9.GTorRo9A5TEviTBquo_JTBow6iyHa3-XbnHSTSnX1DQ",
+    "datos": {
+      "kind": "stream_delta",
+      "content": " ocho ",
+      "sessionId": "d9d72b2b-2c28-43d6-8a75-97e9844a3072",
+      "provider": "claude",
+      "messageId": "msg_falso_17aa2d5a7ead",
+      "blockIndex": 0,
+      "id": "stream_delta_525078e4-c392-40f7-b67c-29bcb3dbe3ad",
+      "timestamp": "2026-10-06T13:01:51.797Z",
+      "seq": 16
+    }
+  },
+  {
+    "t": 1791291711919,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3952/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjkxNzAzLCJleHAiOjE4MjI4Mjc3MDN9.GTorRo9A5TEviTBquo_JTBow6iyHa3-XbnHSTSnX1DQ",
+    "datos": {
+      "kind": "stream_delta",
+      "content": "nueve ",
+      "sessionId": "d9d72b2b-2c28-43d6-8a75-97e9844a3072",
+      "provider": "claude",
+      "messageId": "msg_falso_17aa2d5a7ead",
+      "blockIndex": 0,
+      "id": "stream_delta_efaf62b6-18c4-4806-8180-1a152daa3b62",
+      "timestamp": "2026-10-06T13:01:51.917Z",
+      "seq": 17
+    }
+  },
+  {
+    "t": 1791291712040,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3952/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjkxNzAzLCJleHAiOjE4MjI4Mjc3MDN9.GTorRo9A5TEviTBquo_JTBow6iyHa3-XbnHSTSnX1DQ",
+    "datos": {
+      "kind": "stream_delta",
+      "content": "diez. ",
+      "sessionId": "d9d72b2b-2c28-43d6-8a75-97e9844a3072",
+      "provider": "claude",
+      "messageId": "msg_falso_17aa2d5a7ead",
+      "blockIndex": 0,
+      "id": "stream_delta_9aa6aefb-ee0b-4844-b142-1debd2b9d290",
+      "timestamp": "2026-10-06T13:01:52.038Z",
+      "seq": 18
+    }
+  },
+  {
+    "t": 1791291712161,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3952/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjkxNzAzLCJleHAiOjE4MjI4Mjc3MDN9.GTorRo9A5TEviTBquo_JTBow6iyHa3-XbnHSTSnX1DQ",
+    "datos": {
+      "kind": "stream_delta",
+      "content": "Uno do",
+      "sessionId": "d9d72b2b-2c28-43d6-8a75-97e9844a3072",
+      "provider": "claude",
+      "messageId": "msg_falso_17aa2d5a7ead",
+      "blockIndex": 0,
+      "id": "stream_delta_16476f56-22b3-435a-b734-f292fdae0f57",
+      "timestamp": "2026-10-06T13:01:52.159Z",
+      "seq": 19
+    }
+  },
+  {
+    "t": 1791291712284,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3952/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjkxNzAzLCJleHAiOjE4MjI4Mjc3MDN9.GTorRo9A5TEviTBquo_JTBow6iyHa3-XbnHSTSnX1DQ",
+    "datos": {
+      "kind": "stream_delta",
+      "content": "s tres",
+      "sessionId": "d9d72b2b-2c28-43d6-8a75-97e9844a3072",
+      "provider": "claude",
+      "messageId": "msg_falso_17aa2d5a7ead",
+      "blockIndex": 0,
+      "id": "stream_delta_b9b87d9f-deec-4246-9eb8-39b848688750",
+      "timestamp": "2026-10-06T13:01:52.280Z",
+      "seq": 20
+    }
+  },
+  {
+    "t": 1791291712402,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3952/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjkxNzAzLCJleHAiOjE4MjI4Mjc3MDN9.GTorRo9A5TEviTBquo_JTBow6iyHa3-XbnHSTSnX1DQ",
+    "datos": {
+      "kind": "stream_delta",
+      "content": " cuatr",
+      "sessionId": "d9d72b2b-2c28-43d6-8a75-97e9844a3072",
+      "provider": "claude",
+      "messageId": "msg_falso_17aa2d5a7ead",
+      "blockIndex": 0,
+      "id": "stream_delta_13b4d0bf-fc02-4cf7-917b-ddff61340f64",
+      "timestamp": "2026-10-06T13:01:52.400Z",
+      "seq": 21
+    }
+  },
+  {
+    "t": 1791291712522,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3952/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjkxNzAzLCJleHAiOjE4MjI4Mjc3MDN9.GTorRo9A5TEviTBquo_JTBow6iyHa3-XbnHSTSnX1DQ",
+    "datos": {
+      "kind": "stream_delta",
+      "content": "o cinc",
+      "sessionId": "d9d72b2b-2c28-43d6-8a75-97e9844a3072",
+      "provider": "claude",
+      "messageId": "msg_falso_17aa2d5a7ead",
+      "blockIndex": 0,
+      "id": "stream_delta_d94421c8-2946-4401-a79e-ef8fb5f28f37",
+      "timestamp": "2026-10-06T13:01:52.520Z",
+      "seq": 22
+    }
+  },
+  {
+    "t": 1791291712643,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3952/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjkxNzAzLCJleHAiOjE4MjI4Mjc3MDN9.GTorRo9A5TEviTBquo_JTBow6iyHa3-XbnHSTSnX1DQ",
+    "datos": {
+      "kind": "stream_delta",
+      "content": "o seis",
+      "sessionId": "d9d72b2b-2c28-43d6-8a75-97e9844a3072",
+      "provider": "claude",
+      "messageId": "msg_falso_17aa2d5a7ead",
+      "blockIndex": 0,
+      "id": "stream_delta_56d659ed-3806-42bf-8f45-9b78c56892bc",
+      "timestamp": "2026-10-06T13:01:52.641Z",
+      "seq": 23
+    }
+  },
+  {
+    "t": 1791291712763,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3952/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjkxNzAzLCJleHAiOjE4MjI4Mjc3MDN9.GTorRo9A5TEviTBquo_JTBow6iyHa3-XbnHSTSnX1DQ",
+    "datos": {
+      "kind": "stream_delta",
+      "content": " siete",
+      "sessionId": "d9d72b2b-2c28-43d6-8a75-97e9844a3072",
+      "provider": "claude",
+      "messageId": "msg_falso_17aa2d5a7ead",
+      "blockIndex": 0,
+      "id": "stream_delta_fd3fff70-71ac-4479-a05a-490e90da37fc",
+      "timestamp": "2026-10-06T13:01:52.761Z",
+      "seq": 24
+    }
+  },
+  {
+    "t": 1791291712884,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3952/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjkxNzAzLCJleHAiOjE4MjI4Mjc3MDN9.GTorRo9A5TEviTBquo_JTBow6iyHa3-XbnHSTSnX1DQ",
+    "datos": {
+      "kind": "stream_delta",
+      "content": " ocho ",
+      "sessionId": "d9d72b2b-2c28-43d6-8a75-97e9844a3072",
+      "provider": "claude",
+      "messageId": "msg_falso_17aa2d5a7ead",
+      "blockIndex": 0,
+      "id": "stream_delta_0c7e8398-c87a-4543-9b3c-32d390d0095f",
+      "timestamp": "2026-10-06T13:01:52.882Z",
+      "seq": 25
+    }
+  },
+  {
+    "t": 1791291713006,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3952/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjkxNzAzLCJleHAiOjE4MjI4Mjc3MDN9.GTorRo9A5TEviTBquo_JTBow6iyHa3-XbnHSTSnX1DQ",
+    "datos": {
+      "kind": "stream_delta",
+      "content": "nueve ",
+      "sessionId": "d9d72b2b-2c28-43d6-8a75-97e9844a3072",
+      "provider": "claude",
+      "messageId": "msg_falso_17aa2d5a7ead",
+      "blockIndex": 0,
+      "id": "stream_delta_62d1f0ea-f7e0-4af0-b158-b15bf60c8309",
+      "timestamp": "2026-10-06T13:01:53.003Z",
+      "seq": 26
+    }
+  },
+  {
+    "t": 1791291713126,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3952/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjkxNzAzLCJleHAiOjE4MjI4Mjc3MDN9.GTorRo9A5TEviTBquo_JTBow6iyHa3-XbnHSTSnX1DQ",
+    "datos": {
+      "kind": "stream_delta",
+      "content": "diez. ",
+      "sessionId": "d9d72b2b-2c28-43d6-8a75-97e9844a3072",
+      "provider": "claude",
+      "messageId": "msg_falso_17aa2d5a7ead",
+      "blockIndex": 0,
+      "id": "stream_delta_8c9e30b8-6217-47a8-b612-24ffa692f8e6",
+      "timestamp": "2026-10-06T13:01:53.124Z",
+      "seq": 27
+    }
+  },
+  {
+    "t": 1791291713248,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3952/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjkxNzAzLCJleHAiOjE4MjI4Mjc3MDN9.GTorRo9A5TEviTBquo_JTBow6iyHa3-XbnHSTSnX1DQ",
+    "datos": {
+      "kind": "stream_delta",
+      "content": "Uno do",
+      "sessionId": "d9d72b2b-2c28-43d6-8a75-97e9844a3072",
+      "provider": "claude",
+      "messageId": "msg_falso_17aa2d5a7ead",
+      "blockIndex": 0,
+      "id": "stream_delta_b1742f14-1f69-4257-975a-71193ccdbe9b",
+      "timestamp": "2026-10-06T13:01:53.245Z",
+      "seq": 28
+    }
+  },
+  {
+    "t": 1791291713375,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3952/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjkxNzAzLCJleHAiOjE4MjI4Mjc3MDN9.GTorRo9A5TEviTBquo_JTBow6iyHa3-XbnHSTSnX1DQ",
+    "datos": {
+      "kind": "stream_delta",
+      "content": "s tres",
+      "sessionId": "d9d72b2b-2c28-43d6-8a75-97e9844a3072",
+      "provider": "claude",
+      "messageId": "msg_falso_17aa2d5a7ead",
+      "blockIndex": 0,
+      "id": "stream_delta_f451f3ea-f57d-47e2-8460-6a4c5935527a",
+      "timestamp": "2026-10-06T13:01:53.367Z",
+      "seq": 29
+    }
+  },
+  {
+    "t": 1791291713488,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3952/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjkxNzAzLCJleHAiOjE4MjI4Mjc3MDN9.GTorRo9A5TEviTBquo_JTBow6iyHa3-XbnHSTSnX1DQ",
+    "datos": {
+      "kind": "stream_delta",
+      "content": " cuatr",
+      "sessionId": "d9d72b2b-2c28-43d6-8a75-97e9844a3072",
+      "provider": "claude",
+      "messageId": "msg_falso_17aa2d5a7ead",
+      "blockIndex": 0,
+      "id": "stream_delta_913a35d3-d0e8-4442-ab27-c0f20af685a7",
+      "timestamp": "2026-10-06T13:01:53.486Z",
+      "seq": 30
+    }
+  },
+  {
+    "t": 1791291713609,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3952/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjkxNzAzLCJleHAiOjE4MjI4Mjc3MDN9.GTorRo9A5TEviTBquo_JTBow6iyHa3-XbnHSTSnX1DQ",
+    "datos": {
+      "kind": "stream_delta",
+      "content": "o cinc",
+      "sessionId": "d9d72b2b-2c28-43d6-8a75-97e9844a3072",
+      "provider": "claude",
+      "messageId": "msg_falso_17aa2d5a7ead",
+      "blockIndex": 0,
+      "id": "stream_delta_d55d8f7c-286d-4f7d-8565-049de58b833c",
+      "timestamp": "2026-10-06T13:01:53.607Z",
+      "seq": 31
+    }
+  },
+  {
+    "t": 1791291713729,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3952/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjkxNzAzLCJleHAiOjE4MjI4Mjc3MDN9.GTorRo9A5TEviTBquo_JTBow6iyHa3-XbnHSTSnX1DQ",
+    "datos": {
+      "kind": "stream_delta",
+      "content": "o seis",
+      "sessionId": "d9d72b2b-2c28-43d6-8a75-97e9844a3072",
+      "provider": "claude",
+      "messageId": "msg_falso_17aa2d5a7ead",
+      "blockIndex": 0,
+      "id": "stream_delta_514c2201-1244-4a70-8a18-eb8ba74f7928",
+      "timestamp": "2026-10-06T13:01:53.727Z",
+      "seq": 32
+    }
+  },
+  {
+    "t": 1791291713852,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3952/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjkxNzAzLCJleHAiOjE4MjI4Mjc3MDN9.GTorRo9A5TEviTBquo_JTBow6iyHa3-XbnHSTSnX1DQ",
+    "datos": {
+      "kind": "stream_delta",
+      "content": " siete",
+      "sessionId": "d9d72b2b-2c28-43d6-8a75-97e9844a3072",
+      "provider": "claude",
+      "messageId": "msg_falso_17aa2d5a7ead",
+      "blockIndex": 0,
+      "id": "stream_delta_5d07e34f-f8cb-4656-bfea-7558b4eba2f6",
+      "timestamp": "2026-10-06T13:01:53.849Z",
+      "seq": 33
+    }
+  },
+  {
+    "t": 1791291713972,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3952/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjkxNzAzLCJleHAiOjE4MjI4Mjc3MDN9.GTorRo9A5TEviTBquo_JTBow6iyHa3-XbnHSTSnX1DQ",
+    "datos": {
+      "kind": "stream_delta",
+      "content": " ocho ",
+      "sessionId": "d9d72b2b-2c28-43d6-8a75-97e9844a3072",
+      "provider": "claude",
+      "messageId": "msg_falso_17aa2d5a7ead",
+      "blockIndex": 0,
+      "id": "stream_delta_214614ff-890f-4689-be39-9c88e520382d",
+      "timestamp": "2026-10-06T13:01:53.970Z",
+      "seq": 34
+    }
+  },
+  {
+    "t": 1791291714095,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3952/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjkxNzAzLCJleHAiOjE4MjI4Mjc3MDN9.GTorRo9A5TEviTBquo_JTBow6iyHa3-XbnHSTSnX1DQ",
+    "datos": {
+      "kind": "stream_delta",
+      "content": "nueve ",
+      "sessionId": "d9d72b2b-2c28-43d6-8a75-97e9844a3072",
+      "provider": "claude",
+      "messageId": "msg_falso_17aa2d5a7ead",
+      "blockIndex": 0,
+      "id": "stream_delta_341023d6-6881-49ef-9361-75e1b73e222c",
+      "timestamp": "2026-10-06T13:01:54.090Z",
+      "seq": 35
+    }
+  },
+  {
+    "t": 1791291714215,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3952/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjkxNzAzLCJleHAiOjE4MjI4Mjc3MDN9.GTorRo9A5TEviTBquo_JTBow6iyHa3-XbnHSTSnX1DQ",
+    "datos": {
+      "kind": "stream_delta",
+      "content": "diez. ",
+      "sessionId": "d9d72b2b-2c28-43d6-8a75-97e9844a3072",
+      "provider": "claude",
+      "messageId": "msg_falso_17aa2d5a7ead",
+      "blockIndex": 0,
+      "id": "stream_delta_08a66c63-a924-4e05-817b-5407166366d9",
+      "timestamp": "2026-10-06T13:01:54.211Z",
+      "seq": 36
+    }
+  },
+  {
+    "t": 1791291714336,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3952/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjkxNzAzLCJleHAiOjE4MjI4Mjc3MDN9.GTorRo9A5TEviTBquo_JTBow6iyHa3-XbnHSTSnX1DQ",
+    "datos": {
+      "kind": "stream_delta",
+      "content": "[94kjo",
+      "sessionId": "d9d72b2b-2c28-43d6-8a75-97e9844a3072",
+      "provider": "claude",
+      "messageId": "msg_falso_17aa2d5a7ead",
+      "blockIndex": 0,
+      "id": "stream_delta_fd6a1a21-23c8-42c6-986a-1354813bb84a",
+      "timestamp": "2026-10-06T13:01:54.332Z",
+      "seq": 37
+    }
+  },
+  {
+    "t": 1791291714454,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3952/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjkxNzAzLCJleHAiOjE4MjI4Mjc3MDN9.GTorRo9A5TEviTBquo_JTBow6iyHa3-XbnHSTSnX1DQ",
+    "datos": {
+      "kind": "stream_delta",
+      "content": "l]",
+      "sessionId": "d9d72b2b-2c28-43d6-8a75-97e9844a3072",
+      "provider": "claude",
+      "messageId": "msg_falso_17aa2d5a7ead",
+      "blockIndex": 0,
+      "id": "stream_delta_0768f513-6a5f-4333-89cd-48e914c25c69",
+      "timestamp": "2026-10-06T13:01:54.453Z",
+      "seq": 38
+    }
+  },
+  {
+    "t": 1791291714577,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3952/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjkxNzAzLCJleHAiOjE4MjI4Mjc3MDN9.GTorRo9A5TEviTBquo_JTBow6iyHa3-XbnHSTSnX1DQ",
+    "datos": {
+      "kind": "stream_end",
+      "sessionId": "d9d72b2b-2c28-43d6-8a75-97e9844a3072",
+      "provider": "claude",
+      "messageId": "msg_falso_17aa2d5a7ead",
+      "blockIndex": 0,
+      "id": "stream_end_9560cb1c-6088-42b8-ade0-8a7c12d9ee88",
+      "timestamp": "2026-10-06T13:01:54.573Z",
+      "seq": 39
+    }
+  },
+  {
+    "t": 1791291714583,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3952/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjkxNzAzLCJleHAiOjE4MjI4Mjc3MDN9.GTorRo9A5TEviTBquo_JTBow6iyHa3-XbnHSTSnX1DQ",
+    "datos": {
+      "id": "b24f6011-fda4-4eeb-8096-9098a8502464_0",
+      "sessionId": "d9d72b2b-2c28-43d6-8a75-97e9844a3072",
+      "timestamp": "2026-10-06T13:01:54.574Z",
+      "provider": "claude",
+      "kind": "text",
+      "role": "assistant",
+      "content": "Uno dos tres cuatro cinco seis siete ocho nueve diez. Uno dos tres cuatro cinco seis siete ocho nueve diez. Uno dos tres cuatro cinco seis siete ocho nueve diez. Uno dos tres cuatro cinco seis siete ocho nueve diez. [94kjol]",
+      "messageId": "msg_falso_17aa2d5a7ead",
+      "blockIndex": 0,
+      "seq": 40
+    }
+  },
+  {
+    "t": 1791291714585,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3952/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjkxNzAzLCJleHAiOjE4MjI4Mjc3MDN9.GTorRo9A5TEviTBquo_JTBow6iyHa3-XbnHSTSnX1DQ",
+    "datos": {
+      "kind": "status",
+      "text": "token_budget",
+      "tokenBudget": {
+        "used": 30,
+        "total": null,
+        "inputTokens": 10,
+        "outputTokens": 20,
+        "cacheReadTokens": 0,
+        "cacheCreationTokens": 0,
+        "cacheTokens": 0,
+        "breakdown": {
+          "input": 10,
+          "output": 20
+        },
+        "compactAt": 245000
+      },
+      "sessionId": "d9d72b2b-2c28-43d6-8a75-97e9844a3072",
+      "provider": "claude",
+      "id": "status_b6bb6453-385e-4b96-9efa-a1026ee96120",
+      "timestamp": "2026-10-06T13:01:54.575Z",
+      "seq": 41
+    }
+  },
+  {
+    "t": 1791291714629,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3952/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjkxNzAzLCJleHAiOjE4MjI4Mjc3MDN9.GTorRo9A5TEviTBquo_JTBow6iyHa3-XbnHSTSnX1DQ",
+    "datos": {
+      "kind": "complete",
+      "provider": "claude",
+      "sessionId": "d9d72b2b-2c28-43d6-8a75-97e9844a3072",
+      "actualSessionId": "d9d72b2b-2c28-43d6-8a75-97e9844a3072",
+      "exitCode": 0,
+      "success": true,
+      "aborted": false,
+      "id": "complete_a19fee83-f921-4613-9b81-8e2f1066e108",
+      "timestamp": "2026-10-06T13:01:54.577Z",
+      "seq": 42
+    }
+  },
+  {
+    "t": 1791291715020,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3952/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjkxNzAzLCJleHAiOjE4MjI4Mjc3MDN9.GTorRo9A5TEviTBquo_JTBow6iyHa3-XbnHSTSnX1DQ",
+    "datos": {
+      "kind": "session_upserted",
+      "sessionId": "d9d72b2b-2c28-43d6-8a75-97e9844a3072",
+      "providerSessionId": "d9d72b2b-2c28-43d6-8a75-97e9844a3072",
+      "provider": "claude",
+      "session": {
+        "id": "d9d72b2b-2c28-43d6-8a75-97e9844a3072",
+        "summary": "Guion humo creacion",
+        "messageCount": 0,
+        "lastActivity": "2026-10-06T13:01:49.986Z",
+        "tmux": null
+      },
+      "project": {
+        "projectId": "0982549c-b349-4d02-b3d5-0fd65e7b8598",
+        "path": "/home/leantejado/.cache/cloudcli-e2e/proyecto-f5",
+        "fullPath": "/home/leantejado/.cache/cloudcli-e2e/proyecto-f5",
+        "displayName": "e2e-proyecto",
+        "isStarred": false
+      },
+      "timestamp": "2026-10-06T13:01:55.018Z"
+    }
+  },
+  {
+    "t": 1791291715510,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3952/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjkxNzAzLCJleHAiOjE4MjI4Mjc3MDN9.GTorRo9A5TEviTBquo_JTBow6iyHa3-XbnHSTSnX1DQ",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": null,
+      "sevenDay": null
+    }
+  }
+]
