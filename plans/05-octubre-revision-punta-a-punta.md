@@ -612,9 +612,6 @@ Fase 1 (arnés) → Fase 2 (línea base)
 
 **Fases completadas:** 1, 2, 3, 4, 5, 6, 7, 8, 10. La 9 está hecha salvo tmux múltiple, que pasa a la 11 paso 3. De la 11 están hechos los pasos 1 y 2.
 **Fase actual:** 11, pasos 3 a 6.
-**Próximo paso exacto:** revalidar y mergear dos ramas que quedaron sin terminar al cortarse la sesión del 06-oct (las dos están pusheadas):
-- `worktree-agent-ac74c8be4e5c12610` (**paso 4, header+barra**). 3 commits del agente: vitest 796/796, tsc y bundle OK, revalidados. Encima va el WIP `5b08f91a`, sin tests, que pone visibles el rótulo de estado de la barra y el % de cuota a 390 px, como pide el boceto: Leandro eligió seguir el boceto. Pendiente: correr vitest y tsc, y verificar que `cuota/*` falla también en `diseno/propio`, como dijo el agente (no está probado).
-- `worktree-agent-aa54ff39bf6ac30f5` (**paso 3, Cuestionario**). WIP `3fa00357` sin informe ni revalidación: `Cuestionario.tsx` nuevo, borra `TmuxPromptBanner` y `AskUserQuestionPanel`, y cablea la orden compuesta de tmux. Hay que revalidarlo entero: tests, rojo/verde, `pregunta/*` + `linea-base/4158e887` con `--con-cuota`, y capturas contra el boceto.
-
+**Próximo paso exacto:** paso 4 mergeado (`3ea7c013`; vitest 796, tsc limpio; falta probar que `cuota/*` ya fallaba antes de este cambio). El paso 3 (`worktree-agent-aa54ff39bf6ac30f5`, pusheado) da vitest 803, tsc limpio y `pregunta/*` con CLI falso 33/33, pero **no se mergea hasta correr `pregunta/tmux-simple`, `pregunta/tmux-multi` y `linea-base/4158e887` con `--con-cuota`**. Borra `TmuxPromptBanner` y tienen que pasar los tres. Están bloqueados por el gobernador (5 h al 100 %). Script listo: `bash <scratchpad>/f11q.sh`, o a mano con `E2E_PUERTO_BASE=4040`.
 Después: pasos 5 y 6, y la Fase 12.
 **Bloqueantes:** la cuota semanal (proyecta 169 %).
