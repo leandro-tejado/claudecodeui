@@ -588,7 +588,7 @@ Fase 1 (arnés) → Fase 2 (línea base)
 
 ## Continuación de Sesión
 
-**Fases completadas:** 1, 2, 3, 8. 7-server cerrada (falta su parte de cliente). 4. 10 con el boceto del cuestionario pendiente.
+**Fases completadas:** 1, 2, 3, 4, 8. 7-server cerrada (falta su parte de cliente). 10 con el boceto del cuestionario pendiente.
 **Fase actual:** Fase 5 (cliente: una fila por `(messageId, blockIndex)`) y, en paralelo, el boceto del cuestionario (Fase 10, paso 6).
 **Próximo paso exacto:** Fase 5 en un worktree. Después, la 6 y el cliente de la 7 (consumir `activity`/borrador/`stream_reemplazo` de tmux y que el composer mande durante el turno: `tmux/rafaga`). Después, la 9 y la 11.
 **Bloqueantes:** la aprobación del boceto del cuestionario.
