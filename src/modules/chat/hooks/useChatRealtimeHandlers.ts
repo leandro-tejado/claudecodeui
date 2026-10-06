@@ -13,9 +13,8 @@ import { appendStreamDelta, appendThinkingDelta, finalizeStreamBuffer, settleStr
 import type { StreamBuffers } from '@/modules/chat/utils/streamBuffers';
 
 /**
- * How long a session's main-thread activity label stays pinned to the
- * rotating action words' absence (no further delta) before "Pensando…"/the
- * tool name reappears. Mirrors `revelado.ts`'s `debeMostrarActividad` from
+ * How long a session's main-thread activity label stays quiet after the last
+ * answer delta before "Pensando…" reappears. Mirrors `revelado.ts`'s `debeMostrarActividad` from
  * app-optimum-mkt (ported as a timer here, not imported — separate repos).
  */
 const ACTIVITY_GAP_MS = 800;
@@ -156,8 +155,7 @@ export function useChatRealtimeHandlers({
       }
     };
 
-    // Pins the indicator to `label` (a tool name, or "Pensando…"), replacing
-    // the rotating action words — the block just started, before its first
+    // Pins the indicator to `label` (a tool name, or "Pensando…") — the block just started, before its first
     // token, so this is what makes the indicator appear ahead of it (Fase 5,
     // paso 7). Cancels any pending reappear-after-gap timer: an explicit pin
     // always wins over one that was only guessing.
@@ -178,11 +176,11 @@ export function useChatRealtimeHandlers({
       activityGapTimersRef.current.set(sid, timer);
     };
 
-    // A real answer token just arrived: the indicator reverts to the
-    // rotating words (Fase 5, paso 7 — "reemplaza las palabras rotando"),
-    // and the 800ms gap timer is (re)armed in case the answer stalls again.
+    // A real answer token just arrived: the indicator's label goes quiet
+    // (`statusText: ''`) while the answer flows, and the 800ms gap timer is
+    // (re)armed to bring "Pensando…" back if it stalls (Fase 5, paso 7).
     const clearActivityPin = (sid: string) => {
-      onSessionProcessing?.(sid, { statusText: null });
+      onSessionProcessing?.(sid, { statusText: '' });
       armActivityGap(sid);
     };
 
@@ -369,8 +367,8 @@ export function useChatRealtimeHandlers({
         const text = (msg.content as string) || '';
         if (!text || !sid) return;
         appendStreamDelta(streamBuffersRef.current, sid, text, provider, msg.messageId as string | undefined, msg.blockIndex as number | undefined, sessionStore);
-        // Real answer text streaming in: the tool/thinking label yields to
-        // the rotating words until a gap reopens it.
+        // Real answer text streaming in: the tool/thinking label goes quiet
+        // until a gap reopens it.
         clearActivityPin(sid);
         return;
       }

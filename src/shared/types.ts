@@ -173,7 +173,7 @@ export type BackgroundTaskSummary = {
 
 /** What a busy session is doing, as shown by the activity indicator: producing a response, or only running background tasks. */
 export type SessionActivity = {
-  /** Provider-supplied status line; null renders the default activity label. */
+  /** Provider-supplied status line; null renders the default activity label, '' hides the label while answer text streams. */
   statusText: string | null;
   canInterrupt: boolean;
   /**

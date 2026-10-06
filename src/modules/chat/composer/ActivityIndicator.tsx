@@ -12,15 +12,6 @@ type ActivityIndicatorProps = {
   isInputFocused?: boolean;
 };
 
-const ACTION_KEYS = [
-  'claudeStatus.actions.thinking',
-  'claudeStatus.actions.processing',
-  'claudeStatus.actions.analyzing',
-  'claudeStatus.actions.working',
-  'claudeStatus.actions.computing',
-  'claudeStatus.actions.reasoning',
-];
-const DEFAULT_ACTION_WORDS = ['Thinking', 'Processing', 'Analyzing', 'Working', 'Computing', 'Reasoning'];
 const EXIT_ANIMATION_MS = 220;
 
 /** What the background work is: the one task by kind and name, or how many when there are several. */
@@ -81,11 +72,15 @@ export default function ActivityIndicator({ activity, onAbort, isInputFocused = 
   if (!renderedActivity) return null;
 
   const isBackground = Boolean(renderedActivity.background);
-  const actionWords = ACTION_KEYS.map((key, i) => t(key, { defaultValue: DEFAULT_ACTION_WORDS[i] }));
+  // Sin una tool en curso la línea dice "pensando", fija: no rota palabras de
+  // relleno. `statusText === ''` es "la respuesta está llegando": la línea se
+  // calla hasta que pasen 800 ms sin texto (Fase 5, paso 7).
   const label = isBackground
     ? t('claudeStatus.backgroundWork', 'Background work')
-    : (renderedActivity.statusText || actionWords[Math.floor(elapsedSeconds / 4) % actionWords.length])
-      .replace(/\.+$/, '');
+    : renderedActivity.statusText === ''
+      ? ''
+      : (renderedActivity.statusText || t('claudeStatus.actions.thinking', { defaultValue: 'Thinking' }))
+        .replace(/\.+$/, '');
   const detail = isBackground ? describeBackgroundTasks(renderedActivity.tasks ?? [], t) : '';
 
   const minutes = Math.floor(elapsedSeconds / 60);
@@ -114,7 +109,7 @@ export default function ActivityIndicator({ activity, onAbort, isInputFocused = 
             }`}
             aria-hidden
           />
-          <ShiningText text={`${label}…`} className="shrink-0 font-medium" />
+          {label && <ShiningText text={`${label}…`} className="shrink-0 font-medium" />}
           {detail && (
             <span className="min-w-0 truncate text-muted-foreground" title={detail}>{detail}</span>
           )}
