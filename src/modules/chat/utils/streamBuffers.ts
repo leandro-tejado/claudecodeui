@@ -2,8 +2,8 @@ import type { LLMProvider } from '@/shared/types';
 import type { SessionStore } from '@/modules/chat/hooks/useSessionStore';
 
 /**
- * Text streamed so far for one session's open text block, flushed into the
- * store's single `__streaming_<sid>` row at most every `STREAM_FLUSH_MS`.
+ * Text streamed so far for one session's open block (text or thinking),
+ * flushed into the store's streaming row at most every `STREAM_FLUSH_MS`.
  *
  * One buffer per session, not one for the whole pane: with a single shared
  * buffer, two sessions streaming at once mixed their deltas, a view switch
@@ -11,11 +11,20 @@ import type { SessionStore } from '@/modules/chat/hooks/useSessionStore';
  * that covered sessions out of view stored every delta as its own message
  * — the reply then read as a column of fragments, each with its own "MD"
  * button, followed by the full text once it arrived (30-sep).
+ *
+ * Only one block streams at a time per session's main thread (subagent
+ * partials are dropped before they reach here), so the buffer carries that
+ * block's own identity — `messageId`/`blockIndex`, when the provider reports
+ * one — alongside its text.
  */
 export type StreamBuffer = {
   text: string;
   timer: ReturnType<typeof setTimeout> | null;
   provider: LLMProvider;
+  kind: 'stream_delta' | 'thinking_delta';
+  /** Claude's identity for this open block (see `streamRowId.ts`); absent for other providers. */
+  messageId?: string;
+  blockIndex?: number;
   /**
    * Set once the block's full message arrived. The streamed rows are gone by
    * then, so whatever deltas still follow for that same block are swallowed
@@ -30,16 +39,19 @@ type StreamingStore = Pick<SessionStore, 'updateStreaming' | 'finalizeStreaming'
 
 export const STREAM_FLUSH_MS = 100;
 
-export function appendStreamDelta(
+function appendDelta(
   buffers: StreamBuffers,
   sessionId: string,
+  kind: 'stream_delta' | 'thinking_delta',
   text: string,
   provider: LLMProvider,
+  messageId: string | undefined,
+  blockIndex: number | undefined,
   store: StreamingStore,
 ): void {
   let buffer = buffers.get(sessionId);
   if (!buffer) {
-    buffer = { text: '', timer: null, provider };
+    buffer = { text: '', timer: null, provider, kind, messageId, blockIndex };
     buffers.set(sessionId, buffer);
   }
   if (buffer.settledBy !== undefined) {
@@ -49,7 +61,7 @@ export function appendStreamDelta(
       return;
     }
     // Not the tail of the settled block: a new block starts here.
-    buffer = { text: '', timer: null, provider };
+    buffer = { text: '', timer: null, provider, kind, messageId, blockIndex };
     buffers.set(sessionId, buffer);
   }
   buffer.text += text;
@@ -58,10 +70,39 @@ export function appendStreamDelta(
     scheduled.timer = setTimeout(() => {
       scheduled.timer = null;
       if (buffers.get(sessionId) === scheduled && scheduled.text) {
-        store.updateStreaming(sessionId, scheduled.text, scheduled.provider);
+        store.updateStreaming(sessionId, scheduled.text, scheduled.provider, {
+          kind: scheduled.kind,
+          messageId: scheduled.messageId,
+          blockIndex: scheduled.blockIndex,
+        });
       }
     }, STREAM_FLUSH_MS);
   }
+}
+
+export function appendStreamDelta(
+  buffers: StreamBuffers,
+  sessionId: string,
+  text: string,
+  provider: LLMProvider,
+  messageId: string | undefined,
+  blockIndex: number | undefined,
+  store: StreamingStore,
+): void {
+  appendDelta(buffers, sessionId, 'stream_delta', text, provider, messageId, blockIndex, store);
+}
+
+/** Same as `appendStreamDelta`, for a `thinking_delta` block (Claude's extended-thinking text). */
+export function appendThinkingDelta(
+  buffers: StreamBuffers,
+  sessionId: string,
+  text: string,
+  provider: LLMProvider,
+  messageId: string | undefined,
+  blockIndex: number | undefined,
+  store: StreamingStore,
+): void {
+  appendDelta(buffers, sessionId, 'thinking_delta', text, provider, messageId, blockIndex, store);
 }
 
 /** Writes whatever is still pending into the streaming row, keeping the block open. */
@@ -73,7 +114,11 @@ export function flushStreamBuffer(buffers: StreamBuffers, sessionId: string, sto
     buffer.timer = null;
   }
   if (buffer.text && buffer.settledBy === undefined) {
-    store.updateStreaming(sessionId, buffer.text, buffer.provider);
+    store.updateStreaming(sessionId, buffer.text, buffer.provider, {
+      kind: buffer.kind,
+      messageId: buffer.messageId,
+      blockIndex: buffer.blockIndex,
+    });
   }
 }
 
@@ -94,14 +139,17 @@ export function settleStreamBuffer(buffers: StreamBuffers, sessionId: string, fu
 }
 
 /**
- * Closes the session's text block: the streaming row becomes a regular
- * assistant message and the next delta starts a new one.
+ * Closes the session's open block: the streaming row becomes a regular
+ * assistant message (no identity) or is left for the final `text`/`thinking`
+ * message to replace in place (identity present) — either way the next
+ * delta starts a fresh buffer.
  */
 export function finalizeStreamBuffer(buffers: StreamBuffers, sessionId: string, store: StreamingStore): void {
+  const buffer = buffers.get(sessionId);
   flushStreamBuffer(buffers, sessionId, store);
   buffers.delete(sessionId);
   // No-op when the session has no streaming row.
-  store.finalizeStreaming(sessionId);
+  store.finalizeStreaming(sessionId, buffer ? { messageId: buffer.messageId, blockIndex: buffer.blockIndex } : undefined);
 }
 
 export function flushAllStreamBuffers(buffers: StreamBuffers, store: StreamingStore): void {

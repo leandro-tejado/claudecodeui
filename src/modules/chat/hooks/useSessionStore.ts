@@ -12,6 +12,7 @@ import { useCallback, useMemo, useRef, useState } from 'react';
 import { api } from '@/shared/api';
 import type { LLMProvider, MessageDeliveryState, NormalizedMessage } from '@/shared/types';
 import { removeOptimisticUserEchoes } from '@/modules/chat/utils/sessionMessageReconciliation';
+import { streamRowId } from '@/modules/chat/utils/streamRowId';
 import {
   hasReachedCachedTailTimeBoundary,
   mergeLatestServerPage,
@@ -106,6 +107,27 @@ function enqueueHistoryMutation<T>(
   return result;
 }
 
+/**
+ * A Claude block's row — streamed live or read back from the persisted
+ * transcript — is keyed by its own `(messageId, blockIndex)` pair instead of
+ * whatever id it arrived carrying (the synthetic streaming id, or the JSONL
+ * transcript uuid a history page returns). Only this makes the live row and
+ * its eventual persisted replacement resolve to the exact same id — and
+ * therefore the same React key — so the DOM node a reply streamed into
+ * survives the REST refresh `complete` triggers instead of getting unmounted
+ * and remounted when the server copy takes over (Fase 5, pasos 1 y 8).
+ * Subagent rows (`parentToolUseId`) never streamed on this scheme and keep
+ * their own id.
+ */
+function withStreamRowIdentity(message: NormalizedMessage, sessionId: string): NormalizedMessage {
+  return (message.kind === 'text' || message.kind === 'thinking')
+    && !message.parentToolUseId
+    && message.messageId
+    && typeof message.blockIndex === 'number'
+    ? { ...message, id: streamRowId(sessionId, message.messageId, message.blockIndex) }
+    : message;
+}
+
 async function requestSessionHistoryPage(
   sessionId: string,
   options: SessionMessagesRequestOptions,
@@ -117,7 +139,8 @@ async function requestSessionHistoryPage(
 
   const body = await response.json();
   const data = body?.data ?? body;
-  const messages: NormalizedMessage[] = Array.isArray(data.messages) ? data.messages : [];
+  const rawMessages: NormalizedMessage[] = Array.isArray(data.messages) ? data.messages : [];
+  const messages = rawMessages.map((message) => withStreamRowIdentity(message, sessionId));
 
   return {
     messages,
@@ -238,70 +261,32 @@ function findServerTurnRangeByOrdinal(
 }
 
 /**
- * Rows the client itself made out of streamed text: the growing
- * `__streaming_<sid>` row and the `text_…` row `finalizeStreaming` leaves when
- * a block closes. Neither is on disk, so each can hold only *part* of the
- * reply — the transcript's one full message is the row that stays.
+ * Whether `message`'s turn is already represented by an assistant row on the
+ * server, so the realtime copy is pruned instead of shown beside it.
+ *
+ * Identity match (Claude): exact — the same `(messageId, blockIndex)` pair
+ * the server's final `text`/`thinking` row carries (protocolo-streaming.md),
+ * which is also the pair the client's own streaming row is keyed by
+ * (`streamRowId.ts`) and the id `appendRealtime` overrides the final message
+ * to before this ever runs.
+ *
+ * No identity (Cursor, OpenCode, Codex): presence only — any assistant `text`
+ * row inside the same turn-ordinal range, regardless of its content. Those
+ * providers' `text` only ever arrives through history (02-realtime-stream.md:
+ * Cursor's and OpenCode's `text` is "history only", never live), so there is
+ * never a live full-text/delta collision for them to disambiguate by content
+ * in the first place — presence is exactly as safe as content matching and
+ * does not depend on normalizing either string the same way.
  */
-const STREAMING_ROW_ID_PREFIX = '__streaming_';
-const FINALIZED_STREAM_ROW_ID_PREFIX = 'text_';
-
-function isStreamFragment(message: NormalizedMessage): boolean {
-  if (message.kind === 'stream_delta') {
-    return true;
-  }
-  return message.kind === 'text'
-    && message.role === 'assistant'
-    && typeof message.id === 'string'
-    && (message.id.startsWith(STREAMING_ROW_ID_PREFIX) || message.id.startsWith(FINALIZED_STREAM_ROW_ID_PREFIX));
-}
-
-/** A fragment is echoed by a full reply that contains it; anything else only by an identical one. */
-function isEchoOfFullText(message: NormalizedMessage, fullText: string): boolean {
-  const text = (message.content || '').trim();
-  if (!text) {
-    return false;
-  }
-  return isStreamFragment(message) ? fullText.includes(text) : fullText === text;
-}
-
-/**
- * The reply's full message just arrived: the streamed rows of that same block
- * are now redundant, however the stream got cut (a reconnect, an event that
- * closed the block early, a replay). Walks back from the newest row through
- * the streamed rows and the non-content events between them, and stops at the
- * first real message — an earlier block's fragments were already retired by
- * its own full message.
- */
-function dropStreamFragmentsOf(rows: NormalizedMessage[], fullText: string): NormalizedMessage[] {
-  const text = fullText.trim();
-  if (!text) {
-    return rows;
-  }
-  const dropped = new Set<number>();
-  for (let index = rows.length - 1; index >= 0; index--) {
-    const row = rows[index];
-    if (row.kind === 'task_status' || row.kind === 'status') {
-      continue;
-    }
-    if (!isStreamFragment(row)) {
-      break;
-    }
-    if (isEchoOfFullText(row, text)) {
-      dropped.add(index);
-    }
-  }
-  return dropped.size === 0 ? rows : rows.filter((_, index) => !dropped.has(index));
-}
-
-function isAssistantTextEchoedInSameTurnOnServer(
+function isAssistantRowSettledOnServer(
   message: NormalizedMessage,
   serverMessages: NormalizedMessage[],
   realtimeMessages: NormalizedMessage[],
 ): boolean {
-  const assistantText = (message.content || '').trim();
-  if (!assistantText) {
-    return false;
+  if (message.messageId && typeof message.blockIndex === 'number') {
+    return serverMessages.some((serverMessage) =>
+      serverMessage.messageId === message.messageId && serverMessage.blockIndex === message.blockIndex,
+    );
   }
 
   const turnOrdinal = getUserTurnOrdinalBefore(message, serverMessages, realtimeMessages);
@@ -312,52 +297,7 @@ function isAssistantTextEchoedInSameTurnOnServer(
 
   return serverMessages
     .slice(turnRange.start + 1, turnRange.end)
-    .some((serverMessage) =>
-      serverMessage.kind === 'text'
-      && serverMessage.role === 'assistant'
-      && isEchoOfFullText(message, (serverMessage.content || '').trim()),
-    );
-}
-
-/**
- * After `finalizeStreaming`, the client holds a synthetic assistant `text` row
- * while the sessions API soon returns the same reply with a different id.
- * Those sit back-to-back in merged order and look like duplicate bubbles until
- * A persisted-tail refresh reconciles realtime. Collapse same-text assistant rows and
- * stream_placeholder → text when content matches.
- */
-function dedupeAdjacentAssistantEchoes(merged: NormalizedMessage[]): NormalizedMessage[] {
-  const out: NormalizedMessage[] = [];
-  for (const m of merged) {
-    const prev = out[out.length - 1];
-    if (prev) {
-      if (isStreamFragment(prev) && m.kind === 'text' && m.role === 'assistant' && !isStreamFragment(m)) {
-        const ms = (m.content || '').trim();
-        if (isEchoOfFullText(prev, ms)) {
-          out[out.length - 1] = m;
-          continue;
-        }
-      }
-      if (isStreamFragment(m) && prev.kind === 'text' && prev.role === 'assistant' && !isStreamFragment(prev)) {
-        if (isEchoOfFullText(m, (prev.content || '').trim())) {
-          continue;
-        }
-      }
-      if (
-        prev.kind === 'text'
-        && m.kind === 'text'
-        && prev.role === 'assistant'
-        && m.role === 'assistant'
-      ) {
-        const ms = (m.content || '').trim();
-        if (ms.length > 0 && ms === (prev.content || '').trim()) {
-          continue;
-        }
-      }
-    }
-    out.push(m);
-  }
-  return out;
+    .some((serverMessage) => serverMessage.kind === 'text' && serverMessage.role === 'assistant');
 }
 
 /**
@@ -382,15 +322,13 @@ function pruneRealtimeSupersededByServer(
       return false;
     }
 
-    if (message.kind === 'stream_delta' || message.id === `__streaming_${message.sessionId}`) {
-      if (isAssistantTextEchoedInSameTurnOnServer(message, serverMessages, realtimeMessages)) {
-        return false;
-      }
-      return true;
-    }
-
-    if (message.kind === 'text' && message.role === 'assistant') {
-      if (isAssistantTextEchoedInSameTurnOnServer(message, serverMessages, realtimeMessages)) {
+    if (
+      message.kind === 'stream_delta'
+      || message.kind === 'thinking_delta'
+      || message.kind === 'thinking'
+      || (message.kind === 'text' && message.role === 'assistant')
+    ) {
+      if (isAssistantRowSettledOnServer(message, serverMessages, realtimeMessages)) {
         return false;
       }
       return true;
@@ -455,11 +393,11 @@ function computeMerged(server: NormalizedMessage[], realtime: NormalizedMessage[
 
 function computeMergedInOrder(server: NormalizedMessage[], realtime: NormalizedMessage[]): NormalizedMessage[] {
   if (realtime.length === 0) {
-    return dedupeAdjacentAssistantEchoes(server);
+    return server;
   }
   const reconciledRealtime = retireOptimisticUserEchoes(server, realtime);
   if (server.length === 0) {
-    return dedupeAdjacentAssistantEchoes(reconciledRealtime);
+    return reconciledRealtime;
   }
 
   const serverIds = new Set(server.map((message) => message.id));
@@ -471,7 +409,7 @@ function computeMergedInOrder(server: NormalizedMessage[], realtime: NormalizedM
   });
 
   if (extra.length === 0) {
-    return dedupeAdjacentAssistantEchoes(server);
+    return server;
   }
 
   // Interleave by timestamp so live rows stay with their turn instead of
@@ -482,10 +420,8 @@ function computeMergedInOrder(server: NormalizedMessage[], realtime: NormalizedM
     (newest, message) => Math.max(newest, readMessageTime(message) ?? 0),
     0,
   );
-  return dedupeAdjacentAssistantEchoes(
-    [...server, ...extra].sort(
-      (a, b) => readSortTime(a, newestServerTime) - readSortTime(b, newestServerTime),
-    ),
+  return [...server, ...extra].sort(
+    (a, b) => readSortTime(a, newestServerTime) - readSortTime(b, newestServerTime),
   );
 }
 
@@ -878,29 +814,29 @@ export function useSessionStore() {
       withId.sessionId === sessionId
         ? withId
         : { ...withId, sessionId };
+    // A Claude block's final `text`/`thinking` row shares its `(messageId,
+    // blockIndex)` pair with the streaming row that grew it — overriding the
+    // id to the same computed pair turns "the full reply replaces its
+    // streamed fragments" into the ordinary same-id upsert below, with no
+    // text-matching involved (protocolo-streaming.md). Subagent rows keep
+    // their own id: they never streamed on this id scheme in the first place.
+    const withStreamIdentity = withStreamRowIdentity(normalizedMessage, sessionId);
     // tmux has no deltas — the bridge only writes a message once it is
     // complete — so this is the one signal MessageComponent has to tell a
     // reply that just arrived apart from one loaded from history, which is
     // what lets it play the typewriter reveal only for the former.
     const withLiveTextFlag = slot.runsInTmux
-      && normalizedMessage.kind === 'text'
-      && normalizedMessage.role === 'assistant'
-      ? { ...normalizedMessage, isLiveText: true }
-      : normalizedMessage;
-    // The same message twice (a replay after a reconnect) is one message.
+      && withStreamIdentity.kind === 'text'
+      && withStreamIdentity.role === 'assistant'
+      ? { ...withStreamIdentity, isLiveText: true }
+      : withStreamIdentity;
+    // The same message twice (a replay after a reconnect, or — for Claude —
+    // the final message landing on the id its own streaming row already
+    // holds) is one message.
     const duplicateIndex = slot.realtimeMessages.findIndex((row) => row.id === withLiveTextFlag.id);
-    let base = duplicateIndex >= 0
+    const base = duplicateIndex >= 0
       ? slot.realtimeMessages.filter((_, index) => index !== duplicateIndex)
       : slot.realtimeMessages;
-    // A reply's full message replaces the text that streamed in for it.
-    if (
-      withLiveTextFlag.kind === 'text'
-      && withLiveTextFlag.role === 'assistant'
-      && !withLiveTextFlag.parentToolUseId
-      && !isStreamFragment(withLiveTextFlag)
-    ) {
-      base = dropStreamFragmentsOf(base, withLiveTextFlag.content || '');
-    }
     let updated = [...base, withLiveTextFlag];
     if (updated.length > MAX_REALTIME_MESSAGES) {
       updated = updated.slice(-MAX_REALTIME_MESSAGES);
@@ -983,21 +919,36 @@ export function useSessionStore() {
   }, []);
 
   /**
-   * Update or create a streaming message (accumulated text so far).
-   * Uses a well-known ID so subsequent calls replace the same message.
+   * Update or create a streaming row (accumulated text so far, for a text or
+   * a thinking block). Keyed by `streamRowId` — a Claude block's own
+   * `(messageId, blockIndex)` pair when the delta carries one, so the row's
+   * id is the one the final message will replace in place; otherwise the
+   * session-literal fallback every other provider still uses.
+   *
+   * The timestamp is the first flush's only: a fresh one on every call was
+   * what made the row's id-less fallback key change on every throttle tick
+   * and remount it, resetting the typewriter reveal mid-stream (00-linea-base).
    */
-  const updateStreaming = useCallback((sessionId: string, accumulatedText: string, msgProvider: LLMProvider) => {
+  const updateStreaming = useCallback((
+    sessionId: string,
+    accumulatedText: string,
+    msgProvider: LLMProvider,
+    options: { kind: 'stream_delta' | 'thinking_delta'; messageId?: string; blockIndex?: number },
+  ) => {
     const slot = getSlot(sessionId);
-    const streamId = `__streaming_${sessionId}`;
+    const streamId = streamRowId(sessionId, options.messageId, options.blockIndex);
+    const idx = slot.realtimeMessages.findIndex(m => m.id === streamId);
+    const existing = idx >= 0 ? slot.realtimeMessages[idx] : undefined;
     const msg: NormalizedMessage = {
       id: streamId,
       sessionId,
-      timestamp: new Date().toISOString(),
+      timestamp: existing?.timestamp ?? new Date().toISOString(),
       provider: msgProvider,
-      kind: 'stream_delta',
+      kind: options.kind,
       content: accumulatedText,
+      ...(options.messageId ? { messageId: options.messageId } : {}),
+      ...(typeof options.blockIndex === 'number' ? { blockIndex: options.blockIndex } : {}),
     };
-    const idx = slot.realtimeMessages.findIndex(m => m.id === streamId);
     if (idx >= 0) {
       slot.realtimeMessages = [...slot.realtimeMessages];
       slot.realtimeMessages[idx] = msg;
@@ -1009,26 +960,43 @@ export function useSessionStore() {
   }, [getSlot, notify]);
 
   /**
-   * Finalize streaming: convert the streaming message to a regular text message.
-   * The well-known streaming ID is replaced with a unique text message ID.
+   * Closes a session's open streaming block.
+   *
+   * With a Claude identity: the row stays exactly as it is, at its
+   * `stream:<messageId>:<blockIndex>` id — the final `text`/`thinking`
+   * message for that same pair is about to arrive and replace it in place
+   * (`appendRealtime`'s id override), so renaming here would only make that
+   * replacement miss.
+   *
+   * Without one (Cursor, OpenCode, Codex): the well-known
+   * `__streaming_<sessionId>` id is renamed to a fresh one, so the next
+   * turn's first delta — which reuses that same session-literal id — does
+   * not silently overwrite this finalized row.
    */
-  const finalizeStreaming = useCallback((sessionId: string) => {
+  const finalizeStreaming = useCallback((
+    sessionId: string,
+    identity?: { messageId?: string; blockIndex?: number },
+  ) => {
     const slot = storeRef.current.get(sessionId);
     if (!slot) return;
-    const streamId = `__streaming_${sessionId}`;
+    const streamId = streamRowId(sessionId, identity?.messageId, identity?.blockIndex);
     const idx = slot.realtimeMessages.findIndex(m => m.id === streamId);
-    if (idx >= 0) {
-      const stream = slot.realtimeMessages[idx];
-      slot.realtimeMessages = [...slot.realtimeMessages];
-      slot.realtimeMessages[idx] = {
-        ...stream,
-        id: `text_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
-        kind: 'text',
-        role: 'assistant',
-      };
-      recomputeMergedIfNeeded(slot);
-      notify(sessionId);
+    if (idx < 0) return;
+
+    if (identity?.messageId && typeof identity.blockIndex === 'number') {
+      return;
     }
+
+    const stream = slot.realtimeMessages[idx];
+    slot.realtimeMessages = [...slot.realtimeMessages];
+    slot.realtimeMessages[idx] = {
+      ...stream,
+      id: `text_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+      kind: stream.kind === 'thinking_delta' ? 'thinking' : 'text',
+      ...(stream.kind === 'thinking_delta' ? {} : { role: 'assistant' as const }),
+    };
+    recomputeMergedIfNeeded(slot);
+    notify(sessionId);
   }, [notify]);
 
   /**

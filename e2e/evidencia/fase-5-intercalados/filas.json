@@ -1,0 +1,76 @@
+[
+  {
+    "escenario": "falso/intercalados",
+    "nombre": "subagente-a-mitad: a mitad, el texto principal está en una sola fila",
+    "resultado": "pasa",
+    "evidencia": [
+      "falso-intercalados/subagente-a-mitad-a-mitad.png"
+    ],
+    "datos": {
+      "filas": 1
+    },
+    "ms": 17281
+  },
+  {
+    "escenario": "falso/intercalados",
+    "nombre": "subagente-a-mitad: al terminar, una fila con el texto completo y ningún fragmento suelto",
+    "resultado": "pasa",
+    "evidencia": [
+      "falso-intercalados/subagente-a-mitad-al-terminar.png"
+    ],
+    "datos": {
+      "completas": 1,
+      "conElComienzo": 1
+    },
+    "ms": 17281
+  },
+  {
+    "escenario": "falso/intercalados",
+    "nombre": "subagente-a-mitad: tras refrescar el historial sigue en una fila",
+    "resultado": "pasa",
+    "evidencia": [
+      "falso-intercalados/subagente-a-mitad-refrescado.png"
+    ],
+    "datos": {
+      "filas": 1
+    },
+    "ms": 17281
+  },
+  {
+    "escenario": "falso/intercalados",
+    "nombre": "stderr-a-mitad: a mitad, el texto principal está en una sola fila",
+    "resultado": "pasa",
+    "evidencia": [
+      "falso-intercalados/stderr-a-mitad-a-mitad.png"
+    ],
+    "datos": {
+      "filas": 1
+    },
+    "ms": 17281
+  },
+  {
+    "escenario": "falso/intercalados",
+    "nombre": "stderr-a-mitad: al terminar, una fila con el texto completo y ningún fragmento suelto",
+    "resultado": "pasa",
+    "evidencia": [
+      "falso-intercalados/stderr-a-mitad-al-terminar.png"
+    ],
+    "datos": {
+      "completas": 1,
+      "conElComienzo": 1
+    },
+    "ms": 17281
+  },
+  {
+    "escenario": "falso/intercalados",
+    "nombre": "stderr-a-mitad: tras refrescar el historial sigue en una fila",
+    "resultado": "pasa",
+    "evidencia": [
+      "falso-intercalados/stderr-a-mitad-refrescado.png"
+    ],
+    "datos": {
+      "filas": 1
+    },
+    "ms": 17281
+  }
+]

@@ -1,0 +1,52 @@
+[
+  {
+    "escenario": "headless/tipeo",
+    "nombre": "el texto visible crece en ≥ 5 muestras distintas",
+    "resultado": "pasa",
+    "evidencia": [
+      "headless-tipeo/a-mitad.png"
+    ],
+    "datos": {
+      "distintas": 24,
+      "largos": "54,64,71,79,90,96,106,113,122,132,138,150,156,164,173,179,190,198,204,216,221,230,240,242,242"
+    },
+    "ms": 10142
+  },
+  {
+    "escenario": "headless/tipeo",
+    "nombre": "la fila en streaming no se remonta mientras se escribe",
+    "resultado": "pasa",
+    "evidencia": [
+      "headless-tipeo/frames-0.json"
+    ],
+    "datos": {
+      "mismoDuranteStream": true
+    },
+    "ms": 10142
+  },
+  {
+    "escenario": "headless/tipeo",
+    "nombre": "al terminar sigue siendo el mismo nodo (el final no pinta otra fila)",
+    "resultado": "pasa",
+    "evidencia": [
+      "headless-tipeo/frames-0.json"
+    ],
+    "datos": {
+      "mismoAlFinal": true,
+      "msFin": 4765
+    },
+    "ms": 10142
+  },
+  {
+    "escenario": "headless/tipeo",
+    "nombre": "una sola fila con la respuesta",
+    "resultado": "pasa",
+    "evidencia": [
+      "headless-tipeo/final.png"
+    ],
+    "datos": {
+      "filas": 1
+    },
+    "ms": 10142
+  }
+]

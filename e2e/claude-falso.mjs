@@ -56,6 +56,7 @@ async function mensaje(bloques, { pausa = 40, parent = null, stopReason = 'end_t
   const id = `msg_falso_${crypto.randomBytes(6).toString('hex')}`;
   const base = { id, type: 'message', role: 'assistant', model: modelo, stop_reason: null, usage: uso };
   ev({ type: 'message_start', message: { ...base, content: [] } }, parent);
+  const bloquesFinales = [];
   for (let index = 0; index < bloques.length; index++) {
     const b = bloques[index];
     if (b.type === 'text' || b.type === 'thinking') {
@@ -74,13 +75,24 @@ async function mensaje(bloques, { pausa = 40, parent = null, stopReason = 'end_t
       ev({ type: 'content_block_delta', index, delta: { type: 'input_json_delta', partial_json: JSON.stringify(b.input) } }, parent);
       ev({ type: 'content_block_stop', index }, parent);
     }
-    const bloqueFinal = b.type === 'text' ? { type: 'text', text: b.text }
-      : b.type === 'thinking' ? { type: 'thinking', thinking: b.thinking, signature: 'falso' }
-        : { type: 'tool_use', id: b.id, name: b.name, input: b.input };
-    const msg = { ...base, content: [bloqueFinal], stop_reason: index === bloques.length - 1 ? stopReason : null };
-    fila('assistant', msg, { requestId: `req_falso_${id}`, ...(parent ? { isSidechain: true } : {}) });
-    enviar({ type: 'assistant', message: msg, parent_tool_use_id: parent, session_id: sessionId, uuid: ultimoUuid });
+    bloquesFinales.push(
+      b.type === 'text' ? { type: 'text', text: b.text }
+        : b.type === 'thinking' ? { type: 'thinking', thinking: b.thinking, signature: 'falso' }
+          : { type: 'tool_use', id: b.id, name: b.name, input: b.input },
+    );
   }
+  // Un solo evento "assistant" al final, con TODOS los bloques juntos en
+  // `content` — así es como el SDK real cierra un mensaje de varios bloques
+  // (protocolo-streaming.md: el server deriva el blockIndex de cada parte de
+  // su posición dentro de `message.content`). Mandar un evento por bloque,
+  // cada uno con `content` de un solo elemento, hacía que el server
+  // recalculara el índice desde 0 en cada uno: dos bloques sin tool_use de
+  // por medio (p. ej. thinking + text, guion `pensamiento`) terminaban con
+  // el mismo (messageId, blockIndex) y por lo tanto la misma fila —
+  // encontrado al correr `headless/actividad` en Fase 5.
+  const msg = { ...base, content: bloquesFinales, stop_reason: stopReason };
+  fila('assistant', msg, { requestId: `req_falso_${id}`, ...(parent ? { isSidechain: true } : {}) });
+  enviar({ type: 'assistant', message: msg, parent_tool_use_id: parent, session_id: sessionId, uuid: ultimoUuid });
   ev({ type: 'message_delta', delta: { stop_reason: stopReason, stop_sequence: null }, usage: uso }, parent);
   ev({ type: 'message_stop' }, parent);
   return id;

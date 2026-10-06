@@ -57,15 +57,22 @@ function renderPane(viewedSessionId: string) {
 
 const DELTAS = ['Ya enc', 'ontré d', 'ónde est', 'á el problema.'];
 const FULL = DELTAS.join('');
+// Real Claude traffic carries the same `(messageId, blockIndex)` pair on
+// every delta, the block's `stream_end`, and the final `text` row (Fase 4,
+// protocolo-streaming.md) — the identity the client keys the row by, so the
+// fixture here mirrors it instead of omitting it.
+const MESSAGE_ID = 'msg_1';
+const BLOCK_INDEX = 0;
 
 function streamTurn(emitEvent: (event: ServerEvent) => void, sessionId: string, deltas = DELTAS) {
   let seq = 0;
   for (const content of deltas) {
-    emitEvent({ kind: 'stream_delta', sessionId, content, seq: ++seq } as ServerEvent);
+    emitEvent({ kind: 'stream_delta', sessionId, content, messageId: MESSAGE_ID, blockIndex: BLOCK_INDEX, seq: ++seq } as ServerEvent);
   }
-  emitEvent({ kind: 'stream_end', sessionId, seq: ++seq } as ServerEvent);
+  emitEvent({ kind: 'stream_end', sessionId, messageId: MESSAGE_ID, blockIndex: BLOCK_INDEX, seq: ++seq } as ServerEvent);
   emitEvent({
-    kind: 'text', role: 'assistant', id: `msg_${sessionId}`, sessionId, content: deltas.join(''), seq: ++seq,
+    kind: 'text', role: 'assistant', id: `msg_${sessionId}`, sessionId, content: deltas.join(''),
+    messageId: MESSAGE_ID, blockIndex: BLOCK_INDEX, seq: ++seq,
   } as ServerEvent);
   emitEvent({ kind: 'complete', sessionId, success: true, seq: ++seq } as ServerEvent);
 }

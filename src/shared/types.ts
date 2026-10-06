@@ -370,6 +370,13 @@ export type MessageDeliveryState = 'sending' | 'queued' | 'held' | 'sent' | 'fai
 
 export type ChatMessage = {
   type: string;
+  /**
+   * Mirrors the source `NormalizedMessage.id`. For a streaming row this is
+   * `stream:<messageId>:<blockIndex>` (Claude) or `__streaming_<sessionId>`
+   * (every other provider) — a stable React key across every flush of the
+   * same block, and the identity `messageKeys.ts` reads first.
+   */
+  id?: string;
   content?: string;
   displayText?: string;
   timestamp: string | number | Date;
@@ -592,6 +599,20 @@ export type NormalizedMessage = {
   toolName?: string;
   toolInput?: unknown;
   toolId?: string;
+  /**
+   * Claude's own id for the assistant message a `stream_delta`/`thinking_delta`,
+   * `stream_end`, `activity`, or final `text`/`thinking` row belongs to —
+   * `raw.message.id` from the SDK stream, captured at `message_start` and
+   * distinct from the JSONL transcript row's `uuid`/`id` (protocolo-streaming.md).
+   * Together with `blockIndex` it identifies one content block across its
+   * whole lifecycle, from the first delta to the persisted row. Other
+   * providers (Cursor, OpenCode, Codex) never set this.
+   */
+  messageId?: string;
+  /** The content block's index within `messageId`'s message, paired with `messageId` above. */
+  blockIndex?: number;
+  /** On `kind: 'activity'` only: which kind of block just started — thinking or a tool call. */
+  activityKind?: 'thinking' | 'tool';
   toolResult?: { content: string; isError: boolean; toolUseResult?: unknown } | null;
   /** A `tool_result` row's structured output — a launch acknowledgement's task id and metadata, a search's file list. */
   toolUseResult?: unknown;
@@ -709,14 +730,16 @@ export type WorkflowAgentProgress = {
   resultPreview?: string;
 };
 
-/** Discriminator on NormalizedMessage naming which kind of transcript event it carries — plain text, tool use or result, thinking, stream delta or end, error, completion, status, permission request/resolution/cancellation, session creation, interactive prompt, or task notification. */
+/** Discriminator on NormalizedMessage naming which kind of transcript event it carries — plain text, tool use or result, thinking, stream or thinking delta, stream end, a block-start activity notice, error, completion, status, permission request/resolution/cancellation, session creation, interactive prompt, or task notification. */
 type MessageKind =
   | 'text'
   | 'tool_use'
   | 'tool_result'
   | 'thinking'
   | 'stream_delta'
+  | 'thinking_delta'
   | 'stream_end'
+  | 'activity'
   | 'error'
   | 'complete'
   | 'status'

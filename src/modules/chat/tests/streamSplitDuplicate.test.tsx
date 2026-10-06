@@ -46,24 +46,31 @@ function renderPane(viewedSessionId: string) {
 const SID = 's1';
 const FULL = 'Lo que importa es el **tamaño del contexto**, no la sesión.';
 
+// `messageId`/`blockIndex` on every frame of the block (deltas, the final
+// `text`) is what real Claude traffic carries since Fase 4 (protocolo-
+// streaming.md): the client keys the row by that pair instead of matching
+// text, so the fixtures here mirror that identity rather than omitting it.
+const MESSAGE_ID = 'msg_1';
+const BLOCK_INDEX = 0;
+
 test('un evento que no es texto en medio del stream no parte la respuesta', async () => {
   const pane = renderPane(SID);
-  pane.emitEvent({ kind: 'stream_delta', sessionId: SID, content: 'Lo que importa es el **t', seq: 1 } as ServerEvent);
+  pane.emitEvent({ kind: 'stream_delta', sessionId: SID, content: 'Lo que importa es el **t', messageId: MESSAGE_ID, blockIndex: BLOCK_INDEX, seq: 1 } as ServerEvent);
   await pane.wait(150);
   pane.emitEvent({ kind: 'task_status', sessionId: SID, event: 'progress', taskId: 't1', seq: 2 } as ServerEvent);
-  pane.emitEvent({ kind: 'stream_delta', sessionId: SID, content: 'amaño del contexto**, no la sesión.', seq: 3 } as ServerEvent);
-  pane.emitEvent({ kind: 'text', role: 'assistant', id: 'uuid-1', sessionId: SID, content: FULL, seq: 4 } as ServerEvent);
-  pane.emitEvent({ kind: 'stream_end', sessionId: SID, seq: 5 } as ServerEvent);
+  pane.emitEvent({ kind: 'stream_delta', sessionId: SID, content: 'amaño del contexto**, no la sesión.', messageId: MESSAGE_ID, blockIndex: BLOCK_INDEX, seq: 3 } as ServerEvent);
+  pane.emitEvent({ kind: 'text', role: 'assistant', id: 'uuid-1', sessionId: SID, content: FULL, messageId: MESSAGE_ID, blockIndex: BLOCK_INDEX, seq: 4 } as ServerEvent);
+  pane.emitEvent({ kind: 'stream_end', sessionId: SID, messageId: MESSAGE_ID, blockIndex: BLOCK_INDEX, seq: 5 } as ServerEvent);
   assert.deepEqual(pane.assistantTexts(SID), [FULL]);
 });
 
 test('el mensaje final que llega antes del último tramo no deja un resto suelto', async () => {
   const pane = renderPane(SID);
-  pane.emitEvent({ kind: 'stream_delta', sessionId: SID, content: 'Lo que importa es el **t', seq: 1 } as ServerEvent);
+  pane.emitEvent({ kind: 'stream_delta', sessionId: SID, content: 'Lo que importa es el **t', messageId: MESSAGE_ID, blockIndex: BLOCK_INDEX, seq: 1 } as ServerEvent);
   await pane.wait(150);
-  pane.emitEvent({ kind: 'text', role: 'assistant', id: 'uuid-1', sessionId: SID, content: FULL, seq: 2 } as ServerEvent);
-  pane.emitEvent({ kind: 'stream_delta', sessionId: SID, content: 'amaño del contexto**, no la sesión.', seq: 3 } as ServerEvent);
-  pane.emitEvent({ kind: 'stream_end', sessionId: SID, seq: 4 } as ServerEvent);
+  pane.emitEvent({ kind: 'text', role: 'assistant', id: 'uuid-1', sessionId: SID, content: FULL, messageId: MESSAGE_ID, blockIndex: BLOCK_INDEX, seq: 2 } as ServerEvent);
+  pane.emitEvent({ kind: 'stream_delta', sessionId: SID, content: 'amaño del contexto**, no la sesión.', messageId: MESSAGE_ID, blockIndex: BLOCK_INDEX, seq: 3 } as ServerEvent);
+  pane.emitEvent({ kind: 'stream_end', sessionId: SID, messageId: MESSAGE_ID, blockIndex: BLOCK_INDEX, seq: 4 } as ServerEvent);
   await pane.wait(150);
   assert.deepEqual(pane.assistantTexts(SID), [FULL]);
 });

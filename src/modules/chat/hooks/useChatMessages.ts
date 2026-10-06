@@ -372,6 +372,12 @@ export function normalizedToChatMessages(messages: NormalizedMessage[]): ChatMes
 
     const convertedStart = converted.length;
     const sharedMetadata = {
+      // Mirrors the source row's own id so `messageKeys.ts` has a stable key
+      // for every rendered row — a streaming row's `stream:<messageId>:
+      // <blockIndex>` (or session-literal fallback) included, since that id
+      // never changes across a flush the way a fresh timestamp did
+      // (00-linea-base; Fase 5, paso 1).
+      id: msg.id,
       displayText: msg.displayText,
       commandName: msg.commandName,
       commandMessage: msg.commandMessage,
@@ -540,9 +546,30 @@ export function normalizedToChatMessages(messages: NormalizedMessage[]): ChatMes
         }
         break;
 
-      // stream_end, complete, status, permission_*, session_created
-      // are control events — not rendered as messages
+      // Claude's extended-thinking text, still streaming — same row shape as
+      // a finished 'thinking' message, plus `isStreaming` so `MessageComponent`
+      // keeps the "Pensando…" collapsible open while it grows (Fase 5, paso 6).
+      case 'thinking_delta':
+        if (msg.content) {
+          converted.push({
+            type: 'assistant',
+            content: msg.content,
+            timestamp: msg.timestamp,
+            isThinking: true,
+            isStreaming: true,
+            ...sharedMetadata,
+          });
+        }
+        break;
+
+      // stream_end, activity, complete, status, permission_*, session_created
+      // are control events — not rendered as messages. `activity` (a block
+      // just started) only ever reaches the store with a `parentToolUseId`
+      // (the main thread's own activity drives the indicator directly from
+      // useChatRealtimeHandlers and is never persisted); folding it onto the
+      // Agent/Task card's own timeline is Fase 6, not this one.
       case 'stream_end':
+      case 'activity':
       case 'complete':
       case 'status':
       case 'permission_request':
