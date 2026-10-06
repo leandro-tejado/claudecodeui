@@ -33,15 +33,40 @@ const enviar = (obj) => process.stdout.write(`${JSON.stringify(obj)}\n`);
 const dormir = (ms) => new Promise((r) => setTimeout(r, ms));
 const uuid = () => crypto.randomUUID();
 
+// Subagentes lanzados en esta corrida: id del tool_use de Agent -> su agentId
+// y lo que va al meta.json. Como el Claude real, las filas de un subagente NO
+// van al JSONL de la sesión: van a `<sesión>/subagents/agent-<agentId>.jsonl`
+// (el server las cuelga de la fila con `toolUseResult.agentId`).
+const agentes = new Map();
+function registrarAgente(toolUseId, input = {}) {
+  if (agentes.has(toolUseId)) return agentes.get(toolUseId);
+  const a = { agentId: `a${crypto.randomBytes(8).toString('hex')}`, input, ultimoUuid: null };
+  agentes.set(toolUseId, a);
+  return a;
+}
+
 function fila(tipo, message, extra = {}) {
   const u = uuid();
+  const { sidechainDe, ...resto } = extra;
+  const agente = sidechainDe ? registrarAgente(sidechainDe) : null;
   const row = {
-    parentUuid: ultimoUuid, isSidechain: false, userType: 'external', cwd, sessionId,
+    parentUuid: agente ? agente.ultimoUuid : ultimoUuid, isSidechain: Boolean(agente), userType: 'external', cwd, sessionId,
     // sdk-cli: no es actividad interactiva, así que la limpieza de :3001 (que
     // comparte ~/.claude) no le da al proyecto de prueba un lugar del tope.
     version: '2.0.0-falso', gitBranch: '', entrypoint: 'sdk-cli', type: tipo, message, uuid: u,
-    timestamp: new Date().toISOString(), ...extra,
+    timestamp: new Date().toISOString(), ...(agente ? { agentId: agente.agentId } : {}), ...resto,
   };
+  if (agente) {
+    const dir = path.join(dirTranscript, sessionId, 'subagents');
+    fs.mkdirSync(dir, { recursive: true });
+    const base = path.join(dir, `agent-${agente.agentId}`);
+    if (!fs.existsSync(`${base}.meta.json`)) {
+      fs.writeFileSync(`${base}.meta.json`, JSON.stringify({ agentType: agente.input.subagent_type || 'general-purpose', description: agente.input.description || '', toolUseId: sidechainDe }));
+    }
+    fs.appendFileSync(`${base}.jsonl`, `${JSON.stringify(row)}\n`);
+    agente.ultimoUuid = u;
+    return u;
+  }
   fs.appendFileSync(transcript, `${JSON.stringify(row)}\n`);
   ultimoUuid = u;
   return u;
@@ -91,7 +116,8 @@ async function mensaje(bloques, { pausa = 40, parent = null, stopReason = 'end_t
   // el mismo (messageId, blockIndex) y por lo tanto la misma fila —
   // encontrado al correr `headless/actividad` en Fase 5.
   const msg = { ...base, content: bloquesFinales, stop_reason: stopReason };
-  fila('assistant', msg, { requestId: `req_falso_${id}`, ...(parent ? { isSidechain: true } : {}) });
+  for (const b of bloques) if (b.type === 'tool_use' && b.name === 'Agent') registrarAgente(b.id, b.input);
+  fila('assistant', msg, { requestId: `req_falso_${id}`, ...(parent ? { sidechainDe: parent } : {}) });
   enviar({ type: 'assistant', message: msg, parent_tool_use_id: parent, session_id: sessionId, uuid: ultimoUuid });
   ev({ type: 'message_delta', delta: { stop_reason: stopReason, stop_sequence: null }, usage: uso }, parent);
   ev({ type: 'message_stop' }, parent);
@@ -102,7 +128,15 @@ async function mensaje(bloques, { pausa = 40, parent = null, stopReason = 'end_t
 // un resultado del hilo principal, como el que resuelve el propio Agent/Task).
 function resultadoHerramienta(toolUseId, contenido, toolUseResult, parent = null) {
   const msg = { role: 'user', content: [{ type: 'tool_result', tool_use_id: toolUseId, content: contenido }] };
-  fila('user', msg, { ...(toolUseResult ? { toolUseResult } : {}), ...(parent ? { isSidechain: true } : {}) });
+  // El resultado del propio Agent lleva el `agentId`, como el real: es lo que
+  // le dice al server qué transcript de subagents/ leer.
+  const agente = !parent && !toolUseResult ? agentes.get(toolUseId) : null;
+  if (agente) {
+    toolUseResult = agente.input.run_in_background
+      ? { isAsync: true, status: 'async_launched', agentId: agente.agentId, description: agente.input.description, prompt: agente.input.prompt }
+      : { status: 'completed', agentId: agente.agentId, prompt: agente.input.prompt, content: [{ type: 'text', text: contenido }] };
+  }
+  fila('user', msg, { ...(toolUseResult ? { toolUseResult } : {}), ...(parent ? { sidechainDe: parent } : {}) });
   enviar({ type: 'user', message: msg, parent_tool_use_id: parent, session_id: sessionId, uuid: ultimoUuid });
 }
 
@@ -210,11 +244,11 @@ const GUIONES = {
     // `parent_tool_use_id` — así llega "ya pasa" por la rama normal de
     // assistant/tool_use, no por streaming parcial.
     const msgA = { id: `msg_falso_${crypto.randomBytes(6).toString('hex')}`, type: 'message', role: 'assistant', model: modelo, stop_reason: 'tool_use', usage: uso, content: [{ type: 'tool_use', id: innerA, name: 'Bash', input: { command: 'echo a' } }] };
-    fila('assistant', msgA, { requestId: `req_falso_${msgA.id}`, isSidechain: true });
+    fila('assistant', msgA, { requestId: `req_falso_${msgA.id}`, sidechainDe: tidA });
     enviar({ type: 'assistant', message: msgA, parent_tool_use_id: tidA, session_id: sessionId, uuid: ultimoUuid });
 
     const msgB = { id: `msg_falso_${crypto.randomBytes(6).toString('hex')}`, type: 'message', role: 'assistant', model: modelo, stop_reason: 'tool_use', usage: uso, content: [{ type: 'tool_use', id: innerB, name: 'Read', input: { file_path: '/tmp/b.txt' } }] };
-    fila('assistant', msgB, { requestId: `req_falso_${msgB.id}`, isSidechain: true });
+    fila('assistant', msgB, { requestId: `req_falso_${msgB.id}`, sidechainDe: tidB });
     enviar({ type: 'assistant', message: msgB, parent_tool_use_id: tidB, session_id: sessionId, uuid: ultimoUuid });
 
     resultadoHerramienta(innerA, 'a\n', undefined, tidA);
