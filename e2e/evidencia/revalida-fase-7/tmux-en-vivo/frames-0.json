@@ -1,0 +1,606 @@
+[
+  {
+    "t": 1791250034498,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "type": "chat.tmux-prompts"
+    }
+  },
+  {
+    "t": 1791250034565,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "tmux_prompts",
+      "prompts": [],
+      "timestamp": "2026-10-06T01:27:14.558Z"
+    }
+  },
+  {
+    "t": 1791250034934,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "type": "chat.subscribe",
+      "sessions": [
+        {
+          "sessionId": "567fd299-6037-42fe-bda5-1051b5bb5cf7",
+          "lastSeq": 0
+        }
+      ]
+    }
+  },
+  {
+    "t": 1791250034953,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "chat_subscribed",
+      "sessionId": "567fd299-6037-42fe-bda5-1051b5bb5cf7",
+      "isProcessing": false,
+      "lastSeq": 0,
+      "pendingPermissions": [],
+      "runsInTmux": true,
+      "timestamp": "2026-10-06T01:27:14.935Z"
+    }
+  },
+  {
+    "t": 1791250035746,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "type": "chat.send-tmux",
+      "sessionId": "567fd299-6037-42fe-bda5-1051b5bb5cf7",
+      "content": "Escribí un párrafo de unas 150 palabras sobre faros. Terminá con rv0zx5.",
+      "clientMessageId": "local_1791250035727_8lhwyt",
+      "options": {
+        "model": "default",
+        "effort": "default",
+        "permissionMode": "default",
+        "toolsSettings": {
+          "allowedTools": [],
+          "disallowedTools": [],
+          "skipPermissions": false
+        },
+        "skipPermissions": false,
+        "sessionSummary": "e2e-envivo-ejecutora-1",
+        "attachments": []
+      }
+    }
+  },
+  {
+    "t": 1791250036206,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "567fd299-6037-42fe-bda5-1051b5bb5cf7",
+      "activityKind": "thinking",
+      "texto": "Blanching… (running UserPromptSubmit hooks… 1/2 · 0s)",
+      "timestamp": "2026-10-06T01:27:16.196Z"
+    }
+  },
+  {
+    "t": 1791250036211,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "stream_delta",
+      "sessionId": "567fd299-6037-42fe-bda5-1051b5bb5cf7",
+      "messageId": "tmux-borrador:567fd299-6037-42fe-bda5-1051b5bb5cf7",
+      "blockIndex": 0,
+      "content": "❯\n  5h ?",
+      "timestamp": "2026-10-06T01:27:16.196Z"
+    }
+  },
+  {
+    "t": 1791250036365,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "message_status",
+      "sessionId": "567fd299-6037-42fe-bda5-1051b5bb5cf7",
+      "clientMessageId": "local_1791250035727_8lhwyt",
+      "status": "sent",
+      "timestamp": "2026-10-06T01:27:16.362Z"
+    }
+  },
+  {
+    "t": 1791250036377,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "status",
+      "sessionId": "567fd299-6037-42fe-bda5-1051b5bb5cf7",
+      "text": null,
+      "canInterrupt": false,
+      "timestamp": "2026-10-06T01:27:16.362Z"
+    }
+  },
+  {
+    "t": 1791250036593,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "stream_reemplazo",
+      "sessionId": "567fd299-6037-42fe-bda5-1051b5bb5cf7",
+      "messageId": "tmux-borrador:567fd299-6037-42fe-bda5-1051b5bb5cf7",
+      "blockIndex": 0,
+      "timestamp": "2026-10-06T01:27:16.582Z"
+    }
+  },
+  {
+    "t": 1791250036605,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "567fd299-6037-42fe-bda5-1051b5bb5cf7",
+      "idle": true,
+      "timestamp": "2026-10-06T01:27:16.582Z"
+    }
+  },
+  {
+    "t": 1791250037193,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "recursos",
+      "ram": {
+        "porcentajePct": 33.425514918266316,
+        "usadaGb": 2.5921707153320312,
+        "totalGb": 7.75506591796875
+      },
+      "disco": {
+        "usadoPct": 23.452420629922237,
+        "usadoGb": 22.472579956054688,
+        "totalGb": 95.82200622558594
+      },
+      "sesionesTmux": 7,
+      "techoRam": 90
+    }
+  },
+  {
+    "t": 1791250037355,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "id": "720f1ed6-cd28-4ff6-8271-79d99f4f5f25",
+      "sessionId": "567fd299-6037-42fe-bda5-1051b5bb5cf7",
+      "timestamp": "2026-10-06T01:27:16.122Z",
+      "provider": "claude",
+      "kind": "text",
+      "role": "user",
+      "content": "Escribí un párrafo de unas 150 palabras sobre faros. Terminá con rv0zx5.",
+      "transcriptAnchorId": "720f1ed6-cd28-4ff6-8271-79d99f4f5f25"
+    }
+  },
+  {
+    "t": 1791250037385,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "567fd299-6037-42fe-bda5-1051b5bb5cf7",
+      "activityKind": "thinking",
+      "texto": "Burrowing… (1s · thinking with high effort)",
+      "timestamp": "2026-10-06T01:27:17.382Z"
+    }
+  },
+  {
+    "t": 1791250037388,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "stream_delta",
+      "sessionId": "567fd299-6037-42fe-bda5-1051b5bb5cf7",
+      "messageId": "tmux-borrador:567fd299-6037-42fe-bda5-1051b5bb5cf7",
+      "blockIndex": 0,
+      "content": "❯\n  5h ?",
+      "timestamp": "2026-10-06T01:27:17.382Z"
+    }
+  },
+  {
+    "t": 1791250037788,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "567fd299-6037-42fe-bda5-1051b5bb5cf7",
+      "activityKind": "thinking",
+      "texto": "Burrowing… (1s · thinking with high effort)",
+      "timestamp": "2026-10-06T01:27:17.784Z"
+    }
+  },
+  {
+    "t": 1791250037832,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "session_upserted",
+      "sessionId": "567fd299-6037-42fe-bda5-1051b5bb5cf7",
+      "providerSessionId": "567fd299-6037-42fe-bda5-1051b5bb5cf7",
+      "provider": "claude",
+      "session": {
+        "id": "567fd299-6037-42fe-bda5-1051b5bb5cf7",
+        "summary": "Párrafo sobre faros",
+        "messageCount": 0,
+        "lastActivity": "2026-10-06T01:27:17.033Z",
+        "tmux": {
+          "nombre": "e2e-envivo-ejecutora-1",
+          "vivo": true
+        }
+      },
+      "project": {
+        "projectId": "88c27a9c-604f-4dfd-a458-260060b27f03",
+        "path": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
+        "fullPath": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
+        "displayName": "e2e-proyecto",
+        "isStarred": false
+      },
+      "timestamp": "2026-10-06T01:27:17.828Z"
+    }
+  },
+  {
+    "t": 1791250037836,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "session_upserted",
+      "sessionId": "dd72fd80-41e6-4100-8b68-5557b7dffe33",
+      "providerSessionId": "dd72fd80-41e6-4100-8b68-5557b7dffe33",
+      "provider": "claude",
+      "session": {
+        "id": "dd72fd80-41e6-4100-8b68-5557b7dffe33",
+        "summary": "Respuesta con código vgyp9i",
+        "messageCount": 0,
+        "lastActivity": "2026-10-06T01:27:11.732Z",
+        "tmux": null
+      },
+      "project": {
+        "projectId": "88c27a9c-604f-4dfd-a458-260060b27f03",
+        "path": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
+        "fullPath": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
+        "displayName": "e2e-proyecto",
+        "isStarred": false
+      },
+      "timestamp": "2026-10-06T01:27:17.828Z"
+    }
+  },
+  {
+    "t": 1791250038210,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "567fd299-6037-42fe-bda5-1051b5bb5cf7",
+      "activityKind": "thinking",
+      "texto": "Burrowing… (1s · thinking with high effort)",
+      "timestamp": "2026-10-06T01:27:18.201Z"
+    }
+  },
+  {
+    "t": 1791250038269,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": {
+        "porcentaje": 97,
+        "resetsAt": 1791237039000,
+        "leidoEn": 1791236979000
+      },
+      "sevenDay": {
+        "porcentaje": 30,
+        "resetsAt": 1791582939000,
+        "leidoEn": 1791236979000
+      }
+    }
+  },
+  {
+    "t": 1791250038592,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "567fd299-6037-42fe-bda5-1051b5bb5cf7",
+      "activityKind": "thinking",
+      "texto": "Burrowing… (2s · ↓ 25 tokens · thinking with high effort)",
+      "timestamp": "2026-10-06T01:27:18.589Z"
+    }
+  },
+  {
+    "t": 1791250038594,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "stream_delta",
+      "sessionId": "567fd299-6037-42fe-bda5-1051b5bb5cf7",
+      "messageId": "tmux-borrador:567fd299-6037-42fe-bda5-1051b5bb5cf7",
+      "blockIndex": 0,
+      "content": "Skill(aos-core:human-writing)\n  ⎿  Successfully loaded skill\n❯\n  5h ?",
+      "timestamp": "2026-10-06T01:27:18.589Z"
+    }
+  },
+  {
+    "t": 1791250038991,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "567fd299-6037-42fe-bda5-1051b5bb5cf7",
+      "activityKind": "thinking",
+      "texto": "Burrowing… (2s · ↓ 138 tokens · thinking with high effort)",
+      "timestamp": "2026-10-06T01:27:18.987Z"
+    }
+  },
+  {
+    "t": 1791250039134,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "id": "297a8b6b-7f25-4247-9802-362340df5c31_0",
+      "sessionId": "567fd299-6037-42fe-bda5-1051b5bb5cf7",
+      "timestamp": "2026-10-06T01:27:18.484Z",
+      "provider": "claude",
+      "kind": "tool_use",
+      "toolName": "Skill",
+      "toolInput": {
+        "skill": "aos-core:human-writing"
+      },
+      "toolId": "toolu_01XNDLpvBq1ytHnu4gi5oFn4",
+      "messageId": "msg_011Cfk7aiBQPZt59Qw7uPfr5",
+      "blockIndex": 0,
+      "toolResult": {
+        "content": "Launching skill: aos-core:human-writing",
+        "isError": false,
+        "toolUseResult": {
+          "success": true,
+          "commandName": "aos-core:human-writing"
+        }
+      }
+    }
+  },
+  {
+    "t": 1791250039389,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "567fd299-6037-42fe-bda5-1051b5bb5cf7",
+      "activityKind": "thinking",
+      "texto": "Burrowing… (3s · ↓ 213 tokens · thought for 1s)",
+      "timestamp": "2026-10-06T01:27:19.386Z"
+    }
+  },
+  {
+    "t": 1791250039391,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "stream_delta",
+      "sessionId": "567fd299-6037-42fe-bda5-1051b5bb5cf7",
+      "messageId": "tmux-borrador:567fd299-6037-42fe-bda5-1051b5bb5cf7",
+      "blockIndex": 0,
+      "content": "Skill(aos-core:human-writing)\n  ⎿  Successfully loaded skill\n❯",
+      "timestamp": "2026-10-06T01:27:19.386Z"
+    }
+  },
+  {
+    "t": 1791250039791,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "567fd299-6037-42fe-bda5-1051b5bb5cf7",
+      "activityKind": "thinking",
+      "texto": "Burrowing… (3s · ↓ 243 tokens · thought for 1s)",
+      "timestamp": "2026-10-06T01:27:19.789Z"
+    }
+  },
+  {
+    "t": 1791250040193,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "567fd299-6037-42fe-bda5-1051b5bb5cf7",
+      "activityKind": "thinking",
+      "texto": "Burrowing… (3s · ↓ 248 tokens · thought for 1s)",
+      "timestamp": "2026-10-06T01:27:20.190Z"
+    }
+  },
+  {
+    "t": 1791250040592,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "567fd299-6037-42fe-bda5-1051b5bb5cf7",
+      "activityKind": "thinking",
+      "texto": "Burrowing… (4s · ↓ 255 tokens · thought for 1s)",
+      "timestamp": "2026-10-06T01:27:20.589Z"
+    }
+  },
+  {
+    "t": 1791250040992,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "567fd299-6037-42fe-bda5-1051b5bb5cf7",
+      "activityKind": "thinking",
+      "texto": "Burrowing… (4s · ↓ 256 tokens · thought for 1s)",
+      "timestamp": "2026-10-06T01:27:20.988Z"
+    }
+  },
+  {
+    "t": 1791250041391,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "567fd299-6037-42fe-bda5-1051b5bb5cf7",
+      "activityKind": "thinking",
+      "texto": "Burrowing… (5s · ↓ 256 tokens)",
+      "timestamp": "2026-10-06T01:27:21.389Z"
+    }
+  },
+  {
+    "t": 1791250041790,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "567fd299-6037-42fe-bda5-1051b5bb5cf7",
+      "activityKind": "thinking",
+      "texto": "Burrowing… (5s · ↓ 256 tokens)",
+      "timestamp": "2026-10-06T01:27:21.789Z"
+    }
+  },
+  {
+    "t": 1791250042191,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "567fd299-6037-42fe-bda5-1051b5bb5cf7",
+      "activityKind": "thinking",
+      "texto": "Burrowing… (6s · ↓ 256 tokens)",
+      "timestamp": "2026-10-06T01:27:22.189Z"
+    }
+  },
+  {
+    "t": 1791250042593,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "567fd299-6037-42fe-bda5-1051b5bb5cf7",
+      "activityKind": "thinking",
+      "texto": "Burrowing… (6s · ↓ 256 tokens)",
+      "timestamp": "2026-10-06T01:27:22.591Z"
+    }
+  },
+  {
+    "t": 1791250042994,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "567fd299-6037-42fe-bda5-1051b5bb5cf7",
+      "activityKind": "thinking",
+      "texto": "Burrowing… (6s · ↓ 256 tokens)",
+      "timestamp": "2026-10-06T01:27:22.993Z"
+    }
+  },
+  {
+    "t": 1791250043300,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "id": "296c0e04-97f9-431d-b4aa-a1e3d6592609_0",
+      "sessionId": "567fd299-6037-42fe-bda5-1051b5bb5cf7",
+      "timestamp": "2026-10-06T01:27:22.913Z",
+      "provider": "claude",
+      "kind": "text",
+      "role": "assistant",
+      "content": "Los faros se construyeron para resolver un problema muy concreto: los barcos chocaban contra la costa de noche. El de Alejandría, levantado hacia el siglo III a. C., fue uno de los primeros en ganar fama, y con los siglos la técnica mejoró hasta llegar a las lentes de Fresnel, que concentraban la luz de una sola llama en un haz capaz de verse a más de treinta kilómetros. Cada faro tiene su propia secuencia de destellos, de modo que un capitán que avista dos relámpagos cada diez segundos sabe qué tramo de costa tiene enfrente y puede corregir el rumbo con la carta en la mano. Durante mucho tiempo los atendieron fareros que vivían en la torre con sus familias, trepaban la escalera de caracol a rellenar el aceite y limpiar los cristales, y anotaban el clima en un cuaderno. Hoy casi todos funcionan con sensores y paneles solares, y muchos sobreviven como museos o alojamientos, aunque las rocas que señalan siguen en el mismo lugar. rv0zx5",
+      "messageId": "msg_011Cfk7atdwpPbBXqDqwtXK8",
+      "blockIndex": 0
+    }
+  },
+  {
+    "t": 1791250043383,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "id": "tmux_complete_567fd299-6037-42fe-bda5-1051b5bb5cf7_1791250043342",
+      "sessionId": "567fd299-6037-42fe-bda5-1051b5bb5cf7",
+      "provider": "claude",
+      "timestamp": "2026-10-06T01:27:23.342Z",
+      "kind": "complete",
+      "success": true
+    }
+  },
+  {
+    "t": 1791250043405,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "stream_reemplazo",
+      "sessionId": "567fd299-6037-42fe-bda5-1051b5bb5cf7",
+      "messageId": "tmux-borrador:567fd299-6037-42fe-bda5-1051b5bb5cf7",
+      "blockIndex": 0,
+      "timestamp": "2026-10-06T01:27:23.396Z"
+    }
+  },
+  {
+    "t": 1791250043410,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "567fd299-6037-42fe-bda5-1051b5bb5cf7",
+      "idle": true,
+      "timestamp": "2026-10-06T01:27:23.396Z"
+    }
+  },
+  {
+    "t": 1791250043820,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "session_upserted",
+      "sessionId": "567fd299-6037-42fe-bda5-1051b5bb5cf7",
+      "providerSessionId": "567fd299-6037-42fe-bda5-1051b5bb5cf7",
+      "provider": "claude",
+      "session": {
+        "id": "567fd299-6037-42fe-bda5-1051b5bb5cf7",
+        "summary": "Párrafo sobre faros",
+        "messageCount": 0,
+        "lastActivity": "2026-10-06T01:27:23.097Z",
+        "tmux": {
+          "nombre": "e2e-envivo-ejecutora-1",
+          "vivo": true
+        }
+      },
+      "project": {
+        "projectId": "88c27a9c-604f-4dfd-a458-260060b27f03",
+        "path": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
+        "fullPath": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
+        "displayName": "e2e-proyecto",
+        "isStarred": false
+      },
+      "timestamp": "2026-10-06T01:27:23.818Z"
+    }
+  },
+  {
+    "t": 1791250044282,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": {
+        "porcentaje": 97,
+        "resetsAt": 1791237039000,
+        "leidoEn": 1791236979000
+      },
+      "sevenDay": {
+        "porcentaje": 30,
+        "resetsAt": 1791582939000,
+        "leidoEn": 1791236979000
+      }
+    }
+  },
+  {
+    "t": 1791250059491,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "heartbeat",
+      "timestamp": 1791250059489
+    }
+  }
+]

@@ -1,0 +1,188 @@
+[
+  {
+    "t": 1791250026649,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "type": "chat.tmux-prompts"
+    }
+  },
+  {
+    "t": 1791250026746,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "tmux_prompts",
+      "prompts": [],
+      "timestamp": "2026-10-06T01:27:06.739Z"
+    }
+  },
+  {
+    "t": 1791250027160,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "type": "chat.subscribe",
+      "sessions": [
+        {
+          "sessionId": "dd72fd80-41e6-4100-8b68-5557b7dffe33",
+          "lastSeq": 0
+        }
+      ]
+    }
+  },
+  {
+    "t": 1791250027185,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "chat_subscribed",
+      "sessionId": "dd72fd80-41e6-4100-8b68-5557b7dffe33",
+      "isProcessing": false,
+      "lastSeq": 0,
+      "pendingPermissions": [],
+      "runsInTmux": true,
+      "timestamp": "2026-10-06T01:27:07.155Z"
+    }
+  },
+  {
+    "t": 1791250028065,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "type": "chat.send-tmux",
+      "sessionId": "dd72fd80-41e6-4100-8b68-5557b7dffe33",
+      "content": "Respondé en una línea: la palabra LISTO y el código vgyp9i",
+      "clientMessageId": "local_1791250028043_l4xlvj",
+      "options": {
+        "model": "default",
+        "effort": "default",
+        "permissionMode": "default",
+        "toolsSettings": {
+          "allowedTools": [],
+          "disallowedTools": [],
+          "skipPermissions": false
+        },
+        "skipPermissions": false,
+        "sessionSummary": "e2e-latencia-ejecutora-1",
+        "attachments": []
+      }
+    }
+  },
+  {
+    "t": 1791250028653,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "message_status",
+      "sessionId": "dd72fd80-41e6-4100-8b68-5557b7dffe33",
+      "clientMessageId": "local_1791250028043_l4xlvj",
+      "status": "sent",
+      "timestamp": "2026-10-06T01:27:08.649Z"
+    }
+  },
+  {
+    "t": 1791250028664,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "status",
+      "sessionId": "dd72fd80-41e6-4100-8b68-5557b7dffe33",
+      "text": null,
+      "canInterrupt": false,
+      "timestamp": "2026-10-06T01:27:08.650Z"
+    }
+  },
+  {
+    "t": 1791250030373,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "dd72fd80-41e6-4100-8b68-5557b7dffe33",
+      "activityKind": "thinking",
+      "texto": "Cascading… (1s · ↓ 2 tokens)",
+      "timestamp": "2026-10-06T01:27:10.371Z"
+    }
+  },
+  {
+    "t": 1791250030376,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "stream_delta",
+      "sessionId": "dd72fd80-41e6-4100-8b68-5557b7dffe33",
+      "messageId": "tmux-borrador:dd72fd80-41e6-4100-8b68-5557b7dffe33",
+      "blockIndex": 0,
+      "content": "❯\n  5h ?",
+      "timestamp": "2026-10-06T01:27:10.371Z"
+    }
+  },
+  {
+    "t": 1791250030778,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "stream_reemplazo",
+      "sessionId": "dd72fd80-41e6-4100-8b68-5557b7dffe33",
+      "messageId": "tmux-borrador:dd72fd80-41e6-4100-8b68-5557b7dffe33",
+      "blockIndex": 0,
+      "timestamp": "2026-10-06T01:27:10.775Z"
+    }
+  },
+  {
+    "t": 1791250030784,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "dd72fd80-41e6-4100-8b68-5557b7dffe33",
+      "idle": true,
+      "timestamp": "2026-10-06T01:27:10.775Z"
+    }
+  },
+  {
+    "t": 1791250031337,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "id": "9ab49736-bd05-4f7a-b13b-9dcc97217676",
+      "sessionId": "dd72fd80-41e6-4100-8b68-5557b7dffe33",
+      "timestamp": "2026-10-06T01:27:08.426Z",
+      "provider": "claude",
+      "kind": "text",
+      "role": "user",
+      "content": "Respondé en una línea: la palabra LISTO y el código vgyp9i",
+      "transcriptAnchorId": "9ab49736-bd05-4f7a-b13b-9dcc97217676"
+    }
+  },
+  {
+    "t": 1791250031342,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "id": "c8db974a-d2d6-4288-9972-83e332f555ed_0",
+      "sessionId": "dd72fd80-41e6-4100-8b68-5557b7dffe33",
+      "timestamp": "2026-10-06T01:27:10.491Z",
+      "provider": "claude",
+      "kind": "text",
+      "role": "assistant",
+      "content": "LISTO vgyp9i",
+      "messageId": "msg_011Cfk7a95pdFuYX3686C2kH",
+      "blockIndex": 0
+    }
+  },
+  {
+    "t": 1791250031386,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "id": "tmux_complete_dd72fd80-41e6-4100-8b68-5557b7dffe33_1791250031341",
+      "sessionId": "dd72fd80-41e6-4100-8b68-5557b7dffe33",
+      "provider": "claude",
+      "timestamp": "2026-10-06T01:27:11.341Z",
+      "kind": "complete",
+      "success": true
+    }
+  }
+]

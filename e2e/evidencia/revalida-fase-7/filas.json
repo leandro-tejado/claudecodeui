@@ -1,0 +1,214 @@
+[
+  {
+    "escenario": "tmux/latencia",
+    "nombre": "la primera fila de Claude aparece ≤ 1,5 s después de escribirse en el JSONL",
+    "resultado": "pasa",
+    "evidencia": [
+      "tmux-latencia/final.png"
+    ],
+    "datos": {
+      "jsonlMs": 2691,
+      "domMs": 3413,
+      "latenciaMs": 722
+    },
+    "ms": 7211
+  },
+  {
+    "escenario": "tmux/en-vivo",
+    "nombre": "\"pensando\" visible ≤ 2 s después de enviar",
+    "resultado": "pasa",
+    "evidencia": [
+      "tmux-en-vivo/indicador.png"
+    ],
+    "datos": {
+      "tInd": 746
+    },
+    "ms": 29407
+  },
+  {
+    "escenario": "tmux/en-vivo",
+    "nombre": "el texto crece en ≥ 3 muestras",
+    "resultado": "pasa",
+    "evidencia": [
+      "tmux-en-vivo/frames-0.json"
+    ],
+    "datos": {
+      "distintas": 4,
+      "largos": "24,24,24,24,24,24,67,62,62,62,62,62,62,62,62,62,62,949,949,949,949,949,949,949,949,949,949,949,949,949,949,949,949,949,949,949,949,949,949,949,949,949,949,949,949,949,949,949,949,949,949,949,949,949,949,949,949,949,949,949"
+    },
+    "ms": 29407
+  },
+  {
+    "escenario": "tmux/en-vivo",
+    "nombre": "al final, una sola fila de respuesta",
+    "resultado": "pasa",
+    "evidencia": [
+      "tmux-en-vivo/final.png"
+    ],
+    "datos": {
+      "filas": 1
+    },
+    "ms": 29407
+  },
+  {
+    "escenario": "tmux/recarga",
+    "nombre": "el ack de suscripción dice que está procesando",
+    "resultado": "pasa",
+    "evidencia": [
+      "tmux-recarga/frames-0.json"
+    ],
+    "datos": {
+      "isProcessing": true,
+      "runsInTmux": true
+    },
+    "ms": 18953
+  },
+  {
+    "escenario": "tmux/recarga",
+    "nombre": "tras recargar, el indicador sigue",
+    "resultado": "pasa",
+    "evidencia": [
+      "tmux-recarga/tras-recargar.png"
+    ],
+    "ms": 18953
+  },
+  {
+    "escenario": "tmux/commits",
+    "nombre": "8267cbe1: el mensaje muestra \"Enviado\" una vez que el pane lo recibió",
+    "resultado": "pasa",
+    "evidencia": [
+      "tmux-commits/enviado.png"
+    ],
+    "datos": {
+      "enviadoMs": 886
+    },
+    "ms": 16779
+  },
+  {
+    "escenario": "tmux/commits",
+    "nombre": "62d63c69: con la sugerencia visible, el mensaje sale y se contesta",
+    "resultado": "pasa",
+    "evidencia": [
+      "tmux-commits/final.png"
+    ],
+    "datos": {
+      "sugerencia": "Respondé solo: mm7npu",
+      "finMs": 1968,
+      "respuestaVisible": true
+    },
+    "ms": 16779
+  },
+  {
+    "escenario": "tmux/rafaga",
+    "nombre": "cada mensaje 1 vez en el JSONL",
+    "resultado": "falla",
+    "evidencia": [
+      "tmux-rafaga/frames-0.json"
+    ],
+    "datos": {
+      "enJsonl": [
+        1,
+        0,
+        0,
+        1,
+        1
+      ]
+    },
+    "ms": 17868
+  },
+  {
+    "escenario": "tmux/rafaga",
+    "nombre": "cada mensaje 1 vez en el DOM",
+    "resultado": "falla",
+    "evidencia": [
+      "tmux-rafaga/final.png"
+    ],
+    "datos": {
+      "enDom": [
+        1,
+        0,
+        0,
+        1,
+        1
+      ]
+    },
+    "ms": 17868
+  },
+  {
+    "escenario": "tmux/rafaga",
+    "nombre": "un solo proceso claude en el proyecto",
+    "resultado": "pasa",
+    "evidencia": [
+      "tmux-rafaga/frames-0.json"
+    ],
+    "datos": {
+      "durante": [
+        "520316"
+      ],
+      "despues": [
+        "520316"
+      ]
+    },
+    "ms": 17868
+  },
+  {
+    "escenario": "tmux/rafaga",
+    "nombre": "todos contestados",
+    "resultado": "falla",
+    "evidencia": [
+      "tmux-rafaga/frames-0.json"
+    ],
+    "datos": {
+      "respondidos": [
+        1,
+        0,
+        0,
+        1,
+        1
+      ]
+    },
+    "ms": 17868
+  },
+  {
+    "escenario": "tmux/turno-corto",
+    "nombre": "cada turno pasa a libre ≤ 3 s después de que se ve la respuesta",
+    "resultado": "pasa",
+    "evidencia": [
+      "tmux-turno-corto/final.png"
+    ],
+    "datos": [
+      -34,
+      -131,
+      -35,
+      -79,
+      -26,
+      -68,
+      -53,
+      -87,
+      -79,
+      -52
+    ],
+    "ms": 32762
+  },
+  {
+    "escenario": "tmux/turno-corto",
+    "nombre": "cada respuesta aparece una vez",
+    "resultado": "pasa",
+    "evidencia": [
+      "tmux-turno-corto/frames-0.json"
+    ],
+    "datos": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1
+    ],
+    "ms": 32762
+  }
+]

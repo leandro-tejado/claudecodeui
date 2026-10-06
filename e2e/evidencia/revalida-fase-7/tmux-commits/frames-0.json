@@ -1,0 +1,390 @@
+[
+  {
+    "t": 1791250084385,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "type": "chat.tmux-prompts"
+    }
+  },
+  {
+    "t": 1791250084444,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "tmux_prompts",
+      "prompts": [],
+      "timestamp": "2026-10-06T01:28:04.439Z"
+    }
+  },
+  {
+    "t": 1791250084920,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "type": "chat.subscribe",
+      "sessions": [
+        {
+          "sessionId": "8e0968b4-9892-43f0-9c10-0b02c8c3199c",
+          "lastSeq": 0
+        }
+      ]
+    }
+  },
+  {
+    "t": 1791250084928,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "chat_subscribed",
+      "sessionId": "8e0968b4-9892-43f0-9c10-0b02c8c3199c",
+      "isProcessing": false,
+      "lastSeq": 0,
+      "pendingPermissions": [],
+      "runsInTmux": true,
+      "timestamp": "2026-10-06T01:28:04.915Z"
+    }
+  },
+  {
+    "t": 1791250085802,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "type": "chat.send-tmux",
+      "sessionId": "8e0968b4-9892-43f0-9c10-0b02c8c3199c",
+      "content": "Respondé solo: mm7npu",
+      "clientMessageId": "local_1791250085775_buhlrl",
+      "options": {
+        "model": "default",
+        "effort": "default",
+        "permissionMode": "default",
+        "toolsSettings": {
+          "allowedTools": [],
+          "disallowedTools": [],
+          "skipPermissions": false
+        },
+        "skipPermissions": false,
+        "sessionSummary": "e2e-commits-ejecutora-1",
+        "attachments": []
+      }
+    }
+  },
+  {
+    "t": 1791250085841,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "session_upserted",
+      "sessionId": "717e02aa-3842-4294-b1d9-28a2b6d257f2",
+      "providerSessionId": "717e02aa-3842-4294-b1d9-28a2b6d257f2",
+      "provider": "claude",
+      "session": {
+        "id": "717e02aa-3842-4294-b1d9-28a2b6d257f2",
+        "summary": "Escribí un párrafo de 120 palabras sobre trenes. Terminá con 789zvs.",
+        "messageCount": 0,
+        "lastActivity": "2026-10-06T01:28:01.257Z",
+        "tmux": null
+      },
+      "project": {
+        "projectId": "88c27a9c-604f-4dfd-a458-260060b27f03",
+        "path": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
+        "fullPath": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
+        "displayName": "e2e-proyecto",
+        "isStarred": false
+      },
+      "timestamp": "2026-10-06T01:28:05.835Z"
+    }
+  },
+  {
+    "t": 1791250086292,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": {
+        "porcentaje": 97,
+        "resetsAt": 1791237039000,
+        "leidoEn": 1791236979000
+      },
+      "sevenDay": {
+        "porcentaje": 30,
+        "resetsAt": 1791582939000,
+        "leidoEn": 1791236979000
+      }
+    }
+  },
+  {
+    "t": 1791250086397,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "message_status",
+      "sessionId": "8e0968b4-9892-43f0-9c10-0b02c8c3199c",
+      "clientMessageId": "local_1791250085775_buhlrl",
+      "status": "sent",
+      "timestamp": "2026-10-06T01:28:06.394Z"
+    }
+  },
+  {
+    "t": 1791250086406,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "status",
+      "sessionId": "8e0968b4-9892-43f0-9c10-0b02c8c3199c",
+      "text": null,
+      "canInterrupt": false,
+      "timestamp": "2026-10-06T01:28:06.395Z"
+    }
+  },
+  {
+    "t": 1791250091338,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "id": "de5e9a61-65af-4c81-8518-fa06cfddb60a",
+      "sessionId": "8e0968b4-9892-43f0-9c10-0b02c8c3199c",
+      "timestamp": "2026-10-06T01:28:06.183Z",
+      "provider": "claude",
+      "kind": "text",
+      "role": "user",
+      "content": "Respondé solo: mm7npu",
+      "transcriptAnchorId": "de5e9a61-65af-4c81-8518-fa06cfddb60a"
+    }
+  },
+  {
+    "t": 1791250091340,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "id": "d669b907-6ebb-4e7e-a41d-b1f2aaaf41c4_0",
+      "sessionId": "8e0968b4-9892-43f0-9c10-0b02c8c3199c",
+      "timestamp": "2026-10-06T01:28:07.492Z",
+      "provider": "claude",
+      "kind": "text",
+      "role": "assistant",
+      "content": "mm7npu",
+      "messageId": "msg_011Cfk7ePw9ZVwoQB1Ly1FH2",
+      "blockIndex": 0
+    }
+  },
+  {
+    "t": 1791250091383,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "id": "tmux_complete_8e0968b4-9892-43f0-9c10-0b02c8c3199c_1791250091339",
+      "sessionId": "8e0968b4-9892-43f0-9c10-0b02c8c3199c",
+      "provider": "claude",
+      "timestamp": "2026-10-06T01:28:11.339Z",
+      "kind": "complete",
+      "success": true
+    }
+  },
+  {
+    "t": 1791250091808,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "session_upserted",
+      "sessionId": "8e0968b4-9892-43f0-9c10-0b02c8c3199c",
+      "providerSessionId": "8e0968b4-9892-43f0-9c10-0b02c8c3199c",
+      "provider": "claude",
+      "session": {
+        "id": "8e0968b4-9892-43f0-9c10-0b02c8c3199c",
+        "summary": "mm7npu",
+        "messageCount": 0,
+        "lastActivity": "2026-10-06T01:28:07.673Z",
+        "tmux": {
+          "nombre": "e2e-commits-ejecutora-1",
+          "vivo": true
+        }
+      },
+      "project": {
+        "projectId": "88c27a9c-604f-4dfd-a458-260060b27f03",
+        "path": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
+        "fullPath": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
+        "displayName": "e2e-proyecto",
+        "isStarred": false
+      },
+      "timestamp": "2026-10-06T01:28:11.804Z"
+    }
+  },
+  {
+    "t": 1791250092289,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": {
+        "porcentaje": 97,
+        "resetsAt": 1791237039000,
+        "leidoEn": 1791236979000
+      },
+      "sevenDay": {
+        "porcentaje": 30,
+        "resetsAt": 1791582939000,
+        "leidoEn": 1791236979000
+      }
+    }
+  },
+  {
+    "t": 1791250096646,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "type": "chat.send-tmux",
+      "sessionId": "8e0968b4-9892-43f0-9c10-0b02c8c3199c",
+      "content": "Respondé solo: 4ymjyx",
+      "clientMessageId": "local_1791250096638_euksxv",
+      "options": {
+        "model": "default",
+        "effort": "default",
+        "permissionMode": "default",
+        "toolsSettings": {
+          "allowedTools": [],
+          "disallowedTools": [],
+          "skipPermissions": false
+        },
+        "skipPermissions": false,
+        "sessionSummary": "e2e-commits-ejecutora-1",
+        "attachments": []
+      }
+    }
+  },
+  {
+    "t": 1791250097195,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "recursos",
+      "ram": {
+        "porcentajePct": 31.205237330688895,
+        "usadaGb": 2.4199867248535156,
+        "totalGb": 7.75506591796875
+      },
+      "disco": {
+        "usadoPct": 23.441906744985623,
+        "usadoGb": 22.462505340576172,
+        "totalGb": 95.82200622558594
+      },
+      "sesionesTmux": 7,
+      "techoRam": 90
+    }
+  },
+  {
+    "t": 1791250097235,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "message_status",
+      "sessionId": "8e0968b4-9892-43f0-9c10-0b02c8c3199c",
+      "clientMessageId": "local_1791250096638_euksxv",
+      "status": "sent",
+      "timestamp": "2026-10-06T01:28:17.233Z"
+    }
+  },
+  {
+    "t": 1791250097243,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "status",
+      "sessionId": "8e0968b4-9892-43f0-9c10-0b02c8c3199c",
+      "text": null,
+      "canInterrupt": false,
+      "timestamp": "2026-10-06T01:28:17.234Z"
+    }
+  },
+  {
+    "t": 1791250097323,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "id": "60e8d9db-5417-4fcf-861c-2cd45321b6ca",
+      "sessionId": "8e0968b4-9892-43f0-9c10-0b02c8c3199c",
+      "timestamp": "2026-10-06T01:28:16.998Z",
+      "provider": "claude",
+      "kind": "text",
+      "role": "user",
+      "content": "Respondé solo: 4ymjyx",
+      "transcriptAnchorId": "60e8d9db-5417-4fcf-861c-2cd45321b6ca"
+    }
+  },
+  {
+    "t": 1791250097802,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "session_upserted",
+      "sessionId": "8e0968b4-9892-43f0-9c10-0b02c8c3199c",
+      "providerSessionId": "8e0968b4-9892-43f0-9c10-0b02c8c3199c",
+      "provider": "claude",
+      "session": {
+        "id": "8e0968b4-9892-43f0-9c10-0b02c8c3199c",
+        "summary": "mm7npu",
+        "messageCount": 0,
+        "lastActivity": "2026-10-06T01:28:17.182Z",
+        "tmux": {
+          "nombre": "e2e-commits-ejecutora-1",
+          "vivo": true
+        }
+      },
+      "project": {
+        "projectId": "88c27a9c-604f-4dfd-a458-260060b27f03",
+        "path": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
+        "fullPath": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
+        "displayName": "e2e-proyecto",
+        "isStarred": false
+      },
+      "timestamp": "2026-10-06T01:28:17.800Z"
+    }
+  },
+  {
+    "t": 1791250098293,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": {
+        "porcentaje": 97,
+        "resetsAt": 1791237039000,
+        "leidoEn": 1791236979000
+      },
+      "sevenDay": {
+        "porcentaje": 30,
+        "resetsAt": 1791582939000,
+        "leidoEn": 1791236979000
+      }
+    }
+  },
+  {
+    "t": 1791250098583,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "id": "164cec89-b3c4-49bc-a2b8-d2037bbd57e9_0",
+      "sessionId": "8e0968b4-9892-43f0-9c10-0b02c8c3199c",
+      "timestamp": "2026-10-06T01:28:18.219Z",
+      "provider": "claude",
+      "kind": "text",
+      "role": "assistant",
+      "content": "4ymjyx",
+      "messageId": "msg_011Cfk7fBtt8s1tpnr5SvRrc",
+      "blockIndex": 0
+    }
+  },
+  {
+    "t": 1791250098592,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "id": "tmux_complete_8e0968b4-9892-43f0-9c10-0b02c8c3199c_1791250098588",
+      "sessionId": "8e0968b4-9892-43f0-9c10-0b02c8c3199c",
+      "provider": "claude",
+      "timestamp": "2026-10-06T01:28:18.588Z",
+      "kind": "complete",
+      "success": true
+    }
+  }
+]

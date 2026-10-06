@@ -110,12 +110,12 @@ Las sesiones nuevas del orquestador llegan por polling de 3 s sobre `~/.cache/ao
 - [ ] Indicador de actividad estilo Optimum (tool en curso, "pensando", reaparece tras 800 ms sin texto) — acepta: captura con el indicador antes del primer token y durante una tool | valida: `node e2e/correr.mjs headless/actividad`
 - [ ] Sin partidos ni duplicados en los guiones `subagente-a-mitad` y `stderr-a-mitad` — acepta: exactamente una fila por bloque y el texto igual al final | valida: `node e2e/correr.mjs falso/intercalados`
 - [ ] Subagentes en vivo: la tarjeta de la tool Agent/Task muestra la actividad del subagente mientras corre (tool en curso, texto) — acepta: captura a mitad del subagente con su actividad, en headless real | valida: `node e2e/correr.mjs headless/subagente`
-- [ ] Tmux: fin de turno por id de la última fila user (no por el flag `complecionAnunciada`) — acepta: un turno "respondé solo OK" pasa a libre en ≤ 3 s, 10 de 10 veces | valida: `node e2e/correr.mjs tmux/turno-corto`
-- [ ] Tmux: inotify sobre el JSONL y corte por id en vez de por cantidad — acepta: la primera fila llega en ≤ 1,5 s desde que se escribe | valida: `node e2e/correr.mjs tmux/latencia`
-- [ ] Tmux: lector del pane cada ~400 ms → `activity` (spinner, tool) y borrador de texto — acepta: "pensando" visible ≤ 2 s después de "Enviado"; texto creciendo en ≥ 3 muestras; el borrador lo reemplaza la versión del JSONL sin dejar dos filas | valida: `node e2e/correr.mjs tmux/en-vivo`
+- [x] Tmux: fin de turno por id de la última fila user (no por el flag `complecionAnunciada`) — acepta: un turno "respondé solo OK" pasa a libre en ≤ 3 s, 10 de 10 veces | valida: `node e2e/correr.mjs tmux/turno-corto`
+- [x] Tmux: inotify sobre el JSONL y corte por id en vez de por cantidad — acepta: la primera fila llega en ≤ 1,5 s desde que se escribe | valida: `node e2e/correr.mjs tmux/latencia`
+- [x] Tmux: lector del pane cada ~400 ms → `activity` (spinner, tool) y borrador de texto — acepta: "pensando" visible ≤ 2 s después de "Enviado"; texto creciendo en ≥ 3 muestras; el borrador lo reemplaza la versión del JSONL sin dejar dos filas | valida: `node e2e/correr.mjs tmux/en-vivo`
 - [ ] Tmux: la cola y el dispatcher nunca resumen por SDK una sesión con pane vivo; sin caída a `chat.send` tras `TMUX_*` — acepta: test de server + E2E con 5 mensajes seguidos (2 durante el turno): cada uno aparece exactamente 1 vez en el pane y en el JSONL, y hay un solo proceso `claude` en la sesión | valida: `node e2e/correr.mjs tmux/rafaga`
 - [ ] Tmux: `queued_command` se reconcilia como mensaje del usuario — acepta: el mensaje enviado con el turno en curso se ve una vez y con estado "Enviado" | valida: incluido en `tmux/rafaga`
-- [ ] Tmux: el ack de `chat.subscribe` trae el estado real del pane — acepta: recargar a mitad de un turno mantiene el indicador | valida: `node e2e/correr.mjs tmux/recarga`
+- [x] Tmux: el ack de `chat.subscribe` trae el estado real del pane — acepta: recargar a mitad de un turno mantiene el indicador | valida: `node e2e/correr.mjs tmux/recarga`
 - [x] Barra: `fs.watch` sobre `~/.cache/aos/sesiones.json` — acepta: `orquestar.py crear e2e-orq ejecutora /tmp/cloudcli-e2e/proyecto` aparece en la barra abierta en ≤ 3 s sin recargar | valida: `node e2e/correr.mjs barra/orquestador`
 - [x] Inventario `docs/actualizacion-en-vivo.md`: cada componente con estado del servidor, su fuente de actualización y si es en vivo — acepta: tabla completa y cero filas "ninguna" sin justificar | valida: lectura + `node e2e/correr.mjs barra/componentes`
 - [ ] Cuestionario headless en los modos `default`, `auto` y `bypassPermissions` — acepta: en los tres modos la pregunta llega a la UI y Claude recibe la respuesta elegida (la repite literal) | valida: `node e2e/correr.mjs pregunta/modos`
@@ -124,9 +124,9 @@ Las sesiones nuevas del orquestador llegan por polling de 3 s sobre `~/.cache/ao
 - [ ] Respuestas del historial desde `toolUseResult`, no por regex — acepta: una pregunta con comillas se muestra bien tras recargar | valida: `NODE_ENV=test npm test -- message-unification`
 - [ ] Recibir de Leandro el prompt de ejemplo del cuestionario — acepta: guardado en `design-system/visual-refs/05-octubre-cuestionario-ejemplo.md` | valida: el archivo existe
 - [x] Design system persistido (`design-system/README.md`, `branding.md`, `typography.md`, `tokens.md`) a partir de Optimum + `apple-design` + `ui-ux-pro-max --design-system` — acepta: los cuatro archivos existen con hex, escala y tokens concretos | valida: `ls design-system/*.md`
-- [ ] Boceto del chat (recorrido: barra → sesión → enviar → pensando → tool → subagente → respuesta escribiéndose → fin) — acepta: OK de Leandro por AskUserQuestion | valida: `design-system/visual-refs/05-octubre-chat.html`
+- [x] Boceto del chat (recorrido: barra → sesión → enviar → pensando → tool → subagente → respuesta escribiéndose → fin) — acepta: OK de Leandro por AskUserQuestion | valida: `design-system/visual-refs/05-octubre-chat.html`
 - [ ] Boceto del cuestionario (simple, múltiple, "Otra", revisión, enviado, resumen; headless y tmux; 1280 y 390, claro y oscuro) — acepta: OK de Leandro | valida: `design-system/visual-refs/05-octubre-cuestionario.html`
-- [ ] Boceto del header de cuota y de la barra lateral — acepta: OK de Leandro | valida: `design-system/visual-refs/05-octubre-header-barra.html`
+- [x] Boceto del header de cuota y de la barra lateral — acepta: OK de Leandro | valida: `design-system/visual-refs/05-octubre-header-barra.html`
 - [ ] Implementar el lenguaje visual del chat (sans única, Claude sin burbuja, columna de lectura, actividad en una línea con detalle plegable) — acepta: capturas 390/1280 × claro/oscuro iguales al boceto aprobado | valida: `node e2e/correr.mjs visual/chat`
 - [ ] Implementar `Cuestionario` (un componente, dos adaptadores) — acepta: los escenarios de `pregunta/*` siguen verdes con el componente nuevo | valida: `node e2e/correr.mjs pregunta`
 - [ ] Implementar el header y la barra rediseñados — acepta: capturas iguales al boceto; cuota y barra en vivo siguen verdes | valida: `node e2e/correr.mjs visual/header-barra cuota barra`
@@ -381,15 +381,15 @@ Las sesiones nuevas del orquestador llegan por polling de 3 s sobre `~/.cache/ao
 9. E2E con sesiones reales `e2e-tmux-*`.
 
 #### Estado (arranca todo en fail)
-- [fail] Test de fin de turno con user + `end_turn` en el mismo poll | valida: `NODE_ENV=test npm test -- tmux-bridge`
-- [fail] Tests del parser del pane con los 6 fixtures | valida: `NODE_ENV=test npm test -- tmux-pane-vivo`
-- [fail] "Respondé solo OK" pasa a libre en ≤ 3 s, 10 de 10 | valida: `node e2e/correr.mjs tmux/turno-corto`
-- [fail] Primera fila del JSONL en el navegador en ≤ 1,5 s | valida: `node e2e/correr.mjs tmux/latencia`
-- [fail] "Pensando" ≤ 2 s después de "Enviado"; texto creciendo en ≥ 3 muestras; al final, una sola fila de respuesta | valida: `node e2e/correr.mjs tmux/en-vivo`
-- [fail] 5 mensajes seguidos (2 durante el turno): cada uno 1 vez en el pane, en el JSONL y en el DOM; un solo proceso `claude` en la sesión (`pgrep -f` por `session_id`) | valida: `node e2e/correr.mjs tmux/rafaga`
-- [fail] Recargar a mitad del turno mantiene el indicador | valida: `node e2e/correr.mjs tmux/recarga`
-- [fail] Mensajes programados de sesiones no tmux siguen saliendo | valida: `NODE_ENV=test npm test -- scheduled-messages`
-- [fail] Tests de server verdes | valida: `NODE_ENV=test npm test`
+- [pass] Test de fin de turno con user + `end_turn` en el mismo poll | valida: `NODE_ENV=test npm test -- tmux-bridge`
+- [pass] Tests del parser del pane con los 6 fixtures | valida: `NODE_ENV=test npm test -- tmux-pane-vivo`
+- [pass] "Respondé solo OK" pasa a libre en ≤ 3 s, 10 de 10 | valida: `node e2e/correr.mjs tmux/turno-corto`
+- [pass] Primera fila del JSONL en el navegador en ≤ 1,5 s | valida: `node e2e/correr.mjs tmux/latencia`
+- [pass] "Pensando" ≤ 2 s después de "Enviado"; texto creciendo en ≥ 3 muestras; al final, una sola fila de respuesta | valida: `node e2e/correr.mjs tmux/en-vivo`
+- [fail: server ok, falta el cliente — el composer no manda durante el turno] 5 mensajes seguidos (2 durante el turno): cada uno 1 vez en el pane, en el JSONL y en el DOM; un solo proceso `claude` en la sesión (`pgrep -f` por `session_id`) | valida: `node e2e/correr.mjs tmux/rafaga`
+- [pass] Recargar a mitad del turno mantiene el indicador | valida: `node e2e/correr.mjs tmux/recarga`
+- [pass] Mensajes programados de sesiones no tmux siguen saliendo | valida: `NODE_ENV=test npm test -- scheduled-messages`
+- [pass] Tests de server verdes | valida: `NODE_ENV=test npm test`
 
 #### Peligros
 - `capture-pane` cada 400 ms por sesión: con 10 sesiones abiertas son 25 procesos por segundo. Solo con suscriptores, y medir la CPU en el informe (`pidstat` 60 s).
@@ -464,9 +464,9 @@ Las sesiones nuevas del orquestador llegan por polling de 3 s sobre `~/.cache/ao
 - [fail] Ejemplo de cuestionario de Leandro guardado | valida: `test -s design-system/visual-refs/05-octubre-cuestionario-ejemplo.md`
 - [pass] Cuatro archivos del design system con valores concretos | valida: `grep -c '#[0-9A-Fa-f]\{6\}' design-system/branding.md` ≥ 10
 - [fail] Tres bocetos a 390 px sin scroll horizontal, en los dos temas | valida: `node e2e/correr.mjs visual/bocetos` (Playwright sobre los HTML)
-- [fail] Boceto del chat aprobado por Leandro | valida: respuesta de AskUserQuestion
+- [pass] Boceto del chat aprobado por Leandro | valida: respuesta de AskUserQuestion
 - [fail] Boceto del cuestionario aprobado por Leandro | valida: respuesta de AskUserQuestion
-- [fail] Boceto de header y barra aprobado por Leandro | valida: respuesta de AskUserQuestion
+- [pass] Boceto de header y barra aprobado por Leandro | valida: respuesta de AskUserQuestion
 
 #### Peligros
 - Diseñar el cuestionario sin el ejemplo de Leandro: el paso 1 lo bloquea.
@@ -575,12 +575,19 @@ Fase 1 (arnés) → Fase 2 (línea base)
 - Fase 8: además del `fs.watch` de `~/.cache/aos`, tres arreglos fuera de lo previsto: archivar/restaurar y renombrar no emitían nada a la barra, y `mergeExpandedSessionPages` volvía a pegar una sesión archivada en el refresco de reconexión. Orquestador: 5 de 5 en ≤ 3 s (1,6 s; la línea base daba 4,45 s). El escenario tenía un error propio que corregí al revalidar: medía la siguiente creación antes de que saliera la fila de la anterior dormida, y las dos se compensaban en el conteo.
 - Fase 10: design system y dos bocetos (chat, header y barra); el del cuestionario espera el ejemplo de Leandro. 16/16 sin scroll horizontal ni errores de consola.
 
+**Fase 7 server (06-oct), worktree aparte:**
+- Revalidado sobre `diseno/propio` mergeado (corrida `e2e/evidencia/revalida-fase-7/`): `turno-corto` 10 de 10, `latencia` 0,72 s (era 4,3 s), `en-vivo` "pensando" a 0,75 s, `recarga` con `isProcessing:true`, `commits` (8267cbe1 y 62d63c69) siguen verdes. Server 844/847 (las 2 viejas + 1 skip).
+- `tmux/rafaga` sigue en rojo, **pero no es el server**: con un socket crudo, 3 mensajes (2 durante el turno) llegan una vez cada uno. El composer no manda nada mientras el turno está ocupado: es el paso 5-cliente/8, después de la Fase 6. Contrato para el cliente: `activity` (`activityKind`, `idle`), `stream_delta` con `messageId:'tmux-borrador:<sid>'` (contenido acumulado, se reemplaza), `stream_reemplazo` (borrar el borrador), `protocol_error TMUX_PANE_VIVO`.
+- No se hizo la mejora de `enviarPromptVerificado` (segundo Enter según el spinner): medido, el envío ya no se pierde ni se duplica sin ella.
+- `npm test -- <filtro>` no filtra en este repo: corre la suite entera.
+- Fase 10: Leandro aprobó los bocetos del chat y del header y la barra. **No pasa ejemplo de cuestionario**: el boceto lo propone el orquestador y él lo aprueba o no.
+
 ---
 
 ## Continuación de Sesión
 
-**Fases completadas:** 1, 2, 3, 8. La 4 tiene un check bloqueado (turno real con token). La 10 espera el ejemplo del cuestionario y las tres aprobaciones.
-**Fase actual:** Fase 7 server (grupo B), después 5 → 6 → 7 cliente → 9 → 11 → 12.
-**Próximo paso exacto:** despachar la Fase 7 server en un worktree con el mismo prompt del grupo A (`E2E_PUERTO_BASE=3970`, `E2E_PREFIJO=e2e-f7-`), y en paralelo arrancar la Fase 5 en la sesión (cliente: una fila por `(messageId, blockIndex)`).
-**Bloqueantes:** el prompt de ejemplo del cuestionario (Fase 10); el token de `:3901` para `headless/pensamiento` (Fase 4), solo lo puede levantar Leandro; las aprobaciones de los bocetos de chat y de header y barra.
-**Micro-tasks pendientes:** 28 de 41
+**Fases completadas:** 1, 2, 3, 8. 7-server cerrada (falta su parte de cliente). 4 con un check bloqueado (token). 10 con el boceto del cuestionario pendiente.
+**Fase actual:** Fase 5 (cliente: una fila por `(messageId, blockIndex)`) y, en paralelo, el boceto del cuestionario (Fase 10, paso 6).
+**Próximo paso exacto:** Fase 5 en un worktree. Después, la 6 y el cliente de la 7 (consumir `activity`/borrador/`stream_reemplazo` de tmux y que el composer mande durante el turno: `tmux/rafaga`). Después, la 9 y la 11.
+**Bloqueantes:** el token de `:3901` para `headless/pensamiento` (solo Leandro); la aprobación del boceto del cuestionario.
+**Micro-tasks pendientes:** 22 de 41

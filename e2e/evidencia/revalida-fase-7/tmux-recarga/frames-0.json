@@ -1,0 +1,798 @@
+[
+  {
+    "t": 1791250064503,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "type": "chat.tmux-prompts"
+    }
+  },
+  {
+    "t": 1791250064555,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "tmux_prompts",
+      "prompts": [],
+      "timestamp": "2026-10-06T01:27:44.551Z"
+    }
+  },
+  {
+    "t": 1791250065107,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "type": "chat.subscribe",
+      "sessions": [
+        {
+          "sessionId": "717e02aa-3842-4294-b1d9-28a2b6d257f2",
+          "lastSeq": 0
+        }
+      ]
+    }
+  },
+  {
+    "t": 1791250065122,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "chat_subscribed",
+      "sessionId": "717e02aa-3842-4294-b1d9-28a2b6d257f2",
+      "isProcessing": false,
+      "lastSeq": 0,
+      "pendingPermissions": [],
+      "runsInTmux": true,
+      "timestamp": "2026-10-06T01:27:45.109Z"
+    }
+  },
+  {
+    "t": 1791250065927,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "type": "chat.send-tmux",
+      "sessionId": "717e02aa-3842-4294-b1d9-28a2b6d257f2",
+      "content": "Escribí un párrafo de 120 palabras sobre trenes. Terminá con 789zvs.",
+      "clientMessageId": "local_1791250065906_3tds3e",
+      "options": {
+        "model": "default",
+        "effort": "default",
+        "permissionMode": "default",
+        "toolsSettings": {
+          "allowedTools": [],
+          "disallowedTools": [],
+          "skipPermissions": false
+        },
+        "skipPermissions": false,
+        "sessionSummary": "e2e-recarga-ejecutora-1",
+        "attachments": []
+      }
+    }
+  },
+  {
+    "t": 1791250066374,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "717e02aa-3842-4294-b1d9-28a2b6d257f2",
+      "activityKind": "thinking",
+      "texto": "Levitating… (running UserPromptSubmit hooks… 0/2 · 0s)",
+      "timestamp": "2026-10-06T01:27:46.369Z"
+    }
+  },
+  {
+    "t": 1791250066376,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "stream_delta",
+      "sessionId": "717e02aa-3842-4294-b1d9-28a2b6d257f2",
+      "messageId": "tmux-borrador:717e02aa-3842-4294-b1d9-28a2b6d257f2",
+      "blockIndex": 0,
+      "content": "❯\n  5h ?",
+      "timestamp": "2026-10-06T01:27:46.369Z"
+    }
+  },
+  {
+    "t": 1791250066522,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "message_status",
+      "sessionId": "717e02aa-3842-4294-b1d9-28a2b6d257f2",
+      "clientMessageId": "local_1791250065906_3tds3e",
+      "status": "sent",
+      "timestamp": "2026-10-06T01:27:46.519Z"
+    }
+  },
+  {
+    "t": 1791250066529,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "status",
+      "sessionId": "717e02aa-3842-4294-b1d9-28a2b6d257f2",
+      "text": null,
+      "canInterrupt": false,
+      "timestamp": "2026-10-06T01:27:46.520Z"
+    }
+  },
+  {
+    "t": 1791250066763,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "stream_reemplazo",
+      "sessionId": "717e02aa-3842-4294-b1d9-28a2b6d257f2",
+      "messageId": "tmux-borrador:717e02aa-3842-4294-b1d9-28a2b6d257f2",
+      "blockIndex": 0,
+      "timestamp": "2026-10-06T01:27:46.760Z"
+    }
+  },
+  {
+    "t": 1791250066769,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "717e02aa-3842-4294-b1d9-28a2b6d257f2",
+      "idle": true,
+      "timestamp": "2026-10-06T01:27:46.760Z"
+    }
+  },
+  {
+    "t": 1791250067194,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "recursos",
+      "ram": {
+        "porcentajePct": 33.14478903501523,
+        "usadaGb": 2.5704002380371094,
+        "totalGb": 7.75506591796875
+      },
+      "disco": {
+        "usadoPct": 23.451704045564572,
+        "usadoGb": 22.471893310546875,
+        "totalGb": 95.82200622558594
+      },
+      "sesionesTmux": 7,
+      "techoRam": 90
+    }
+  },
+  {
+    "t": 1791250067391,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "id": "4c5b64f1-4ffe-4567-8caf-7bcebe90ef8b",
+      "sessionId": "717e02aa-3842-4294-b1d9-28a2b6d257f2",
+      "timestamp": "2026-10-06T01:27:46.307Z",
+      "provider": "claude",
+      "kind": "text",
+      "role": "user",
+      "content": "Escribí un párrafo de 120 palabras sobre trenes. Terminá con 789zvs.",
+      "transcriptAnchorId": "4c5b64f1-4ffe-4567-8caf-7bcebe90ef8b"
+    }
+  },
+  {
+    "t": 1791250067841,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "session_upserted",
+      "sessionId": "567fd299-6037-42fe-bda5-1051b5bb5cf7",
+      "providerSessionId": "567fd299-6037-42fe-bda5-1051b5bb5cf7",
+      "provider": "claude",
+      "session": {
+        "id": "567fd299-6037-42fe-bda5-1051b5bb5cf7",
+        "summary": "Párrafo sobre faros",
+        "messageCount": 0,
+        "lastActivity": "2026-10-06T01:27:41.732Z",
+        "tmux": null
+      },
+      "project": {
+        "projectId": "88c27a9c-604f-4dfd-a458-260060b27f03",
+        "path": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
+        "fullPath": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
+        "displayName": "e2e-proyecto",
+        "isStarred": false
+      },
+      "timestamp": "2026-10-06T01:27:47.839Z"
+    }
+  },
+  {
+    "t": 1791250067847,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "session_upserted",
+      "sessionId": "717e02aa-3842-4294-b1d9-28a2b6d257f2",
+      "providerSessionId": "717e02aa-3842-4294-b1d9-28a2b6d257f2",
+      "provider": "claude",
+      "session": {
+        "id": "717e02aa-3842-4294-b1d9-28a2b6d257f2",
+        "summary": "Escribí un párrafo de 120 palabras sobre trenes. Terminá con 789zvs.",
+        "messageCount": 0,
+        "lastActivity": "2026-10-06T01:27:46.622Z",
+        "tmux": {
+          "nombre": "e2e-recarga-ejecutora-1",
+          "vivo": true
+        }
+      },
+      "project": {
+        "projectId": "88c27a9c-604f-4dfd-a458-260060b27f03",
+        "path": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
+        "fullPath": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
+        "displayName": "e2e-proyecto",
+        "isStarred": false
+      },
+      "timestamp": "2026-10-06T01:27:47.839Z"
+    }
+  },
+  {
+    "t": 1791250068194,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": {
+        "porcentaje": 97,
+        "resetsAt": 1791237039000,
+        "leidoEn": 1791236979000
+      },
+      "sevenDay": {
+        "porcentaje": 30,
+        "resetsAt": 1791582939000,
+        "leidoEn": 1791236979000
+      }
+    }
+  },
+  {
+    "t": 1791250068783,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "717e02aa-3842-4294-b1d9-28a2b6d257f2",
+      "activityKind": "thinking",
+      "texto": "Sautéing… (2s · thinking with high effort)",
+      "timestamp": "2026-10-06T01:27:48.781Z"
+    }
+  },
+  {
+    "t": 1791250068785,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "stream_delta",
+      "sessionId": "717e02aa-3842-4294-b1d9-28a2b6d257f2",
+      "messageId": "tmux-borrador:717e02aa-3842-4294-b1d9-28a2b6d257f2",
+      "blockIndex": 0,
+      "content": "❯\n  5h ?",
+      "timestamp": "2026-10-06T01:27:48.781Z"
+    }
+  },
+  {
+    "t": 1791250069212,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "type": "chat.tmux-prompts"
+    }
+  },
+  {
+    "t": 1791250069258,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "tmux_prompts",
+      "prompts": [],
+      "timestamp": "2026-10-06T01:27:49.253Z"
+    }
+  },
+  {
+    "t": 1791250069550,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "type": "chat.subscribe",
+      "sessions": [
+        {
+          "sessionId": "717e02aa-3842-4294-b1d9-28a2b6d257f2",
+          "lastSeq": 0
+        }
+      ]
+    }
+  },
+  {
+    "t": 1791250069566,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "chat_subscribed",
+      "sessionId": "717e02aa-3842-4294-b1d9-28a2b6d257f2",
+      "isProcessing": true,
+      "lastSeq": 0,
+      "pendingPermissions": [],
+      "runsInTmux": true,
+      "timestamp": "2026-10-06T01:27:49.561Z"
+    }
+  },
+  {
+    "t": 1791250069975,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "717e02aa-3842-4294-b1d9-28a2b6d257f2",
+      "activityKind": "thinking",
+      "texto": "Sautéing… (3s · thinking with high effort)",
+      "timestamp": "2026-10-06T01:27:49.971Z"
+    }
+  },
+  {
+    "t": 1791250069981,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "stream_delta",
+      "sessionId": "717e02aa-3842-4294-b1d9-28a2b6d257f2",
+      "messageId": "tmux-borrador:717e02aa-3842-4294-b1d9-28a2b6d257f2",
+      "blockIndex": 0,
+      "content": "❯\n  5h ?",
+      "timestamp": "2026-10-06T01:27:49.971Z"
+    }
+  },
+  {
+    "t": 1791250070384,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "717e02aa-3842-4294-b1d9-28a2b6d257f2",
+      "activityKind": "thinking",
+      "texto": "Sautéing… (3s · thinking with high effort)",
+      "timestamp": "2026-10-06T01:27:50.377Z"
+    }
+  },
+  {
+    "t": 1791250070775,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "717e02aa-3842-4294-b1d9-28a2b6d257f2",
+      "activityKind": "thinking",
+      "texto": "Sautéing… (4s · thinking with high effort)",
+      "timestamp": "2026-10-06T01:27:50.772Z"
+    }
+  },
+  {
+    "t": 1791250071177,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "717e02aa-3842-4294-b1d9-28a2b6d257f2",
+      "activityKind": "thinking",
+      "texto": "Sautéing… (4s · thinking with high effort)",
+      "timestamp": "2026-10-06T01:27:51.175Z"
+    }
+  },
+  {
+    "t": 1791250071585,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "717e02aa-3842-4294-b1d9-28a2b6d257f2",
+      "activityKind": "thinking",
+      "texto": "Sautéing… (5s · thinking with high effort)",
+      "timestamp": "2026-10-06T01:27:51.581Z"
+    }
+  },
+  {
+    "t": 1791250071979,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "717e02aa-3842-4294-b1d9-28a2b6d257f2",
+      "activityKind": "thinking",
+      "texto": "Sautéing… (5s · thinking with high effort)",
+      "timestamp": "2026-10-06T01:27:51.977Z"
+    }
+  },
+  {
+    "t": 1791250072378,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "717e02aa-3842-4294-b1d9-28a2b6d257f2",
+      "activityKind": "thinking",
+      "texto": "Sautéing… (6s · thinking with high effort)",
+      "timestamp": "2026-10-06T01:27:52.376Z"
+    }
+  },
+  {
+    "t": 1791250072779,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "717e02aa-3842-4294-b1d9-28a2b6d257f2",
+      "activityKind": "thinking",
+      "texto": "Sautéing… (6s · thinking with high effort)",
+      "timestamp": "2026-10-06T01:27:52.777Z"
+    }
+  },
+  {
+    "t": 1791250073182,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "717e02aa-3842-4294-b1d9-28a2b6d257f2",
+      "activityKind": "thinking",
+      "texto": "Sautéing… (6s · thinking with high effort)",
+      "timestamp": "2026-10-06T01:27:53.179Z"
+    }
+  },
+  {
+    "t": 1791250073583,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "717e02aa-3842-4294-b1d9-28a2b6d257f2",
+      "activityKind": "thinking",
+      "texto": "Sautéing… (7s · thinking with high effort)",
+      "timestamp": "2026-10-06T01:27:53.581Z"
+    }
+  },
+  {
+    "t": 1791250073800,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "session_upserted",
+      "sessionId": "717e02aa-3842-4294-b1d9-28a2b6d257f2",
+      "providerSessionId": "717e02aa-3842-4294-b1d9-28a2b6d257f2",
+      "provider": "claude",
+      "session": {
+        "id": "717e02aa-3842-4294-b1d9-28a2b6d257f2",
+        "summary": "Escribí un párrafo de 120 palabras sobre trenes. Terminá con 789zvs.",
+        "messageCount": 0,
+        "lastActivity": "2026-10-06T01:27:47.392Z",
+        "tmux": {
+          "nombre": "e2e-recarga-ejecutora-1",
+          "vivo": true
+        }
+      },
+      "project": {
+        "projectId": "88c27a9c-604f-4dfd-a458-260060b27f03",
+        "path": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
+        "fullPath": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
+        "displayName": "e2e-proyecto",
+        "isStarred": false
+      },
+      "timestamp": "2026-10-06T01:27:53.798Z"
+    }
+  },
+  {
+    "t": 1791250073982,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "717e02aa-3842-4294-b1d9-28a2b6d257f2",
+      "activityKind": "thinking",
+      "texto": "Sautéing… (7s · thinking with high effort)",
+      "timestamp": "2026-10-06T01:27:53.980Z"
+    }
+  },
+  {
+    "t": 1791250073983,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "stream_delta",
+      "sessionId": "717e02aa-3842-4294-b1d9-28a2b6d257f2",
+      "messageId": "tmux-borrador:717e02aa-3842-4294-b1d9-28a2b6d257f2",
+      "blockIndex": 0,
+      "content": "tmux focus-events off · add 'set -g focus-events on' to ~/.tmux.conf and re…\n❯\n  5h ?",
+      "timestamp": "2026-10-06T01:27:53.980Z"
+    }
+  },
+  {
+    "t": 1791250074290,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": {
+        "porcentaje": 97,
+        "resetsAt": 1791237039000,
+        "leidoEn": 1791236979000
+      },
+      "sevenDay": {
+        "porcentaje": 30,
+        "resetsAt": 1791582939000,
+        "leidoEn": 1791236979000
+      }
+    }
+  },
+  {
+    "t": 1791250074383,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "717e02aa-3842-4294-b1d9-28a2b6d257f2",
+      "activityKind": "thinking",
+      "texto": "Sautéing… (8s · thinking with high effort)",
+      "timestamp": "2026-10-06T01:27:54.381Z"
+    }
+  },
+  {
+    "t": 1791250074785,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "717e02aa-3842-4294-b1d9-28a2b6d257f2",
+      "activityKind": "thinking",
+      "texto": "Sautéing… (8s · thinking with high effort)",
+      "timestamp": "2026-10-06T01:27:54.781Z"
+    }
+  },
+  {
+    "t": 1791250075189,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "717e02aa-3842-4294-b1d9-28a2b6d257f2",
+      "activityKind": "thinking",
+      "texto": "Sautéing… (8s · thinking with high effort)",
+      "timestamp": "2026-10-06T01:27:55.184Z"
+    }
+  },
+  {
+    "t": 1791250075584,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "717e02aa-3842-4294-b1d9-28a2b6d257f2",
+      "activityKind": "thinking",
+      "texto": "Sautéing… (9s · thinking with high effort)",
+      "timestamp": "2026-10-06T01:27:55.582Z"
+    }
+  },
+  {
+    "t": 1791250075984,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "717e02aa-3842-4294-b1d9-28a2b6d257f2",
+      "activityKind": "thinking",
+      "texto": "Sautéing… (9s · thinking with high effort)",
+      "timestamp": "2026-10-06T01:27:55.982Z"
+    }
+  },
+  {
+    "t": 1791250076387,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "717e02aa-3842-4294-b1d9-28a2b6d257f2",
+      "activityKind": "thinking",
+      "texto": "Sautéing… (10s · thinking with high effort)",
+      "timestamp": "2026-10-06T01:27:56.385Z"
+    }
+  },
+  {
+    "t": 1791250076784,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "717e02aa-3842-4294-b1d9-28a2b6d257f2",
+      "activityKind": "thinking",
+      "texto": "Sautéing… (10s · thinking with high effort)",
+      "timestamp": "2026-10-06T01:27:56.782Z"
+    }
+  },
+  {
+    "t": 1791250077187,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "717e02aa-3842-4294-b1d9-28a2b6d257f2",
+      "activityKind": "thinking",
+      "texto": "Sautéing… (10s · thinking with high effort)",
+      "timestamp": "2026-10-06T01:27:57.185Z"
+    }
+  },
+  {
+    "t": 1791250077591,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "717e02aa-3842-4294-b1d9-28a2b6d257f2",
+      "activityKind": "thinking",
+      "texto": "Sautéing… (11s · thinking with high effort)",
+      "timestamp": "2026-10-06T01:27:57.587Z"
+    }
+  },
+  {
+    "t": 1791250077994,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "717e02aa-3842-4294-b1d9-28a2b6d257f2",
+      "activityKind": "thinking",
+      "texto": "Sautéing… (11s · thinking with high effort)",
+      "timestamp": "2026-10-06T01:27:57.992Z"
+    }
+  },
+  {
+    "t": 1791250078390,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "717e02aa-3842-4294-b1d9-28a2b6d257f2",
+      "activityKind": "thinking",
+      "texto": "Sautéing… (12s · thinking with high effort)",
+      "timestamp": "2026-10-06T01:27:58.388Z"
+    }
+  },
+  {
+    "t": 1791250078788,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "717e02aa-3842-4294-b1d9-28a2b6d257f2",
+      "activityKind": "thinking",
+      "texto": "Sautéing… (12s · still thinking with high effort)",
+      "timestamp": "2026-10-06T01:27:58.787Z"
+    }
+  },
+  {
+    "t": 1791250079192,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "717e02aa-3842-4294-b1d9-28a2b6d257f2",
+      "activityKind": "thinking",
+      "texto": "Sautéing… (12s · ↓ 1.2k tokens · thought for 10s)",
+      "timestamp": "2026-10-06T01:27:59.189Z"
+    }
+  },
+  {
+    "t": 1791250079591,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "717e02aa-3842-4294-b1d9-28a2b6d257f2",
+      "activityKind": "thinking",
+      "texto": "Sautéing… (13s · ↓ 1.2k tokens · thought for 10s)",
+      "timestamp": "2026-10-06T01:27:59.589Z"
+    }
+  },
+  {
+    "t": 1791250079593,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "stream_delta",
+      "sessionId": "717e02aa-3842-4294-b1d9-28a2b6d257f2",
+      "messageId": "tmux-borrador:717e02aa-3842-4294-b1d9-28a2b6d257f2",
+      "blockIndex": 0,
+      "content": "El tren tiene algo que ningún otro transporte logró copiar: la sensación de\n  que el viaje importa tanto como el destino. Desde las primeras locomotoras de\n  vapor, que echaban humo y sacudían los pueblos, hasta los trenes de alta\n  tmux focus-events off · add 'set -g focus-events on' to ~/.tmux.conf and re…\n❯",
+      "timestamp": "2026-10-06T01:27:59.589Z"
+    }
+  },
+  {
+    "t": 1791250079994,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "717e02aa-3842-4294-b1d9-28a2b6d257f2",
+      "activityKind": "thinking",
+      "texto": "Sautéing… (13s · ↓ 1.2k tokens · thought for 10s)",
+      "timestamp": "2026-10-06T01:27:59.991Z"
+    }
+  },
+  {
+    "t": 1791250079998,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "stream_delta",
+      "sessionId": "717e02aa-3842-4294-b1d9-28a2b6d257f2",
+      "messageId": "tmux-borrador:717e02aa-3842-4294-b1d9-28a2b6d257f2",
+      "blockIndex": 0,
+      "content": "El tren tiene algo que ningún otro transporte logró copiar: la sensación de\n  que el viaje importa tanto como el destino. Desde las primeras locomotoras de\n  vapor, que echaban humo y sacudían los pueblos, hasta los trenes de alta\n  velocidad que cruzan países enteros en pocas horas, las vías han ido tejiendo\n  una red silenciosa entre ciudades, mercados y familias. Quien viaja en tren\n  puede leer, dormir, mirar el paisaje cambiar detrás de la ventana o\n  tmux focus-events off · add 'set -g focus-events on' to ~/.tmux.conf and re…\n❯",
+      "timestamp": "2026-10-06T01:27:59.991Z"
+    }
+  },
+  {
+    "t": 1791250080402,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "717e02aa-3842-4294-b1d9-28a2b6d257f2",
+      "activityKind": "thinking",
+      "texto": "Sautéing… (14s · ↓ 1.3k tokens · thought for 10s)",
+      "timestamp": "2026-10-06T01:28:00.398Z"
+    }
+  },
+  {
+    "t": 1791250080796,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "id": "2ada7592-34a9-4656-b125-a1b4659e65ed_0",
+      "sessionId": "717e02aa-3842-4294-b1d9-28a2b6d257f2",
+      "timestamp": "2026-10-06T01:28:00.419Z",
+      "provider": "claude",
+      "kind": "text",
+      "role": "assistant",
+      "content": "El tren tiene algo que ningún otro transporte logró copiar: la sensación de que el viaje importa tanto como el destino. Desde las primeras locomotoras de vapor, que echaban humo y sacudían los pueblos, hasta los trenes de alta velocidad que cruzan países enteros en pocas horas, las vías han ido tejiendo una red silenciosa entre ciudades, mercados y familias. Quien viaja en tren puede leer, dormir, mirar el paisaje cambiar detrás de la ventana o simplemente pensar sin apuro. Además, es una de las formas más eficientes de mover personas y carga con poco gasto de energía. Quizá por eso, cada vez que escuchamos el silbato a lo lejos, algo en nosotros todavía quiere subirse otra vez, sin pensarlo. 789zvs",
+      "messageId": "msg_011Cfk7cy4uG2zYdgaeWLvxj",
+      "blockIndex": 0
+    }
+  },
+  {
+    "t": 1791250080804,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "stream_reemplazo",
+      "sessionId": "717e02aa-3842-4294-b1d9-28a2b6d257f2",
+      "messageId": "tmux-borrador:717e02aa-3842-4294-b1d9-28a2b6d257f2",
+      "blockIndex": 0,
+      "timestamp": "2026-10-06T01:28:00.794Z"
+    }
+  },
+  {
+    "t": 1791250080812,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "717e02aa-3842-4294-b1d9-28a2b6d257f2",
+      "idle": true,
+      "timestamp": "2026-10-06T01:28:00.794Z"
+    }
+  },
+  {
+    "t": 1791250080856,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxMjUwMDA3LCJleHAiOjE4MjI3ODYwMDd9.WSCF-S3yrZ1xCmvVhApmps18IbHsM4_0rpHxkgBIQ-4",
+    "datos": {
+      "id": "tmux_complete_717e02aa-3842-4294-b1d9-28a2b6d257f2_1791250080798",
+      "sessionId": "717e02aa-3842-4294-b1d9-28a2b6d257f2",
+      "provider": "claude",
+      "timestamp": "2026-10-06T01:28:00.798Z",
+      "kind": "complete",
+      "success": true
+    }
+  }
+]
