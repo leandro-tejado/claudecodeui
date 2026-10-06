@@ -18,11 +18,13 @@ type BashCommandDisplayProps = {
 };
 
 /**
- * Codex-in-VSCode style command row: a compact, single-line command with a
- * chevron on the left. When the command produced output, the row becomes a
- * dropdown that expands to reveal the output inline. Theme-integrated surfaces
- * keep it clean in both light and dark mode; consecutive commands stack tightly
- * into a clean list.
+ * Línea de actividad para comandos de shell: una fila compacta con chevron,
+ * sin tarjeta grande (design-system/branding.md — "la ausencia de cromo...
+ * ninguna tarjeta grande por cada tool"; plan Fase 11, paso 2). El mismo
+ * acento `border-l-2 pl-3` que usan `OneLineDisplay`/`CollapsibleDisplay`,
+ * para que una tool de Bash se lea como una línea más, no como un panel
+ * aparte. Cuando el comando produjo output, el detalle se pliega debajo,
+ * indentado, en vez de dentro de una caja con fondo propio.
  *
  * Rendered by chat's ToolRenderer for shell tools (Bash and friends).
  */
@@ -76,10 +78,8 @@ export const BashCommandDisplay: React.FC<BashCommandDisplayProps> = ({
   return (
     <div
       className={cn(
-        'group/cmd overflow-hidden rounded-lg border bg-muted/40 backdrop-blur-sm transition-all duration-200',
-        isError ? 'border-red-500/30' : 'border-border/60',
-        hasOutput && !open && 'hover:border-border hover:bg-muted/60',
-        open && 'bg-muted/50 shadow-sm',
+        'group/cmd my-0.5 border-l-2 py-0.5 pl-3 transition-colors duration-150',
+        isError ? 'border-l-red-500 dark:border-l-red-400' : 'border-l-emerald-500/60 dark:border-l-emerald-400/60',
       )}
     >
       {/* Command header — clickable when there is output to expand */}
@@ -95,7 +95,7 @@ export const BashCommandDisplay: React.FC<BashCommandDisplayProps> = ({
           }
         }}
         className={cn(
-          'flex items-center gap-2 px-2.5 py-1.5 outline-none',
+          'flex items-center gap-2 outline-none',
           hasOutput && 'cursor-pointer focus-visible:ring-1 focus-visible:ring-ring',
         )}
       >
@@ -143,20 +143,20 @@ export const BashCommandDisplay: React.FC<BashCommandDisplayProps> = ({
       </div>
 
       {description && !open && (
-        <div className="truncate px-2.5 pb-1.5 pl-[2.4rem] text-[11px] italic text-muted-foreground/70">
+        <div className="truncate pl-[18px] text-[11px] italic text-muted-foreground/70">
           {description}
         </div>
       )}
 
-      {/* Expanded output */}
+      {/* Expanded output — plegado debajo de la línea, sin caja propia. */}
       {open && hasOutput && (
-        <div className="settings-content-enter border-t border-border/50 bg-background/50">
+        <div className="settings-content-enter mt-1 pl-[18px]">
           {description && (
-            <div className="px-3 pt-2 text-[11px] italic text-muted-foreground/70">{description}</div>
+            <div className="pb-1 text-[11px] italic text-muted-foreground/70">{description}</div>
           )}
           <pre
             className={cn(
-              'max-h-80 overflow-auto whitespace-pre-wrap break-all px-3 py-2 font-mono text-xs leading-relaxed',
+              'max-h-80 overflow-auto whitespace-pre-wrap break-all font-mono text-xs leading-relaxed',
               isError ? 'text-red-600 dark:text-red-400' : 'text-muted-foreground',
             )}
           >

@@ -1,0 +1,33 @@
+[
+  {
+    "escenario": "headless/recarga",
+    "nombre": "tras recargar a mitad, el indicador de actividad sigue",
+    "resultado": "pasa",
+    "evidencia": [
+      "headless-recarga/tras-recargar.png"
+    ],
+    "ms": 16041
+  },
+  {
+    "escenario": "headless/recarga",
+    "nombre": "al terminar el turno el indicador se va",
+    "resultado": "pasa",
+    "evidencia": [
+      "headless-recarga/al-terminar.png"
+    ],
+    "ms": 16041
+  },
+  {
+    "escenario": "headless/recarga",
+    "nombre": "una sola fila completa y sin fragmentos",
+    "resultado": "pasa",
+    "evidencia": [
+      "headless-recarga/final.png"
+    ],
+    "datos": {
+      "completas": 1,
+      "conElComienzo": 1
+    },
+    "ms": 16041
+  }
+]

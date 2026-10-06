@@ -77,6 +77,18 @@ export async function correr(ctx) {
     { evidencia: capFinal, datos: { resultadoA, resultadoB } },
   );
 
+  // Lo de adentro de un subagente vive solo en su tarjeta: ninguna fila del
+  // hilo principal (una `.chat-message` que no es la tarjeta) repite su texto.
+  const sueltas = async (texto, desc) => s.pagina.locator('.chat-message')
+    .filter({ hasText: texto }).filter({ hasNotText: desc }).count();
+  const sueltasA = await sueltas('Soy el subagente A', 'Tarea A en paralelo');
+  const sueltasB = await sueltas('Soy el subagente B', 'Tarea B en paralelo');
+  ctx.check(
+    'el texto de cada subagente no se escapa al hilo principal',
+    sueltasA === 0 && sueltasB === 0,
+    { evidencia: capFinal, datos: { sueltasA, sueltasB } },
+  );
+
   // La respuesta principal (antes y después de delegar) no se parte ni se
   // duplica por los eventos de los subagentes intercalados en el medio.
   const apariciones = await contarApariciones(s.pagina, `[${n}]`);

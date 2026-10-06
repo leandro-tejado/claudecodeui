@@ -12,10 +12,11 @@ type ToolErrorDisplayProps = {
 };
 
 /**
- * Collapsed-by-default error row for non-Bash tool results, matching the
- * command-row (`BashCommandDisplay`) look: a compact header with a chevron
- * and a one-line preview that expands to the full error content. Errors are
- * signalled by the red styling — the details stay one click away.
+ * Línea de actividad para un resultado de error (tools no-Bash): la misma
+ * fila con chevron y acento `border-l-2 pl-3` que `BashCommandDisplay`, sin
+ * caja ni fondo propios (design-system/branding.md, plan Fase 11 paso 2 —
+ * "nada de tarjetas grandes por cada tool"). El rojo del borde y el label ya
+ * señalan el error; el detalle completo queda un clic más allá.
  *
  * Rendered by chat's MessageComponent for failed tool results.
  */
@@ -31,12 +32,7 @@ export const ToolErrorDisplay: React.FC<ToolErrorDisplayProps> = ({ content, lab
   };
 
   return (
-    <div
-      className={cn(
-        'mt-2 overflow-hidden rounded-lg border border-red-500/30 bg-red-50/50 transition-all duration-200 dark:bg-red-950/10',
-        open && 'shadow-sm',
-      )}
-    >
+    <div className="my-1 border-l-2 border-l-red-500 py-0.5 pl-3 dark:border-l-red-400">
       <div
         role={hasContent ? 'button' : undefined}
         tabIndex={hasContent ? 0 : undefined}
@@ -49,7 +45,7 @@ export const ToolErrorDisplay: React.FC<ToolErrorDisplayProps> = ({ content, lab
           }
         }}
         className={cn(
-          'flex items-center gap-2 px-2.5 py-1.5 outline-none',
+          'flex items-center gap-2 outline-none',
           hasContent && 'cursor-pointer focus-visible:ring-1 focus-visible:ring-ring',
         )}
       >
@@ -79,7 +75,7 @@ export const ToolErrorDisplay: React.FC<ToolErrorDisplayProps> = ({ content, lab
       </div>
 
       {open && hasContent && (
-        <div className="settings-content-enter border-t border-red-500/20 px-3 py-2 text-sm text-red-900 dark:text-red-100">
+        <div className="settings-content-enter mt-1.5 pl-[18px] text-sm text-red-900 dark:text-red-100">
           <Markdown className="prose prose-sm prose-red max-w-none font-sans dark:prose-invert">
             {trimmedContent}
           </Markdown>

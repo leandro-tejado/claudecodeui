@@ -5,7 +5,6 @@ import { GitBranchIcon, PencilIcon } from 'lucide-react';
 import type { ChatMessage, ClaudePermissionSuggestion, PermissionGrantResult, LLMProvider,DiffLine,Project, MessageDeliveryState } from '@/shared/types';
 import { formatUsageLimitText, stripProposedPlanEnvelope } from '@/modules/chat/utils/chatFormatting';
 import { ToolRenderer, ToolErrorDisplay, SubagentPanel, WorkflowPanel, shouldHideToolResult } from '@/modules/chat/tools';
-import { LLMProviderLogo } from '@/shared/ui';
 import { Reasoning, ReasoningContent, ReasoningTrigger } from '@/modules/chat/transcript/Reasoning';
 import ChatMessageImages from '@/modules/chat/transcript/ChatMessageImages';
 import ChatMessageFiles from '@/modules/chat/transcript/ChatMessageFiles';
@@ -144,7 +143,7 @@ const MessageComponent = memo(({ message, prevMessage, createDiff, onFileOpen, s
               <ChatMessageFiles files={message.files} />
             )}
             {userCopyContent.trim().length > 0 || (!message.images?.length && !message.files?.length) ? (
-              <div className="group max-w-full rounded-2xl rounded-br-md border border-border/60 bg-muted/60 px-3 py-2 text-foreground shadow-sm dark:bg-gray-800/60 sm:px-4">
+              <div className="group max-w-full rounded-ds-md bg-ds-primary-tint px-3 py-2 text-ds-ink sm:px-4">
                 <div dir="auto" className="break-words font-sans text-sm">
                   <Markdown
                     breaks
@@ -191,11 +190,6 @@ const MessageComponent = memo(({ message, prevMessage, createDiff, onFileOpen, s
               </div>
             )}
           </div>
-          {!isGrouped && (
-            <div className="hidden h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-blue-600 text-sm text-white sm:flex">
-              U
-            </div>
-          )}
         </div>
       ) : message.compact ? (
         /* A compaction: one row, its numbers, and its summary folded into it */
@@ -236,39 +230,11 @@ const MessageComponent = memo(({ message, prevMessage, createDiff, onFileOpen, s
           </div>
         </div>
       ) : (
-        /* Claude/Error/Tool messages on the left */
+        /* Claude/Error/Tool messages on the left — sin burbuja ni avatar
+           (design-system/branding.md: "la ausencia de cromo"). La
+           distinción de tipo la dan el color del texto y, para una tool,
+           su propia línea de actividad (ToolRenderer). */
         <div className="w-full">
-          {!isGrouped && (
-            <div className="mb-2 flex items-center space-x-3">
-              {message.type === 'error' ? (
-                <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-red-600 text-sm text-white">
-                  !
-                </div>
-              ) : message.type === 'tool' ? (
-                <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-gray-600 text-sm text-white dark:bg-gray-700">
-                  🔧
-                </div>
-              ) : (
-                <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full p-1 text-sm text-foreground">
-                  <LLMProviderLogo provider={provider} className="h-full w-full" />
-                </div>
-              )}
-              <div className="text-sm font-medium text-gray-900 dark:text-white">
-                {message.type === 'error'
-                  ? t('messageTypes.error')
-                  : message.type === 'tool'
-                    ? t('messageTypes.tool')
-                    : (provider === 'cursor'
-                        ? t('messageTypes.cursor')
-                        : provider === 'codex'
-                          ? t('messageTypes.codex')
-                          : provider === 'opencode'
-                              ? t('messageTypes.opencode', { defaultValue: 'OpenCode' })
-                              : t('messageTypes.claude'))}
-              </div>
-            </div>
-          )}
-
           <div className="w-full">
 
             {message.isToolUse && message.toolName === 'Workflow' ? (
@@ -305,7 +271,7 @@ const MessageComponent = memo(({ message, prevMessage, createDiff, onFileOpen, s
               <>
                 <div className="flex flex-col">
                   <div className="flex flex-col">
-                    <Markdown className="prose prose-sm max-w-none font-sans dark:prose-invert">
+                    <Markdown className="prose prose-sm max-w-none font-sans text-ds-ink dark:prose-invert">
                       {String(message.displayText || '')}
                     </Markdown>
                   </div>
@@ -370,7 +336,7 @@ const MessageComponent = memo(({ message, prevMessage, createDiff, onFileOpen, s
               <Reasoning defaultOpen={isExporting} isStreaming={Boolean(message.isStreaming)}>
                 <ReasoningTrigger />
                 <ReasoningContent>
-                  <Markdown className="prose prose-sm prose-gray max-w-none font-sans dark:prose-invert">
+                  <Markdown className="prose prose-sm max-w-none font-sans dark:prose-invert">
                     {message.content}
                   </Markdown>
                   {!isExporting && (
@@ -381,7 +347,7 @@ const MessageComponent = memo(({ message, prevMessage, createDiff, onFileOpen, s
                 </ReasoningContent>
               </Reasoning>
             ) : (
-              <div dir="auto" className="text-sm text-gray-700 dark:text-gray-300">
+              <div dir="auto" className="text-ds-body text-ds-ink">
                 {/* Reasoning accordion */}
                 {showThinking && message.reasoning && (
                   <Reasoning className="mb-3" defaultOpen={false}>
@@ -440,7 +406,7 @@ const MessageComponent = memo(({ message, prevMessage, createDiff, onFileOpen, s
                       // accumulated text the first time it renders, so only
                       // its later growth animates in.
                       arrancarVacio={Boolean(message.isLiveText)}
-                      className="prose prose-sm prose-gray max-w-none font-sans dark:prose-invert"
+                      className="prose prose-sm max-w-none font-sans dark:prose-invert"
                     />
                   ) : (
                     <div className="whitespace-pre-wrap">
