@@ -32,7 +32,8 @@ import { cuentaDeSesion, useCuentasState } from '@/modules/cuentas';
 import CommandResultModal from '@/modules/chat/modals/CommandResultModal';
 import PanelSalidas from '@/modules/chat/panel-salidas/PanelSalidas';
 import { SkinSubagentBridge, useTmuxPrompts } from '@/modules/skin';
-import type { TmuxPrompt, TmuxPromptKey } from '@/modules/skin';
+import type { TmuxPrompt } from '@/modules/skin';
+import { respuestaTmux, type SeleccionTmux } from '@/modules/chat/Cuestionario';
 import { flushAllStreamBuffers } from '@/modules/chat/utils/streamBuffers';
 import type { StreamBuffers } from '@/modules/chat/utils/streamBuffers';
 
@@ -402,24 +403,8 @@ function ChatInterface({
     () => allTmuxPrompts.filter((prompt) => prompt.sessionId === viewedSessionId),
     [allTmuxPrompts, viewedSessionId],
   );
-  const handleAnswerTmuxPrompt = useCallback((prompt: TmuxPrompt, optionIndex: number, text?: string) => {
-    sendMessage({
-      type: 'chat.tmux-prompt-response',
-      sessionId: prompt.sessionId,
-      pane: prompt.pane,
-      promptId: prompt.id,
-      opcion: optionIndex,
-      ...(text !== undefined ? { texto: text } : {}),
-    });
-  }, [sendMessage]);
-  const handleTmuxPromptKey = useCallback((prompt: TmuxPrompt, key: TmuxPromptKey) => {
-    sendMessage({
-      type: 'chat.tmux-prompt-response',
-      sessionId: prompt.sessionId,
-      pane: prompt.pane,
-      promptId: prompt.id,
-      tecla: key,
-    });
+  const handleResponderTmux = useCallback((prompt: TmuxPrompt, seleccion: SeleccionTmux) => {
+    sendMessage(respuestaTmux(prompt, seleccion));
   }, [sendMessage]);
 
   // Lets a workflow card fetch its agents' timelines for this session.
@@ -566,8 +551,7 @@ function ChatInterface({
           handleGrantToolPermission={handleGrantToolPermission}
           tmuxPrompts={tmuxPrompts}
           tmuxPromptErrors={tmuxPromptErrors}
-          onAnswerTmuxPrompt={handleAnswerTmuxPrompt}
-          onTmuxPromptKey={handleTmuxPromptKey}
+          onResponderTmux={handleResponderTmux}
           activity={sessionActivity}
           isLoading={isProcessing}
           onAbortSession={handleAbortSession}

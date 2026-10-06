@@ -15,6 +15,7 @@ import {
   esperarQueSeDespeje,
   mensajePromptsTmux,
   responderPromptTmux,
+  responderSeleccionCompuestaTmux,
   revisarPromptsTmux,
 } from '@/modules/websocket/services/tmux-prompt.service.js';
 import { connectedClients, WS_OPEN_STATE } from '@/modules/websocket/services/websocket-state.service.js';
@@ -1112,32 +1113,64 @@ async function handleTmuxPromptsRequest(ws: WebSocket): Promise<void> {
 }
 
 /**
- * Handles `chat.tmux-prompt-response`: types the chosen option into the pane
- * that is waiting on it. A failure goes back as its own `tmux_prompt_error`
- * frame, not as `protocol_error`: that one would drop the session out of
- * tmux mode and idle it, and neither is true here.
+ * Lo que trae `chat.tmux-prompt-response`, ya separado en las dos formas que
+ * entiende el server: una respuesta simple (una opción o una tecla suelta,
+ * como siempre) o una selección compuesta — `seleccion: number[]`, de la
+ * tarjeta `Cuestionario` en un AskUserQuestion de casillas (Fase 9 paso 2,
+ * cableado en la Fase 11 paso 3) — que manda de una vez todo lo tildado en
+ * vez de un pedido por clic.
+ *
+ * Pura: no toca tmux ni el estado de `pendientes`, solo lee `data`. Si
+ * llegara `seleccion` junto con `opcion`/`tecla` (no debería, ningún cliente
+ * los manda juntos), `seleccion` gana.
+ */
+export function leerEntradaTmuxPromptResponse(
+  data: AnyRecord,
+): { tipo: 'compuesta'; seleccion: number[]; texto?: string } | { tipo: 'simple'; opcion?: number; tecla?: string; texto?: string } {
+  const texto = typeof data.texto === 'string' ? data.texto : undefined;
+  if (Array.isArray(data.seleccion)) {
+    const seleccion = data.seleccion.filter((valor): valor is number => typeof valor === 'number');
+    return { tipo: 'compuesta', seleccion, ...(texto !== undefined ? { texto } : {}) };
+  }
+  const tecla = typeof data.tecla === 'string' ? data.tecla : undefined;
+  // Sin `opcion` ni `tecla`, -1 fuerza el `TMUX_PROMPT_BAD_OPTION` de
+  // `responderPromptTmux` en vez de mandar `opcion: undefined` (que ahí
+  // tomaría la rama de `tecla`, con `tecla` también `undefined`).
+  const opcion = typeof data.opcion === 'number' ? data.opcion : tecla === undefined ? -1 : undefined;
+  return { tipo: 'simple', opcion, tecla, ...(texto !== undefined ? { texto } : {}) };
+}
+
+/**
+ * Handles `chat.tmux-prompt-response`: types the chosen option (or the whole
+ * compound selection) into the pane that is waiting on it. A failure goes
+ * back as its own `tmux_prompt_error` frame, not as `protocol_error`: that
+ * one would drop the session out of tmux mode and idle it, and neither is
+ * true here.
  */
 async function handleTmuxPromptResponse(ws: WebSocket, data: AnyRecord): Promise<void> {
   const sessionId = typeof data.sessionId === 'string' ? data.sessionId : '';
   const pane = typeof data.pane === 'string' ? data.pane : '';
   const promptId = typeof data.promptId === 'string' ? data.promptId : '';
-  const tecla = typeof data.tecla === 'string' ? data.tecla : undefined;
-  const opcion = typeof data.opcion === 'number' ? data.opcion : tecla === undefined ? -1 : undefined;
-  const texto = typeof data.texto === 'string' ? data.texto : undefined;
+  const entrada = leerEntradaTmuxPromptResponse(data);
 
-  const resultado = await responderPromptTmux(
-    { sessionId, pane, promptId, opcion, tecla, texto },
-    {
-      // Bridged before the key goes in, so the rows the answer unblocks
-      // stream into the chat — same as a prompt typed from the chat.
-      antesDeEnviar: async () => {
-        const session = sessionsDb.getSessionById(sessionId);
-        if (session && pane !== nombreTmux(session.project_path ?? '', session.session_id)) {
-          await tmuxBridgeService.puentearPaneExterno(session, pane);
-        }
-      },
-    },
-  );
+  // Bridged before the key goes in, so the rows the answer unblocks stream
+  // into the chat — same as a prompt typed from the chat.
+  const antesDeEnviar = async () => {
+    const session = sessionsDb.getSessionById(sessionId);
+    if (session && pane !== nombreTmux(session.project_path ?? '', session.session_id)) {
+      await tmuxBridgeService.puentearPaneExterno(session, pane);
+    }
+  };
+
+  const resultado = entrada.tipo === 'compuesta'
+    ? await responderSeleccionCompuestaTmux(
+        { sessionId, pane, promptId, seleccion: entrada.seleccion, texto: entrada.texto },
+        { antesDeEnviar },
+      )
+    : await responderPromptTmux(
+        { sessionId, pane, promptId, opcion: entrada.opcion, tecla: entrada.tecla, texto: entrada.texto },
+        { antesDeEnviar },
+      );
 
   if (!resultado.ok) {
     sendJson(ws, {
@@ -1162,7 +1195,7 @@ async function handleTmuxPromptResponse(ws: WebSocket, data: AnyRecord): Promise
  * - `chat.subscribe`           { sessions: [{ sessionId, lastSeq? }] }
  * - `chat.permission-response` { requestId, allow, updatedInput?, message?, rememberEntry? }
  * - `chat.tmux-prompts`        {}
- * - `chat.tmux-prompt-response` { sessionId, pane, promptId, opcion | tecla, texto? }
+ * - `chat.tmux-prompt-response` { sessionId, pane, promptId, opcion | tecla | seleccion: number[], texto? }
  *
  * Outbound protocol (server to client): every frame is `kind`-based — either
  * a provider `NormalizedMessage` (with `seq`) or a gateway event

@@ -720,6 +720,18 @@ export function teclasParaSeleccionCompuesta(
   const avance = prompt.opciones.find((opcion) => opcion.avance);
   if (avance) {
     pasos.push(teclasParaOpcion(prompt, avance.indice));
+    if (/^submit$/i.test(avance.etiqueta)) {
+      // El "Submit" de un AskUserQuestion de casillas no manda la
+      // respuesta: abre "Ready to submit your answers?" (ver el test de
+      // la "pantalla de revisión" más arriba), con "1. Submit answers" ya
+      // elegido por default — sin confirmarla ahí se quedaba trabada (Fase
+      // 11, paso 3). Como el dígito elige "esté donde esté el cursor" (ver
+      // `teclasParaOpcion`), manda el "1" de una, en el mismo pedido: no
+      // hace falta ver la pantalla nueva dibujada para saber qué apretar,
+      // es siempre la misma. "Next" (entre preguntas de una tabanda) NO
+      // entra acá: ese autoavanza sin revisión.
+      pasos.push({ tipo: 'literal', texto: '1' });
+    }
   }
 
   if (pasos.length === 0) {

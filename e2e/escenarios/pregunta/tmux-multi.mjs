@@ -1,15 +1,17 @@
-// Fase 9, paso 2: en tmux, una pregunta múltiple con clics a 100 ms manda las
-// 3 tildadas. Bloqueado mientras el gobernador esté en rojo (crea una sesión
-// de tmux con Claude real). El plan pide que esto mande UNA sola orden con la
-// selección completa en vez de una por clic — eso (`teclasParaSeleccionCompuesta`,
-// `responderSeleccionCompuestaTmux`, la huella sin `marcada`) está implementado
-// y probado sin tmux real en
-// `server/modules/websocket/tests/tmux-prompt.service.test.ts`; falta cablear
-// `TmuxPromptBanner`/`ChatInterface` para que el clic en la UI dispare esa
-// orden compuesta en vez de la de siempre (una por clic) — fuera del alcance
-// de esta fase (toca `src/modules/chat/ChatInterface.tsx`, de la Fase 11 en
-// paralelo). Mientras tanto este escenario sigue probando el camino de
-// siempre: un pedido por clic, con la pausa de 100 ms que pedía la línea base.
+// Fase 9, paso 2 + Fase 11, paso 3: en tmux, una pregunta múltiple con clics
+// a 100 ms manda las 3 tildadas. Bloqueado mientras el gobernador esté en
+// rojo (crea una sesión de tmux con Claude real). Cada clic en una opción
+// tilda SOLO en el estado local de `Cuestionario` (no manda nada); la pausa
+// de 100 ms que pedía la línea base ya no hace falta para evitar una carrera
+// contra el pane, pero se deja igual porque es el mismo ritmo de clics que
+// probaba `linea-base/4158e887`. Recién el clic final en "Enviar"/"Siguiente"
+// manda UNA sola orden con la selección completa (`respuestaTmux` →
+// `chat.tmux-prompt-response` con `seleccion: number[]` → server
+// `responderSeleccionCompuestaTmux`/`teclasParaSeleccionCompuesta`, probado
+// sin tmux real en `server/modules/websocket/tests/tmux-prompt.service.test.ts`
+// y en `tmux-prompt-response-entrada.test.ts`) en vez de una por clic —
+// eso es lo que antes trababa esta pregunta en la pantalla "Review and
+// submit" de la TUI.
 import { escribirYEnviar, esperarFin } from '../../lib/chat.mjs';
 import { contarApariciones } from '../../lib/navegador.mjs';
 import { prepararTmux } from '../../lib/tmux.mjs';

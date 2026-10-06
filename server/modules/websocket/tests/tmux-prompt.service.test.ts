@@ -770,12 +770,17 @@ test('teclasParaSeleccionCompuesta: tilda lo que falta, destilda lo que sobra, y
   // Pedir [Manzana, Pera]: Pera ya está tildada (no se toca), Manzana no
   // (dígito '1'); el cursor sigue en Manzana porque los dígitos no lo mueven,
   // así que el avance a "Submit" (índice 3) es el mismo Down×3 + Enter que
-  // ya prueba teclasParaOpcion más arriba.
+  // ya prueba teclasParaOpcion más arriba — y, como la etiqueta es "Submit"
+  // (no "Next"), al final manda de una el "1" que confirma "Ready to submit
+  // your answers?" (ver el test de la "pantalla de revisión" más arriba):
+  // sin eso, el pedido llegaba a esa pantalla y se quedaba ahí (Fase 11,
+  // paso 3).
   assert.deepEqual(teclasParaSeleccionCompuesta(prompt, [0, 1]), {
     tipo: 'secuencia',
     pasos: [
       { tipo: 'literal', texto: '1' },
       { tipo: 'teclas', teclas: ['Down', 'Down', 'Down', 'Enter'] },
+      { tipo: 'literal', texto: '1' },
     ],
   });
 
@@ -785,12 +790,20 @@ test('teclasParaSeleccionCompuesta: tilda lo que falta, destilda lo que sobra, y
     pasos: [
       { tipo: 'literal', texto: '2' },
       { tipo: 'teclas', teclas: ['Down', 'Down', 'Down', 'Enter'] },
+      { tipo: 'literal', texto: '1' },
     ],
   });
 
   // Pedir exactamente lo que ya está (solo Pera): nada que tildar/destildar,
-  // un solo paso — el avance solo, sin envolver en 'secuencia'.
-  assert.deepEqual(teclasParaSeleccionCompuesta(prompt, [1]), { tipo: 'teclas', teclas: ['Down', 'Down', 'Down', 'Enter'] });
+  // pero el avance + la confirmación de "Submit" siguen yendo — ya son dos
+  // pasos, así que se envuelve en 'secuencia' aunque no haya ningún tilde.
+  assert.deepEqual(teclasParaSeleccionCompuesta(prompt, [1]), {
+    tipo: 'secuencia',
+    pasos: [
+      { tipo: 'teclas', teclas: ['Down', 'Down', 'Down', 'Enter'] },
+      { tipo: 'literal', texto: '1' },
+    ],
+  });
 
   // La libre entra con su propio texto, no como un tilde suelto.
   assert.deepEqual(teclasParaSeleccionCompuesta(prompt, [1, 2], 'Kiwi'), {
@@ -798,8 +811,14 @@ test('teclasParaSeleccionCompuesta: tilda lo que falta, destilda lo que sobra, y
     pasos: [
       { tipo: 'escribir', teclas: ['Down', 'Down', 'C-u'], texto: 'Kiwi' },
       { tipo: 'teclas', teclas: ['Down', 'Down', 'Down', 'Enter'] },
+      { tipo: 'literal', texto: '1' },
     ],
   });
+
+  // "Next" (entre preguntas de una tanda) no es "Submit": no hay pantalla
+  // de revisión que confirmar, así que no se agrega nada.
+  const siguiente = { ...prompt, opciones: prompt.opciones.map((opcion) => (opcion.avance ? { ...opcion, etiqueta: 'Next' } : opcion)) };
+  assert.deepEqual(teclasParaSeleccionCompuesta(siguiente, [1]), { tipo: 'teclas', teclas: ['Down', 'Down', 'Down', 'Enter'] });
 });
 
 test('responderSeleccionCompuestaTmux: un solo pedido manda toda la secuencia de una', async () => {
@@ -826,6 +845,7 @@ test('responderSeleccionCompuestaTmux: un solo pedido manda toda la secuencia de
       pasos: [
         { tipo: 'literal', texto: '1' },
         { tipo: 'teclas', teclas: ['Down', 'Down', 'Down', 'Enter'] },
+        { tipo: 'literal', texto: '1' },
       ],
     },
   });
