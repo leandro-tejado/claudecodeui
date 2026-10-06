@@ -212,3 +212,59 @@ test(
     });
   },
 );
+
+test(
+  'user + end_turn en el mismo poll: el primer poll de una sesion ya emite el complete',
+  { concurrency: false },
+  async () => {
+    await withIsolatedDatabase(async () => {
+      _resetEstadoParaTests();
+      const tempDirectory = await mkdtemp(path.join(os.tmpdir(), 'tmux-bridge-fixture-'));
+      const projectPath = path.join(tempDirectory, 'project');
+      await mkdir(projectPath, { recursive: true });
+      const sessionId = `session-${randomUUID()}`;
+      const jsonlPath = path.join(tempDirectory, `${sessionId}.jsonl`);
+
+      // Fase 7, paso 1: antes, el fin de turno salía de un booleano que
+      // "ultimoUsuarioAnunciado" (un uuid, no un booleano) reemplaza. El bug
+      // original era con dos polls separados (fila user en uno, end_turn en
+      // el siguiente) cuando el booleano quedaba mal seteado; esto cubre el
+      // caso más extremo — las DOS filas ya están ahí en el primerísimo
+      // poll que esta sesión ve, sin ningún estado previo en memoria.
+      const filaUsuario = { type: 'user', uuid: 'u1', sessionId, message: { role: 'user', content: 'hola' } };
+      const filaAssistant = {
+        type: 'assistant',
+        uuid: 'a1',
+        sessionId,
+        message: { role: 'assistant', content: 'hola de vuelta', stop_reason: 'end_turn' },
+      };
+      await writeFile(jsonlPath, `${JSON.stringify(filaUsuario)}\n${JSON.stringify(filaAssistant)}\n`, 'utf8');
+      sessionsDb.createSession(sessionId, 'claude', projectPath, undefined, undefined, undefined, jsonlPath);
+
+      const nombreSesion = nombreTmux(projectPath, sessionId);
+      await execFileAsync('tmux', ['new-session', '-d', '-s', nombreSesion, 'cat']);
+
+      const { socket, received } = fakeClientSocket();
+      connectedClients.add(socket);
+      try {
+        await manejarActualizacionTranscript(sessionId);
+
+        const kinds = received.map((event) => (event as { kind?: string }).kind);
+        assert.ok(kinds.includes('text'), `esperaba una fila 'text', llegaron: ${kinds.join(',')}`);
+        assert.ok(
+          kinds.includes('complete'),
+          `esperaba 'complete' ya en el primer poll (user + end_turn juntos), llegaron: ${kinds.join(',')}`,
+        );
+
+        received.length = 0;
+        // Un segundo poll sin cambios no debe repetir nada.
+        await manejarActualizacionTranscript(sessionId);
+        assert.equal(received.length, 0, 'no deberia repetir el complete sin actividad nueva');
+      } finally {
+        connectedClients.delete(socket);
+        await execFileAsync('tmux', ['kill-session', '-t', nombreSesion]).catch(() => undefined);
+        await rm(tempDirectory, { recursive: true, force: true });
+      }
+    });
+  },
+);

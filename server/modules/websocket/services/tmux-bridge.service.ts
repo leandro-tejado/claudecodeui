@@ -616,7 +616,25 @@ export type FilaTranscriptCruda = {
   type?: unknown;
   sessionId?: unknown;
   isSidechain?: unknown;
+  uuid?: unknown;
+  timestamp?: unknown;
   message?: { stop_reason?: unknown };
+  /**
+   * El mensaje que Claude Code encoló él mismo porque llegó mientras el pane
+   * seguía ocupado (Paso 6 de la Fase 7) — no algo que este módulo haya
+   * mandado, sino lo que el CLI escribe cuando otra fuente (otra sesión,
+   * `orquestar.py`) le habla a mitad de turno. Fuera del `message` normal de
+   * una fila `user`, así que el normalizador compartido
+   * (`claude-sessions.provider.ts`) no lo convierte en nada hoy.
+   */
+  attachment?: { type?: unknown; prompt?: unknown };
+};
+
+/** Un `attachment{type:"queued_command"}` ya identificado, listo para reconciliar. */
+export type QueuedCommandCrudo = {
+  uuid: string;
+  prompt: string;
+  timestamp: string;
 };
 
 /**
@@ -641,17 +659,35 @@ export function esFinDeTurno(filas: FilaTranscriptCruda[]): boolean {
   return typeof stopReason === 'string' && stopReason !== 'tool_use';
 }
 
+export type UltimoTurnoCrudo = {
+  /** La última fila `user`/`assistant` del hilo principal — lo que lee `esFinDeTurno`. */
+  ultima: FilaTranscriptCruda | null;
+  /** Cada `attachment{type:"queued_command"}` de `providerSessionId`, en el orden del archivo. */
+  queuedCommands: QueuedCommandCrudo[];
+  /**
+   * El `uuid` de la última fila `user` del hilo principal (nunca una
+   * `isSidechain`, que es el turno de un subagente). Identifica DE QUÉ turno
+   * es la finalización que `esFinDeTurno` está mirando — ver el comentario de
+   * `ultimoUsuarioAnunciado` en `manejarActualizacionTranscript` para el bug
+   * que esto resuelve (Paso 1 de la Fase 7: "el server no vuelve a mandar
+   * complete" cuando un turno entero — su fila `user` y su `end_turn` — cae
+   * dentro de un mismo poll).
+   */
+  ultimoUsuarioUuid: string | null;
+};
+
 /**
- * Reads the last row belonging to `providerSessionId` out of a transcript
- * file. Used only to answer "did the turn end", so it reads raw JSONL
- * instead of going through the normalized/cached history reader — one linear
- * scan of the tail fields, no full transcript normalization.
+ * Lee, en una sola pasada, la última fila `user`/`assistant` de
+ * `providerSessionId` (para `esFinDeTurno`) y el `uuid` de su última fila
+ * `user` (para distinguir UN turno de otro). Nunca lee `capture-pane`.
  */
-export async function leerUltimaFilaCruda(
+export async function leerUltimoTurnoCrudo(
   jsonlPath: string,
   providerSessionId: string,
-): Promise<FilaTranscriptCruda | null> {
+): Promise<UltimoTurnoCrudo> {
   let ultima: FilaTranscriptCruda | null = null;
+  let ultimoUsuarioUuid: string | null = null;
+  const queuedCommands: QueuedCommandCrudo[] = [];
   const fileStream = fs.createReadStream(jsonlPath);
   const rl = readline.createInterface({ input: fileStream, crlfDelay: Infinity });
 
@@ -661,6 +697,9 @@ export async function leerUltimaFilaCruda(
     }
     try {
       const fila = JSON.parse(line) as FilaTranscriptCruda;
+      if (fila.sessionId !== providerSessionId) {
+        continue;
+      }
       // Only `user`/`assistant` rows carry a turn's `stop_reason` — Claude
       // Code also appends non-message bookkeeping rows after them (`system`,
       // `last-prompt`, `ai-title`, `mode`, `permission-mode`, `atis-latch`;
@@ -669,8 +708,22 @@ export async function leerUltimaFilaCruda(
       // every turn). Skipping them here is what keeps `esFinDeTurno` looking
       // at the actual last turn instead of at whichever bookkeeping row
       // happened to get written last.
-      if (fila.sessionId === providerSessionId && (fila.type === 'user' || fila.type === 'assistant')) {
+      if (fila.type === 'user' || fila.type === 'assistant') {
         ultima = fila;
+        if (fila.type === 'user' && !fila.isSidechain && typeof fila.uuid === 'string' && fila.uuid) {
+          ultimoUsuarioUuid = fila.uuid;
+        }
+      } else if (
+        fila.type === 'attachment'
+        && fila.attachment?.type === 'queued_command'
+        && typeof fila.uuid === 'string' && fila.uuid
+        && typeof fila.attachment.prompt === 'string'
+      ) {
+        queuedCommands.push({
+          uuid: fila.uuid,
+          prompt: fila.attachment.prompt,
+          timestamp: typeof fila.timestamp === 'string' ? fila.timestamp : new Date().toISOString(),
+        });
       }
     } catch {
       // A row can be half-written while the CLI is still streaming into the
@@ -678,14 +731,64 @@ export async function leerUltimaFilaCruda(
     }
   }
 
-  return ultima;
+  return { ultima, ultimoUsuarioUuid, queuedCommands };
+}
+
+/**
+ * Reads the last row belonging to `providerSessionId` out of a transcript
+ * file. Used only to answer "did the turn end", so it reads raw JSONL
+ * instead of going through the normalized/cached history reader — one linear
+ * scan of the tail fields, no full transcript normalization.
+ *
+ * Kept as its own export (`leerUltimoTurnoCrudo` is the one `manejarActualizacionTranscript`
+ * actually calls, since it needs the user `uuid` too) for the existing tests
+ * that only care about the last row.
+ */
+export async function leerUltimaFilaCruda(
+  jsonlPath: string,
+  providerSessionId: string,
+): Promise<FilaTranscriptCruda | null> {
+  return (await leerUltimoTurnoCrudo(jsonlPath, providerSessionId)).ultima;
 }
 
 type EstadoSesionPuente = {
-  /** How many `NormalizedMessage`s from the cached history were already broadcast. */
-  ultimaCantidadEmitida: number;
-  /** Guards against re-announcing `complete` on every poll while the pane sits idle. */
-  complecionAnunciada: boolean;
+  /**
+   * Los `id` de `NormalizedMessage` ya emitidos (Paso 2 de la Fase 7). Antes
+   * se cortaba por cantidad (`slice(ultimaCantidadEmitida)`): si el historial
+   * se reescribía (una compactación) con menos filas que antes, ese corte por
+   * posición repetía filas ya vistas o se saltaba filas nuevas. Cortar por id
+   * no tiene ese problema — una fila ya emitida nunca se reemite aunque el
+   * índice del array cambie, y una fila nueva con un id nunca visto siempre
+   * sale, sea cual sea su posición.
+   */
+  idsEmitidos: Set<string>;
+  /**
+   * El `uuid` de la fila `user` del último turno cuyo `complete` ya se
+   * anunció (Paso 1 de la Fase 7).
+   *
+   * Antes (`complecionAnunciada: boolean`) el apagado dependía de haber visto,
+   * en ALGÚN poll intermedio, que el turno todavía no había terminado — y
+   * `estaba en false` por default no alcanza: si un turno es rápido y su fila
+   * `user` y su `end_turn` caen en el MISMO poll que cierra el turno
+   * ANTERIOR, nunca hay un poll intermedio con "último turno sin terminar", así
+   * que el booleano seguía en `true` desde el turno anterior y el `complete`
+   * del turno nuevo se perdía (medido en la línea base del 05-oct: "tras el
+   * primer turno, el server no vuelve a mandar complete").
+   *
+   * Comparar por `uuid` de la fila `user` en vez de por un booleano no
+   * depende de haber visto ningún estado intermedio: un turno nuevo siempre
+   * tiene una fila `user` con un `uuid` distinto al del último turno
+   * anunciado, sin importar cuántos polls se salteó en el medio.
+   */
+  ultimoUsuarioAnunciado: string | null;
+  /**
+   * Si el pane está a mitad de un turno ahora mismo (Paso 7 de la Fase 7):
+   * lo que lee el ack de `chat.subscribe` en vez de `isProcessing:false` fijo
+   * — antes, recargar a mitad de un turno de tmux perdía el indicador porque
+   * el ack nunca sabía que el pane seguía ocupado (no hay ningún run de
+   * `chatRunRegistry` para una sesión de tmux, que no corre por el SDK).
+   */
+  ocupado: boolean;
 };
 
 // Keyed by provider-native session id — the id the watcher actually has when
@@ -699,10 +802,97 @@ const estadosPorProviderSessionId = new Map<string, EstadoSesionPuente>();
 function obtenerOInicializarEstado(providerSessionId: string): EstadoSesionPuente {
   let estado = estadosPorProviderSessionId.get(providerSessionId);
   if (!estado) {
-    estado = { ultimaCantidadEmitida: 0, complecionAnunciada: false };
+    estado = { idsEmitidos: new Set(), ultimoUsuarioAnunciado: null, ocupado: false };
     estadosPorProviderSessionId.set(providerSessionId, estado);
   }
   return estado;
+}
+
+/**
+ * Si el pane de `providerSessionId` está a mitad de un turno ahora mismo,
+ * según el último poll del puente (Paso 7). `null` (sin estado todavía, antes
+ * del primer poll) se lee como "no ocupado": ni `chat.subscribe` tiene nada
+ * mejor que mostrar, ni vale la pena arriesgar un indicador pegado.
+ */
+export function estaOcupadoTmux(providerSessionId: string | null | undefined): boolean {
+  if (!providerSessionId) return false;
+  return estadosPorProviderSessionId.get(providerSessionId)?.ocupado ?? false;
+}
+
+/**
+ * Marca el pane como ocupado apenas se confirma el envío (Paso 7): cubre la
+ * ventana entre `enviarPromptVerificado` devolviendo `ok` y el próximo poll
+ * del transcript (que puede tardar hasta los 6 s del respaldo por polling si
+ * la vigilancia rápida del Paso 3 todavía no se instaló para esta sesión).
+ * Sin esto, un `chat.subscribe` que llega en esa ventana ve `ocupado: false`
+ * y no muestra el indicador aunque el mensaje ya salió.
+ */
+export function marcarPaneOcupado(providerSessionId: string | null | undefined): void {
+  if (!providerSessionId) return;
+  obtenerOInicializarEstado(providerSessionId).ocupado = true;
+}
+
+/**
+ * Vigilancia rápida por archivo (Paso 3 de la Fase 7), aparte del polling de
+ * 6 s de `sessions-watcher.service.ts` (que sigue existiendo, de respaldo —
+ * no se tocó). Un `fs.watch` nativo por sesión puenteada, nunca por el árbol
+ * entero de `~/.claude/projects` (eso es justamente lo que el polling evita:
+ * miles de archivos de todas las sesiones, no solo las de tmux).
+ *
+ * Con debounce de 150 ms: una escritura del CLI deja varias líneas seguidas
+ * (la fila `assistant` y después `system`/`last-prompt`/etc.), y cada una
+ * dispara su propio evento de `fs.watch`.
+ *
+ * Nunca lanza: un archivo que no existe todavía (sesión recién creada, sin su
+ * primer turno) no se puede vigilar así, y esa sesión sigue cubierta por el
+ * polling de respaldo hasta que este mismo módulo la vuelva a intentar en el
+ * próximo poll que sí la encuentre con `jsonl_path`.
+ */
+const vigilantesRapidos = new Map<string, fs.FSWatcher>();
+const DEBOUNCE_VIGILANCIA_RAPIDA_MS = 150;
+
+function asegurarVigilanciaRapida(jsonlPath: string | null, providerSessionId: string | null): void {
+  if (!jsonlPath || !providerSessionId || vigilantesRapidos.has(jsonlPath)) {
+    return;
+  }
+  let debounce: ReturnType<typeof setTimeout> | null = null;
+  try {
+    const watcher = fs.watch(jsonlPath, () => {
+      if (debounce) clearTimeout(debounce);
+      debounce = setTimeout(() => {
+        manejarActualizacionTranscript(providerSessionId).catch((error) => {
+          const message = error instanceof Error ? error.message : String(error);
+          console.error('[tmux-bridge] vigilancia rapida fallo', { jsonlPath, error: message });
+        });
+      }, DEBOUNCE_VIGILANCIA_RAPIDA_MS);
+      // El setTimeout de arriba también mantiene vivo el event loop mientras
+      // espera: sin unref, un proceso de test (o un shutdown ordenado del
+      // server) nunca termina con una sesión puenteada de por medio.
+      debounce.unref?.();
+    });
+    watcher.on('error', () => {
+      watcher.close();
+      vigilantesRapidos.delete(jsonlPath);
+    });
+    // No debe retener el proceso vivo por sí solo: es un acelerador del
+    // polling de respaldo, no la única vía de detección. Sin esto, un
+    // `node --test` que puentea una sesión y nunca la cierra explícitamente
+    // (la última prueba de un archivo, por ejemplo) cuelga para siempre
+    // esperando un event loop que este watcher nunca deja vaciar.
+    watcher.unref();
+    vigilantesRapidos.set(jsonlPath, watcher);
+  } catch {
+    // El archivo no existe todavía, o el filesystem no soporta fs.watch: el
+    // polling de respaldo de sessions-watcher.service.ts lo sigue cubriendo.
+  }
+}
+
+/** Test-only: cierra todos los `fs.watch` de la vigilancia rápida. */
+export function _detenerVigilanciasRapidasParaTests(): void {
+  for (const watcher of vigilantesRapidos.values()) {
+    watcher.close();
+  }
+  vigilantesRapidos.clear();
 }
 
 // Panes externos a los que el chat ya les mandó un prompt, por session id de
@@ -732,16 +922,20 @@ export async function puentearPaneExterno(
   const estado = obtenerOInicializarEstado(session.provider_session_id);
   try {
     const full = await sessionsService.fetchHistory(session.session_id, { limit: null, offset: 0 });
-    estado.ultimaCantidadEmitida = full.messages.length;
+    for (const mensaje of full.messages) {
+      estado.idsEmitidos.add(mensaje.id);
+    }
   } catch {
     // Sin historial legible se emite desde cero; el cliente deduplica por id.
   }
+  asegurarVigilanciaRapida(session.jsonl_path, session.provider_session_id);
 }
 
 /** Test-only: drops all in-memory bridge state between fixtures. */
 export function _resetEstadoParaTests(): void {
   estadosPorProviderSessionId.clear();
   panesExternosPuenteados.clear();
+  _detenerVigilanciasRapidasParaTests();
 }
 
 function enviarATodosLosConectados(payload: AnyRecord): void {
@@ -784,20 +978,53 @@ export async function manejarActualizacionTranscript(providerSessionIdOEspacioAp
 
   const providerSessionId = session.provider_session_id;
   const estado = obtenerOInicializarEstado(providerSessionId);
+  // Paso 3: una vez que se sabe que esta sesión está puenteada, una
+  // vigilancia rápida propia además del polling de respaldo (la primera
+  // escritura de una sesión nueva sigue llegando por ese polling; cada
+  // escritura siguiente ya la toma esta vigilancia, en ~150 ms en vez de
+  // hasta 6 s).
+  asegurarVigilanciaRapida(session.jsonl_path, providerSessionId);
 
   const full = await sessionsService.fetchHistory(session.session_id, { limit: null, offset: 0 });
-  const nuevas = full.messages.slice(estado.ultimaCantidadEmitida);
-  estado.ultimaCantidadEmitida = full.messages.length;
-
+  // Paso 2: corte por id, no por posición — ver el comentario de `idsEmitidos`.
+  const nuevas = full.messages.filter((mensaje) => !estado.idsEmitidos.has(mensaje.id));
   for (const mensaje of nuevas) {
+    estado.idsEmitidos.add(mensaje.id);
     enviarATodosLosConectados(mensaje as unknown as AnyRecord);
   }
 
-  const ultimaFila = await leerUltimaFilaCruda(session.jsonl_path, providerSessionId);
-  const turnoTerminado = esFinDeTurno(ultimaFila ? [ultimaFila] : []);
+  const { ultima: ultimaFila, ultimoUsuarioUuid, queuedCommands } = await leerUltimoTurnoCrudo(
+    session.jsonl_path,
+    providerSessionId,
+  );
 
-  if (turnoTerminado && !estado.complecionAnunciada) {
-    estado.complecionAnunciada = true;
+  // Paso 6: un `queued_command` no pasa por `fetchHistory` (el normalizador
+  // compartido no lo convierte en nada) — se reconcilia acá, con el mismo
+  // filtro por id que una fila cualquiera, como un mensaje de usuario más.
+  for (const queued of queuedCommands) {
+    const id = `tmux_queued_${queued.uuid}`;
+    if (estado.idsEmitidos.has(id)) continue;
+    estado.idsEmitidos.add(id);
+    const queuedEvent: NormalizedMessage = {
+      id,
+      transcriptAnchorId: queued.uuid,
+      sessionId: session.session_id,
+      provider: session.provider as LLMProvider,
+      timestamp: queued.timestamp,
+      kind: 'text',
+      role: 'user',
+      content: queued.prompt,
+    };
+    enviarATodosLosConectados(queuedEvent as unknown as AnyRecord);
+  }
+
+  const turnoTerminado = esFinDeTurno(ultimaFila ? [ultimaFila] : []);
+  estado.ocupado = !turnoTerminado;
+
+  // Paso 1: comparar contra el `uuid` de la fila `user` del turno, no contra
+  // un booleano — ver el comentario de `ultimoUsuarioAnunciado`.
+  if (turnoTerminado && ultimoUsuarioUuid !== estado.ultimoUsuarioAnunciado) {
+    estado.ultimoUsuarioAnunciado = ultimoUsuarioUuid;
     const completeEvent: NormalizedMessage & { success: boolean } = {
       id: `tmux_complete_${session.session_id}_${Date.now()}`,
       sessionId: session.session_id,
@@ -807,8 +1034,6 @@ export async function manejarActualizacionTranscript(providerSessionIdOEspacioAp
       success: true,
     };
     enviarATodosLosConectados(completeEvent as unknown as AnyRecord);
-  } else if (!turnoTerminado) {
-    estado.complecionAnunciada = false;
   }
 }
 
@@ -822,5 +1047,8 @@ export const tmuxBridgeService = {
   esperarPrimerRender,
   esFinDeTurno,
   leerUltimaFilaCruda,
+  leerUltimoTurnoCrudo,
   manejarActualizacionTranscript,
+  estaOcupadoTmux,
+  marcarPaneOcupado,
 };
