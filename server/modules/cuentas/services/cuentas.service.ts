@@ -144,6 +144,36 @@ export function listarCuentas(): CuentaPublica[] {
   }));
 }
 
+/** El CLI `cuenta` del workspace: la regla de `rutas` vive ahi y solo ahi. `AOS_CUENTA_BIN` lo pisa (tests). */
+export function rutaCliCuenta(): string {
+  return process.env.AOS_CUENTA_BIN
+    || path.join(os.homedir(), 'workspace-leandro', '.claude', 'bin', 'cuenta');
+}
+
+/**
+ * La cuenta que le toca a un directorio segun `rutas` de cuentas.json
+ * (plans/06-octubre-vps-multi-cuenta.md, Fase 5): es el valor por defecto del
+ * selector de una sesion nueva. No reimplementa la regla, llama a
+ * `cuenta para <dir>`, la misma que usan `claude-tmux` y `orquestar.py`.
+ *
+ * Nunca mira la cuota: elegir por cual tiene cuota libre es el failover que el
+ * plan deja fuera. Ante cualquier falla, la del proceso: es una sugerencia, no
+ * un candado, y el selector sigue dejando elegir a mano.
+ */
+export async function cuentaParaRuta(ruta: unknown): Promise<string> {
+  if (typeof ruta !== 'string' || !path.isAbsolute(ruta)) return CUENTA_DEL_PROCESO;
+  try {
+    const { stdout } = await execFileAsync('bash', [rutaCliCuenta(), 'para', ruta], {
+      timeout: 5000,
+      env: { ...process.env, AOS_CUENTAS_JSON: rutaRegistroCuentas() },
+    });
+    const id = stdout.trim();
+    return listarCuentasInternas().some((cuenta) => cuenta.id === id) ? id : CUENTA_DEL_PROCESO;
+  } catch {
+    return CUENTA_DEL_PROCESO;
+  }
+}
+
 /** `null`/vacio es la cuenta por defecto; un id fuera del registro es un error claro, nunca optimum. */
 export function resolverCuenta(id: string | null | undefined): Cuenta {
   const pedido = typeof id === 'string' && id.trim() ? id.trim() : CUENTA_DEL_PROCESO;

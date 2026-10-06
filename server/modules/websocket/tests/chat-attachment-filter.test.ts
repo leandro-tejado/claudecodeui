@@ -4,6 +4,7 @@ import path from 'node:path';
 import test from 'node:test';
 
 import {
+  contenidoConAdjuntosParaTmux,
   filterAttachmentsToUploadStore,
   filterImagesToUploadStore,
 } from '@/modules/websocket/services/chat-websocket.service.js';
@@ -56,4 +57,29 @@ test('general files inside the upload store preserve their metadata', () => {
   assert.deepEqual(result, [
     { path: inside, name: 'brief.pdf', mimeType: 'application/pdf', size: 2048 },
   ]);
+});
+
+test('tmux: el mensaje sin adjuntos queda igual', () => {
+  assert.equal(contenidoConAdjuntosParaTmux('hola', { attachments: [] }, STORE), 'hola');
+  assert.equal(contenidoConAdjuntosParaTmux('hola', undefined, STORE), 'hola');
+});
+
+test('tmux: un adjunto del store viaja como ruta absoluta, sin duplicar', () => {
+  const dentro = path.join(STORE, 'shot.png');
+  const resultado = contenidoConAdjuntosParaTmux(
+    'mirá esto',
+    { images: ['shot.png'], attachments: [{ path: dentro, name: 'shot.png', mimeType: 'image/png' }] },
+    STORE,
+  );
+  assert.equal(resultado.startsWith('mirá esto\n\nArchivos adjuntos'), true);
+  assert.equal(resultado.split(dentro).length - 1, 1);
+});
+
+test('tmux: una ruta fuera del store se descarta y no llega al pane', () => {
+  const resultado = contenidoConAdjuntosParaTmux(
+    'hola',
+    { attachments: [{ path: '/etc/passwd', name: 'passwd' }, { path: '../secreto.png', name: 'x.png' }] },
+    STORE,
+  );
+  assert.equal(resultado, 'hola');
 });

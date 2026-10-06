@@ -428,6 +428,10 @@ const dependenciasEnvioVerificado: EnvioVerificadoDependencias = {
 const PASO_VERIFICACION_MS = 250;
 // Un pane recién creado tarda en dibujar el cuadro de texto.
 const ESPERA_CUADRO_MS = 4000;
+// Un pane que acaba de retomar una conversación larga (`--resume` de varios MB,
+// la orquestadora fija) tarda bastante más en llegar al cuadro: 6-oct, el chat
+// dio `sin-cuadro` a los 4 s sobre un pane que todavía estaba cargando.
+export const ESPERA_CUADRO_PANE_NUEVO_MS = 45_000;
 const ESPERA_TEXTO_MS = 3000;
 const ESPERA_SALIDA_MS = 4000;
 // Si el cuadro sigue lleno a mitad de la espera, un `Enter` más: el 16-sep uno
@@ -470,6 +474,7 @@ export async function enviarPromptVerificado(
   nombreSesion: string,
   texto: string,
   dependencies: EnvioVerificadoDependencias = dependenciasEnvioVerificado,
+  esperaCuadroMs: number = ESPERA_CUADRO_MS,
 ): Promise<ResultadoEnvioTmux> {
   assertNombreSesionValido(nombreSesion);
 
@@ -482,7 +487,7 @@ export async function enviarPromptVerificado(
   };
 
   let estado = await leer();
-  for (let esperado = 0; !estado.prompt && !estado.cuadro && esperado < ESPERA_CUADRO_MS; esperado += PASO_VERIFICACION_MS) {
+  for (let esperado = 0; !estado.prompt && !estado.cuadro && esperado < esperaCuadroMs; esperado += PASO_VERIFICACION_MS) {
     await dependencies.esperar(PASO_VERIFICACION_MS);
     estado = await leer();
   }

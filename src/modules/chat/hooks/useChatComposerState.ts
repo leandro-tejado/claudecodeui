@@ -1065,12 +1065,9 @@ export function useChatComposerState({
         // One message shape for every provider. The backend resolves the
         // provider, project path, and provider-native resume id from the
         // session row; `options` only carries composer-level preferences.
-        // Paso 6: chat.send-tmux solo para sesiones en modo tmux, y solo si no
-        // hay edicion ni adjuntos — ese canal no soporta ninguna de las dos cosas.
-        const useTmux =
-          !replacedAnchorId &&
-          uploadedAttachments.length === 0 &&
-          sessionStore.runsInTmux(targetSessionId);
+        // Paso 6: chat.send-tmux solo para sesiones en modo tmux y sin edicion.
+        // Los adjuntos viajan: el servidor los revalida y teclea sus rutas.
+        const useTmux = !replacedAnchorId && sessionStore.runsInTmux(targetSessionId);
         sendMessage({
           // Replacing an already-sent message is its own frame: it changes the
           // shape of the conversation, so it gets validated separately and can

@@ -11,19 +11,37 @@ import { CUENTA_POR_DEFECTO, type CuentaPublica } from '@/modules/cuentas/cuenta
  * no comparten ancestro cómodo. Mismo store externo mínimo que
  * `contextMeterStore`, para no subir estado por componentes de upstream.
  *
- * `nuevaCuenta` vuelve a optimum cada vez que una sesión se crea: la cuenta se
- * fija al crearla y la siguiente sesión arranca otra vez en el defecto, como en
- * el boceto ("Optimum viene marcada"). Nunca hay cambio automático de cuenta.
+ * `nuevaCuenta` vuelve a la sugerida cada vez que una sesión se crea: la cuenta
+ * se fija al crearla y la siguiente arranca otra vez en la sugerida.
+ *
+ * La sugerida (Fase 5 del plan multi-cuenta) es la que `rutas` de cuentas.json
+ * le da al proyecto abierto — el dueño del trabajo — y la resuelve el servidor
+ * con `cuenta para`. Sin proyecto o si el pedido falla, optimum. Nunca depende
+ * de la cuota: elegir por cuál tiene cuota libre es el failover que el plan deja
+ * fuera. Una elección a mano gana sobre la sugerida hasta cambiar de proyecto.
  */
 
 type CuentasState = {
   cuentas: CuentaPublica[];
   cargadas: boolean;
   nuevaCuenta: string;
+  /** La que `rutas` le da al proyecto abierto. */
+  sugerida: string;
 };
 
-let state: CuentasState = { cuentas: [], cargadas: false, nuevaCuenta: CUENTA_POR_DEFECTO };
+const ESTADO_INICIAL: CuentasState = {
+  cuentas: [],
+  cargadas: false,
+  nuevaCuenta: CUENTA_POR_DEFECTO,
+  sugerida: CUENTA_POR_DEFECTO,
+};
+
+let state: CuentasState = ESTADO_INICIAL;
 let cargando = false;
+/** La persona eligió en el menú: la sugerida no la pisa hasta cambiar de proyecto. */
+let elegidaAMano = false;
+/** Proyecto de la última sugerencia pedida: una respuesta de otro proyecto llega tarde y se descarta. */
+let rutaSugerida: string | null = null;
 const listeners = new Set<() => void>();
 
 const emit = () => {
@@ -61,12 +79,48 @@ export async function cargarCuentas(force = false): Promise<void> {
   }
 }
 
-/** Elige la cuenta de la próxima sesión nueva. */
-export function elegirCuentaNueva(id: string): void {
+function fijarNueva(id: string): void {
   const limpio = id.trim() || CUENTA_POR_DEFECTO;
   if (state.nuevaCuenta === limpio) return;
   state = { ...state, nuevaCuenta: limpio };
   emit();
+}
+
+/** Elige a mano la cuenta de la próxima sesión nueva. */
+export function elegirCuentaNueva(id: string): void {
+  elegidaAMano = true;
+  fijarNueva(id);
+}
+
+/**
+ * Pide la cuenta que le toca al proyecto (`GET /api/cuentas/para`) y la deja
+ * como la de la próxima sesión nueva, salvo que se haya elegido a mano en este
+ * mismo proyecto. Cambiar de proyecto descarta la elección a mano.
+ */
+export async function sugerirCuentaParaProyecto(ruta: string | null | undefined): Promise<void> {
+  const limpia = typeof ruta === 'string' && ruta.trim() ? ruta.trim() : null;
+  if (limpia !== rutaSugerida) {
+    rutaSugerida = limpia;
+    elegidaAMano = false;
+  }
+  let sugerida = CUENTA_POR_DEFECTO;
+  if (limpia) {
+    try {
+      const response = await authenticatedFetch(`/api/cuentas/para?ruta=${encodeURIComponent(limpia)}`);
+      if (response.ok) {
+        const body = (await response.json()) as { cuenta?: unknown };
+        if (typeof body.cuenta === 'string' && body.cuenta.trim()) sugerida = body.cuenta.trim();
+      }
+    } catch {
+      // Sin respuesta, la de por defecto: el selector sigue dejando elegir.
+    }
+  }
+  if (rutaSugerida !== limpia) return;
+  if (state.sugerida !== sugerida) {
+    state = { ...state, sugerida };
+    emit();
+  }
+  if (!elegidaAMano) fijarNueva(sugerida);
 }
 
 /** La cuenta para el `POST /sessions`. No la reinicia: eso pasa recién cuando la sesión quedó creada. */
@@ -74,9 +128,10 @@ export function cuentaDeLaSesionNueva(): string {
   return state.nuevaCuenta;
 }
 
-/** La sesión quedó creada: la siguiente vuelve a arrancar en la cuenta por defecto. */
+/** La sesión quedó creada: la siguiente vuelve a arrancar en la sugerida del proyecto. */
 export function reiniciarCuentaNueva(): void {
-  elegirCuentaNueva(CUENTA_POR_DEFECTO);
+  elegidaAMano = false;
+  fijarNueva(state.sugerida);
 }
 
 export const useCuentasState = (): CuentasState =>
@@ -84,7 +139,9 @@ export const useCuentasState = (): CuentasState =>
 
 /** Solo para tests. */
 export function _reiniciarCuentasStoreParaTests(): void {
-  state = { cuentas: [], cargadas: false, nuevaCuenta: CUENTA_POR_DEFECTO };
+  state = ESTADO_INICIAL;
   cargando = false;
+  elegidaAMano = false;
+  rutaSugerida = null;
   emit();
 }

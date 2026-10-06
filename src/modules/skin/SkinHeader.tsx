@@ -166,7 +166,10 @@ export default function SkinHeader({
               : t('misc.projectFallback');
 
   return (
-    <header className="flex-shrink-0 border-b border-border/60 bg-background/95 px-3 py-1.5 backdrop-blur-sm">
+    // `ds-material-chrome`: material translúcido de la Fase 10 (design-system/tokens.md,
+    // "Materiales"), que cae a `--ds-surface-2` opaco con `prefers-reduced-transparency`
+    // (Fase 11, paso 4 — boceto `05-octubre-header-barra.html`).
+    <header className="ds-material-chrome flex-shrink-0 border-b border-border/60 px-3 py-1.5">
       <div className="flex min-w-0 items-center gap-2">
         {isMobile && <SkinMenuButton onMenuClick={onMenuClick} />}
 
