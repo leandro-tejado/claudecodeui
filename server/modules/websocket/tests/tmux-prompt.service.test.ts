@@ -920,3 +920,18 @@ test('responderSeleccionCompuestaTmux: varios clics de casillero a 100ms de dist
   assert.equal(enviadas.length, 1, 'un solo pedido tmux para los tres clics locales');
   _resetPromptsTmuxParaTests();
 });
+
+test('una sesión con nombre lleva el nombre en la raya de arriba y el cuadro se ve igual', () => {
+  // Pantalla de la orquestadora fija, 6-oct: daba `sin-cuadro` a todo mensaje.
+  const conNombre = [
+    '  La cuota semanal va en 53%.',
+    '',
+    '──────────────────────────────────────────────────────── orquestador ─',
+    '❯ ',
+    '────────────────────────────────────────────────────────────────────────',
+    '  ctx 7% · 5h ?',
+    '  ⏵⏵ auto mode on (shift+tab to cycle) · ← for agents',
+  ].join('\n');
+  assert.deepEqual(leerEstadoPane(conNombre), { prompt: null, cuadro: { texto: '' } });
+  assert.deepEqual(leerEstadoPane(conNombre.replace('❯ ', '❯ hola')).cuadro, { texto: 'hola' });
+});

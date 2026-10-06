@@ -96,8 +96,10 @@ export type PromptTmuxPendiente = PromptTmux & {
 const SEGMENTO_PIE = /^(?:Press\s+)?\S.{0,30}?\s+to\s+\S.{0,40}$/;
 const TECLA_DEL_PIE = /^(?:Press\s+)?(?:Esc|Enter)\b/;
 // La raya que abre un diálogo o encierra el cuadro de texto. `▔` es la del
-// formulario de auto mode, que ocupa la pantalla entera.
-const REGLA = /^\s*[─▔━═]{8,}\s*$/;
+// formulario de auto mode, que ocupa la pantalla entera. Una sesión con nombre
+// lo lleva metido en la raya de arriba (`──── orquestador ─`): 6-oct, sin esto
+// la orquestadora fija daba `sin-cuadro` a todo mensaje desde el chat.
+const REGLA = /^\s*[─▔━═]{8,}(?:\s+\S.*?\s+[─▔━═]+)?\s*$/;
 const MARCA = '❯';
 const OPCION_NUMERADA = /^(\d+)\.\s+(.*)$/;
 // Las pestañas de AskUserQuestion: " ☐ Color", o "←  ☐ Fruta  ☐ Dia  ✔ Submit  →" si son varias.
