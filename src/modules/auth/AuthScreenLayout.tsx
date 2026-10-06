@@ -36,7 +36,7 @@ export default function AuthScreenLayout({ title, description, children, footerT
                 LT
               </div>
             </div>
-            <h1 className="font-serif text-3xl font-bold tracking-tight text-foreground">{title}</h1>
+            <h1 className="font-sans text-3xl font-bold tracking-tight text-foreground">{title}</h1>
             {description && (
               <p className="mx-auto mt-2 max-w-xs text-sm leading-relaxed text-muted-foreground">{description}</p>
             )}
