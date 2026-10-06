@@ -26,6 +26,7 @@ WorkingDirectory=/home/leantejado/cloudcli
 # EL BIND VIVE EN EL .env DEL REPO (HOST=100.77.186.53). Fuente unica de
 # verdad: no repetir HOST/SERVER_PORT aca o vuelven a divergir.
 EnvironmentFile=/home/leantejado/cloudcli/.env
+EnvironmentFile=/home/leantejado/cloudcli/deploy/cloudcli.bind.env
 Environment=NODE_ENV=production
 Environment=PATH=/home/leantejado/.local/node22/bin:/home/leantejado/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
