@@ -1,0 +1,373 @@
+[
+  {
+    "escenario": "pregunta/headless",
+    "nombre": "escritorio: la pregunta llega a la UI",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-headless/escritorio-pregunta.png"
+    ],
+    "ms": 20907
+  },
+  {
+    "escenario": "pregunta/headless",
+    "nombre": "escritorio: la pregunta pendiente se ve una sola vez",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-headless/frames-0.json"
+    ],
+    "datos": {
+      "apariciones": 1
+    },
+    "ms": 20907
+  },
+  {
+    "escenario": "pregunta/headless",
+    "nombre": "escritorio: Claude recibe exactamente lo elegido",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-headless/frames-0.json"
+    ],
+    "datos": {
+      "linea": "Elegiste: Azul | Manzana, Uva | Sí"
+    },
+    "ms": 20907
+  },
+  {
+    "escenario": "pregunta/headless",
+    "nombre": "escritorio: después de contestar, la pregunta y la respuesta aparecen una vez cada una",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-headless/escritorio-respondida.png"
+    ],
+    "datos": {
+      "pregunta": 1,
+      "respuesta": 1,
+      "filasEco": 1
+    },
+    "ms": 20907
+  },
+  {
+    "escenario": "pregunta/headless",
+    "nombre": "movil: la pregunta llega a la UI",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-headless/movil-pregunta.png"
+    ],
+    "ms": 20907
+  },
+  {
+    "escenario": "pregunta/headless",
+    "nombre": "movil: la pregunta pendiente se ve una sola vez",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-headless/frames-0.json"
+    ],
+    "datos": {
+      "apariciones": 1
+    },
+    "ms": 20907
+  },
+  {
+    "escenario": "pregunta/headless",
+    "nombre": "movil: Claude recibe exactamente lo elegido",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-headless/frames-0.json"
+    ],
+    "datos": {
+      "linea": "Elegiste: Azul | Manzana, Uva | Sí"
+    },
+    "ms": 20907
+  },
+  {
+    "escenario": "pregunta/headless",
+    "nombre": "movil: después de contestar, la pregunta y la respuesta aparecen una vez cada una",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-headless/movil-respondida.png"
+    ],
+    "datos": {
+      "pregunta": 1,
+      "respuesta": 1,
+      "filasEco": 1
+    },
+    "ms": 20907
+  },
+  {
+    "escenario": "pregunta/modos",
+    "nombre": "default: la pregunta llega a la UI (no se contesta sola)",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-modos/default-pregunta.png"
+    ],
+    "ms": 20145
+  },
+  {
+    "escenario": "pregunta/modos",
+    "nombre": "default: Claude repite exactamente lo elegido",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-modos/default-respondida.png"
+    ],
+    "datos": {
+      "linea": "Elegiste: Azul | Manzana, Uva | Sí"
+    },
+    "ms": 20145
+  },
+  {
+    "escenario": "pregunta/modos",
+    "nombre": "auto: la pregunta llega a la UI (no se contesta sola)",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-modos/auto-pregunta.png"
+    ],
+    "ms": 20145
+  },
+  {
+    "escenario": "pregunta/modos",
+    "nombre": "auto: Claude repite exactamente lo elegido",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-modos/auto-respondida.png"
+    ],
+    "datos": {
+      "linea": "Elegiste: Azul | Manzana, Uva | Sí"
+    },
+    "ms": 20145
+  },
+  {
+    "escenario": "pregunta/modos",
+    "nombre": "bypassPermissions: la pregunta llega a la UI (no se contesta sola)",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-modos/bypassPermissions-pregunta.png"
+    ],
+    "ms": 20145
+  },
+  {
+    "escenario": "pregunta/modos",
+    "nombre": "bypassPermissions: Claude repite exactamente lo elegido",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-modos/bypassPermissions-respondida.png"
+    ],
+    "datos": {
+      "linea": "Elegiste: Azul | Manzana, Uva | Sí"
+    },
+    "ms": 20145
+  },
+  {
+    "escenario": "pregunta/otra",
+    "nombre": "la pregunta llega a la UI",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-otra/pregunta.png"
+    ],
+    "ms": 6462
+  },
+  {
+    "escenario": "pregunta/otra",
+    "nombre": "el texto libre de \"Otra\" llega literal, sin romperse",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-otra/respondida.png"
+    ],
+    "datos": {
+      "linea": "Elegiste: Un \"verde azulado\", medio raro ¿no? | Manzana | Sí",
+      "esperado": "Un \"verde azulado\", medio raro ¿no?"
+    },
+    "ms": 6462
+  },
+  {
+    "escenario": "pregunta/recarga",
+    "nombre": "la pregunta llega a la UI",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-recarga/pregunta.png"
+    ],
+    "ms": 8447
+  },
+  {
+    "escenario": "pregunta/recarga",
+    "nombre": "tras recargar, la pregunta con comillas aparece una sola vez y completa",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-recarga/tras-recargar.png"
+    ],
+    "datos": {
+      "apariciones": 1
+    },
+    "ms": 8447
+  },
+  {
+    "escenario": "pregunta/recarga",
+    "nombre": "tras recargar, se ve la respuesta elegida (\"Sí\") junto a esa pregunta",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-recarga/tras-recargar-respuesta.png"
+    ],
+    "ms": 8447
+  },
+  {
+    "escenario": "pregunta/sin-repetidos",
+    "nombre": "escritorio: la pregunta llega a la UI",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-sin-repetidos/escritorio-pregunta.png"
+    ],
+    "ms": 12182
+  },
+  {
+    "escenario": "pregunta/sin-repetidos",
+    "nombre": "escritorio: \"¿Qué color preferís?\" pendiente, una sola vez en el DOM",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-sin-repetidos/frames-0.json"
+    ],
+    "datos": {
+      "apariciones": 1
+    },
+    "ms": 12182
+  },
+  {
+    "escenario": "pregunta/sin-repetidos",
+    "nombre": "escritorio: \"¿Qué frutas querés?\" pendiente, una sola vez en el DOM",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-sin-repetidos/frames-0.json"
+    ],
+    "datos": {
+      "apariciones": 0
+    },
+    "ms": 12182
+  },
+  {
+    "escenario": "pregunta/sin-repetidos",
+    "nombre": "escritorio: \"Elegí \"una\" opción con comillas\" pendiente, una sola vez en el DOM",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-sin-repetidos/frames-0.json"
+    ],
+    "datos": {
+      "apariciones": 0
+    },
+    "ms": 12182
+  },
+  {
+    "escenario": "pregunta/sin-repetidos",
+    "nombre": "escritorio: \"¿Qué color preferís?\" contestada, una sola vez en el DOM",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-sin-repetidos/escritorio-respondida.png"
+    ],
+    "datos": {
+      "apariciones": 1
+    },
+    "ms": 12182
+  },
+  {
+    "escenario": "pregunta/sin-repetidos",
+    "nombre": "escritorio: \"¿Qué frutas querés?\" contestada, una sola vez en el DOM",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-sin-repetidos/escritorio-respondida.png"
+    ],
+    "datos": {
+      "apariciones": 1
+    },
+    "ms": 12182
+  },
+  {
+    "escenario": "pregunta/sin-repetidos",
+    "nombre": "escritorio: \"Elegí \"una\" opción con comillas\" contestada, una sola vez en el DOM",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-sin-repetidos/escritorio-respondida.png"
+    ],
+    "datos": {
+      "apariciones": 1
+    },
+    "ms": 12182
+  },
+  {
+    "escenario": "pregunta/sin-repetidos",
+    "nombre": "movil: la pregunta llega a la UI",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-sin-repetidos/movil-pregunta.png"
+    ],
+    "ms": 12182
+  },
+  {
+    "escenario": "pregunta/sin-repetidos",
+    "nombre": "movil: \"¿Qué color preferís?\" pendiente, una sola vez en el DOM",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-sin-repetidos/frames-0.json"
+    ],
+    "datos": {
+      "apariciones": 1
+    },
+    "ms": 12182
+  },
+  {
+    "escenario": "pregunta/sin-repetidos",
+    "nombre": "movil: \"¿Qué frutas querés?\" pendiente, una sola vez en el DOM",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-sin-repetidos/frames-0.json"
+    ],
+    "datos": {
+      "apariciones": 0
+    },
+    "ms": 12182
+  },
+  {
+    "escenario": "pregunta/sin-repetidos",
+    "nombre": "movil: \"Elegí \"una\" opción con comillas\" pendiente, una sola vez en el DOM",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-sin-repetidos/frames-0.json"
+    ],
+    "datos": {
+      "apariciones": 0
+    },
+    "ms": 12182
+  },
+  {
+    "escenario": "pregunta/sin-repetidos",
+    "nombre": "movil: \"¿Qué color preferís?\" contestada, una sola vez en el DOM",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-sin-repetidos/movil-respondida.png"
+    ],
+    "datos": {
+      "apariciones": 1
+    },
+    "ms": 12182
+  },
+  {
+    "escenario": "pregunta/sin-repetidos",
+    "nombre": "movil: \"¿Qué frutas querés?\" contestada, una sola vez en el DOM",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-sin-repetidos/movil-respondida.png"
+    ],
+    "datos": {
+      "apariciones": 1
+    },
+    "ms": 12182
+  },
+  {
+    "escenario": "pregunta/sin-repetidos",
+    "nombre": "movil: \"Elegí \"una\" opción con comillas\" contestada, una sola vez en el DOM",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-sin-repetidos/movil-respondida.png"
+    ],
+    "datos": {
+      "apariciones": 1
+    },
+    "ms": 12182
+  }
+]
