@@ -103,7 +103,7 @@ Las sesiones nuevas del orquestador llegan por polling de 3 s sobre `~/.cache/ao
 - [x] Cuota: `fs.watch` sobre el archivo → `scheduleUsageWindowBroadcast` — acepta: escribir el archivo cambia el header abierto en ≤ 3 s sin recargar | valida: `node e2e/correr.mjs cuota/en-vivo`
 - [x] Cuota en el cliente: nunca "sin dato" si hay una lectura; antigüedad visible (> 15 min) y refetch al volver a la pestaña — acepta: con un archivo de hace 2 h, el header muestra los dos porcentajes y la antigüedad | valida: `node e2e/correr.mjs cuota/vieja`
 - [x] Protocolo: `stream_delta` con `messageId` + `blockIndex`; eventos `thinking_delta` y `activity` (`pensando` / `tool:<nombre>`) — acepta: test del normalizador con los `stream_event` reales grabados de un turno | valida: `NODE_ENV=test npm test -- claude-sessions`
-- [ ] `thinking: {type:'adaptive', display:'summarized'}` en `query()` cuando el modelo lo soporta — acepta: un turno real con Sonnet trae `thinking_delta` con texto | valida: `node e2e/correr.mjs headless/pensamiento`
+- [x] `thinking: {type:'adaptive', display:'summarized'}` en `query()` cuando el modelo lo soporta — acepta: un turno real con Sonnet trae `thinking_delta` con texto | valida: `node e2e/correr.mjs headless/pensamiento`
 - [x] Coalescer los deltas del mismo bloque en el replay — acepta: un run de 6000 deltas, reconectado a mitad, se rearma sin `history_truncated` y sin duplicados | valida: `node e2e/correr.mjs falso/6000-deltas`
 - [ ] Store del cliente: una fila por `(messageId, blockIndex)`, key = id; el `text` final reemplaza el contenido de esa fila; borrar `dropStreamFragmentsOf`, `isEchoOfFullText` y `dedupeAdjacentAssistantEchoes` — acepta: vitest verde y cero referencias a esas tres funciones | valida: `NODE_ENV=test npx vitest run && ! grep -rn "dropStreamFragmentsOf\|isEchoOfFullText\|dedupeAdjacentAssistantEchoes" src`
 - [ ] Tipeo real: la fila en streaming no se remonta — acepta: en un turno real, el largo del texto visible crece en ≥ 5 muestras distintas y el nodo DOM es el mismo de principio a fin | valida: `node e2e/correr.mjs headless/tipeo`
@@ -122,10 +122,10 @@ Las sesiones nuevas del orquestador llegan por polling de 3 s sobre `~/.cache/ao
 - [ ] Cuestionario tmux: la selección se compone en el cliente y se teclea de una vez; la huella no incluye lo tildado — acepta: 3 casillas marcadas con clics a 100 ms de distancia llegan las 3 | valida: `node e2e/correr.mjs pregunta/tmux-multi`
 - [ ] Una sola representación de la pregunta: pendiente = cuestionario; respondida = resumen Pregunta → Respuesta, una vez — acepta: cero textos de pregunta repetidos en el DOM antes y después de contestar, en headless y en tmux | valida: `node e2e/correr.mjs pregunta/sin-repetidos`
 - [ ] Respuestas del historial desde `toolUseResult`, no por regex — acepta: una pregunta con comillas se muestra bien tras recargar | valida: `NODE_ENV=test npm test -- message-unification`
-- [ ] Recibir de Leandro el prompt de ejemplo del cuestionario — acepta: guardado en `design-system/visual-refs/05-octubre-cuestionario-ejemplo.md` | valida: el archivo existe
+- [x] Recibir de Leandro el prompt de ejemplo del cuestionario (lo propuso el orquestador, por decisión de Leandro) — acepta: guardado en `design-system/visual-refs/05-octubre-cuestionario-ejemplo.md` | valida: el archivo existe
 - [x] Design system persistido (`design-system/README.md`, `branding.md`, `typography.md`, `tokens.md`) a partir de Optimum + `apple-design` + `ui-ux-pro-max --design-system` — acepta: los cuatro archivos existen con hex, escala y tokens concretos | valida: `ls design-system/*.md`
 - [x] Boceto del chat (recorrido: barra → sesión → enviar → pensando → tool → subagente → respuesta escribiéndose → fin) — acepta: OK de Leandro por AskUserQuestion | valida: `design-system/visual-refs/05-octubre-chat.html`
-- [ ] Boceto del cuestionario (simple, múltiple, "Otra", revisión, enviado, resumen; headless y tmux; 1280 y 390, claro y oscuro) — acepta: OK de Leandro | valida: `design-system/visual-refs/05-octubre-cuestionario.html`
+- [x] Boceto del cuestionario (simple, múltiple, "Otra", revisión, enviado, resumen; headless y tmux; 1280 y 390, claro y oscuro) — acepta: OK de Leandro | valida: `design-system/visual-refs/05-octubre-cuestionario.html`
 - [x] Boceto del header de cuota y de la barra lateral — acepta: OK de Leandro | valida: `design-system/visual-refs/05-octubre-header-barra.html`
 - [ ] Implementar el lenguaje visual del chat (sans única, Claude sin burbuja, columna de lectura, actividad en una línea con detalle plegable) — acepta: capturas 390/1280 × claro/oscuro iguales al boceto aprobado | valida: `node e2e/correr.mjs visual/chat`
 - [ ] Implementar `Cuestionario` (un componente, dos adaptadores) — acepta: los escenarios de `pregunta/*` siguen verdes con el componente nuevo | valida: `node e2e/correr.mjs pregunta`
@@ -296,7 +296,7 @@ Las sesiones nuevas del orquestador llegan por polling de 3 s sobre `~/.cache/ao
 #### Estado (arranca todo en fail)
 - [pass] Contrato escrito y tipado | valida: `docs/architecture/protocolo-streaming.md` existe y `npm run build:server` compila
 - [pass] Normalizador emite los eventos nuevos con ids, a partir de los fixtures reales | valida: `NODE_ENV=test npm test -- claude-sessions`
-- [bloqueado: sin token en :3901, decide Leandro] Turno real con Sonnet trae `thinking_delta` con texto en los frames WS | valida: `node e2e/correr.mjs headless/pensamiento` (frames en la evidencia)
+- [pass] Turno real con Sonnet trae `thinking_delta` con texto en los frames WS | valida: `node e2e/correr.mjs headless/pensamiento` (frames en la evidencia)
 - [pass] 6000 deltas + reconexión a mitad: sin `history_truncated` | valida: `node e2e/correr.mjs falso/6000-deltas`
 - [pass] Providers codex/cursor/opencode compilan y sus tests siguen verdes | valida: `NODE_ENV=test npm test`
 
@@ -461,11 +461,11 @@ Las sesiones nuevas del orquestador llegan por polling de 3 s sobre `~/.cache/ao
 9. Aprobación de Leandro por AskUserQuestion, uno por boceto, con el link. Iterar en lotes.
 
 #### Estado (arranca todo en fail)
-- [fail] Ejemplo de cuestionario de Leandro guardado | valida: `test -s design-system/visual-refs/05-octubre-cuestionario-ejemplo.md`
+- [pass] Ejemplo de cuestionario guardado (propuesto por el orquestador, decisión de Leandro) | valida: `test -s design-system/visual-refs/05-octubre-cuestionario-ejemplo.md`
 - [pass] Cuatro archivos del design system con valores concretos | valida: `grep -c '#[0-9A-Fa-f]\{6\}' design-system/branding.md` ≥ 10
-- [fail] Tres bocetos a 390 px sin scroll horizontal, en los dos temas | valida: `node e2e/correr.mjs visual/bocetos` (Playwright sobre los HTML)
+- [pass] Tres bocetos a 390 px sin scroll horizontal, en los dos temas | valida: `node e2e/correr.mjs visual/bocetos` (Playwright sobre los HTML)
 - [pass] Boceto del chat aprobado por Leandro | valida: respuesta de AskUserQuestion
-- [fail] Boceto del cuestionario aprobado por Leandro | valida: respuesta de AskUserQuestion
+- [pass] Boceto del cuestionario aprobado por Leandro | valida: respuesta de AskUserQuestion (06-oct, por chat: "me parece bien el boceto")
 - [pass] Boceto de header y barra aprobado por Leandro | valida: respuesta de AskUserQuestion
 
 #### Peligros
@@ -582,12 +582,16 @@ Fase 1 (arnés) → Fase 2 (línea base)
 - `npm test -- <filtro>` no filtra en este repo: corre la suite entera.
 - Fase 10: Leandro aprobó los bocetos del chat y del header y la barra. **No pasa ejemplo de cuestionario**: el boceto lo propone el orquestador y él lo aprueba o no.
 
+**Fase 10, cuestionario (06-oct):** Leandro aprobó el boceto (`05-octubre-cuestionario.html`, merge `153407af`). El ejemplo `.md` se alineó al boceto en las dos cosas en que diferían: destino "Otra → `~/.cache/aos/export-sesiones.csv`" y resumen como una oración de Claude, no una línea compacta. `visual/bocetos` revalidado por el orquestador: 24/24 (tres bocetos × 390/1280 × claro/oscuro, sin scroll horizontal ni errores de consola; `e2e/evidencia/revalida-fase-10-cuestionario/`). Fuera del plan, para poder revisarlo: el panel Salidas ganó anchos ajustables y "Pestaña nueva" (`68b49293`, `visual/salidas` 5/5).
+
+**Fase 4, check del turno real (06-oct):** Leandro levantó `:3901` con el token desde su shell. Turno real con Sonnet: 13 `thinking_delta` con texto en los frames (`e2e/evidencia/revalida-fase-4/`). Dos cambios al escenario: (1) la sesión inicial la escribe el CLI falso con `E2E_FALSO_MODELO=sonnet`, porque el `claude -p` del shell de la suite no tiene token y la UI hereda el modelo de la sesión; (2) el prompt ya no pide "pensalo paso a paso": el safeguard de Sonnet lo cortó como `reasoning_extraction`. El thinking resumido lo pide el server por protocolo, no hace falta pedirlo en el texto. El segundo check (razonamiento visible) hoy detecta el "Thinking…" del indicador: lo endurece la revalidación de la Fase 5.
+
 ---
 
 ## Continuación de Sesión
 
-**Fases completadas:** 1, 2, 3, 8. 7-server cerrada (falta su parte de cliente). 4 con un check bloqueado (token). 10 con el boceto del cuestionario pendiente.
-**Fase actual:** Fase 5 (cliente: una fila por `(messageId, blockIndex)`) y, en paralelo, el boceto del cuestionario (Fase 10, paso 6).
-**Próximo paso exacto:** Fase 5 en un worktree. Después, la 6 y el cliente de la 7 (consumir `activity`/borrador/`stream_reemplazo` de tmux y que el composer mande durante el turno: `tmux/rafaga`). Después, la 9 y la 11.
-**Bloqueantes:** el token de `:3901` para `headless/pensamiento` (solo Leandro); la aprobación del boceto del cuestionario.
-**Micro-tasks pendientes:** 22 de 41
+**Fases completadas:** 1, 2, 3, 4, 8, 10. 7-server cerrada (falta su parte de cliente).
+**Fase actual:** Fase 5 (cliente: una fila por `(messageId, blockIndex)`). Hay cambios a medias, sin commitear, en el worktree `.claude/worktrees/wf_da5db4bc-5d1-1` (`useChatMessages.ts`, `useChatRealtimeHandlers.ts`, `useSessionStore.ts`, `streamBuffers.ts`, `src/shared/types.ts` y el nuevo `utils/streamRowId.ts`).
+**Próximo paso exacto:** retomar la Fase 5 desde ese worktree (`git merge diseno/propio` primero) y endurecer el check "razonamiento visible" de `headless/pensamiento`. Después, la 6 y el cliente de la 7 (consumir `activity`/borrador/`stream_reemplazo` de tmux y que el composer mande durante el turno: `tmux/rafaga`). Después, la 9 y la 11.
+**Bloqueantes:** ninguno.
+**Micro-tasks pendientes:** 19 de 41

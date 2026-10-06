@@ -1,0 +1,27 @@
+[
+  {
+    "escenario": "headless/pensamiento",
+    "nombre": "llegan deltas de pensamiento con texto",
+    "resultado": "pasa",
+    "evidencia": [
+      "headless-pensamiento/frames-0.json"
+    ],
+    "datos": {
+      "deltas": 13
+    },
+    "ms": 11790
+  },
+  {
+    "escenario": "headless/pensamiento",
+    "nombre": "el razonamiento se ve antes de la respuesta",
+    "resultado": "pasa",
+    "evidencia": [
+      "headless-pensamiento/final.png"
+    ],
+    "datos": {
+      "tRazon": 67,
+      "tResp": 9176
+    },
+    "ms": 11790
+  }
+]

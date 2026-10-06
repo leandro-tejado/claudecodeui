@@ -47,8 +47,9 @@ import { execFileSync } from 'node:child_process';
 import { PROYECTO } from './config.mjs';
 const FALSO = new URL('../claude-falso.mjs', import.meta.url).pathname;
 
-export function crearSesionFalsa(prompt = 'guion:humo') {
-  const salida = execFileSync('node', [FALSO, '-p', prompt], { cwd: PROYECTO, encoding: 'utf8' });
+export function crearSesionFalsa(prompt = 'guion:humo', { modelo } = {}) {
+  const env = modelo ? { ...process.env, E2E_FALSO_MODELO: modelo } : process.env;
+  const salida = execFileSync('node', [FALSO, '-p', prompt], { cwd: PROYECTO, encoding: 'utf8', env });
   const init = JSON.parse(salida.split('\n')[0]);
   return init.session_id;
 }

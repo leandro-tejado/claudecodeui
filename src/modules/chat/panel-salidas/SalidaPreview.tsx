@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { ExternalLinkIcon } from 'lucide-react';
 
 import { api } from '@/shared/api';
 import type { SalidaInfo } from '@/shared/types';
@@ -14,10 +15,67 @@ type BlobPreviewState = {
   loading: boolean;
   error: string | null;
   objectUrl: string | null;
+  blob: Blob | null;
 };
 
 /** True for the two types the server itself resolves to a text mime (`text/markdown`, `text/plain`, `text/csv`) — everything else is binary and goes through a blob URL. */
+const TEXTO_MIME: Partial<Record<SalidaInfo['tipo'], string>> = { tabla: 'text/csv', texto: 'text/plain' };
+
 const isTextTipo = (tipo: SalidaInfo['tipo']): boolean => tipo === 'texto' || tipo === 'tabla';
+
+function escaparHtml(texto: string): string {
+  return texto.replace(/[&<>"']/g, (char) => `&#${char.charCodeAt(0)};`);
+}
+
+/**
+ * Abre la salida en una pestaña nueva. La URL tiene que ser un blob porque el
+ * contenido exige el header de auth: un link directo al endpoint daría 401.
+ *
+ * El HTML del agente NO se abre directo: un blob hereda el origen de la app,
+ * así que su script podría leer el token de localStorage. Se abre una página
+ * mínima propia que lo carga en el mismo iframe sandbox de la vista previa
+ * (sin `allow-same-origin`). PDF, imágenes y texto no ejecutan nada y van
+ * directo.
+ *
+ * Se llama sincrónico dentro del clic, con el blob ya cargado: un
+ * `window.open` después de un `await` lo frena el bloqueador de popups.
+ * Los blob URL de la pestaña nueva no se revocan: viven lo que viva esta
+ * pestaña, y revocarlos rompería la otra al recargar.
+ */
+function abrirEnPestanaNueva(salida: SalidaInfo, url: string): void {
+  let destino = url;
+  if (salida.tipo === 'html') {
+    const envoltorio = `<!doctype html><html lang="es"><head><meta charset="utf-8">`
+      + `<meta name="viewport" content="width=device-width, initial-scale=1">`
+      + `<title>${escaparHtml(salida.id)}</title>`
+      + `<style>html,body{margin:0;height:100%;background:#fff}iframe{border:0;width:100%;height:100%;display:block}</style>`
+      + `</head><body><iframe title="${escaparHtml(salida.id)}" src="${url}" sandbox="allow-scripts allow-popups"></iframe></body></html>`;
+    destino = URL.createObjectURL(new Blob([envoltorio], { type: 'text/html' }));
+  }
+  window.open(destino, '_blank', 'noopener');
+}
+
+/** Fila fija arriba de la vista previa: nombre del archivo y "abrir en pestaña nueva". */
+function BarraPreview({ salida, onAbrir }: { salida: SalidaInfo; onAbrir: (() => void) | null }) {
+  const { t } = useTranslation('chat');
+  const etiqueta = t('salidasPanel.openInNewTab', { defaultValue: 'Abrir en pestaña nueva' });
+  return (
+    <div className="flex flex-shrink-0 items-center gap-2 border-b border-border px-3 py-1.5">
+      <span className="min-w-0 flex-1 truncate text-xs text-muted-foreground" title={salida.id}>{salida.id}</span>
+      <button
+        type="button"
+        onClick={onAbrir ?? undefined}
+        disabled={!onAbrir}
+        title={etiqueta}
+        aria-label={etiqueta}
+        className="flex h-8 flex-shrink-0 items-center gap-1.5 rounded-md px-2 text-xs font-medium text-foreground hover:bg-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary disabled:cursor-default disabled:opacity-40"
+      >
+        <ExternalLinkIcon className="h-3.5 w-3.5" aria-hidden />
+        <span>{t('salidasPanel.openInNewTabShort', { defaultValue: 'Pestaña nueva' })}</span>
+      </button>
+    </div>
+  );
+}
 
 /**
  * Splits one CSV line on commas outside of double quotes — enough for the
@@ -119,19 +177,30 @@ function TextSalidaPreview({ projectId, salida }: SalidaPreviewProps) {
     };
   }, [projectId, salida.id, t]);
 
+  let cuerpo: React.ReactNode;
   if (error) {
-    return <p className="p-3 text-sm text-destructive">{error}</p>;
+    cuerpo = <p className="p-3 text-sm text-destructive">{error}</p>;
+  } else if (content === null) {
+    cuerpo = <p className="p-3 text-sm text-muted-foreground">{t('salidasPanel.loading', { defaultValue: 'Cargando…' })}</p>;
+  } else if (salida.tipo === 'tabla') {
+    cuerpo = <CsvTable content={content} />;
+  } else if (salida.id.toLowerCase().endsWith('.md')) {
+    cuerpo = <div className="p-3"><Markdown>{content}</Markdown></div>;
+  } else {
+    cuerpo = <pre className="whitespace-pre-wrap break-words p-3 text-sm">{content}</pre>;
   }
-  if (content === null) {
-    return <p className="p-3 text-sm text-muted-foreground">{t('salidasPanel.loading', { defaultValue: 'Cargando…' })}</p>;
-  }
-  if (salida.tipo === 'tabla') {
-    return <CsvTable content={content} />;
-  }
-  if (salida.id.toLowerCase().endsWith('.md')) {
-    return <div className="p-3"><Markdown>{content}</Markdown></div>;
-  }
-  return <pre className="whitespace-pre-wrap break-words p-3 text-sm">{content}</pre>;
+
+  const onAbrir = content === null ? null : () => {
+    const mime = `${TEXTO_MIME[salida.tipo] ?? 'text/plain'};charset=utf-8`;
+    abrirEnPestanaNueva(salida, URL.createObjectURL(new Blob([content], { type: mime })));
+  };
+
+  return (
+    <>
+      <BarraPreview salida={salida} onAbrir={onAbrir} />
+      <div className="min-h-0 flex-1 overflow-auto">{cuerpo}</div>
+    </>
+  );
 }
 
 /**
@@ -141,12 +210,12 @@ function TextSalidaPreview({ projectId, salida }: SalidaPreviewProps) {
  */
 function BlobSalidaPreview({ projectId, salida }: SalidaPreviewProps) {
   const { t } = useTranslation('chat');
-  const [state, setState] = useState<BlobPreviewState>({ loading: true, error: null, objectUrl: null });
+  const [state, setState] = useState<BlobPreviewState>({ loading: true, error: null, objectUrl: null, blob: null });
 
   useEffect(() => {
     let objectUrl: string | null = null;
     const controller = new AbortController();
-    setState({ loading: true, error: null, objectUrl: null });
+    setState({ loading: true, error: null, objectUrl: null, blob: null });
 
     (async () => {
       try {
@@ -156,13 +225,14 @@ function BlobSalidaPreview({ projectId, salida }: SalidaPreviewProps) {
         }
         const blob = await response.blob();
         objectUrl = URL.createObjectURL(blob);
-        setState({ loading: false, error: null, objectUrl });
+        setState({ loading: false, error: null, objectUrl, blob });
       } catch (loadError: unknown) {
         if (loadError instanceof Error && loadError.name === 'AbortError') return;
         setState({
           loading: false,
           error: t('salidasPanel.previewError', { defaultValue: 'No se pudo cargar la salida.' }),
           objectUrl: null,
+          blob: null,
         });
       }
     })();
@@ -173,31 +243,41 @@ function BlobSalidaPreview({ projectId, salida }: SalidaPreviewProps) {
     };
   }, [projectId, salida.id, t]);
 
+  let cuerpo: React.ReactNode;
   if (state.loading) {
-    return <p className="p-3 text-sm text-muted-foreground">{t('salidasPanel.loading', { defaultValue: 'Cargando…' })}</p>;
-  }
-  if (state.error || !state.objectUrl) {
-    return <p className="p-3 text-sm text-destructive">{state.error}</p>;
-  }
-
-  if (salida.tipo === 'imagen') {
-    return (
+    cuerpo = <p className="p-3 text-sm text-muted-foreground">{t('salidasPanel.loading', { defaultValue: 'Cargando…' })}</p>;
+  } else if (state.error || !state.objectUrl) {
+    cuerpo = <p className="p-3 text-sm text-destructive">{state.error}</p>;
+  } else if (salida.tipo === 'imagen') {
+    cuerpo = (
       <div className="flex h-full items-center justify-center overflow-auto p-3">
         <img src={state.objectUrl} alt={salida.id} className="max-h-full max-w-full object-contain" />
       </div>
     );
+  } else {
+    // html and pdf both render in a sandboxed iframe. `allow-same-origin` is
+    // intentionally omitted so agent-authored HTML never runs with this app's
+    // own origin/cookies.
+    cuerpo = (
+      <iframe
+        title={salida.id}
+        src={state.objectUrl}
+        sandbox="allow-scripts allow-popups"
+        className="h-full w-full border-0 bg-white"
+      />
+    );
   }
 
-  // html and pdf both render in a sandboxed iframe. `allow-same-origin` is
-  // intentionally omitted so agent-authored HTML never runs with this app's
-  // own origin/cookies.
+  // La pestaña nueva recibe su propia copia del blob: el de la vista previa
+  // se revoca al cambiar de selección y dejaría la pestaña en blanco.
+  const blob = state.blob;
+  const onAbrir = blob ? () => abrirEnPestanaNueva(salida, URL.createObjectURL(blob)) : null;
+
   return (
-    <iframe
-      title={salida.id}
-      src={state.objectUrl}
-      sandbox="allow-scripts allow-popups"
-      className="h-full w-full border-0 bg-white"
-    />
+    <>
+      <BarraPreview salida={salida} onAbrir={onAbrir} />
+      <div className="min-h-0 flex-1 overflow-hidden">{cuerpo}</div>
+    </>
   );
 }
 
