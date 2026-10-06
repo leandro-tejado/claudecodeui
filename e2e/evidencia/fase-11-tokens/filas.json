@@ -1,0 +1,26 @@
+[
+  {
+    "escenario": "falso/humo",
+    "nombre": "llega `complete` en ≤ 10 s",
+    "resultado": "pasa",
+    "evidencia": [
+      "falso-humo/frames-0.json"
+    ],
+    "datos": {
+      "ms": 604
+    },
+    "ms": 5629
+  },
+  {
+    "escenario": "falso/humo",
+    "nombre": "la respuesta aparece exactamente una vez",
+    "resultado": "pasa",
+    "evidencia": [
+      "falso-humo/final.png"
+    ],
+    "datos": {
+      "filas": 1
+    },
+    "ms": 5629
+  }
+]
