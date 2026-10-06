@@ -1,6 +1,6 @@
 # Evidencia E2E — fase-5-intercalados
 
-Fecha: 2026-10-06T13:06:55.199Z · Escenarios: 1 · Gobernador: rojo (pace 149% (>= 125%))
+Fecha: 2026-10-06T13:38:00.159Z · Escenarios: 1 · Gobernador: rojo (pace 153% (>= 125%))
 
 | Resultado | Cantidad |
 |---|---|

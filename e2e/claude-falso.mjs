@@ -4,8 +4,8 @@
 // transcript JSONL como el real, así CloudCLI lo trata igual. No gasta cuota.
 //
 // El guion sale del prompt: "guion:<nombre>". Sin guion, corre `humo`.
-// Guiones: humo, lento, pensamiento, subagente-a-mitad, stderr-a-mitad,
-//          6000-deltas, pregunta.
+// Guiones: humo, lento, pensamiento, herramienta, subagente-a-mitad,
+//          stderr-a-mitad, 6000-deltas, pregunta.
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -128,6 +128,29 @@ const GUIONES = {
       { type: 'thinking', thinking: 'Estoy pensando en voz alta antes de contestar, paso por paso.' },
       { type: 'text', text: marca('Respuesta después de pensar.') },
     ], { pausa: 80 });
+  },
+  async herramienta() {
+    const tid = `toolu_falso_${crypto.randomBytes(4).toString('hex')}`;
+    // Nada de texto antes: el primer bloque es la tool, así que el indicador
+    // tiene que mostrar su nombre desde antes de cualquier token.
+    await mensaje([
+      { type: 'tool_use', id: tid, name: 'Bash', input: { command: 'echo hola' } },
+    ], { stopReason: 'tool_use' });
+    // La tool "corre" sin emitir nada. La espera es larga a propósito: saca
+    // al indicador de la ventana en la que "Thinking…" sale igual por
+    // rotación (los primeros 4 s de cualquier turno — índice 0 de
+    // `ACTION_KEYS`, `ActivityIndicator.tsx`). Así, si el texto vuelve a decir
+    // "Thinking…" más adelante, es el pineo explícito del hueco de 800 ms
+    // (`ACTIVITY_GAP_MS`, `useChatRealtimeHandlers.ts`) y no una coincidencia
+    // de la rotación genérica.
+    await dormir(5200);
+    resultadoHerramienta(tid, 'hola\n');
+    // Un solo hueco de ~950 ms a mitad del texto, sin ningún delta: el
+    // indicador tiene que volver a pinearse en "Thinking…" ahí.
+    await mensaje([{ type: 'text', text: marca(`Resultado de la tool. ${textoLargo}`) }], {
+      pausa: 40,
+      alMedio: async () => { await dormir(950); },
+    });
   },
   async 'subagente-a-mitad'() {
     const tid = `toolu_falso_${crypto.randomBytes(4).toString('hex')}`;

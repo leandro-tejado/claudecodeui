@@ -13,7 +13,7 @@
         "Stop\nesc"
       ]
     },
-    "ms": 7138
+    "ms": 17694
   },
   {
     "escenario": "headless/actividad",
@@ -23,10 +23,10 @@
       "headless-actividad/razonamiento-en-vivo.png"
     ],
     "datos": {
-      "tRazon": 1907,
-      "tResp": 2856
+      "tRazon": 1926,
+      "tResp": 2889
     },
-    "ms": 7138
+    "ms": 17694
   },
   {
     "escenario": "headless/actividad",
@@ -38,15 +38,60 @@
     "datos": {
       "deltas": 11
     },
-    "ms": 7138
+    "ms": 17694
   },
   {
     "escenario": "headless/actividad",
     "nombre": "la respuesta final aparece una vez",
-    "resultado": "falla",
+    "resultado": "pasa",
     "evidencia": [
       "headless-actividad/final.png"
     ],
-    "ms": 7138
+    "ms": 17694
+  },
+  {
+    "escenario": "headless/actividad",
+    "nombre": "(herramienta) el indicador está visible antes del primer token",
+    "resultado": "pasa",
+    "evidencia": [
+      "headless-actividad/herramienta-durante-la-tool.png"
+    ],
+    "datos": {
+      "textoDuranteTool": "Bash…\n0s"
+    },
+    "ms": 17694
+  },
+  {
+    "escenario": "headless/actividad",
+    "nombre": "el indicador muestra el nombre de la tool mientras corre",
+    "resultado": "pasa",
+    "evidencia": [
+      "headless-actividad/herramienta-durante-la-tool.png"
+    ],
+    "datos": {
+      "textoDuranteTool": "Bash…\n0s"
+    },
+    "ms": 17694
+  },
+  {
+    "escenario": "headless/actividad",
+    "nombre": "tras ≥800 ms sin texto nuevo, el indicador vuelve a verse (\"Thinking…\")",
+    "resultado": "pasa",
+    "evidencia": [
+      "headless-actividad/herramienta-reaparece-tras-hueco.png"
+    ],
+    "datos": {
+      "tReaparece": 808
+    },
+    "ms": 17694
+  },
+  {
+    "escenario": "headless/actividad",
+    "nombre": "(herramienta) la respuesta final aparece una vez",
+    "resultado": "pasa",
+    "evidencia": [
+      "headless-actividad/herramienta-final.png"
+    ],
+    "ms": 17694
   }
 ]
