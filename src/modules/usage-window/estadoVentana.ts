@@ -48,3 +48,16 @@ export function evaluarVentana(reading: UsageWindowReading | null, now: number):
 export function formatResetTime(epochMs: number): string {
   return new Date(epochMs).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
+
+/**
+ * Cuánto falta hasta `resetsAt`, en palabras ("2 h 14 min", "ya"). Fase 11, paso 4
+ * (boceto `05-octubre-header-barra.html`): el header muestra el reset como cuenta
+ * regresiva, no solo la hora absoluta.
+ */
+export function remainingLabel(resetsAt: number, now: number): string {
+  const ms = resetsAt - now;
+  if (ms <= 0) return 'ya';
+  const mins = Math.round(ms / 60_000);
+  if (mins < 60) return `${mins} min`;
+  return `${Math.floor(mins / 60)} h ${mins % 60} min`;
+}
