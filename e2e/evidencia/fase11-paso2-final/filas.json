@@ -1,0 +1,371 @@
+[
+  {
+    "escenario": "falso/6000-deltas",
+    "nombre": "sin `history_truncated` al reconectar",
+    "resultado": "pasa",
+    "evidencia": [
+      "falso-6000-deltas/frames-0.json"
+    ],
+    "ms": 8651
+  },
+  {
+    "escenario": "falso/6000-deltas",
+    "nombre": "el final del run (\"6000\") aparece exactamente una vez",
+    "resultado": "pasa",
+    "evidencia": [
+      "falso-6000-deltas/final.png"
+    ],
+    "datos": {
+      "finales": 1,
+      "msFin": 3346
+    },
+    "ms": 8651
+  },
+  {
+    "escenario": "falso/6000-deltas",
+    "nombre": "el run entero está en una sola fila",
+    "resultado": "pasa",
+    "evidencia": [
+      "falso-6000-deltas/frames-0.json"
+    ],
+    "datos": {
+      "filas": 1
+    },
+    "ms": 8651
+  },
+  {
+    "escenario": "falso/humo",
+    "nombre": "llega `complete` en ≤ 10 s",
+    "resultado": "pasa",
+    "evidencia": [
+      "falso-humo/frames-0.json"
+    ],
+    "datos": {
+      "ms": 669
+    },
+    "ms": 5503
+  },
+  {
+    "escenario": "falso/humo",
+    "nombre": "la respuesta aparece exactamente una vez",
+    "resultado": "pasa",
+    "evidencia": [
+      "falso-humo/final.png"
+    ],
+    "datos": {
+      "filas": 1
+    },
+    "ms": 5503
+  },
+  {
+    "escenario": "falso/intercalados",
+    "nombre": "subagente-a-mitad: a mitad, el texto principal está en una sola fila",
+    "resultado": "pasa",
+    "evidencia": [
+      "falso-intercalados/subagente-a-mitad-a-mitad.png"
+    ],
+    "datos": {
+      "filas": 1
+    },
+    "ms": 18333
+  },
+  {
+    "escenario": "falso/intercalados",
+    "nombre": "subagente-a-mitad: al terminar, una fila con el texto completo y ningún fragmento suelto",
+    "resultado": "pasa",
+    "evidencia": [
+      "falso-intercalados/subagente-a-mitad-al-terminar.png"
+    ],
+    "datos": {
+      "completas": 1,
+      "conElComienzo": 1
+    },
+    "ms": 18333
+  },
+  {
+    "escenario": "falso/intercalados",
+    "nombre": "subagente-a-mitad: tras refrescar el historial sigue en una fila",
+    "resultado": "pasa",
+    "evidencia": [
+      "falso-intercalados/subagente-a-mitad-refrescado.png"
+    ],
+    "datos": {
+      "filas": 1
+    },
+    "ms": 18333
+  },
+  {
+    "escenario": "falso/intercalados",
+    "nombre": "stderr-a-mitad: a mitad, el texto principal está en una sola fila",
+    "resultado": "pasa",
+    "evidencia": [
+      "falso-intercalados/stderr-a-mitad-a-mitad.png"
+    ],
+    "datos": {
+      "filas": 1
+    },
+    "ms": 18333
+  },
+  {
+    "escenario": "falso/intercalados",
+    "nombre": "stderr-a-mitad: al terminar, una fila con el texto completo y ningún fragmento suelto",
+    "resultado": "pasa",
+    "evidencia": [
+      "falso-intercalados/stderr-a-mitad-al-terminar.png"
+    ],
+    "datos": {
+      "completas": 1,
+      "conElComienzo": 1
+    },
+    "ms": 18333
+  },
+  {
+    "escenario": "falso/intercalados",
+    "nombre": "stderr-a-mitad: tras refrescar el historial sigue en una fila",
+    "resultado": "pasa",
+    "evidencia": [
+      "falso-intercalados/stderr-a-mitad-refrescado.png"
+    ],
+    "datos": {
+      "filas": 1
+    },
+    "ms": 18333
+  },
+  {
+    "escenario": "headless/actividad",
+    "nombre": "hay un indicador de actividad visible antes del primer token",
+    "resultado": "pasa",
+    "evidencia": [
+      "headless-actividad/antes-del-primer-token.png"
+    ],
+    "datos": {
+      "indicador": [
+        "Thinking…\n0s\nStop\nesc",
+        "Thinking…\n0s",
+        "Stop\nesc"
+      ]
+    },
+    "ms": 16580
+  },
+  {
+    "escenario": "headless/actividad",
+    "nombre": "el razonamiento se ve mientras se genera (≤ 2,3 s)",
+    "resultado": "pasa",
+    "evidencia": [
+      "headless-actividad/razonamiento-en-vivo.png"
+    ],
+    "datos": {
+      "tRazon": 2017,
+      "tResp": 2978
+    },
+    "ms": 16580
+  },
+  {
+    "escenario": "headless/actividad",
+    "nombre": "el server reenvía deltas de pensamiento",
+    "resultado": "pasa",
+    "evidencia": [
+      "headless-actividad/frames-0.json"
+    ],
+    "datos": {
+      "deltas": 11
+    },
+    "ms": 16580
+  },
+  {
+    "escenario": "headless/actividad",
+    "nombre": "la respuesta final aparece una vez",
+    "resultado": "pasa",
+    "evidencia": [
+      "headless-actividad/final.png"
+    ],
+    "ms": 16580
+  },
+  {
+    "escenario": "headless/actividad",
+    "nombre": "(herramienta) el indicador está visible antes del primer token",
+    "resultado": "pasa",
+    "evidencia": [
+      "headless-actividad/herramienta-durante-la-tool.png"
+    ],
+    "datos": {
+      "textoDuranteTool": "Bash…\n0s"
+    },
+    "ms": 16580
+  },
+  {
+    "escenario": "headless/actividad",
+    "nombre": "el indicador muestra el nombre de la tool mientras corre",
+    "resultado": "pasa",
+    "evidencia": [
+      "headless-actividad/herramienta-durante-la-tool.png"
+    ],
+    "datos": {
+      "textoDuranteTool": "Bash…\n0s"
+    },
+    "ms": 16580
+  },
+  {
+    "escenario": "headless/actividad",
+    "nombre": "tras ≥800 ms sin texto nuevo, el indicador vuelve a verse (\"Thinking…\")",
+    "resultado": "pasa",
+    "evidencia": [
+      "headless-actividad/herramienta-reaparece-tras-hueco.png"
+    ],
+    "datos": {
+      "tReaparece": 843
+    },
+    "ms": 16580
+  },
+  {
+    "escenario": "headless/actividad",
+    "nombre": "(herramienta) la respuesta final aparece una vez",
+    "resultado": "pasa",
+    "evidencia": [
+      "headless-actividad/herramienta-final.png"
+    ],
+    "ms": 16580
+  },
+  {
+    "escenario": "headless/pensamiento",
+    "nombre": "llegan deltas de pensamiento con texto",
+    "resultado": "bloqueado",
+    "evidencia": [],
+    "datos": "sin --con-cuota",
+    "ms": 1
+  },
+  {
+    "escenario": "headless/pensamiento",
+    "nombre": "el razonamiento se ve antes de la respuesta",
+    "resultado": "bloqueado",
+    "evidencia": [],
+    "datos": "sin --con-cuota",
+    "ms": 1
+  },
+  {
+    "escenario": "headless/recarga",
+    "nombre": "tras recargar a mitad, el indicador de actividad sigue",
+    "resultado": "falla",
+    "evidencia": [
+      "headless-recarga/tras-recargar.png"
+    ],
+    "ms": 9907
+  },
+  {
+    "escenario": "headless/recarga",
+    "nombre": "una sola fila completa y sin fragmentos",
+    "resultado": "pasa",
+    "evidencia": [
+      "headless-recarga/final.png"
+    ],
+    "datos": {
+      "completas": 1,
+      "conElComienzo": 1
+    },
+    "ms": 9907
+  },
+  {
+    "escenario": "headless/subagente",
+    "nombre": "a mitad del subagente, su tarjeta muestra la tool en curso (antes del mensaje completo)",
+    "resultado": "pasa",
+    "evidencia": [
+      "headless-subagente/a-mitad.png"
+    ],
+    "datos": {
+      "vistoBash": true,
+      "vistoRead": true,
+      "cruzado": false
+    },
+    "ms": 8413
+  },
+  {
+    "escenario": "headless/subagente",
+    "nombre": "dos subagentes en paralelo: una tarjeta por cada uno, cada una con su propio texto",
+    "resultado": "pasa",
+    "evidencia": [
+      "headless-subagente/paralelo.png"
+    ],
+    "datos": {
+      "tarjetaA": 1,
+      "tarjetaB": 1,
+      "vistoTextoA": true,
+      "vistoTextoB": true
+    },
+    "ms": 8413
+  },
+  {
+    "escenario": "headless/subagente",
+    "nombre": "cada tarjeta se cierra con el resultado de su propio subagente",
+    "resultado": "pasa",
+    "evidencia": [
+      "headless-subagente/final.png"
+    ],
+    "datos": {
+      "resultadoA": 1,
+      "resultadoB": 1
+    },
+    "ms": 8413
+  },
+  {
+    "escenario": "headless/subagente",
+    "nombre": "la respuesta principal no se parte ni se duplica con subagentes de por medio",
+    "resultado": "pasa",
+    "evidencia": [
+      "headless-subagente/final.png"
+    ],
+    "datos": {
+      "apariciones": 1
+    },
+    "ms": 8413
+  },
+  {
+    "escenario": "headless/tipeo",
+    "nombre": "el texto visible crece en ≥ 5 muestras distintas",
+    "resultado": "pasa",
+    "evidencia": [
+      "headless-tipeo/a-mitad.png"
+    ],
+    "datos": {
+      "distintas": 22,
+      "largos": "48,59,72,82,90,98,107,118,130,138,145,156,164,173,180,192,198,206,215,221,234,236,236,236,236"
+    },
+    "ms": 10260
+  },
+  {
+    "escenario": "headless/tipeo",
+    "nombre": "la fila en streaming no se remonta mientras se escribe",
+    "resultado": "pasa",
+    "evidencia": [
+      "headless-tipeo/frames-0.json"
+    ],
+    "datos": {
+      "mismoDuranteStream": true
+    },
+    "ms": 10260
+  },
+  {
+    "escenario": "headless/tipeo",
+    "nombre": "al terminar sigue siendo el mismo nodo (el final no pinta otra fila)",
+    "resultado": "pasa",
+    "evidencia": [
+      "headless-tipeo/frames-0.json"
+    ],
+    "datos": {
+      "mismoAlFinal": true,
+      "msFin": 4793
+    },
+    "ms": 10260
+  },
+  {
+    "escenario": "headless/tipeo",
+    "nombre": "una sola fila con la respuesta",
+    "resultado": "pasa",
+    "evidencia": [
+      "headless-tipeo/final.png"
+    ],
+    "datos": {
+      "filas": 1
+    },
+    "ms": 10260
+  }
+]
