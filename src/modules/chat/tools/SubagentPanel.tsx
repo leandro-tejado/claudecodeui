@@ -134,7 +134,12 @@ export const SubagentPanel = memo(({
   const prompt = String(parsedInput.prompt ?? '');
 
   return (
-    <div className="my-1 border-l-2 border-l-purple-500 py-0.5 pl-3 dark:border-l-purple-400">
+    // Único caso con una caja propia (borde + fondo) entre las tools:
+    // el boceto (design-system/visual-refs/05-octubre-chat.html, `.subagente`)
+    // la pide a propósito, para que lo que dice el subagente nunca se lea
+    // como si lo dijera Claude — la "línea de actividad" sin caja es la regla
+    // para una tool suelta, no para un hilo delegado entero.
+    <div className="my-1.5 rounded-ds-md border border-ds-line bg-ds-surface-2 p-2.5">
       <button
         type="button"
         aria-expanded={isOpen}
@@ -189,13 +194,13 @@ export const SubagentPanel = memo(({
           mounted on demand. Hidden once the timeline is showing the same
           entry in place. */}
       {!showTimeline && lastTextEntry?.content && (
-        <div className="line-clamp-1 pl-[18px] pr-2 text-[11px] text-muted-foreground/70">
+        <div className="line-clamp-1 pr-2 text-[11px] text-muted-foreground/70">
           {lastTextEntry.content}
         </div>
       )}
 
       {showTimeline && (
-        <div className="mt-1.5 space-y-2 pl-[18px]">
+        <div className="mt-1.5 space-y-2">
           {subagent?.model && (
             <div className="text-[10px] uppercase tracking-wide text-muted-foreground/50">{subagent.model}</div>
           )}
