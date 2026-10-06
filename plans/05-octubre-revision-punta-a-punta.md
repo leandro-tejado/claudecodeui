@@ -323,12 +323,12 @@ Las sesiones nuevas del orquestador llegan por polling de 3 s sobre `~/.cache/ao
 9. Tests de cliente para cada regla; E2E de los tres escenarios.
 
 #### Estado (arranca todo en fail)
-- [fail] Cero referencias a las tres funciones de dedupe | valida: `! grep -rn "dropStreamFragmentsOf\|isEchoOfFullText\|dedupeAdjacentAssistantEchoes" src`
-- [fail] Vitest verde | valida: `NODE_ENV=test npx vitest run`
-- [fail] Turno real: el nodo de la respuesta es el mismo de principio a fin y el largo crece en ≥ 5 muestras | valida: `node e2e/correr.mjs headless/tipeo`
-- [fail] Indicador visible antes del primer token y con el nombre de la tool durante una tool | valida: `node e2e/correr.mjs headless/actividad`
-- [fail] Guiones `subagente-a-mitad` y `stderr-a-mitad`: una fila por bloque, texto igual al final, cero duplicados | valida: `node e2e/correr.mjs falso/intercalados`
-- [fail] Recargar a mitad del turno y al final da el mismo DOM de mensajes que sin recargar | valida: `node e2e/correr.mjs headless/recarga`
+- [pass] Cero referencias a las tres funciones de dedupe | valida: `! grep -rn "dropStreamFragmentsOf\|isEchoOfFullText\|dedupeAdjacentAssistantEchoes" src`
+- [pass] Vitest verde (723/723) | valida: `NODE_ENV=test npx vitest run`
+- [pass] Turno real: el nodo de la respuesta es el mismo de principio a fin y el largo crece en ≥ 5 muestras | valida: `node e2e/correr.mjs headless/tipeo`
+- [fail: a medias — el indicador aparece antes del primer token, pero sigue siendo el "Thinking…" de siempre; el paso 7 (portar `revelado.ts`, nombre de la tool, reaparece a los 800 ms) no se hizo y el escenario no mide el nombre de la tool] Indicador visible antes del primer token y con el nombre de la tool durante una tool | valida: `node e2e/correr.mjs headless/actividad`
+- [pass] Guiones `subagente-a-mitad` y `stderr-a-mitad`: una fila por bloque, texto igual al final, cero duplicados | valida: `node e2e/correr.mjs falso/intercalados`
+- [pass] Recargar a mitad del turno y al final da el mismo DOM de mensajes que sin recargar | valida: `node e2e/correr.mjs headless/recarga`
 
 #### Peligros
 - El historial recargado tiene que traer `messageId` + `blockIndex` en las filas, o al recargar se vuelve a una fila por mensaje y un turno en curso duplica. El check de recarga lo cubre.
@@ -584,14 +584,16 @@ Fase 1 (arnés) → Fase 2 (línea base)
 
 **Fase 10, cuestionario (06-oct):** Leandro aprobó el boceto (`05-octubre-cuestionario.html`, merge `153407af`). El ejemplo `.md` se alineó al boceto en las dos cosas en que diferían: destino "Otra → `~/.cache/aos/export-sesiones.csv`" y resumen como una oración de Claude, no una línea compacta. `visual/bocetos` revalidado por el orquestador: 24/24 (tres bocetos × 390/1280 × claro/oscuro, sin scroll horizontal ni errores de consola; `e2e/evidencia/revalida-fase-10-cuestionario/`). Fuera del plan, para poder revisarlo: el panel Salidas ganó anchos ajustables y "Pestaña nueva" (`68b49293`, `visual/salidas` 5/5).
 
+**Fase 5 (06-oct), worktree `wf_da5db4bc-5d1-1`, merge `b2336399`:** filas de streaming con id `stream:<messageId>:<blockIndex>`; el `text` final reemplaza esa fila; las tres funciones de dedupe borradas y reemplazadas por `streamIdentity.test.tsx`. Dos arreglos fuera del texto del plan: (1) la fila que vuelve por REST después de `complete` traía su uuid de transcript y remontaba el nodo; ahora `withStreamRowIdentity` se aplica también en `requestSessionHistoryPage`; (2) el CLI falso mandaba un evento `assistant` por bloque, y dos bloques del mismo mensaje caían en el mismo `blockIndex`: ahora manda uno con todo el `content`, como el SDK real. Revalidado por el orquestador (`e2e/evidencia/revalida-fase-5/`, 21/21, incluye `falso/humo` y `falso/6000-deltas` por el cambio al CLI falso). **No se hicieron** los pasos 3 (`messageKeys.ts`), 7 (indicador portado de `revelado.ts`) y 8 (`useRevelado`): los escenarios pasan sin ellos, pero el indicador sigue siendo "Thinking…".
+
 **Fase 4, check del turno real (06-oct):** Leandro levantó `:3901` con el token desde su shell. Turno real con Sonnet: 13 `thinking_delta` con texto en los frames (`e2e/evidencia/revalida-fase-4/`). Dos cambios al escenario: (1) la sesión inicial la escribe el CLI falso con `E2E_FALSO_MODELO=sonnet`, porque el `claude -p` del shell de la suite no tiene token y la UI hereda el modelo de la sesión; (2) el prompt ya no pide "pensalo paso a paso": el safeguard de Sonnet lo cortó como `reasoning_extraction`. El thinking resumido lo pide el server por protocolo, no hace falta pedirlo en el texto. El segundo check (razonamiento visible) hoy detecta el "Thinking…" del indicador: lo endurece la revalidación de la Fase 5.
 
 ---
 
 ## Continuación de Sesión
 
-**Fases completadas:** 1, 2, 3, 4, 8, 10. 7-server cerrada (falta su parte de cliente).
-**Fase actual:** Fase 5 (cliente: una fila por `(messageId, blockIndex)`). Hay cambios a medias, sin commitear, en el worktree `.claude/worktrees/wf_da5db4bc-5d1-1` (`useChatMessages.ts`, `useChatRealtimeHandlers.ts`, `useSessionStore.ts`, `streamBuffers.ts`, `src/shared/types.ts` y el nuevo `utils/streamRowId.ts`).
-**Próximo paso exacto:** retomar la Fase 5 desde ese worktree (`git merge diseno/propio` primero) y endurecer el check "razonamiento visible" de `headless/pensamiento`. Después, la 6 y el cliente de la 7 (consumir `activity`/borrador/`stream_reemplazo` de tmux y que el composer mande durante el turno: `tmux/rafaga`). Después, la 9 y la 11.
+**Fases completadas:** 1, 2, 3, 4, 8, 10. 7-server cerrada (falta su parte de cliente). 5 con 5 de 6 checks: falta el indicador (paso 7).
+**Fase actual:** cerrar la Fase 5 (paso 7: indicador con el nombre de la tool, portado de `revelado.ts`, más un check en `headless/actividad` con un guion que use una tool).
+**Próximo paso exacto:** paso 7 de la Fase 5 (y revisar si 3 y 8 siguen haciendo falta); después la 6, el cliente de la 7 (`tmux/rafaga`), la 9 y la 11. El check "razonamiento visible" de `headless/pensamiento` sigue por endurecer (necesita `:3901` con token).
 **Bloqueantes:** ninguno.
 **Micro-tasks pendientes:** 19 de 41
