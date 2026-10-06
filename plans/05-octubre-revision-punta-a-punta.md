@@ -590,6 +590,8 @@ Fase 1 (arnés) → Fase 2 (línea base)
 
 **Fase 6 (06-oct), worktree `wf_da5db4bc-5d1-1`:** las `activity` con `parentToolUseId` se guardan en el store (el indicador principal las sigue ignorando) y `useChatMessages` arma `subagentCurrentActivity` por tarjeta, que se limpia con la entrada que la resuelve. `SubagentPanel` muestra la tool en curso en el encabezado, el último texto con la tarjeta plegada y el resultado de una tarea en background desde `taskStatus.summary`. Guion `subagentes-paralelos` en el CLI falso (el plan pedía un turno real; con el gobernador en rojo se usó el falso). El check 1 del agente buscaba "Read" en todo el panel y daba verde a medias sin el arreglo; se endureció a leer el encabezado de cada tarjeta (`e2e/evidencia/revalida-fase-6/`).
 
+**Fase 7, cliente, parcial (06-oct):** paso 5 del cliente hecho: un `protocol_error` `TMUX_*` ya no hace `setRunsInTmux(false)` (solo `TMUX_PROVIDER_UNSUPPORTED` vuelve a stream-json); el mensaje queda `failed`. Test en `messageDeliveryStatus.test.tsx`, rojo sin el cambio. Falta: que el composer mande durante el turno, `queued_command` como "Enviado", indicador y borrador tmux; y todo el E2E `tmux/*`, que no corre con el gobernador en rojo.
+
 **Corte de tmux del 06-oct:** no lo causó esta ejecución. El servidor de tmux murió a las 04:13 por OOM (un pane del 30-sep llegó a 4,1 GB; cayeron también `cloudcli`, `norte`, `servidor-code` y `syncthing`, y el systemd de usuario se reinició a las 04:17). Entre 04:17 y 15:09 no se abrió ningún pane. Ningún transcript ejecutó `kill-server`; vitest solo corre `src/`. Queda el riesgo latente de que los tests de server usen el socket por defecto.
 
 **Fase 4, check del turno real (06-oct):** Leandro levantó `:3901` con el token desde su shell. Turno real con Sonnet: 13 `thinking_delta` con texto en los frames (`e2e/evidencia/revalida-fase-4/`). Dos cambios al escenario: (1) la sesión inicial la escribe el CLI falso con `E2E_FALSO_MODELO=sonnet`, porque el `claude -p` del shell de la suite no tiene token y la UI hereda el modelo de la sesión; (2) el prompt ya no pide "pensalo paso a paso": el safeguard de Sonnet lo cortó como `reasoning_extraction`. El thinking resumido lo pide el server por protocolo, no hace falta pedirlo en el texto. El segundo check (razonamiento visible) hoy detecta el "Thinking…" del indicador: lo endurece la revalidación de la Fase 5.
@@ -599,7 +601,7 @@ Fase 1 (arnés) → Fase 2 (línea base)
 ## Continuación de Sesión
 
 **Fases completadas:** 1, 2, 3, 4, 5, 6, 8, 10. 7-server cerrada (falta su parte de cliente).
-**Fase actual:** cliente de la Fase 7 (`tmux/rafaga`: el composer manda durante el turno; `queued_command` como mensaje del usuario "Enviado"; un error `TMUX_*` no hace `setRunsInTmux(false)`; indicador y borrador tmux con los componentes de la Fase 5).
+**Fase actual:** cliente de la Fase 7 (`tmux/rafaga`: el composer manda durante el turno; `queued_command` como mensaje del usuario "Enviado"; indicador y borrador tmux con los componentes de la Fase 5). Ya hecho: un error `TMUX_*` no hace `setRunsInTmux(false)`.
 **Próximo paso exacto:** cliente de la 7 en un worktree (sus escenarios crean sesiones de tmux reales: gobernador no rojo y prefijo propio); después la 9 y la 11. El check "razonamiento visible" de `headless/pensamiento` sigue por endurecer (necesita `:3901` con token).
 **Bloqueantes:** los escenarios `tmux/*` no corren con el gobernador en rojo (`exigirGobernadorNoRojo`).
 **Micro-tasks pendientes:** 14 de 41
