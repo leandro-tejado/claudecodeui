@@ -1,4 +1,6 @@
-import { getUsageWindow } from './usage-window.service.js';
+import { listarCuentas } from '@/modules/cuentas/index.js';
+
+import { cuentasConLecturas, getUsageWindow } from './usage-window.service.js';
 
 /**
  * Pushes the five-hour window to every open client.
@@ -19,15 +21,28 @@ export async function broadcastUsageWindow(): Promise<void> {
   // whole graph is long done evaluating, so the dynamic import just hits the
   // module cache. Still the barrel, per this repo's import-boundaries rule.
   const { connectedClients, WS_OPEN_STATE } = await import('@/modules/websocket/index.js');
-  const snapshot = await getUsageWindow();
-  const frame = JSON.stringify(snapshot);
+  // Un frame por cuenta, con `cuenta` en el cuerpo: el cliente se queda con el
+  // de la cuenta de la sesión activa. Solo viajan porcentajes y resets.
+  let registradas: string[] = [];
+  try {
+    registradas = listarCuentas().map((cuenta) => cuenta.id);
+  } catch {
+    // Registro ilegible: se difunden solo las cuentas con lecturas en memoria.
+  }
+  const ids = Array.from(new Set([...cuentasConLecturas(), ...registradas]));
+  const frames: string[] = [];
+  for (const id of ids) {
+    frames.push(JSON.stringify({ ...(await getUsageWindow({ cuenta: id })), cuenta: id }));
+  }
 
   for (const client of connectedClients) {
     if (client.readyState !== WS_OPEN_STATE) continue;
-    try {
-      client.send(frame);
-    } catch (error) {
-      console.error('usage-window: failed to send frame to a client', { error });
+    for (const frame of frames) {
+      try {
+        client.send(frame);
+      } catch (error) {
+        console.error('usage-window: failed to send frame to a client', { error });
+      }
     }
   }
 }

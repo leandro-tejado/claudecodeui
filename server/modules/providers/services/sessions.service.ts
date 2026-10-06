@@ -6,6 +6,7 @@ import { projectsDb, sessionsDb } from '@/modules/database/index.js';
 import { broadcastSessionUpserted, broadcastSidebarArchived, chatRunRegistry } from '@/modules/websocket/index.js';
 import { providerRegistry } from '@/modules/providers/provider.registry.js';
 import { sessionHistoryCache } from '@/modules/providers/services/session-history-cache.service.js';
+import { asegurarCuentaUsable } from '@/modules/cuentas/index.js';
 import { gobernadorService, RAM_CEILING_PERCENT, ramCeilingService } from '@/modules/system/index.js';
 import type {
   BackgroundTaskSummary,
@@ -42,6 +43,8 @@ type CreateAppSessionResult = {
   provider: LLMProvider;
   projectPath: string;
   sessionName: string;
+  /** Cuenta de IA con la que corre la sesion; `null` = la del proceso (optimum). */
+  cuenta?: string | null;
 };
 
 type ArchivedSessionListItem = {
@@ -279,7 +282,7 @@ export const sessionsService = {
     provider: LLMProvider,
     projectPath: string,
     initialMessage: string,
-    options: { model?: string | null } = {},
+    options: { model?: string | null; cuenta?: string | null } = {},
   ): CreateAppSessionResult {
     const normalizedProjectPath = projectPath.trim();
     if (!normalizedProjectPath) {
@@ -299,8 +302,14 @@ export const sessionsService = {
       );
     }
 
+    // La cuenta se fija ahora y no cambia. Un id que no existe o una
+    // credencial que falta frenan aca con un error claro: nunca se cae en
+    // silencio a la cuenta por defecto.
+    const cuenta = options.cuenta ? asegurarCuentaUsable(options.cuenta) : null;
+
     if (isExpensiveModel(options.model)) {
-      const gobernador = gobernadorService.evaluar();
+      // El semaforo es el de la cuenta de ESTA sesion, no el de la otra.
+      const gobernador = gobernadorService.evaluar({ cuenta });
       if (gobernador.color === 'rojo') {
         throw new AppError(
           `Gobernador en rojo (${gobernador.motivo}): no se crean sesiones nuevas en modelo caro.`,
@@ -311,13 +320,14 @@ export const sessionsService = {
 
     const sessionId = randomUUID();
     const sessionName = buildCloudCliSessionName(initialMessage);
-    sessionsDb.createAppSession(sessionId, provider, normalizedProjectPath, sessionName);
+    sessionsDb.createAppSession(sessionId, provider, normalizedProjectPath, sessionName, cuenta);
 
     return {
       sessionId,
       provider,
       projectPath: normalizedProjectPath,
       sessionName,
+      cuenta,
     };
   },
 
@@ -382,6 +392,8 @@ export const sessionsService = {
       // differently from the conversation it was branched from.
       model: source.model,
       effort: source.effort,
+      // Un fork sigue siendo del mismo dueño: nunca salta a otra cuenta.
+      cuenta: source.cuenta,
     });
 
     await broadcastSessionUpserted(forkSessionId);

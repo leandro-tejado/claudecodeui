@@ -453,7 +453,10 @@ async function entregarPorTmux(
         nombreSesion,
         session.project_path ?? '',
         session.provider_session_id ?? null,
-        session.session_id
+        session.session_id,
+        undefined,
+        // La cuenta de la sesion: el pane nace con el token de esa cuenta.
+        session.cuenta ?? null,
       );
       if (creada) {
         // The pane exists the instant `tmux new-session` returns, but the
@@ -747,6 +750,9 @@ async function dispatchRun(
     sessionId,
     cwd: clientOptions.cwd ?? session.project_path ?? undefined,
     projectPath: session.project_path ?? clientOptions.projectPath,
+    // La cuenta sale SIEMPRE de la fila de la sesion, nunca del cliente: un
+    // cliente no elige con que token corre un turno ya creado.
+    cuenta: session.cuenta ?? null,
   };
 
   let failure: string | null = null;

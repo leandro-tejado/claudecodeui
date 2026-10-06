@@ -19,6 +19,8 @@
  * local estimate is gone — there is nothing left here to recalibrate.
  */
 
+import { CUENTA_DEL_PROCESO } from '@/modules/cuentas/index.js';
+
 import { leerCuotaFile, type CuotaFileReading } from './usage-window-cuota-file.service.js';
 
 /** A reading older than this is not shown as current; the caller decides what "current" means. */
@@ -41,10 +43,33 @@ export type UsageWindowSnapshot = {
 
 export type EstadoVentanas = { fiveHour: UsageWindowReading | null; sevenDay: UsageWindowReading | null };
 
-const state: EstadoVentanas = {
-  fiveHour: null,
-  sevenDay: null,
-};
+/**
+ * Una cuenta de IA = una ventana propia (plans/06-octubre-vps-multi-cuenta.md,
+ * Fase 3): la cuota es de la cuenta, no de la máquina ni del proceso. El
+ * estado vive por id; sin id se usa la cuenta del proceso (optimum), que es
+ * lo que hacía este módulo antes y lo que siguen asumiendo sus llamadores
+ * viejos.
+ */
+const estados = new Map<string, EstadoVentanas>();
+
+function normalizarCuenta(cuenta?: string | null): string {
+  return cuenta && cuenta.trim() ? cuenta.trim() : CUENTA_DEL_PROCESO;
+}
+
+function estadoDe(cuenta?: string | null): EstadoVentanas {
+  const id = normalizarCuenta(cuenta);
+  let estado = estados.get(id);
+  if (!estado) {
+    estado = { fiveHour: null, sevenDay: null };
+    estados.set(id, estado);
+  }
+  return estado;
+}
+
+/** Cuentas con alguna lectura en memoria (la del proceso siempre figura). */
+export function cuentasConLecturas(): string[] {
+  return Array.from(new Set([CUENTA_DEL_PROCESO, ...estados.keys()]));
+}
 
 /** One window's slice of the SDK payload: a 0..1 fraction plus a reset in epoch seconds. */
 type RawWindow = { utilization?: unknown; resetsAt?: unknown };
@@ -75,8 +100,9 @@ function toReading(raw: unknown, now: number): UsageWindowReading | null {
  * Returns whether anything changed, so the caller only broadcasts and writes
  * `cuota.json` when there is something new to report.
  */
-export function recordRateLimitReading(info: unknown): boolean {
+export function recordRateLimitReading(info: unknown, cuenta?: string | null): boolean {
   if (!isRawWindow(info)) return false;
+  const state = estadoDe(cuenta);
   const now = Date.now();
   const payload = info as Record<string, unknown>;
   let changed = false;
@@ -109,8 +135,9 @@ export function recordRateLimitReading(info: unknown): boolean {
   return changed;
 }
 
-/** Current snapshot. Synchronous: there is nothing left to read from disk. */
-export function buildSnapshot(): UsageWindowSnapshot {
+/** Current snapshot of one account (optimum by default). Synchronous: nothing left to read from disk. */
+export function buildSnapshot(cuenta?: string | null): UsageWindowSnapshot {
+  const state = estadoDe(cuenta);
   return { kind: 'usage_window', fiveHour: state.fiveHour, sevenDay: state.sevenDay };
 }
 
@@ -133,7 +160,7 @@ export function buildSnapshot(): UsageWindowSnapshot {
  */
 export function seedDesdeArchivo(
   reading: CuotaFileReading | null,
-  target: EstadoVentanas = state,
+  target: EstadoVentanas = estadoDe(CUENTA_DEL_PROCESO),
 ): boolean {
   if (!reading) return false;
 
@@ -151,6 +178,8 @@ export function seedDesdeArchivo(
 
 export type GetUsageWindowOptions = {
   leerCuotaFile?: () => CuotaFileReading | null;
+  /** Cuenta cuya ventana se pide; por defecto la del proceso (optimum). */
+  cuenta?: string | null;
 };
 
 /**
@@ -159,7 +188,8 @@ export type GetUsageWindowOptions = {
  * fresher write always reaches the indicator, whatever wrote it.
  */
 export async function getUsageWindow(options: GetUsageWindowOptions = {}): Promise<UsageWindowSnapshot> {
-  const leer = options.leerCuotaFile ?? leerCuotaFile;
-  seedDesdeArchivo(leer(), state);
-  return buildSnapshot();
+  const cuenta = normalizarCuenta(options.cuenta);
+  const leer = options.leerCuotaFile ?? (() => leerCuotaFile({ cuenta }));
+  seedDesdeArchivo(leer(), estadoDe(cuenta));
+  return buildSnapshot(cuenta);
 }

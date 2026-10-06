@@ -1,5 +1,7 @@
 import express from 'express';
 
+import { validarCuenta } from '@/modules/cuentas/index.js';
+
 import type { createSystemUpdateService } from './system.service.js';
 import type { gobernadorService } from './services/gobernador.service.js';
 import type { recursosService } from './services/recursos.service.js';
@@ -23,7 +25,9 @@ export function createSystemRouter(
 
   router.get('/gobernador', (_request, response, next) => {
     try {
-      response.json(gobernador.evaluar());
+      // `?cuenta=<id>`: el semáforo de esa cuenta; sin ella, el de optimum.
+      const pedida = typeof _request.query.cuenta === 'string' ? _request.query.cuenta : null;
+      response.json(gobernador.evaluar({ cuenta: pedida ? validarCuenta(pedida) : null }));
     } catch (error) {
       next(error);
     }

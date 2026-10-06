@@ -44,6 +44,7 @@ import {
 } from '@/modules/notifications/index.js';
 import { sessionHistoryCache } from '@/modules/providers/services/session-history-cache.service.js';
 import { createCompleteMessage, createNormalizedMessage } from '@/shared/utils.js';
+import { entornoParaCuenta } from '@/modules/cuentas/index.js';
 import { recordRateLimitEvent } from '@/modules/usage-window/index.js';
 
 const activeSessions = new Map();
@@ -251,6 +252,14 @@ function mapCliOptionsToSDK(options = {}) {
   // Forward all host env vars (e.g. ANTHROPIC_BASE_URL) to the subprocess.
   // Since SDK 0.2.113, options.env replaces process.env instead of overlaying it.
   sdkOptions.env = { ...process.env, CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS: String(BG_WAIT_CEILING_MS) };
+
+  // La cuenta de la sesion (plans/06-octubre-vps-multi-cuenta.md, Fase 3). La
+  // del proceso (optimum) no pisa nada: el proceso ya trae su token. Otra
+  // cuenta inyecta SU token y AOS_CUENTA aca, del lado del servidor — el token
+  // no viaja al frontend ni a un log. Un id desconocido o una credencial
+  // ausente lanzan: el turno falla con un error claro, nunca corre en silencio
+  // con la cuenta por defecto.
+  sdkOptions.env = entornoParaCuenta(sdkOptions.env, options.cuenta);
 
   // Resolve the executable eagerly on Windows because the SDK uses raw child_process.spawn,
   // which does not reliably follow npm's shell wrappers like cross-spawn does.
@@ -1322,7 +1331,8 @@ async function queryClaudeSDK(command, options = {}, ws, context) {
 
       // Real quota, straight from the SDK: usage-window owns state, broadcast and cuota.json.
       if (message.type === 'rate_limit_event' && message.rate_limit_info) {
-        recordRateLimitEvent(message.rate_limit_info);
+        // La cuota es de la cuenta de ESTE turno, no de la del proceso.
+        recordRateLimitEvent(message.rate_limit_info, options.cuenta);
       }
 
       if (startsBackgroundWork(message)) {

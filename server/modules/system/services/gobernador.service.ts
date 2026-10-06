@@ -3,6 +3,8 @@ import { readFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
+import { CUENTA_DEL_PROCESO, rutaArchivoCuota } from '@/modules/cuentas/index.js';
+
 /**
  * Fase 5 de plans/16-septiembre-sesiones-persistentes-tmux.md: el semaforo de
  * cuota que respalda el candado de `sessions.service`. Lee el mismo
@@ -50,24 +52,36 @@ const AVISOS_NATIVOS = [/usage limit reached/i, /approaching usage limit/i];
 // nunca se lee para esto, igual que espera-cuota.py.
 const SESIONES_TMUX_IGNORADAS = new Set(['web']);
 
-function leerCuotaReal(): CuotaJson {
+function leerCuotaReal(cuenta: string = CUENTA_DEL_PROCESO): CuotaJson {
   try {
-    return JSON.parse(readFileSync(CUOTA_PATH, 'utf8')) as CuotaJson;
+    return JSON.parse(readFileSync(rutaArchivoCuota(cuenta, CUOTA_PATH), 'utf8')) as CuotaJson;
   } catch {
     return {};
   }
 }
 
-function capturarPanesReales(): string[] {
-  let nombres: string[];
+/** Las sesiones de tmux cuya `@cuenta` es `cuenta` (vacío = la cuenta del proceso). */
+function nombresDePanesDeLaCuenta(cuenta: string): string[] {
+  let salida: string;
   try {
-    nombres = execFileSync('tmux', ['list-sessions', '-F', '#{session_name}'], { encoding: 'utf8' })
-      .split('\n')
-      .map((nombre) => nombre.trim())
-      .filter(Boolean);
+    salida = execFileSync('tmux', ['list-sessions', '-F', '#{session_name}\t#{@cuenta}'], { encoding: 'utf8' });
   } catch {
     return [];
   }
+  return salida
+    .split('\n')
+    .map((linea) => linea.replace(/\r$/, ''))
+    .filter(Boolean)
+    .map((linea) => {
+      const [nombre, marca = ''] = linea.split('\t');
+      return { nombre: nombre.trim(), cuenta: marca.trim() || CUENTA_DEL_PROCESO };
+    })
+    .filter((sesion) => sesion.nombre && sesion.cuenta === cuenta)
+    .map((sesion) => sesion.nombre);
+}
+
+function capturarPanesReales(cuenta: string = CUENTA_DEL_PROCESO): string[] {
+  const nombres = nombresDePanesDeLaCuenta(cuenta);
 
   const paneos: string[] = [];
   for (const nombre of nombres) {
@@ -142,6 +156,8 @@ export function semaforoDesdePace(
 }
 
 export type EvaluarGobernadorOptions = {
+  /** Id de la cuenta a evaluar; por defecto la del proceso (optimum). */
+  cuenta?: string | null;
   ahoraEpochSeg?: number;
   leerCuota?: () => CuotaJson;
   leerPanesTmux?: () => string[];
@@ -154,7 +170,8 @@ export type EvaluarGobernadorOptions = {
  */
 export const gobernadorService = {
   evaluar(options: EvaluarGobernadorOptions = {}): GobernadorEstado {
-    const paneos = (options.leerPanesTmux ?? capturarPanesReales)();
+    const cuenta = options.cuenta && options.cuenta.trim() ? options.cuenta.trim() : CUENTA_DEL_PROCESO;
+    const paneos = (options.leerPanesTmux ?? (() => capturarPanesReales(cuenta)))();
     const avisoNativo = paneos.some((texto) => AVISOS_NATIVOS.some((patron) => patron.test(texto)));
     if (avisoNativo) {
       return {
@@ -164,7 +181,7 @@ export const gobernadorService = {
       };
     }
 
-    const cuota = (options.leerCuota ?? leerCuotaReal)();
+    const cuota = (options.leerCuota ?? (() => leerCuotaReal(cuenta)))();
     const consumidoPct = typeof cuota.five_hour === 'number' ? cuota.five_hour : null;
     const resetsAt = typeof cuota.five_hour_resets_at === 'number' ? cuota.five_hour_resets_at : null;
 

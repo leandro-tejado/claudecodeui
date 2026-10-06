@@ -31,6 +31,7 @@ import {
     authRoutes,
     validateApiKey,
 } from './modules/auth/index.js';
+import { cuentasRoutes } from './modules/cuentas/index.js';
 import { taskmasterRoutes } from './modules/taskmaster/index.js';
 import { commandsRoutes } from './modules/commands/index.js';
 import { settingsRoutes } from './modules/settings/index.js';
@@ -205,6 +206,9 @@ app.use('/api/notifications', authenticateToken, notificationRoutes);
 app.use('/api/user', authenticateToken, userRoutes);
 
 app.use('/api/usage-window', authenticateToken, usageWindowRoutes);
+
+// Cuentas de IA elegibles por sesion (protected; never returns a credential)
+app.use('/api/cuentas', authenticateToken, cuentasRoutes);
 
 // Plugins API Routes (protected)
 app.use('/api/plugins', authenticateToken, pluginsRoutes);

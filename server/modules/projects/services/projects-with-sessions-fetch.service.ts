@@ -2,6 +2,7 @@ import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 
+import { cuentaDeTmux } from '@/modules/cuentas/index.js';
 import { projectsDb, sessionsDb } from '@/modules/database/index.js';
 import { sessionSynchronizerService } from '@/modules/providers/index.js';
 import { WS_OPEN_STATE, connectedClients, nombreTmux } from '@/modules/websocket/index.js';
@@ -36,6 +37,8 @@ type SessionSummary = {
   /** Empty when `subagentCount` is 0 — no extra I/O beyond the one `readdir`. */
   subagents: SessionSubagentSummary[];
   tmux: SessionTmuxInfo;
+  /** Id de la cuenta de IA (cuentas.json). Ausente = optimum, la del proceso. */
+  cuenta?: string;
 };
 
 type SessionRepositoryRow = {
@@ -45,6 +48,7 @@ type SessionRepositoryRow = {
   updated_at?: string | null;
   created_at?: string | null;
   jsonl_path?: string | null;
+  cuenta?: string | null;
 };
 
 export type ProjectListItem = {
@@ -383,12 +387,29 @@ export async function resolverTmuxDeSesion(sessionId: string, projectPath: strin
   return resolverTmux(sessionId, projectPath, await leerRegistroSesiones());
 }
 
+/**
+ * La cuenta de una sesión: la que quedó en su fila (la eligió la app al
+ * crearla) o, si no hay, la `@cuenta` de su sesión de tmux viva (las que abrió
+ * `ct --cuenta` fuera de la app). `null` = no consta, o sea optimum: no se
+ * emite el campo, así el payload de siempre no cambia para esas sesiones.
+ */
+export async function resolverCuentaDeSesion(
+  cuentaDeLaFila: string | null | undefined,
+  tmux: SessionTmuxInfo,
+): Promise<string | null> {
+  if (cuentaDeLaFila) return cuentaDeLaFila;
+  if (!tmux?.vivo) return null;
+  return cuentaDeTmux(tmux.nombre);
+}
+
 async function mapSessionRowToSummary(
   row: SessionRepositoryRow,
   projectPath: string,
   registro: RegistroSesiones,
 ): Promise<SessionSummary> {
   const subagents = await listSessionSubagents(row.jsonl_path);
+  const tmux = resolverTmux(row.session_id, projectPath, registro);
+  const cuenta = await resolverCuentaDeSesion(row.cuenta, tmux);
 
   return {
     id: row.session_id,
@@ -398,7 +419,8 @@ async function mapSessionRowToSummary(
     lastActivity: row.updated_at ?? row.created_at ?? new Date().toISOString(),
     subagentCount: subagents.length,
     subagents,
-    tmux: resolverTmux(row.session_id, projectPath, registro),
+    tmux,
+    ...(cuenta && { cuenta }),
   };
 }
 

@@ -5,6 +5,7 @@ import path from 'node:path';
 import readline from 'node:readline';
 import { promisify } from 'node:util';
 
+import { prefijoShellDeCuenta, resolverCuenta } from '@/modules/cuentas/index.js';
 import { sessionsDb } from '@/modules/database/index.js';
 import { buscarPaneTmuxRegistrado, sessionsService } from '@/modules/providers/index.js';
 import { SALIDAS_SYSTEM_PROMPT_APPEND } from '@/modules/salidas/index.js';
@@ -114,6 +115,11 @@ export type CrearSesionDependencies = {
   asegurarConfianzaProyecto: (cwd: string) => Promise<void>;
   /** Overridable for tests; real default shells out to `tmux new-session -d`. */
   crearSesionDetached: (nombreSesion: string, cwd: string, comandoArgv: string[]) => Promise<void>;
+  /**
+   * Overridable for tests; real default shells out to `tmux set-option @cuenta`.
+   * Optional so a test that builds its own dependencies never touches real tmux.
+   */
+  marcarCuenta?: (nombreSesion: string, cuenta: string) => Promise<void>;
 };
 
 /**
@@ -202,10 +208,28 @@ async function defaultCrearSesionDetached(
   }
 }
 
+/**
+ * Marca la sesion con su cuenta (`@cuenta`), el mismo contrato que
+ * `claude-tmux --cuenta`: lo leen el gobernador y el sidebar. Nunca la rompe:
+ * si tmux no puede marcarla, el pane corre igual con el token que ya recibio.
+ */
+async function defaultMarcarCuenta(nombreSesion: string, cuenta: string): Promise<void> {
+  try {
+    await execFileAsync('tmux', ['set-option', '-t', targetExacto(nombreSesion), '@cuenta', cuenta]);
+  } catch (error) {
+    console.error('[Chat] tmux-bridge could not mark the pane with its account', {
+      nombreSesion,
+      cuenta,
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
+}
+
 const defaultCrearSesionDependencies: CrearSesionDependencies = {
   hasSession: defaultHasSession,
   asegurarConfianzaProyecto: defaultAsegurarConfianzaProyecto,
   crearSesionDetached: defaultCrearSesionDetached,
+  marcarCuenta: defaultMarcarCuenta,
 };
 
 /**
@@ -256,6 +280,7 @@ export async function asegurarSesionTmux(
   providerSessionId: string | null,
   appSessionId: string,
   dependencies: CrearSesionDependencies = defaultCrearSesionDependencies,
+  cuenta: string | null = null,
 ): Promise<boolean> {
   assertNombreSesionValido(nombreSesion);
   if (dependencies.hasSession(nombreSesion)) {
@@ -288,8 +313,16 @@ export async function asegurarSesionTmux(
     claudeCommand = `claude${bypassFlag}${appendSystemPromptFlag}`;
   }
 
+  // La cuenta de la sesion. `bash -ic` carga primero el `.bashrc` (token por
+  // defecto) y el prefijo va despues, asi que lo pisa; para la cuenta del
+  // proceso el prefijo es '' y el comando queda byte a byte como siempre. Un id
+  // desconocido o una credencial ausente lanzan ANTES de abrir el pane.
+  const prefijoCuenta = prefijoShellDeCuenta(cuenta);
+  const cuentaMarcada = resolverCuenta(cuenta).id;
+
   await dependencies.asegurarConfianzaProyecto(cwd);
-  await dependencies.crearSesionDetached(nombreSesion, cwd, ['bash', '-ic', claudeCommand]);
+  await dependencies.crearSesionDetached(nombreSesion, cwd, ['bash', '-ic', `${prefijoCuenta}${claudeCommand}`]);
+  await dependencies.marcarCuenta?.(nombreSesion, cuentaMarcada);
   return true;
 }
 

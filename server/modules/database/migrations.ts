@@ -502,6 +502,20 @@ const addSessionEffortColumn = (db: Database): void => {
 };
 
 /**
+ * Adds the `cuenta` column: the AI account (id from `cuentas.json`) a session
+ * runs with. Fixed when the session is created and never changed afterwards.
+ *
+ * Existing rows stay NULL on purpose: NULL reads as the process account
+ * (`optimum`), which is what every session before this column ran with.
+ */
+const addSessionCuentaColumn = (db: Database): void => {
+  const sessionsTableInfo = getTableInfo(db, 'sessions');
+  const columnNames = sessionsTableInfo.map((column) => column.name);
+
+  addColumnToTableIfNotExists(db, 'sessions', columnNames, 'cuenta', 'TEXT');
+};
+
+/**
  * Adds `custom_name_is_placeholder`, which marks a `custom_name` set by
  * `createAppSession` (the literal first words of the user's opening message)
  * as still eligible for a synchronizer to replace with a real title. Existing
@@ -583,6 +597,7 @@ export const runMigrations = (db: Database) => {
     addProviderSessionIdMapping(db);
     addSessionModelColumn(db);
     addSessionEffortColumn(db);
+    addSessionCuentaColumn(db);
     addSessionCustomNameIsPlaceholderColumn(db);
     addForkedFromSessionIdColumn(db);
     addArchiveAndEntrypointColumns(db);

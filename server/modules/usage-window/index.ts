@@ -3,6 +3,7 @@ export {
   buildSnapshot,
   recordRateLimitReading,
   REAL_DATA_STALE_MS,
+  cuentasConLecturas,
 } from './services/usage-window.service.js';
 export type { UsageWindowSnapshot, UsageWindowReading } from './services/usage-window.service.js';
 export { broadcastUsageWindow, scheduleUsageWindowBroadcast } from './services/usage-window-broadcast.service.js';

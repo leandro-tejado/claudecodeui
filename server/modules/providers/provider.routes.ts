@@ -760,7 +760,9 @@ router.post(
     const provider = parseProvider(body.provider);
     const projectPath = typeof body.projectPath === 'string' ? body.projectPath : '';
     const initialMessage = typeof body.initialMessage === 'string' ? body.initialMessage : '';
-    const result = sessionsService.createAppSession(provider, projectPath, initialMessage);
+    // `cuenta` es el id de la cuenta de IA (cuentas.json); sin ella, la del proceso.
+    const cuenta = typeof body.cuenta === 'string' && body.cuenta.trim() ? body.cuenta.trim() : null;
+    const result = sessionsService.createAppSession(provider, projectPath, initialMessage, { cuenta });
     res.status(201).json(createApiSuccessResponse(result));
   }),
 );

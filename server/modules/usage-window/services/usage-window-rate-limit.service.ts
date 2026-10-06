@@ -11,12 +11,14 @@ import { writeCuotaFile } from './usage-window-cuota-file.service.js';
  * Never throws: a bad or missing `rate_limit_info` must not interrupt the
  * message loop it was pulled out of.
  */
-export async function recordRateLimitEvent(rateLimitInfo: unknown): Promise<void> {
+export async function recordRateLimitEvent(rateLimitInfo: unknown, cuenta?: string | null): Promise<void> {
   try {
-    const changed = recordRateLimitReading(rateLimitInfo);
+    // La lectura es de la cuenta con la que corrió el turno: se guarda y se
+    // escribe en SU archivo de cuota, nunca en el de optimum por defecto.
+    const changed = recordRateLimitReading(rateLimitInfo, cuenta);
     if (!changed) return;
     scheduleUsageWindowBroadcast();
-    await writeCuotaFile(await getUsageWindow());
+    await writeCuotaFile(await getUsageWindow({ cuenta }), cuenta);
   } catch (error) {
     console.error('usage-window: failed to record rate_limit_event', { error });
   }

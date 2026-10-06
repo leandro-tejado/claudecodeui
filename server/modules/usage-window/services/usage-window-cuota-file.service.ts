@@ -1,6 +1,8 @@
-import { promises as fs, readFileSync, watch } from 'node:fs';
+import { promises as fs, mkdirSync, readFileSync, watch } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+
+import { CUENTA_DEL_PROCESO, rutaArchivoCuota } from '@/modules/cuentas/index.js';
 
 import type { UsageWindowReading, UsageWindowSnapshot } from './usage-window.service.js';
 
@@ -22,6 +24,13 @@ import type { UsageWindowReading, UsageWindowSnapshot } from './usage-window.ser
 const CUOTA_FILE = process.env.RUTA_CUOTA_JSON
   || path.join(os.homedir(), '.cache', 'aos', 'cuota.json');
 const CUOTA_DIR = path.dirname(CUOTA_FILE);
+// Las demás cuentas viven en `<dir>/cuota/<id>.json` (mismo esquema, mismo
+// escritor doble: statusline y CloudCLI). optimum sigue en `cuota.json`.
+const CUOTA_DIR_CUENTAS = path.join(CUOTA_DIR, 'cuota');
+
+function archivoDe(cuenta?: string | null): string {
+  return rutaArchivoCuota(cuenta ?? CUENTA_DEL_PROCESO, CUOTA_FILE);
+}
 
 type CuotaEstado = {
   ts: number;
@@ -32,6 +41,7 @@ type CuotaEstado = {
   seven_day: number | null;
   seven_day_resets_at: number | null;
   ctx: null;
+  cuenta: string;
 };
 
 function toEpochSeconds(ms: number | null | undefined): number | null {
@@ -43,15 +53,17 @@ function readNumberOrNull(value: unknown): number | null {
 }
 
 /** Never throws: a quota file this process cannot write must not take a turn down with it. */
-export async function writeCuotaFile(snapshot: UsageWindowSnapshot): Promise<void> {
+export async function writeCuotaFile(snapshot: UsageWindowSnapshot, cuenta?: string | null): Promise<void> {
   const ts = Math.floor(Date.now() / 1000);
+  const idCuenta = cuenta && cuenta.trim() ? cuenta.trim() : CUENTA_DEL_PROCESO;
+  const destino = archivoDe(idCuenta);
 
   try {
-    await fs.mkdir(CUOTA_DIR, { recursive: true });
+    await fs.mkdir(path.dirname(destino), { recursive: true });
 
     let previo: Partial<Record<keyof CuotaEstado, unknown>> = {};
     try {
-      previo = JSON.parse(await fs.readFile(CUOTA_FILE, 'utf8')) as typeof previo;
+      previo = JSON.parse(await fs.readFile(destino, 'utf8')) as typeof previo;
     } catch {
       // Missing or unreadable previous file: nothing to merge in, writing fresh is correct.
     }
@@ -84,11 +96,12 @@ export async function writeCuotaFile(snapshot: UsageWindowSnapshot): Promise<voi
         ? toEpochSeconds(snapshot.sevenDay.resetsAt)
         : readNumberOrNull(previo.seven_day_resets_at),
       ctx: null,
+      cuenta: idCuenta,
     };
 
-    const tmp = `${CUOTA_FILE}.${process.pid}.tmp`;
+    const tmp = `${destino}.${process.pid}.tmp`;
     await fs.writeFile(tmp, JSON.stringify(estado), 'utf8');
-    await fs.rename(tmp, CUOTA_FILE);
+    await fs.rename(tmp, destino);
   } catch (error) {
     console.error('usage-window: failed to write cuota.json', { error });
   }
@@ -104,11 +117,9 @@ export type CuotaFileReading = {
 
 export type ReadCuotaFileOptions = {
   leerArchivo?: () => string;
+  /** Cuenta cuyo archivo se lee; por defecto la del proceso (optimum). */
+  cuenta?: string | null;
 };
-
-function leerArchivoReal(): string {
-  return readFileSync(CUOTA_FILE, 'utf8');
-}
 
 /**
  * The read side of `cuota.json`, for the boot-time seed in `usage-window.service.ts`.
@@ -118,7 +129,7 @@ function leerArchivoReal(): string {
 export function leerCuotaFile(options: ReadCuotaFileOptions = {}): CuotaFileReading | null {
   let crudo: Partial<CuotaEstado>;
   try {
-    crudo = JSON.parse((options.leerArchivo ?? leerArchivoReal)()) as Partial<CuotaEstado>;
+    crudo = JSON.parse((options.leerArchivo ?? (() => readFileSync(archivoDe(options.cuenta), 'utf8')))()) as Partial<CuotaEstado>;
   } catch {
     return null;
   }
@@ -162,38 +173,54 @@ function toEpochMs(seconds: number | null): number | null {
  * all (documented as unreliable on some network filesystems) — the same
  * belt-and-suspenders shape `fs.watch`'s own Node docs recommend.
  */
-let watcher: ReturnType<typeof watch> | null = null;
+let watchers: Array<ReturnType<typeof watch>> = [];
 let debounceTimer: NodeJS.Timeout | null = null;
 let pollTimer: NodeJS.Timeout | null = null;
 
 export function startCuotaFileWatch(onChange: () => void): void {
-  if (watcher || pollTimer) return;
+  if (watchers.length > 0 || pollTimer) return;
+
+  const avisar = (): void => {
+    if (debounceTimer) clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+      debounceTimer = null;
+      onChange();
+    }, 300);
+  };
 
   const nombreArchivo = path.basename(CUOTA_FILE);
+  const mirar = (dir: string, aceptar: (filename: string) => boolean): void => {
+    try {
+      const w = watch(dir, { persistent: false }, (_eventType, filename) => {
+        if (filename && !aceptar(String(filename))) return;
+        avisar();
+      });
+      w.on('error', (error) => {
+        console.error('usage-window: cuota watcher failed', { dir, error });
+      });
+      watchers.push(w);
+    } catch (error) {
+      // El directorio puede no existir todavía (primer arranque, sin
+      // statusline corrido nunca): el poll de respaldo de abajo alcanza igual.
+      console.error('usage-window: failed to watch cuota directory', { dir, error });
+    }
+  };
+
+  // optimum: `cuota.json`. Las otras cuentas: cualquier `*.json` de `cuota/`.
+  mirar(CUOTA_DIR, (filename) => filename === nombreArchivo);
   try {
-    watcher = watch(CUOTA_DIR, { persistent: false }, (_eventType, filename) => {
-      if (filename && filename !== nombreArchivo) return;
-      if (debounceTimer) clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(() => {
-        debounceTimer = null;
-        onChange();
-      }, 300);
-    });
-    watcher.on('error', (error) => {
-      console.error('usage-window: cuota.json watcher failed', { error });
-    });
-  } catch (error) {
-    // El directorio puede no existir todavía (primer arranque, sin
-    // statusline corrido nunca): el poll de respaldo de abajo alcanza igual.
-    console.error('usage-window: failed to watch cuota.json directory', { error });
+    mkdirSync(CUOTA_DIR_CUENTAS, { recursive: true });
+  } catch {
+    // Sin permisos: el poll cubre.
   }
+  mirar(CUOTA_DIR_CUENTAS, (filename) => filename.endsWith('.json') || filename.includes('.json.'));
 
   pollTimer = setInterval(onChange, 60_000);
 }
 
 export function stopCuotaFileWatch(): void {
-  watcher?.close();
-  watcher = null;
+  for (const w of watchers) w.close();
+  watchers = [];
   if (debounceTimer) {
     clearTimeout(debounceTimer);
     debounceTimer = null;
