@@ -180,7 +180,7 @@ function ChatMessagesPane({
       ref={scrollContainerRef}
       onWheel={onWheel}
       onTouchMove={onTouchMove}
-      className={`chat-messages-pane relative min-h-0 flex-1 overflow-y-auto overflow-x-hidden pt-3 sm:pt-4 ${
+      className={`chat-messages-pane relative min-h-0 flex-1 overflow-y-auto overflow-x-hidden bg-ds-surface pt-3 text-ds-ink sm:pt-4 ${
         hasActivityIndicator ? 'pb-12 sm:pb-14' : 'pb-3 sm:pb-4'
       }`}
     >
@@ -209,7 +209,9 @@ function ChatMessagesPane({
           </div>
         </div>
       )}
-      <div className="mx-auto w-full max-w-[54.25rem] space-y-3 px-4 sm:space-y-4">
+      {/* Columna de lectura del design system (design-system/tokens.md,
+          breakpoint Desktop): max-w-3xl, centrada. */}
+      <div className="mx-auto w-full max-w-3xl space-y-3 px-4 sm:space-y-4">
       {(isLoadingSessionMessages || isProcessing) && chatMessages.length === 0 ? (
         <div className="mt-8 text-center text-gray-500 dark:text-gray-400">
           <div className="flex items-center justify-center space-x-2">
