@@ -11,7 +11,7 @@ import { useCallback, useMemo, useRef, useState } from 'react';
 
 import { api } from '@/shared/api';
 import type { LLMProvider, MessageDeliveryState, NormalizedMessage } from '@/shared/types';
-import { removeOptimisticUserEchoes } from '@/modules/chat/utils/sessionMessageReconciliation';
+import { removeOptimisticUserEchoes, removeQueuedCommandEchoes } from '@/modules/chat/utils/sessionMessageReconciliation';
 import { streamRowId } from '@/modules/chat/utils/streamRowId';
 import {
   hasReachedCachedTailTimeBoundary,
@@ -355,6 +355,11 @@ function pruneRealtimeSupersededByServer(
  * it and pushes it over the socket, long before any history refresh. Matched
  * only against the server's history, the echo and that row both showed until
  * the end of the turn (30-sep: "aparece duplicado y después se arregla").
+ *
+ * Fase 7, paso 6: a message sent mid-turn over a live tmux pane gets its own
+ * live row first — `tmux_queued_<uuid>`, Claude Code's own queue, not a user
+ * turn yet — and only retires once the real turn it started is in `server`
+ * (never against the live pool: see `removeQueuedCommandEchoes`).
  */
 function retireOptimisticUserEchoes(
   server: NormalizedMessage[],
@@ -363,10 +368,11 @@ function retireOptimisticUserEchoes(
   const liveTranscriptRows = realtime.filter(
     (message) => typeof message.id !== 'string' || !message.id.startsWith('local_'),
   );
-  return removeOptimisticUserEchoes(
+  const afterLocalEchoes = removeOptimisticUserEchoes(
     liveTranscriptRows.length > 0 ? [...server, ...liveTranscriptRows] : server,
     realtime,
   );
+  return removeQueuedCommandEchoes(server, afterLocalEchoes);
 }
 
 /**
@@ -1000,6 +1006,31 @@ export function useSessionStore() {
   }, [notify]);
 
   /**
+   * Drops a session's open streaming row outright instead of turning it into
+   * a persisted message — Fase 7, paso 8: the tmux pane reader's draft
+   * (`stream_delta` keyed `tmux-borrador:<sessionId>`) never shares an id with
+   * the real row that answers it — that one arrives as an ordinary message
+   * with the JSONL transcript's own `uuid`, pushed separately — so unlike
+   * `finalizeStreaming`'s Claude-identity case, nothing is ever going to
+   * land on this id and replace it in place. `stream_reemplazo` is the
+   * server's signal that the real row is already on its way, so the draft is
+   * simply removed rather than kept around as a stray duplicate.
+   */
+  const discardStreaming = useCallback((
+    sessionId: string,
+    identity: { messageId: string; blockIndex: number },
+  ) => {
+    const slot = storeRef.current.get(sessionId);
+    if (!slot) return;
+    const streamId = streamRowId(sessionId, identity.messageId, identity.blockIndex);
+    const idx = slot.realtimeMessages.findIndex(m => m.id === streamId);
+    if (idx < 0) return;
+    slot.realtimeMessages = slot.realtimeMessages.filter((_, i) => i !== idx);
+    recomputeMergedIfNeeded(slot);
+    notify(sessionId);
+  }, [notify]);
+
+  /**
    * Get merged messages for a session (for rendering).
    */
   const getMessages = useCallback((sessionId: string): NormalizedMessage[] => {
@@ -1041,13 +1072,14 @@ export function useSessionStore() {
     isStale,
     updateStreaming,
     finalizeStreaming,
+    discardStreaming,
     getMessages,
     getSessionSlot,
     runsInTmux,
     setRunsInTmux,
   }), [
     fetchFromServer, fetchMore, appendRealtime, setDeliveryState, truncateAt, refreshLatestFromServer,
-    setActiveSession, isStale, updateStreaming, finalizeStreaming,
+    setActiveSession, isStale, updateStreaming, finalizeStreaming, discardStreaming,
     getMessages, getSessionSlot, runsInTmux, setRunsInTmux,
   ]);
 }

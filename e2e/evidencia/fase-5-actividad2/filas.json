@@ -1,0 +1,97 @@
+[
+  {
+    "escenario": "headless/actividad",
+    "nombre": "hay un indicador de actividad visible antes del primer token",
+    "resultado": "pasa",
+    "evidencia": [
+      "headless-actividad/antes-del-primer-token.png"
+    ],
+    "datos": {
+      "indicador": [
+        "Thinking…\n0s\nStop\nesc",
+        "Thinking…\n0s",
+        "Stop\nesc"
+      ]
+    },
+    "ms": 17018
+  },
+  {
+    "escenario": "headless/actividad",
+    "nombre": "el razonamiento se ve mientras se genera (≤ 2,3 s)",
+    "resultado": "pasa",
+    "evidencia": [
+      "headless-actividad/razonamiento-en-vivo.png"
+    ],
+    "datos": {
+      "tRazon": 1928,
+      "tResp": 2879
+    },
+    "ms": 17018
+  },
+  {
+    "escenario": "headless/actividad",
+    "nombre": "el server reenvía deltas de pensamiento",
+    "resultado": "pasa",
+    "evidencia": [
+      "headless-actividad/frames-0.json"
+    ],
+    "datos": {
+      "deltas": 11
+    },
+    "ms": 17018
+  },
+  {
+    "escenario": "headless/actividad",
+    "nombre": "la respuesta final aparece una vez",
+    "resultado": "pasa",
+    "evidencia": [
+      "headless-actividad/final.png"
+    ],
+    "ms": 17018
+  },
+  {
+    "escenario": "headless/actividad",
+    "nombre": "(herramienta) el indicador está visible antes del primer token",
+    "resultado": "pasa",
+    "evidencia": [
+      "headless-actividad/herramienta-durante-la-tool.png"
+    ],
+    "datos": {
+      "textoDuranteTool": "Bash…\n0s"
+    },
+    "ms": 17018
+  },
+  {
+    "escenario": "headless/actividad",
+    "nombre": "el indicador muestra el nombre de la tool mientras corre",
+    "resultado": "pasa",
+    "evidencia": [
+      "headless-actividad/herramienta-durante-la-tool.png"
+    ],
+    "datos": {
+      "textoDuranteTool": "Bash…\n0s"
+    },
+    "ms": 17018
+  },
+  {
+    "escenario": "headless/actividad",
+    "nombre": "tras ≥800 ms sin texto nuevo, el indicador vuelve a verse (\"Thinking…\")",
+    "resultado": "pasa",
+    "evidencia": [
+      "headless-actividad/herramienta-reaparece-tras-hueco.png"
+    ],
+    "datos": {
+      "tReaparece": 855
+    },
+    "ms": 17018
+  },
+  {
+    "escenario": "headless/actividad",
+    "nombre": "(herramienta) la respuesta final aparece una vez",
+    "resultado": "pasa",
+    "evidencia": [
+      "headless-actividad/herramienta-final.png"
+    ],
+    "ms": 17018
+  }
+]

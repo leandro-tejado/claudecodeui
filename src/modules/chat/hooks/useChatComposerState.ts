@@ -700,6 +700,23 @@ export function useChatComposerState({
         return;
       }
 
+      // Fase 7, paso 5 (cliente): a session with a live tmux pane takes a
+      // message while its own turn is still running — Claude Code queues it
+      // in the pane itself (`attachment{type:"queued_command"}`) and the
+      // bridge delivers it the same way as any other send, `teclearEnPane`
+      // via `chat.send-tmux`, never a second SDK run next to the same
+      // transcript. Before this, `isLoading` sent every mid-turn message
+      // into the client-side draft queue below instead — the right path for
+      // a headless session (nothing to type a second prompt into until the
+      // run ends), but a tmux pane has somewhere to put it right now.
+      const liveTmuxTargetSessionId = selectedSession?.id || currentSessionId || null;
+      const sendsOverLiveTmuxPane =
+        !editingAnchorId
+        && currentAttachments.length === 0
+        && previouslyUploadedAttachments.length === 0
+        && liveTmuxTargetSessionId !== null
+        && sessionStore.runsInTmux(liveTmuxTargetSessionId);
+
       // A turn is already in flight: stash this message instead of sending it.
       // Upload attached files now so the queued record contains durable image
       // descriptors that can be sent even if another session is open later.
@@ -710,7 +727,7 @@ export function useChatComposerState({
         return;
       }
 
-      if (isLoading || submitInFlightRef.current) {
+      if ((isLoading && !sendsOverLiveTmuxPane) || submitInFlightRef.current) {
         // A run can restart in the tiny gap between scheduling and flushing a
         // queued submission. Put the same durable draft back without uploading
         // its files again.

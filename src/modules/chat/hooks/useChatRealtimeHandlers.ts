@@ -9,8 +9,11 @@ import { publishSessionBudget } from '@/modules/skin';
 import type { SessionStore } from '@/modules/chat/hooks/useSessionStore';
 import { normalizedToChatMessages } from '@/modules/chat/hooks/useChatMessages';
 import { collectRunningBackgroundTasks } from '@/modules/chat/utils/backgroundTasks';
-import { appendStreamDelta, appendThinkingDelta, finalizeStreamBuffer, settleStreamBuffer } from '@/modules/chat/utils/streamBuffers';
+import { appendStreamDelta, appendThinkingDelta, discardStreamDraft, finalizeStreamBuffer, settleStreamBuffer, setStreamDraft } from '@/modules/chat/utils/streamBuffers';
 import type { StreamBuffers } from '@/modules/chat/utils/streamBuffers';
+
+/** Prefix of the tmux pane reader's synthetic draft `messageId` (Fase 7, paso 8; `tmux-pane-vivo.service.ts`'s `messageIdBorrador`). */
+const TMUX_BORRADOR_PREFIX = 'tmux-borrador:';
 
 /**
  * How long a session's main-thread activity label stays quiet after the last
@@ -359,6 +362,15 @@ export function useChatRealtimeHandlers({
           }
           return;
         }
+        // Fase 7, paso 8: the tmux pane reader polls every ~400ms and reports
+        // `idle` (no spinner, empty box) as its own `activity`, not as the
+        // absence of one. Pinning the thinking label here — the fallback
+        // every other `activity` without a tool name takes — fought that
+        // signal on every poll: the pane said nothing was happening and the
+        // indicator said "Pensando…" anyway.
+        if (msg.idle) {
+          return;
+        }
         if (sid) {
           const label = msg.activityKind === 'tool' && typeof msg.toolName === 'string' && msg.toolName
             ? msg.toolName
@@ -374,7 +386,18 @@ export function useChatRealtimeHandlers({
       if (msg.kind === 'stream_delta') {
         const text = (msg.content as string) || '';
         if (!text || !sid) return;
-        appendStreamDelta(streamBuffersRef.current, sid, text, provider, msg.messageId as string | undefined, msg.blockIndex as number | undefined, sessionStore);
+        const messageId = msg.messageId as string | undefined;
+        const blockIndex = msg.blockIndex as number | undefined;
+        // Fase 7, paso 8: the tmux pane reader has no deltas of its own — it
+        // rereads the whole visible answer off the pane each tick and sends
+        // the accumulated text whole (`tmux-pane-vivo.service.ts`), so this
+        // one replaces the draft instead of growing it like every other
+        // provider's incremental `stream_delta`.
+        if (typeof messageId === 'string' && messageId.startsWith(TMUX_BORRADOR_PREFIX) && typeof blockIndex === 'number') {
+          setStreamDraft(streamBuffersRef.current, sid, text, provider, messageId, blockIndex, sessionStore);
+        } else {
+          appendStreamDelta(streamBuffersRef.current, sid, text, provider, messageId, blockIndex, sessionStore);
+        }
         // Real answer text streaming in: the tool/thinking label goes quiet
         // until a gap reopens it.
         clearActivityPin(sid);
@@ -393,6 +416,18 @@ export function useChatRealtimeHandlers({
       if (msg.kind === 'stream_end') {
         if (sid) {
           finalizeStreamBuffer(streamBuffersRef.current, sid, sessionStore);
+        }
+        return;
+      }
+
+      // Fase 7, paso 8: the tmux pane reader's own signal that the draft it
+      // had been growing is retired — the real row is already on its way in
+      // as an ordinary message, under the transcript's own id, never the
+      // draft's synthetic one. Dropping the draft here is what keeps it from
+      // sitting next to that real row once it lands.
+      if (msg.kind === 'stream_reemplazo') {
+        if (sid) {
+          discardStreamDraft(streamBuffersRef.current, sid, sessionStore);
         }
         return;
       }
