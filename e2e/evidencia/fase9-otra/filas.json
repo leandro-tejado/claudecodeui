@@ -1,0 +1,24 @@
+[
+  {
+    "escenario": "pregunta/otra",
+    "nombre": "la pregunta llega a la UI",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-otra/pregunta.png"
+    ],
+    "ms": 7325
+  },
+  {
+    "escenario": "pregunta/otra",
+    "nombre": "el texto libre de \"Otra\" llega literal, sin romperse",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-otra/respondida.png"
+    ],
+    "datos": {
+      "linea": "Elegiste: Un \"verde azulado\", medio raro ¿no? | Manzana | Sí",
+      "esperado": "Un \"verde azulado\", medio raro ¿no?"
+    },
+    "ms": 7325
+  }
+]

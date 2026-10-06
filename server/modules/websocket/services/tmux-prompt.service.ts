@@ -294,12 +294,18 @@ function huella(
   teclas: TeclaDialogoTmux[],
   pestanas: PestanaTmux[] = [],
 ): string {
-  // Lo tildado y la pestaña activa cuentan: tildar una casilla es otra
-  // pantalla, y la tarjeta tiene que enterarse.
+  // La pestaña activa cuenta: cambiar de pestaña es otra pantalla. Lo
+  // tildado, desde la Fase 9 (paso 2), no: la tarjeta compone toda la
+  // selección en el cliente y manda un solo pedido al final, y ese pedido
+  // necesariamente tilda casillas distintas de las que había cuando la
+  // pregunta apareció — si la huella las contara, el pedido compuesto
+  // siempre llegaría "viejo" (TMUX_PROMPT_STALE) contra sí mismo. El tilde
+  // hecho desde la terminal, fuera de esta tarjeta, ya no invalida el id;
+  // ese caso más angosto es el precio.
   const texto = [
     pregunta,
     detalle,
-    ...opciones.map((opcion) => `${opcion.numero ?? ''}|${opcion.casilla ? (opcion.marcada ? 'x' : 'o') : ''}|${opcion.etiqueta}`),
+    ...opciones.map((opcion) => `${opcion.numero ?? ''}|${opcion.casilla ? 'c' : ''}|${opcion.etiqueta}`),
     ...teclas.map((tecla) => `${tecla.tecla}|${tecla.accion}`),
     ...pestanas.map((pestana) => `${pestana.estado}|${pestana.activa ? '*' : ''}|${pestana.etiqueta}`),
   ].join('\n');
@@ -636,7 +642,13 @@ export type TeclasTmux =
   | { tipo: 'literal'; texto: string }
   | { tipo: 'teclas'; teclas: string[] }
   | { tipo: 'libre'; numero: string; texto: string }
-  | { tipo: 'escribir'; teclas: string[]; texto: string };
+  | { tipo: 'escribir'; teclas: string[]; texto: string }
+  /**
+   * Varios pasos, uno tras otro, en un solo pedido: lo que compone
+   * `teclasParaSeleccionCompuesta` (Fase 9, paso 2) — un dígito por casilla
+   * que cambia, la libre con su texto si corresponde, y el avance al final.
+   */
+  | { tipo: 'secuencia'; pasos: TeclasTmux[] };
 
 const MAX_TEXTO_LIBRE = 2000;
 
@@ -668,6 +680,52 @@ export function teclasParaOpcion(prompt: PromptTmux, indice: number, texto = '')
     return { tipo: 'literal', texto: String(opcion.numero) };
   }
   return { tipo: 'teclas', teclas: [...flechas, 'Enter'] };
+}
+
+/**
+ * Qué teclear para un AskUserQuestion de varias casillas, de una: en vez de
+ * un pedido por clic —cada uno cambiaba la huella antes de que el pane
+ * redibujara, y el próximo clic llegaba contra una pantalla que ya no
+ * existía (TMUX_PROMPT_STALE)— la tarjeta compone toda la selección en el
+ * cliente y esto calcula la secuencia completa de una sola vez: un dígito
+ * por cada casilla que tiene que cambiar de estado, la libre con su texto
+ * si la pide, y al final el avance ("Next"/"Submit"). Las casillas
+ * numeradas no mueven el cursor al tildarse, así que el orden entre ellas
+ * no importa; el avance sí parte de `prompt.seleccionada`, igual que
+ * `teclasParaOpcion`.
+ *
+ * Pura: no toca tmux, solo lee `prompt` (ya parseado) y devuelve qué mandar.
+ */
+export function teclasParaSeleccionCompuesta(
+  prompt: PromptTmux,
+  seleccion: number[],
+  texto = '',
+): TeclasTmux {
+  const deseado = new Set(seleccion);
+  const pasos: TeclasTmux[] = [];
+
+  for (const opcion of prompt.opciones) {
+    if (opcion.avance || !opcion.casilla || opcion.libre) continue;
+    const yaMarcada = opcion.marcada === true;
+    if (deseado.has(opcion.indice) !== yaMarcada) {
+      pasos.push(teclasParaOpcion(prompt, opcion.indice));
+    }
+  }
+
+  const libre = prompt.opciones.find((opcion) => opcion.casilla && opcion.libre && deseado.has(opcion.indice));
+  if (libre && texto) {
+    pasos.push(teclasParaOpcion(prompt, libre.indice, texto));
+  }
+
+  const avance = prompt.opciones.find((opcion) => opcion.avance);
+  if (avance) {
+    pasos.push(teclasParaOpcion(prompt, avance.indice));
+  }
+
+  if (pasos.length === 0) {
+    return { tipo: 'teclas', teclas: [] };
+  }
+  return pasos.length === 1 ? pasos[0] : { tipo: 'secuencia', pasos };
 }
 
 type EntradaRegistro = { nombre?: unknown; session_id?: unknown };
@@ -723,6 +781,16 @@ export const dependenciasVigiaPorDefecto: VigiaPromptsDependencias = {
     // Como en tmux-bridge: argv por `execFile`, nunca un shell; `-l --` para
     // que el dígito vaya literal.
     const destino = targetExacto(nombre);
+    if (teclas.tipo === 'secuencia') {
+      // Un solo pedido, varios pasos tmux: cada uno se manda y se espera
+      // antes del siguiente (send-keys no hace falta que se vea dibujado
+      // entre pasos — el dígito de una casilla no depende de redraw — pero
+      // sí que no se pisen en el mismo exec).
+      for (const paso of teclas.pasos) {
+        await dependenciasVigiaPorDefecto.enviarTeclas(nombre, paso);
+      }
+      return;
+    }
     if (teclas.tipo === 'escribir') {
       if (teclas.teclas.length > 0) {
         await execFileAsync('tmux', ['send-keys', '-t', destino, ...teclas.teclas], { timeout: 2000 });
@@ -859,22 +927,22 @@ export type RespuestaPromptTmux =
   | { ok: true }
   | { ok: false; codigo: 'TMUX_PROMPT_UNKNOWN' | 'TMUX_PROMPT_STALE' | 'TMUX_PROMPT_BAD_OPTION' | 'TMUX_PROMPT_SEND_FAILED'; mensaje: string };
 
+type RespuestaMala = RespuestaPromptTmux & { ok: false };
+
 /**
- * Contesta un prompt con la opción elegida.
- *
- * Solo a un pane que este servidor tiene anotado como esperando respuesta
- * para esa misma sesión, y solo si el pane sigue mostrando el mismo diálogo
- * que vio la persona: se vuelve a leer justo antes de teclear. Si cambió —lo
- * contestaron desde la terminal, o es otra pregunta— no se manda nada.
+ * Lo que comparten `responderPromptTmux` y `responderSeleccionCompuestaTmux`
+ * antes de teclear nada: que el pane siga anotado como pendiente para esa
+ * sesión, y que siga mostrando el mismo diálogo que vio la persona (se
+ * vuelve a leer justo antes). Si cambió —lo contestaron desde la terminal, o
+ * es otra pregunta— no se manda nada.
  */
-export async function responderPromptTmux(
-  entrada: { sessionId: string; pane: string; promptId: string; opcion?: number; tecla?: string; texto?: string },
-  opciones: { antesDeEnviar?: () => Promise<void> } = {},
-  dependencias: VigiaPromptsDependencias = dependenciasVigiaPorDefecto,
-): Promise<RespuestaPromptTmux> {
+async function validarPromptVigente(
+  entrada: { sessionId: string; pane: string; promptId: string },
+  dependencias: VigiaPromptsDependencias,
+): Promise<{ ok: true; prompt: PromptTmux } | { ok: false; respuesta: RespuestaMala }> {
   const anotado = pendientes.get(entrada.pane);
   if (!anotado || anotado.sessionId !== entrada.sessionId || !NOMBRE_TMUX_PATTERN.test(entrada.pane)) {
-    return { ok: false, codigo: 'TMUX_PROMPT_UNKNOWN', mensaje: 'Esa sesión ya no tiene una pregunta pendiente.' };
+    return { ok: false, respuesta: { ok: false, codigo: 'TMUX_PROMPT_UNKNOWN', mensaje: 'Esa sesión ya no tiene una pregunta pendiente.' } };
   }
 
   let actual: PromptTmux | null;
@@ -887,10 +955,38 @@ export async function responderPromptTmux(
     void revisarPromptsTmux(dependencias);
     return {
       ok: false,
-      codigo: 'TMUX_PROMPT_STALE',
-      mensaje: 'La pregunta cambió o ya la contestaron desde la terminal. No se mandó nada.',
+      respuesta: {
+        ok: false,
+        codigo: 'TMUX_PROMPT_STALE',
+        mensaje: 'La pregunta cambió o ya la contestaron desde la terminal. No se mandó nada.',
+      },
     };
   }
+
+  return { ok: true, prompt: actual };
+}
+
+/**
+ * Que todos vean el prompt resuelto sin esperar la próxima vuelta. Dos
+ * veces: una casilla se tilda enseguida, pero cambiar de pestaña o abrir la
+ * revisión tarda en dibujarse, y la tarjeta tiene que mostrar lo que quedó
+ * en el pane de verdad, no lo que se mandó.
+ */
+function reprogramarRevision(dependencias: VigiaPromptsDependencias): void {
+  for (const demora of [250, 1200]) {
+    setTimeout(() => { void revisarPromptsTmux(dependencias); }, demora).unref?.();
+  }
+}
+
+/** Contesta un prompt con la opción elegida (una tecla, o una tecla suelta del pie). */
+export async function responderPromptTmux(
+  entrada: { sessionId: string; pane: string; promptId: string; opcion?: number; tecla?: string; texto?: string },
+  opciones: { antesDeEnviar?: () => Promise<void> } = {},
+  dependencias: VigiaPromptsDependencias = dependenciasVigiaPorDefecto,
+): Promise<RespuestaPromptTmux> {
+  const vigente = await validarPromptVigente(entrada, dependencias);
+  if (!vigente.ok) return vigente.respuesta;
+  const actual = vigente.prompt;
 
   let teclas: TeclasTmux;
   if (entrada.tecla !== undefined) {
@@ -928,13 +1024,54 @@ export async function responderPromptTmux(
     };
   }
 
-  // Que todos vean el prompt resuelto sin esperar la próxima vuelta.
-  // Dos veces: una casilla se tilda enseguida, pero cambiar de pestaña o
-  // abrir la revisión tarda en dibujarse, y la tarjeta tiene que mostrar lo
-  // que quedó en el pane de verdad, no lo que se mandó.
-  for (const demora of [250, 1200]) {
-    setTimeout(() => { void revisarPromptsTmux(dependencias); }, demora).unref?.();
+  reprogramarRevision(dependencias);
+  return { ok: true };
+}
+
+/**
+ * Contesta un AskUserQuestion de varias casillas de una: la tarjeta compone
+ * toda la selección en el cliente (qué casillas quedan tildadas, y el texto
+ * de la libre si la pide) y manda un solo pedido, en vez de un pedido por
+ * clic — eso era lo que carreraba contra `TMUX_PROMPT_STALE` (Fase 9, paso
+ * 2). La validación de vigencia es la misma que un clic suelto; lo que
+ * cambia es que `teclasParaSeleccionCompuesta` calcula de una toda la
+ * secuencia necesaria para llegar al estado pedido.
+ */
+export async function responderSeleccionCompuestaTmux(
+  entrada: { sessionId: string; pane: string; promptId: string; seleccion: number[]; texto?: string },
+  opciones: { antesDeEnviar?: () => Promise<void> } = {},
+  dependencias: VigiaPromptsDependencias = dependenciasVigiaPorDefecto,
+): Promise<RespuestaPromptTmux> {
+  const vigente = await validarPromptVigente(entrada, dependencias);
+  if (!vigente.ok) return vigente.respuesta;
+  const actual = vigente.prompt;
+
+  if (
+    !Array.isArray(entrada.seleccion)
+    || entrada.seleccion.some((indice) => !Number.isInteger(indice) || indice < 0 || indice >= actual.opciones.length)
+  ) {
+    return { ok: false, codigo: 'TMUX_PROMPT_BAD_OPTION', mensaje: 'Esa selección no existe en la pregunta.' };
   }
+
+  const libreElegida = actual.opciones.find((opcion) => opcion.casilla && opcion.libre && entrada.seleccion.includes(opcion.indice));
+  if (libreElegida && !(entrada.texto ?? '').trim()) {
+    return { ok: false, codigo: 'TMUX_PROMPT_BAD_OPTION', mensaje: 'Escribí la respuesta antes de mandarla.' };
+  }
+
+  const teclas = teclasParaSeleccionCompuesta(actual, entrada.seleccion, entrada.texto ?? '');
+
+  try {
+    await opciones.antesDeEnviar?.();
+    await dependencias.enviarTeclas(entrada.pane, teclas);
+  } catch (error) {
+    return {
+      ok: false,
+      codigo: 'TMUX_PROMPT_SEND_FAILED',
+      mensaje: error instanceof Error ? error.message : String(error),
+    };
+  }
+
+  reprogramarRevision(dependencias);
   return { ok: true };
 }
 

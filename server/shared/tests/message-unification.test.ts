@@ -167,6 +167,51 @@ test('a live Claude answer is recovered from the acknowledgement sentence', () =
   assert.deepEqual((unified.toolInput as { answers: unknown }).answers, { 'What next?': 'Branch changes' });
 });
 
+test('a question with quotes in its text is read from the structured result, not the regex fallback', () => {
+  // The regex fallback (`readAnswersFromAcknowledgement`) parses
+  // `"<question>"="<answer>"` out of the prose acknowledgement sentence, and
+  // breaks as soon as the question text itself contains a `"` — `[^"]+` stops
+  // at the first one. The persisted transcript (read after a reload) carries
+  // the structured `toolUseResult.answers` instead, which is plain JSON and
+  // has no such limit: this is Fase 9 paso 5's "tras recargar" case.
+  const [unified] = prepareTranscriptMessages([
+    message({
+      kind: 'tool_use',
+      toolName: 'AskUserQuestion',
+      toolId: 'call-1',
+      toolInput: { questions: [{ question: 'Is "blue" your favorite color?', options: [{ label: 'Yes' }] }] },
+      toolResult: {
+        content: 'Your questions have been answered: "Is "blue" your favorite color?"="Yes". You can now continue.',
+        toolUseResult: { answers: { 'Is "blue" your favorite color?': 'Yes' } },
+      },
+    }),
+  ]);
+
+  assert.deepEqual((unified.toolInput as { answers: unknown }).answers, { 'Is "blue" your favorite color?': 'Yes' });
+});
+
+test('without a structured result, a quoted question breaks the regex fallback (documents the live-turn gap)', () => {
+  // This is the gap step 5 says is acceptable: only *before* persistence
+  // (mid-run, no toolUseResult yet) does a quoted question garble. It
+  // self-corrects once the structured result lands (see the test above).
+  const [unified] = prepareTranscriptMessages([
+    message({
+      kind: 'tool_use',
+      toolName: 'AskUserQuestion',
+      toolId: 'call-1',
+      toolInput: { questions: [{ question: 'Is "blue" your favorite color?', options: [{ label: 'Yes' }] }] },
+      toolResult: {
+        content: 'Your questions have been answered: "Is "blue" your favorite color?"="Yes". You can now continue.',
+      },
+    }),
+  ]);
+
+  assert.notDeepEqual(
+    (unified.toolInput as { answers?: unknown }).answers,
+    { 'Is "blue" your favorite color?': 'Yes' },
+  );
+});
+
 test('a question that was never answered carries no answers', () => {
   const [unified] = prepareTranscriptMessages([
     message({

@@ -9,8 +9,10 @@ import {
   paneTienePrompt,
   promptsTmuxPendientes,
   responderPromptTmux,
+  responderSeleccionCompuestaTmux,
   revisarPromptsTmux,
   teclasParaOpcion,
+  teclasParaSeleccionCompuesta,
   type TeclasTmux,
   type VigiaPromptsDependencias,
 } from '@/modules/websocket/services/tmux-prompt.service.js';
@@ -688,9 +690,14 @@ test('5-oct: varias preguntas de casillas: pestañas con la activa, lo tildado y
   const enFrutas = detectarPromptTmux(CASILLAS_EN(0, 'Next', true));
   assert.deepEqual(enFrutas?.teclas.map((tecla) => `${tecla.tecla}|${tecla.accion}`), ['Right|next', 'Escape|cancel']);
 
-  // Tildar o pasar de pestaña cambia la huella: la tarjeta se entera.
+  // Pasar de pestaña cambia la huella: la tarjeta se entera. Tildar una
+  // casilla, desde la Fase 9 (paso 2), ya no: la tarjeta compone toda la
+  // selección en el cliente y manda un solo pedido al final, que por
+  // definición tilda casillas distintas de las que había cuando apareció la
+  // pregunta — si la huella las contara, ese pedido siempre llegaría
+  // "viejo" contra sí mismo.
   const destildada = detectarPromptTmux(CASILLAS_EN(2, 'Submit', false));
-  assert.notEqual(destildada?.id, enDias.id);
+  assert.equal(destildada?.id, enDias.id);
   assert.equal(destildada?.opciones[0].marcada, false);
   assert.notEqual(detectarPromptTmux(CASILLAS_EN(1, 'Next', true))?.id, enFrutas?.id);
 
@@ -744,4 +751,172 @@ test('5-oct: la pantalla de revisión, sin pie, se reconoce por las pestañas y 
   assert.equal(revision.pestanas[3].activa, true);
   assert.deepEqual(revision.teclas, [{ tecla: 'Left', accion: 'previous' }]);
   assert.equal(revision.multiple, false);
+});
+
+/*
+ * Fase 9, paso 2: en vez de un pedido tmux por clic —cada uno cambiaba la
+ * huella antes de que el pane redibujara, y el siguiente clic llegaba
+ * contra una pantalla que ya no existía (TMUX_PROMPT_STALE), ver
+ * "varias preguntas de casillas" más arriba— la tarjeta compone toda la
+ * selección en el cliente y manda un solo pedido.
+ * `VARIAS_RESPUESTAS` (arriba) ya tiene exactamente ese diálogo: Manzana
+ * sin tildar, Pera tildada, "Type something" (casilla + libre) sin tildar,
+ * Submit como avance, y un cursor parado en Manzana (índice 0).
+ */
+
+test('teclasParaSeleccionCompuesta: tilda lo que falta, destilda lo que sobra, y manda el avance al final', () => {
+  const prompt = detectarPromptTmux(VARIAS_RESPUESTAS)!;
+
+  // Pedir [Manzana, Pera]: Pera ya está tildada (no se toca), Manzana no
+  // (dígito '1'); el cursor sigue en Manzana porque los dígitos no lo mueven,
+  // así que el avance a "Submit" (índice 3) es el mismo Down×3 + Enter que
+  // ya prueba teclasParaOpcion más arriba.
+  assert.deepEqual(teclasParaSeleccionCompuesta(prompt, [0, 1]), {
+    tipo: 'secuencia',
+    pasos: [
+      { tipo: 'literal', texto: '1' },
+      { tipo: 'teclas', teclas: ['Down', 'Down', 'Down', 'Enter'] },
+    ],
+  });
+
+  // Pedir que quede vacía: Pera (ya tildada) hay que destildarla, dígito '2'.
+  assert.deepEqual(teclasParaSeleccionCompuesta(prompt, []), {
+    tipo: 'secuencia',
+    pasos: [
+      { tipo: 'literal', texto: '2' },
+      { tipo: 'teclas', teclas: ['Down', 'Down', 'Down', 'Enter'] },
+    ],
+  });
+
+  // Pedir exactamente lo que ya está (solo Pera): nada que tildar/destildar,
+  // un solo paso — el avance solo, sin envolver en 'secuencia'.
+  assert.deepEqual(teclasParaSeleccionCompuesta(prompt, [1]), { tipo: 'teclas', teclas: ['Down', 'Down', 'Down', 'Enter'] });
+
+  // La libre entra con su propio texto, no como un tilde suelto.
+  assert.deepEqual(teclasParaSeleccionCompuesta(prompt, [1, 2], 'Kiwi'), {
+    tipo: 'secuencia',
+    pasos: [
+      { tipo: 'escribir', teclas: ['Down', 'Down', 'C-u'], texto: 'Kiwi' },
+      { tipo: 'teclas', teclas: ['Down', 'Down', 'Down', 'Enter'] },
+    ],
+  });
+});
+
+test('responderSeleccionCompuestaTmux: un solo pedido manda toda la secuencia de una', async () => {
+  _resetPromptsTmuxParaTests();
+  const { deps, enviadas, pantallas } = fake();
+  pantallas.set('demo-guia-1', VARIAS_RESPUESTAS);
+  await revisarPromptsTmux(deps);
+  const [pendiente] = promptsTmuxPendientes();
+
+  const resultado = await responderSeleccionCompuestaTmux(
+    { sessionId: 'app-1', pane: 'demo-guia-1', promptId: pendiente.id, seleccion: [0, 1] },
+    {},
+    deps,
+  );
+
+  assert.deepEqual(resultado, { ok: true });
+  // Un solo elemento en `enviadas`: todo el pedido viajó como un único
+  // `enviarTeclas`, no un pedido por casilla.
+  assert.equal(enviadas.length, 1);
+  assert.deepEqual(enviadas[0], {
+    pane: 'demo-guia-1',
+    teclas: {
+      tipo: 'secuencia',
+      pasos: [
+        { tipo: 'literal', texto: '1' },
+        { tipo: 'teclas', teclas: ['Down', 'Down', 'Down', 'Enter'] },
+      ],
+    },
+  });
+  _resetPromptsTmuxParaTests();
+});
+
+test('responderSeleccionCompuestaTmux: rechaza un índice fuera de rango sin mandar nada', async () => {
+  _resetPromptsTmuxParaTests();
+  const { deps, enviadas, pantallas } = fake();
+  pantallas.set('demo-guia-1', VARIAS_RESPUESTAS);
+  await revisarPromptsTmux(deps);
+  const [pendiente] = promptsTmuxPendientes();
+
+  const resultado = await responderSeleccionCompuestaTmux(
+    { sessionId: 'app-1', pane: 'demo-guia-1', promptId: pendiente.id, seleccion: [0, 99] },
+    {},
+    deps,
+  );
+
+  assert.equal(!resultado.ok && resultado.codigo, 'TMUX_PROMPT_BAD_OPTION');
+  assert.deepEqual(enviadas, []);
+  _resetPromptsTmuxParaTests();
+});
+
+test('responderSeleccionCompuestaTmux: exige el texto de la libre si está en la selección', async () => {
+  _resetPromptsTmuxParaTests();
+  const { deps, enviadas, pantallas } = fake();
+  pantallas.set('demo-guia-1', VARIAS_RESPUESTAS);
+  await revisarPromptsTmux(deps);
+  const [pendiente] = promptsTmuxPendientes();
+
+  const vacia = await responderSeleccionCompuestaTmux(
+    { sessionId: 'app-1', pane: 'demo-guia-1', promptId: pendiente.id, seleccion: [2], texto: '   ' },
+    {},
+    deps,
+  );
+  assert.equal(!vacia.ok && vacia.codigo, 'TMUX_PROMPT_BAD_OPTION');
+  assert.deepEqual(enviadas, []);
+  _resetPromptsTmuxParaTests();
+});
+
+test('responderSeleccionCompuestaTmux: si el pane cambió antes de mandar, TMUX_PROMPT_STALE y no se teclea nada', async () => {
+  _resetPromptsTmuxParaTests();
+  const { deps, enviadas, pantallas } = fake();
+  pantallas.set('demo-guia-1', VARIAS_RESPUESTAS);
+  await revisarPromptsTmux(deps);
+  const [pendiente] = promptsTmuxPendientes();
+
+  // Lo contestaron desde la terminal (u otra pregunta) antes de que llegara
+  // el pedido compuesto.
+  pantallas.set('demo-guia-1', PERMISO_TRES_OPCIONES);
+  const resultado = await responderSeleccionCompuestaTmux(
+    { sessionId: 'app-1', pane: 'demo-guia-1', promptId: pendiente.id, seleccion: [0] },
+    {},
+    deps,
+  );
+
+  assert.equal(!resultado.ok && resultado.codigo, 'TMUX_PROMPT_STALE');
+  assert.deepEqual(enviadas, []);
+  _resetPromptsTmuxParaTests();
+});
+
+test('responderSeleccionCompuestaTmux: varios clics de casillero a 100ms de distancia componen una sola selección (sin STALE)', async () => {
+  // La huella no cuenta lo tildado (ver el cambio de huella() más arriba):
+  // esto reproduce "tmux-multi" a nivel unitario — tres toggles en la
+  // tarjeta, ningún pedido tmux hasta el envío final — sin levantar tmux
+  // real ni pasar por `exigirGobernadorNoRojo`.
+  _resetPromptsTmuxParaTests();
+  const { deps, enviadas, pantallas } = fake();
+  pantallas.set('demo-guia-1', VARIAS_RESPUESTAS);
+  await revisarPromptsTmux(deps);
+  const [pendiente] = promptsTmuxPendientes();
+
+  // La tarjeta compone localmente mientras la persona clickea (sin red) y
+  // recién al confirmar llama una vez — acá se simulan los clics con un
+  // `setTimeout` de 100ms entre cada uno, y solo al final se llama al
+  // servidor, que es el contrato real entre la tarjeta y el servidor.
+  const clicsLocales: number[] = [];
+  for (const indice of [0, 2]) {
+    await new Promise((resolve) => { setTimeout(resolve, 100); });
+    clicsLocales.push(indice);
+  }
+  assert.deepEqual(clicsLocales, [0, 2]);
+
+  const resultado = await responderSeleccionCompuestaTmux(
+    { sessionId: 'app-1', pane: 'demo-guia-1', promptId: pendiente.id, seleccion: [0, 1, 2], texto: 'Kiwi' },
+    {},
+    deps,
+  );
+
+  assert.deepEqual(resultado, { ok: true });
+  assert.equal(enviadas.length, 1, 'un solo pedido tmux para los tres clics locales');
+  _resetPromptsTmuxParaTests();
 });
