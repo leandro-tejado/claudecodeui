@@ -35,7 +35,7 @@ export type StreamBuffer = {
 
 export type StreamBuffers = Map<string, StreamBuffer>;
 
-type StreamingStore = Pick<SessionStore, 'updateStreaming' | 'finalizeStreaming'>;
+type StreamingStore = Pick<SessionStore, 'updateStreaming' | 'finalizeStreaming' | 'discardStreaming'>;
 
 export const STREAM_FLUSH_MS = 100;
 
@@ -103,6 +103,63 @@ export function appendThinkingDelta(
   store: StreamingStore,
 ): void {
   appendDelta(buffers, sessionId, 'thinking_delta', text, provider, messageId, blockIndex, store);
+}
+
+/**
+ * Sets (never concatenates) a session's open block to `text` — the tmux pane
+ * reader's draft (Fase 7, paso 8: `tmux-pane-vivo.service.ts`) rereads the
+ * whole visible answer off the pane every ~400ms and sends the accumulated
+ * text whole each time, unlike a provider's own incremental deltas, so there
+ * is nothing here to append to; appending would double it on every tick.
+ */
+export function setStreamDraft(
+  buffers: StreamBuffers,
+  sessionId: string,
+  text: string,
+  provider: LLMProvider,
+  messageId: string,
+  blockIndex: number,
+  store: StreamingStore,
+): void {
+  let buffer = buffers.get(sessionId);
+  if (!buffer || buffer.messageId !== messageId || buffer.blockIndex !== blockIndex) {
+    buffer = { text: '', timer: null, provider, kind: 'stream_delta', messageId, blockIndex };
+    buffers.set(sessionId, buffer);
+  }
+  buffer.text = text;
+  if (!buffer.timer) {
+    const scheduled = buffer;
+    scheduled.timer = setTimeout(() => {
+      scheduled.timer = null;
+      if (buffers.get(sessionId) === scheduled) {
+        store.updateStreaming(sessionId, scheduled.text, scheduled.provider, {
+          kind: scheduled.kind,
+          messageId: scheduled.messageId,
+          blockIndex: scheduled.blockIndex,
+        });
+      }
+    }, STREAM_FLUSH_MS);
+  }
+}
+
+/**
+ * Drops a session's open draft without turning it into a persisted message —
+ * `stream_reemplazo` (Fase 7, paso 8) means the real JSONL row is already on
+ * its way in as an ordinary message, under its own transcript `uuid`, never
+ * the draft's synthetic `tmux-borrador:<sessionId>` id; `finalizeStreamBuffer`
+ * would either wait forever for a replacement that is never coming on this id,
+ * or (without an identity) mint a stray duplicate row next to the real one.
+ */
+export function discardStreamDraft(buffers: StreamBuffers, sessionId: string, store: StreamingStore): void {
+  const buffer = buffers.get(sessionId);
+  if (!buffer) return;
+  if (buffer.timer) {
+    clearTimeout(buffer.timer);
+  }
+  buffers.delete(sessionId);
+  if (buffer.messageId && typeof buffer.blockIndex === 'number') {
+    store.discardStreaming(sessionId, { messageId: buffer.messageId, blockIndex: buffer.blockIndex });
+  }
 }
 
 /** Writes whatever is still pending into the streaming row, keeping the block open. */

@@ -92,21 +92,18 @@ function findServerEchoForLocalUser(
   return closestMatch;
 }
 
-/**
- * Removes local optimistic user rows once a corresponding persisted turn is
- * available. Matches are one-to-one so repeated sends cannot claim one row.
- */
-export function removeOptimisticUserEchoes(
+function retireRowsByIdPrefix(
+  prefix: string,
   serverMessages: NormalizedMessage[],
   realtimeMessages: NormalizedMessage[],
 ): NormalizedMessage[] {
   const claimedServerIds = new Set<string>();
 
   return realtimeMessages.filter((message) => {
-    // Only optimistic rows minted client-side carry the `local_` prefix, so
+    // Only optimistic rows minted for this purpose carry the prefix, so
     // anything without a string id is by definition not one of them. Reading
     // `.startsWith` off it threw and took the whole realtime append down.
-    if (typeof message.id !== 'string' || !message.id.startsWith('local_')) {
+    if (typeof message.id !== 'string' || !message.id.startsWith(prefix)) {
       return true;
     }
 
@@ -118,4 +115,39 @@ export function removeOptimisticUserEchoes(
     claimedServerIds.add(serverEcho.id);
     return false;
   });
+}
+
+/**
+ * Removes local optimistic user rows once a corresponding persisted turn is
+ * available. Matches are one-to-one so repeated sends cannot claim one row.
+ */
+export function removeOptimisticUserEchoes(
+  serverMessages: NormalizedMessage[],
+  realtimeMessages: NormalizedMessage[],
+): NormalizedMessage[] {
+  return retireRowsByIdPrefix('local_', serverMessages, realtimeMessages);
+}
+
+/**
+ * Removes a tmux session's `queued_command` placeholder (`tmux_queued_<uuid>`,
+ * minted live by `tmux-bridge.service.ts` the instant Claude Code's own
+ * queue takes a prompt typed mid-turn) once the turn it actually started is
+ * persisted — Fase 7, paso 6.
+ *
+ * Matched only against `serverMessages` (the true, REST-fetched history),
+ * never against other live rows: those placeholders never pass through
+ * `fetchHistory` (the normalizer has no shape for a raw `attachment` row), so
+ * the *real* dequeued turn lands in history under its own JSONL `uuid`, not
+ * the placeholder's synthetic id — the two never collide on `id` and the
+ * placeholder would otherwise sit there forever, next to its own answer, once
+ * the turn it stood in for is actually in the transcript. Matching it against
+ * *other* live rows instead (the way a `local_` echo borrows the live pool to
+ * retire itself fast) would risk one of two back-to-back identical sends
+ * retiring the other before either is actually confirmed.
+ */
+export function removeQueuedCommandEchoes(
+  serverMessages: NormalizedMessage[],
+  realtimeMessages: NormalizedMessage[],
+): NormalizedMessage[] {
+  return retireRowsByIdPrefix('tmux_queued_', serverMessages, realtimeMessages);
 }
