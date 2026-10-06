@@ -17,20 +17,27 @@ export async function correr(ctx) {
   // Paso 1: a mitad del turno, cada tarjeta muestra la tool que su propio
   // subagente está usando — antes de que llegue el mensaje completo que la
   // resuelve (el guion deja la ventana de ~1,8 s abierta a propósito).
+  // Se lee el encabezado de CADA tarjeta (no el panel entero: "Read" aparece
+  // en otros textos y daba verde sin el arreglo), y la tool de una no puede
+  // aparecer en la otra: cada tarjeta tiene su propio estado.
+  const encabezado = (desc) => s.pagina.locator('.chat-message').filter({ hasText: desc })
+    .locator('button[aria-expanded]').first().innerText().catch(() => '');
   let vistoBash = false;
   let vistoRead = false;
+  let cruzado = false;
   const t0 = Date.now();
   while (Date.now() - t0 < 8_000 && !(vistoBash && vistoRead)) {
-    const txt = await s.pagina.locator('.chat-messages-pane').innerText().catch(() => '');
-    vistoBash = vistoBash || /Bash/.test(txt);
-    vistoRead = vistoRead || /Read/.test(txt);
+    const [a, b] = await Promise.all([encabezado('Tarea A en paralelo'), encabezado('Tarea B en paralelo')]);
+    vistoBash = vistoBash || /\bBash\b/.test(a);
+    vistoRead = vistoRead || /\bRead\b/.test(b);
+    cruzado = cruzado || /\bRead\b/.test(a) || /\bBash\b/.test(b);
     await s.pagina.waitForTimeout(100);
   }
   const capMitad = await ctx.captura(s, 'a-mitad');
   ctx.check(
     'a mitad del subagente, su tarjeta muestra la tool en curso (antes del mensaje completo)',
-    vistoBash && vistoRead,
-    { evidencia: capMitad, datos: { vistoBash, vistoRead } },
+    vistoBash && vistoRead && !cruzado,
+    { evidencia: capMitad, datos: { vistoBash, vistoRead, cruzado } },
   );
 
   // Pasos 2 y 3: cada subagente habla por su cuenta, en su propia tarjeta —
