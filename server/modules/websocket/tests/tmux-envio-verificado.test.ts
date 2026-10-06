@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import {
+  ESPERA_CUADRO_PANE_NUEVO_MS,
   enviarPromptVerificado,
   type EnvioVerificadoDependencias,
 } from '@/modules/websocket/services/tmux-bridge.service.js';
@@ -129,4 +130,30 @@ test('un renglón largo que el cuadro parte en dos se reconoce igual', async () 
     estado.cuadro = `${estado.cuadro.slice(0, 30)}\n${estado.cuadro.slice(30)}`;
   };
   assert.deepEqual(await enviarPromptVerificado('demo', 'un mensaje bastante largo que no entra en un solo renglón del cuadro', deps), { ok: true });
+});
+
+/*
+ * 6-oct: la orquestadora fija (`--resume` de ~10 MB) tardó más de 4 s en
+ * dibujar el cuadro tras recrearse su pane, y el chat contestó `sin-cuadro`
+ * sobre un `claude` que todavía estaba cargando.
+ */
+function paneQueCargaTarde(capturasEnBlanco: number): PaneFalso {
+  const pane = paneFalso();
+  let capturas = 0;
+  const capturar = pane.deps.capturarPantalla;
+  pane.deps.capturarPantalla = async (nombre) => (++capturas <= capturasEnBlanco ? '' : capturar(nombre));
+  return pane;
+}
+
+test('un pane que carga lento da sin-cuadro con la espera normal', async () => {
+  const pane = paneQueCargaTarde(40);
+  const resultado = await enviarPromptVerificado('p', 'hola', pane.deps);
+  assert.equal(!resultado.ok && resultado.motivo, 'sin-cuadro');
+  assert.deepEqual(pane.acciones, []);
+});
+
+test('un pane recién creado espera más al cuadro y el mensaje llega', async () => {
+  const pane = paneQueCargaTarde(40);
+  const resultado = await enviarPromptVerificado('p', 'hola', pane.deps, ESPERA_CUADRO_PANE_NUEVO_MS);
+  assert.deepEqual(resultado, { ok: true });
 });

@@ -6,7 +6,7 @@ import { sessionsDb } from '@/modules/database/index.js';
 import { esFilaTmuxSinTranscript, providerModelsService, sessionsService } from '@/modules/providers/index.js';
 import { chatRunRegistry } from '@/modules/websocket/services/chat-run-registry.service.js';
 import { nombreTmux } from '@/modules/websocket/services/shell-websocket.service.js';
-import { tmuxBridgeService } from '@/modules/websocket/services/tmux-bridge.service.js';
+import { ESPERA_CUADRO_PANE_NUEVO_MS, tmuxBridgeService } from '@/modules/websocket/services/tmux-bridge.service.js';
 import {
   tmuxPaneVivoService,
   type EventoPaneVivo,
@@ -447,6 +447,7 @@ async function entregarPorTmux(
   // A brand-new session (or one whose pane died) has nothing to type into
   // yet. asegurarSesionTmux is idempotent and a no-op when the pane is
   // already alive, so this is safe to call on every send, not just the first.
+  let paneRecienCreado = false;
   if (!pane?.externo) {
     try {
       const creada = await tmuxBridgeService.asegurarSesionTmux(
@@ -458,6 +459,7 @@ async function entregarPorTmux(
         // La cuenta de la sesion: el pane nace con el token de esa cuenta.
         session.cuenta ?? null,
       );
+      paneRecienCreado = creada;
       if (creada) {
         // The pane exists the instant `tmux new-session` returns, but the
         // `claude` process behind it does not start reading its terminal
@@ -495,6 +497,7 @@ async function entregarPorTmux(
       for (;;) {
         const { resultado, error } = await teclearEnPane(ws, sessionId, nombreSesion, content, clientMessageId, {
           fromQueue: enEspera,
+          ...(paneRecienCreado && { esperaCuadroMs: ESPERA_CUADRO_PANE_NUEVO_MS }),
         });
         if (resultado !== 'dialogo') {
           resolve({ entregado: error === null, error });
@@ -570,12 +573,12 @@ async function teclearEnPane(
   nombreSesion: string,
   content: string,
   clientMessageId: string | null,
-  { fromQueue = false }: { fromQueue?: boolean } = {},
+  { fromQueue = false, esperaCuadroMs }: { fromQueue?: boolean; esperaCuadroMs?: number } = {},
 ): Promise<{ resultado: 'dialogo' | 'listo'; error: string | null }> {
   const conId = clientMessageId ? { clientMessageId } : {};
   let resultado: Awaited<ReturnType<typeof tmuxBridgeService.enviarPromptVerificado>>;
   try {
-    resultado = await tmuxBridgeService.enviarPromptVerificado(nombreSesion, content);
+    resultado = await tmuxBridgeService.enviarPromptVerificado(nombreSesion, content, undefined, esperaCuadroMs);
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     console.error('[Chat] tmux-bridge send failed', { sessionId, error: message });
