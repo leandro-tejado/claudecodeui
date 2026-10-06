@@ -359,8 +359,14 @@ const MessageComponent = memo(({ message, prevMessage, createDiff, onFileOpen, s
                 )}
               </>
             ) : message.isThinking ? (
-              /* Thinking messages — Reasoning component (ai-elements pattern) */
-              <Reasoning defaultOpen={isExporting}>
+              /* Thinking messages — Reasoning component (ai-elements pattern).
+                 `isStreaming` is what keeps "Pensando…" open while a
+                 `thinking_delta` block is still growing (Fase 5, paso 6) —
+                 `Reasoning` auto-opens on it and auto-closes a beat after it
+                 stops; a finished row (history, or this one once its
+                 `stream_end`/final `thinking` message lands) never sets it,
+                 so it renders collapsed as before. */
+              <Reasoning defaultOpen={isExporting} isStreaming={Boolean(message.isStreaming)}>
                 <ReasoningTrigger />
                 <ReasoningContent>
                   <Markdown className="prose prose-sm prose-gray max-w-none font-serif dark:prose-invert">
