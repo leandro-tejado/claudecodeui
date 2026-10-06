@@ -391,6 +391,42 @@
     }
   }
 
+  /* Fase 11, paso 4 — boceto `05-octubre-header-barra.html`: una fila de sesión
+     nueva en la barra entra con el spring de `--ds-motion-default-*` (damping
+     1.0, response 0.35 ≈ esta curva/duración, ver el comentario de arriba
+     sobre esas variables). Con `prefers-reduced-motion` cae a un cross-fade de
+     opacidad, sin transform, más específico que el `*` global de abajo para
+     que gane por especificidad. */
+  @keyframes ds-fila-entra {
+    from {
+      opacity: 0;
+      transform: translateY(-4px) scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @keyframes ds-fila-entra-reducida {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  .ds-fila-nueva {
+    animation: ds-fila-entra var(--ds-motion-default-duration) var(--ds-motion-default-ease) both;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ds-fila-nueva {
+      animation: ds-fila-entra-reducida 180ms ease-out both;
+    }
+  }
+
   /* Modal and dropdown transitions */
   .modal-transition {
     transition: opacity 200ms ease-in-out,

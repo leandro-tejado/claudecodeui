@@ -95,6 +95,25 @@ describe('UsageWindowIndicator — nunca "sin dato" habiendo una lectura, y la s
   });
 });
 
+describe('UsageWindowIndicator — barras del header según el boceto (Fase 11, paso 4)', () => {
+  it('la ventana semanal muestra su barra y su % directo en el header, sin abrir el popover', () => {
+    useUsageWindowMock.mockReturnValue(snapshot());
+    render(<UsageWindowIndicator />);
+
+    // 55% es la ventana semanal del fixture: antes solo se veía al abrir el
+    // popover (click). El boceto pide las dos ventanas siempre visibles.
+    expect(screen.getByText('55%')).toBeTruthy();
+  });
+
+  it('sin ninguna lectura, dice "sin leer aún" en vez de un 0% fantasma', () => {
+    useUsageWindowMock.mockReturnValue(null);
+    render(<UsageWindowIndicator />);
+
+    expect(screen.getAllByText('sin leer aún').length).toBeGreaterThan(0);
+    expect(screen.queryByText('0%')).toBeNull();
+  });
+});
+
 describe('UsageWindowIndicator — una ventana por cuenta (Fase 3 de 06-octubre-vps-multi-cuenta)', () => {
   it('sin cuenta el label queda como siempre, sin prefijo', () => {
     useUsageWindowMock.mockReturnValue(snapshot());

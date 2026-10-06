@@ -1,25 +1,31 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { cn } from '@/shared/utils';
-import { CircleProgress } from '@/modules/usage-window/CircleProgress';
 import UsageWindowPopover from '@/modules/usage-window/UsageWindowPopover';
 import { useUsageWindow } from '@/modules/usage-window/useUsageWindow';
-import { evaluarVentana, formatResetTime, type EstadoVentana } from '@/modules/usage-window/estadoVentana';
+import {
+  evaluarVentana,
+  formatResetTime,
+  remainingLabel,
+  type EstadoVentana,
+} from '@/modules/usage-window/estadoVentana';
 
 /**
- * Las ventanas de 5 horas y semanal, como un anillo en el header.
+ * Las ventanas de 5 horas y semanal, como dos barras en el header.
  *
  * Existe porque la API solo avisa el límite una vez que ya rechazó un pedido,
  * así que sin esto la primera señal de problema es el trabajo frenando. Todo
- * el comportamiento vive en este módulo; `WorkspaceHeader` solo lo monta, que
- * es lo que mantiene a un diff de una línea el archivo de arriba.
+ * el comportamiento vive en este módulo; `SkinHeader` solo lo monta, que es
+ * lo que mantiene a un diff de una línea el archivo de arriba.
  *
  * El valor que muestra es el porcentaje real que reporta el SDK — no hay una
  * estimación local de respaldo. Pero una lectura vieja NO se trata como "sin
  * dato": se sigue mostrando, con su antigüedad (`evaluarVentana`). "Sin dato"
- * es únicamente el estado de no tener ninguna lectura; y cuando la ventana ya
- * pasó su hora de reset se muestra "ventana nueva" en vez de un porcentaje
- * que ya no describe la ventana actual.
+ * es únicamente el estado de no tener ninguna lectura, y se rotula "sin leer
+ * aún" con la barra vacía — nunca un 0% que parece un dato real (Fase 11,
+ * paso 4, boceto `design-system/visual-refs/05-octubre-header-barra.html`).
+ * Cuando la ventana ya pasó su hora de reset se muestra "ventana nueva" en
+ * vez de un porcentaje que ya no describe la ventana actual.
  */
 
 /** Cada cuánto el anillo revisa antigüedad por su cuenta, sin un push nuevo del WS. */
@@ -39,6 +45,62 @@ function etiquetaVentana(nombre: string, estado: EstadoVentana): string {
 /** "optimum" -> "Optimum": cómo se habla de la cuenta en el texto del anillo. */
 function nombreCuenta(id: string): string {
   return id ? id.charAt(0).toUpperCase() + id.slice(1) : id;
+}
+
+/** El umbral de alerta de `branding.md`: "Alerta signal-warn: cuota > 75%". */
+const UMBRAL_ALERTA = 75;
+
+/** Línea chica de detalle (antigüedad + cuenta regresiva del reset), solo visible en ≥ sm. */
+function detalleVentana(estado: EstadoVentana, now: number): string {
+  if (estado.tipo === 'sin-dato') return 'sin leer aún';
+  if (estado.tipo === 'ventana-nueva') return `se renovó a las ${formatResetTime(estado.resetsAt)}`;
+  const antiguedad = estado.fresca ? 'dato real' : `hace ${estado.minutosAntiguedad} min`;
+  if (estado.resetsAt === null) return antiguedad;
+  return `${antiguedad} · resetea en ${remainingLabel(estado.resetsAt, now)}`;
+}
+
+/**
+ * Una ventana de cuota como barra + %, según el boceto de la Fase 11 (paso 4):
+ * nunca un 0% fantasma — sin lectura la barra queda vacía y el texto dice
+ * "sin leer aún"; con una ventana ya reseteada, "ventana nueva".
+ */
+function VentanaBarra({ rotulo, estado, now }: { rotulo: string; estado: EstadoVentana; now: number }) {
+  const esDato = estado.tipo === 'dato';
+  const pct = esDato ? Math.max(0, Math.min(100, estado.porcentaje)) : 0;
+  const alerta = esDato && estado.porcentaje >= UMBRAL_ALERTA;
+  const stale = esDato && !estado.fresca;
+
+  return (
+    <div className="flex min-w-0 flex-shrink-0 items-center gap-1.5">
+      <div className="h-[5px] w-8 flex-none overflow-hidden rounded-full bg-ds-surface-3 sm:w-10" aria-hidden="true">
+        {esDato && (
+          <div
+            className={cn(
+              'h-full rounded-full',
+              alerta ? 'bg-ds-signal-warn' : 'bg-ds-primary',
+              stale && 'opacity-60',
+            )}
+            style={{ width: `${pct}%` }}
+          />
+        )}
+      </div>
+      <div className="flex min-w-0 flex-col leading-tight">
+        <span className="whitespace-nowrap text-ds-muted" style={{ fontSize: 'var(--skin-text-xs)' }}>
+          <span className="hidden sm:inline">{rotulo}{' '}</span>
+          <b className={cn('font-semibold text-ds-ink', stale && 'opacity-60')}>
+            {esDato
+              ? `${Math.round(estado.porcentaje)}%`
+              : estado.tipo === 'ventana-nueva'
+                ? 'ventana nueva'
+                : 'sin leer aún'}
+          </b>
+        </span>
+        <span className="hidden whitespace-nowrap text-ds-faint sm:inline" style={{ fontSize: '10px' }}>
+          {detalleVentana(estado, now)}
+        </span>
+      </div>
+    </div>
+  );
 }
 
 type Props = {
@@ -87,51 +149,12 @@ export default function UsageWindowIndicator({ cuenta }: Props = {}) {
         aria-expanded={open}
         title={label}
         className={cn(
-          'flex flex-shrink-0 items-center gap-1 rounded-full outline-none',
+          'flex flex-shrink-0 items-center gap-3 rounded-md outline-none',
           'hover:opacity-80 focus-visible:ring-2 focus-visible:ring-primary/60',
         )}
       >
-        <span className="flex h-6 w-6 items-center justify-center">
-          {estadoCincoHoras.tipo === 'dato' ? (
-            <CircleProgress
-              value={estadoCincoHoras.porcentaje}
-              maxValue={100}
-              size={22}
-              strokeWidth={2.5}
-              // Una lectura vieja sigue siendo un dato real: se ve, pero sin
-              // la animación de entrada y en el color apagado de "esto ya no
-              // es lo último que sabemos", no en los colores de severidad.
-              disableAnimation={!estadoCincoHoras.fresca}
-              getColor={estadoCincoHoras.fresca ? undefined : () => 'stroke-muted-foreground/50'}
-            />
-          ) : (
-            // Sin dato, o ventana ya reseteada: anillo neutro. Mostrar un
-            // número acá sería afirmar algo sobre la cuenta que no se puede
-            // sostener (el "no un porcentaje inventado" del plan).
-            <CircleProgress
-              value={0}
-              maxValue={1}
-              size={22}
-              strokeWidth={2.5}
-              disableAnimation
-              getColor={() => 'stroke-transparent'}
-            />
-          )}
-        </span>
-        {/* El porcentaje en texto, con el mismo markup que el anillo de
-            contexto: los dos indicadores tienen que leerse como un par, y en
-            pantallas chicas los dos números se esconden a la vez. */}
-        {estadoCincoHoras.tipo === 'dato' && (
-          <span
-            className={cn(
-              'hidden tabular-nums text-muted-foreground sm:inline',
-              !estadoCincoHoras.fresca && 'opacity-60',
-            )}
-            style={{ fontSize: 'var(--skin-text-xs)' }}
-          >
-            {Math.round(estadoCincoHoras.porcentaje)}%
-          </span>
-        )}
+        <VentanaBarra rotulo="Ventana 5h" estado={estadoCincoHoras} now={now} />
+        <VentanaBarra rotulo="Semanal" estado={estadoSemanal} now={now} />
       </button>
 
       {open && (

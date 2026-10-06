@@ -1,5 +1,5 @@
 import { Plus } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { TFunction } from 'i18next';
 
 import { Button } from '@/shared/ui';
@@ -112,6 +112,30 @@ export default function SidebarProjectSessions({
 
   const sessionsOrdenadas = useMemo(() => aplicarOrdenManual(sessions, orden), [sessions, orden]);
 
+  /*
+   * Qué sesiones ya se dibujaron, para la entrada animada de una nueva (Fase
+   * 11, paso 4). `null` hasta el primer render con sesiones: ese primer lote
+   * (la carga inicial) se siembra entero como "ya vista", sin animar nada —
+   * solo una sesión que aparece DESPUÉS de esa carga (la crea `ct`, el
+   * orquestador, u otra pestaña) cuenta como nueva. Un ref y no un estado:
+   * no hace falta un re-render para registrar que ya se mostró, solo que el
+   * próximo render no la vuelva a marcar.
+   */
+  const vistasRef = useRef<Set<string> | null>(null);
+  const idsActuales = sessionsOrdenadas.map((s) => s.id);
+  if (vistasRef.current === null && idsActuales.length > 0) {
+    vistasRef.current = new Set(idsActuales);
+  }
+  const idsNuevas = vistasRef.current ? idsActuales.filter((id) => !vistasRef.current!.has(id)) : [];
+
+  useEffect(() => {
+    if (!vistasRef.current || idsNuevas.length === 0) return;
+    for (const id of idsNuevas) vistasRef.current.add(id);
+    // Deliberadamente sin `idsNuevas` como dependencia estable: una lista nueva
+    // por id (no por contenido) alcanza para decidir si hay algo que registrar.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [idsNuevas.join(',')]);
+
   const guardarOrden = (siguiente: SessionWithProvider[]) => {
     const ids = siguiente.map((s) => s.id);
     setOrden(ids);
@@ -178,6 +202,7 @@ export default function SidebarProjectSessions({
                 isProcessing={activeSessions.has(session.id) && !backgroundSessionIds.has(session.id)}
                 hasBackgroundWork={backgroundSessionIds.has(session.id)}
                 needsAttention={attentionSessionIds.has(session.id)}
+                isNueva={idsNuevas.includes(session.id)}
                 currentTime={currentTime}
                 onRenameDraftChange={onRenameDraftChange}
                 isEditing={session.id === sessionRenameId}
