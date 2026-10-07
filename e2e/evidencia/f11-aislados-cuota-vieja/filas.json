@@ -1,0 +1,64 @@
+[
+  {
+    "escenario": "cuota/vieja",
+    "nombre": "la ventana de 5 h muestra \"ventana nueva\" en vez de un % inventado",
+    "resultado": "pasa",
+    "evidencia": [
+      "cuota-vieja/reseteada.png"
+    ],
+    "datos": {
+      "ok": true,
+      "ms": 7,
+      "ultima": "Cuenta Optimum · Ventana de 5 horas: ventana nueva (se renovó a las 03:11 PM) · Semanal: 30% real, se renueva a las 03:16 PM"
+    },
+    "ms": 2778
+  },
+  {
+    "escenario": "cuota/vieja",
+    "nombre": "no muestra el 97% de la ventana ya cerrada",
+    "resultado": "pasa",
+    "evidencia": [
+      "cuota-vieja/frames-0.json"
+    ],
+    "datos": {
+      "etiqueta": "Cuenta Optimum · Ventana de 5 horas: ventana nueva (se renovó a las 03:11 PM) · Semanal: 30% real, se renueva a las 03:16 PM"
+    },
+    "ms": 2778
+  },
+  {
+    "escenario": "cuota/vieja",
+    "nombre": "trae la hora en que se renovó",
+    "resultado": "pasa",
+    "evidencia": [
+      "cuota-vieja/frames-0.json"
+    ],
+    "datos": {
+      "etiqueta": "Cuenta Optimum · Ventana de 5 horas: ventana nueva (se renovó a las 03:11 PM) · Semanal: 30% real, se renueva a las 03:16 PM"
+    },
+    "ms": 2778
+  },
+  {
+    "escenario": "cuota/vieja",
+    "nombre": "la semanal, que no pasó su reset, sigue mostrando su % real",
+    "resultado": "pasa",
+    "evidencia": [
+      "cuota-vieja/frames-0.json"
+    ],
+    "datos": {
+      "etiqueta": "Cuenta Optimum · Ventana de 5 horas: ventana nueva (se renovó a las 03:11 PM) · Semanal: 30% real, se renueva a las 03:16 PM"
+    },
+    "ms": 2778
+  },
+  {
+    "escenario": "cuota/vieja",
+    "nombre": "no aparece \"sin dato\" en ningún lado (hay lectura para las dos ventanas)",
+    "resultado": "pasa",
+    "evidencia": [
+      "cuota-vieja/frames-0.json"
+    ],
+    "datos": {
+      "etiqueta": "Cuenta Optimum · Ventana de 5 horas: ventana nueva (se renovó a las 03:11 PM) · Semanal: 30% real, se renueva a las 03:16 PM"
+    },
+    "ms": 2778
+  }
+]

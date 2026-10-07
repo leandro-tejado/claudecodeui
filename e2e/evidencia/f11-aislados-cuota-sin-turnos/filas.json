@@ -1,0 +1,52 @@
+[
+  {
+    "escenario": "cuota/sin-turnos",
+    "nombre": "la ventana de 5 h muestra el % con su antigüedad (\"hace N min\"), no \"sin dato\"",
+    "resultado": "pasa",
+    "evidencia": [
+      "cuota-sin-turnos/vieja-20min.png"
+    ],
+    "datos": {
+      "ok": true,
+      "ms": 8,
+      "ultima": "Cuenta Optimum · Ventana de 5 horas: 37% hace 20 min, se renueva a las 06:16 PM · Semanal: 21% hace 20 min, se renueva a las 03:16 PM"
+    },
+    "ms": 3512
+  },
+  {
+    "escenario": "cuota/sin-turnos",
+    "nombre": "la antigüedad reportada ronda los 20 min",
+    "resultado": "pasa",
+    "evidencia": [
+      "cuota-sin-turnos/frames-0.json"
+    ],
+    "datos": {
+      "etiqueta": "Cuenta Optimum · Ventana de 5 horas: 37% hace 20 min, se renueva a las 06:16 PM · Semanal: 21% hace 20 min, se renueva a las 03:16 PM"
+    },
+    "ms": 3512
+  },
+  {
+    "escenario": "cuota/sin-turnos",
+    "nombre": "la semanal también muestra % con antigüedad, no \"sin dato\"",
+    "resultado": "pasa",
+    "evidencia": [
+      "cuota-sin-turnos/frames-0.json"
+    ],
+    "datos": {
+      "etiqueta": "Cuenta Optimum · Ventana de 5 horas: 37% hace 20 min, se renueva a las 06:16 PM · Semanal: 21% hace 20 min, se renueva a las 03:16 PM"
+    },
+    "ms": 3512
+  },
+  {
+    "escenario": "cuota/sin-turnos",
+    "nombre": "no aparece \"sin dato\" en ningún lado habiendo una lectura (vieja) en el archivo",
+    "resultado": "pasa",
+    "evidencia": [
+      "cuota-sin-turnos/frames-0.json"
+    ],
+    "datos": {
+      "etiqueta": "Cuenta Optimum · Ventana de 5 horas: 37% hace 20 min, se renueva a las 06:16 PM · Semanal: 21% hace 20 min, se renueva a las 03:16 PM"
+    },
+    "ms": 3512
+  }
+]

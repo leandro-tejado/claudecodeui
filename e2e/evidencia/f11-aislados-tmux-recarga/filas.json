@@ -1,0 +1,24 @@
+[
+  {
+    "escenario": "tmux/recarga",
+    "nombre": "el ack de suscripción dice que está procesando",
+    "resultado": "pasa",
+    "evidencia": [
+      "tmux-recarga/frames-0.json"
+    ],
+    "datos": {
+      "isProcessing": true,
+      "runsInTmux": true
+    },
+    "ms": 14979
+  },
+  {
+    "escenario": "tmux/recarga",
+    "nombre": "tras recargar, el indicador sigue",
+    "resultado": "pasa",
+    "evidencia": [
+      "tmux-recarga/tras-recargar.png"
+    ],
+    "ms": 14979
+  }
+]

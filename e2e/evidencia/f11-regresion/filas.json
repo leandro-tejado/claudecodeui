@@ -1,0 +1,2117 @@
+[
+  {
+    "escenario": "a11y/chat",
+    "nombre": "chat movil-light: axe sin serias ni críticas",
+    "resultado": "pasa",
+    "evidencia": [
+      "a11y-chat/frames-0.json"
+    ],
+    "datos": [],
+    "ms": 44662
+  },
+  {
+    "escenario": "a11y/chat",
+    "nombre": "cuestionario movil-light: axe sin serias ni críticas",
+    "resultado": "pasa",
+    "evidencia": [
+      "a11y-chat/frames-0.json"
+    ],
+    "datos": [],
+    "ms": 44662
+  },
+  {
+    "escenario": "a11y/chat",
+    "nombre": "chat movil-dark: axe sin serias ni críticas",
+    "resultado": "pasa",
+    "evidencia": [
+      "a11y-chat/frames-0.json"
+    ],
+    "datos": [],
+    "ms": 44662
+  },
+  {
+    "escenario": "a11y/chat",
+    "nombre": "cuestionario movil-dark: axe sin serias ni críticas",
+    "resultado": "pasa",
+    "evidencia": [
+      "a11y-chat/frames-0.json"
+    ],
+    "datos": [],
+    "ms": 44662
+  },
+  {
+    "escenario": "a11y/chat",
+    "nombre": "chat escritorio-light: axe sin serias ni críticas",
+    "resultado": "pasa",
+    "evidencia": [
+      "a11y-chat/frames-0.json"
+    ],
+    "datos": [],
+    "ms": 44662
+  },
+  {
+    "escenario": "a11y/chat",
+    "nombre": "cuestionario escritorio-light: axe sin serias ni críticas",
+    "resultado": "pasa",
+    "evidencia": [
+      "a11y-chat/frames-0.json"
+    ],
+    "datos": [],
+    "ms": 44662
+  },
+  {
+    "escenario": "a11y/chat",
+    "nombre": "chat escritorio-dark: axe sin serias ni críticas",
+    "resultado": "pasa",
+    "evidencia": [
+      "a11y-chat/frames-0.json"
+    ],
+    "datos": [],
+    "ms": 44662
+  },
+  {
+    "escenario": "a11y/chat",
+    "nombre": "cuestionario escritorio-dark: axe sin serias ni críticas",
+    "resultado": "pasa",
+    "evidencia": [
+      "a11y-chat/frames-0.json"
+    ],
+    "datos": [],
+    "ms": 44662
+  },
+  {
+    "escenario": "barra/archivar",
+    "nombre": "la sesión archivada sale de la barra ≤ 3 s sin recargar",
+    "resultado": "pasa",
+    "evidencia": [
+      "barra-archivar/antes.png",
+      "barra-archivar/despues.png"
+    ],
+    "datos": {
+      "status": 200,
+      "antes": 1,
+      "tBajaMs": 80,
+      "trasRecargar": 0
+    },
+    "ms": 6372
+  },
+  {
+    "escenario": "barra/componentes",
+    "nombre": "renombrar una sesión actualiza su fila en la barra en ≤ 3 s sin recargar",
+    "resultado": "pasa",
+    "evidencia": [
+      "barra-componentes/antes-de-renombrar.png",
+      "barra-componentes/despues-de-renombrar.png"
+    ],
+    "datos": {
+      "status": 200,
+      "antes": 1,
+      "tCambioMs": 50,
+      "nuevoTitulo": "Renombrada en vivo aaahyo"
+    },
+    "ms": 2588
+  },
+  {
+    "escenario": "barra/orquestador",
+    "nombre": "orquestar.py crear aparece en la barra abierta en ≤ 3 s, 5 de 5",
+    "resultado": "pasa",
+    "evidencia": [
+      "barra-orquestador/cinco-creaciones.png"
+    ],
+    "datos": {
+      "exitos": 5,
+      "intentos": [
+        {
+          "intento": 0,
+          "nombre": "e2e-f11-orq-0-ejecutora-1",
+          "sid": "78eb1675-2db0-4c54-9202-a2bdcb8021c4",
+          "tFilaMs": 1777,
+          "tBajaMs": 332
+        },
+        {
+          "intento": 1,
+          "nombre": "e2e-f11-orq-1-ejecutora-1",
+          "sid": "d169a1ed-4748-44cd-bb1d-935bd7fe00f2",
+          "tFilaMs": 1633,
+          "tBajaMs": 331
+        },
+        {
+          "intento": 2,
+          "nombre": "e2e-f11-orq-2-ejecutora-1",
+          "sid": "5fe07e10-1288-4f64-9087-428cec7e2ef3",
+          "tFilaMs": 1751,
+          "tBajaMs": 322
+        },
+        {
+          "intento": 3,
+          "nombre": "e2e-f11-orq-3-ejecutora-1",
+          "sid": "270713e3-0c10-484e-ac19-c09846973f1c",
+          "tFilaMs": 1780,
+          "tBajaMs": 315
+        },
+        {
+          "intento": 4,
+          "nombre": "e2e-f11-orq-4-ejecutora-1",
+          "sid": "64c4dcaa-de53-4f20-9bce-1c3a161b7a08",
+          "tFilaMs": 1786
+        }
+      ]
+    },
+    "ms": 18899
+  },
+  {
+    "escenario": "barra/orquestador",
+    "nombre": "orquestar.py dormir cambia el estado en vivo (la fila sale de la barra sin recargar)",
+    "resultado": "pasa",
+    "evidencia": [
+      "barra-orquestador/antes-dormir.png",
+      "barra-orquestador/despues-dormir.png"
+    ],
+    "datos": {
+      "antesDormir": 21,
+      "tBajaMs": 314,
+      "nombre": "e2e-f11-orq-4-ejecutora-1",
+      "sid": "64c4dcaa-de53-4f20-9bce-1c3a161b7a08",
+      "dormidaOk": true
+    },
+    "ms": 18899
+  },
+  {
+    "escenario": "barra/pestana-oculta",
+    "nombre": "socket mudo ≥ 70 s (sin cerrarse): al volver, la barra refleja lo que pasó mientras estaba muda, sin recargar",
+    "resultado": "pasa",
+    "evidencia": [
+      "barra-pestana-oculta/1-visible-antes-de-silenciar.png",
+      "barra-pestana-oculta/2-muda-recien-archivada.png",
+      "barra-pestana-oculta/3-vuelta-al-dia.png"
+    ],
+    "datos": {
+      "statusArchivar": 200,
+      "antes": 1,
+      "tBajaMs": 8,
+      "hayRefrescoDeCatchUp": true,
+      "silencioMs": 85000
+    },
+    "ms": 87785
+  },
+  {
+    "escenario": "cuota/en-vivo",
+    "nombre": "el header abre con la primera lectura del archivo",
+    "resultado": "pasa",
+    "evidencia": [
+      "cuota-en-vivo/primera-lectura.png"
+    ],
+    "datos": {
+      "ok": true,
+      "ms": 4,
+      "ultima": "Cuenta Optimum · Ventana de 5 horas: 41% real, se renueva a las 06:06 PM · Semanal: 22% real, se renueva a las 03:06 PM"
+    },
+    "ms": 4127
+  },
+  {
+    "escenario": "cuota/en-vivo",
+    "nombre": "el header sigue el cambio del archivo en ≤ 3 s, sin recargar",
+    "resultado": "pasa",
+    "evidencia": [
+      "cuota-en-vivo/segunda-lectura.png"
+    ],
+    "datos": {
+      "ok": true,
+      "ms": 1408,
+      "ultima": "Cuenta Optimum · Ventana de 5 horas: 52% real, se renueva a las 06:06 PM · Semanal: 23% real, se renueva a las 03:06 PM",
+      "msReales": 1408
+    },
+    "ms": 4127
+  },
+  {
+    "escenario": "cuota/en-vivo",
+    "nombre": "la semanal también se actualizó (23%)",
+    "resultado": "pasa",
+    "evidencia": [
+      "cuota-en-vivo/frames-0.json"
+    ],
+    "datos": {
+      "etiqueta": "Cuenta Optimum · Ventana de 5 horas: 52% real, se renueva a las 06:06 PM · Semanal: 23% real, se renueva a las 03:06 PM"
+    },
+    "ms": 4127
+  },
+  {
+    "escenario": "cuota/en-vivo",
+    "nombre": "el label no dice \"sin dato\" habiendo archivo",
+    "resultado": "pasa",
+    "evidencia": [
+      "cuota-en-vivo/frames-0.json"
+    ],
+    "datos": {
+      "etiqueta": "Cuenta Optimum · Ventana de 5 horas: 52% real, se renueva a las 06:06 PM · Semanal: 23% real, se renueva a las 03:06 PM"
+    },
+    "ms": 4127
+  },
+  {
+    "escenario": "cuota/header",
+    "nombre": "5 h muestra la lectura fresca del archivo (≤ 15 s, sin reiniciar)",
+    "resultado": "pasa",
+    "evidencia": [
+      "cuota-header/primera-lectura.png"
+    ],
+    "datos": {
+      "ok": true,
+      "ms": 5,
+      "ultima": "Cuenta Optimum · Ventana de 5 horas: 37% real, se renueva a las 06:06 PM · Semanal: 21% real, se renueva a las 03:06 PM"
+    },
+    "ms": 7290
+  },
+  {
+    "escenario": "cuota/header",
+    "nombre": "la semanal muestra % (no solo la hora de renovación)",
+    "resultado": "pasa",
+    "evidencia": [
+      "cuota-header/frames-0.json"
+    ],
+    "datos": {
+      "etiqueta": "Cuenta Optimum · Ventana de 5 horas: 37% real, se renueva a las 06:06 PM · Semanal: 21% real, se renueva a las 03:06 PM"
+    },
+    "ms": 7290
+  },
+  {
+    "escenario": "cuota/header",
+    "nombre": "el header sigue el cambio sin recargar (≤ 15 s)",
+    "resultado": "pasa",
+    "evidencia": [
+      "cuota-header/segunda-lectura.png"
+    ],
+    "datos": {
+      "ok": true,
+      "ms": 1523,
+      "ultima": "Cuenta Optimum · Ventana de 5 horas: 52% real, se renueva a las 06:06 PM · Semanal: 23% real, se renueva a las 03:06 PM"
+    },
+    "ms": 7290
+  },
+  {
+    "escenario": "cuota/header",
+    "nombre": "el detalle no dice \"sin dato\" en ninguna ventana",
+    "resultado": "pasa",
+    "evidencia": [
+      "cuota-header/detalle.png"
+    ],
+    "ms": 7290
+  },
+  {
+    "escenario": "cuota/header",
+    "nombre": "movil: el header muestra la cuota",
+    "resultado": "pasa",
+    "evidencia": [
+      "cuota-header/movil-header.png"
+    ],
+    "datos": {
+      "ok": true,
+      "ms": 6,
+      "ultima": "Cuenta Optimum · Ventana de 5 horas: 52% real, se renueva a las 06:06 PM · Semanal: 23% real, se renueva a las 03:06 PM"
+    },
+    "ms": 7290
+  },
+  {
+    "escenario": "cuota/sin-turnos",
+    "nombre": "la ventana de 5 h muestra el % con su antigüedad (\"hace N min\"), no \"sin dato\"",
+    "resultado": "falla",
+    "evidencia": [
+      "cuota-sin-turnos/vieja-20min.png"
+    ],
+    "datos": {
+      "ok": false,
+      "ms": null,
+      "ultima": "Cuenta Optimum · Ventana de 5 horas: 52% real, se renueva a las 06:06 PM · Semanal: 23% real, se renueva a las 03:06 PM"
+    },
+    "ms": 17697
+  },
+  {
+    "escenario": "cuota/sin-turnos",
+    "nombre": "la antigüedad reportada ronda los 20 min",
+    "resultado": "falla",
+    "evidencia": [
+      "cuota-sin-turnos/frames-0.json"
+    ],
+    "datos": {
+      "etiqueta": "Cuenta Optimum · Ventana de 5 horas: 52% real, se renueva a las 06:06 PM · Semanal: 23% real, se renueva a las 03:06 PM"
+    },
+    "ms": 17697
+  },
+  {
+    "escenario": "cuota/sin-turnos",
+    "nombre": "la semanal también muestra % con antigüedad, no \"sin dato\"",
+    "resultado": "falla",
+    "evidencia": [
+      "cuota-sin-turnos/frames-0.json"
+    ],
+    "datos": {
+      "etiqueta": "Cuenta Optimum · Ventana de 5 horas: 52% real, se renueva a las 06:06 PM · Semanal: 23% real, se renueva a las 03:06 PM"
+    },
+    "ms": 17697
+  },
+  {
+    "escenario": "cuota/sin-turnos",
+    "nombre": "no aparece \"sin dato\" en ningún lado habiendo una lectura (vieja) en el archivo",
+    "resultado": "pasa",
+    "evidencia": [
+      "cuota-sin-turnos/frames-0.json"
+    ],
+    "datos": {
+      "etiqueta": "Cuenta Optimum · Ventana de 5 horas: 52% real, se renueva a las 06:06 PM · Semanal: 23% real, se renueva a las 03:06 PM"
+    },
+    "ms": 17697
+  },
+  {
+    "escenario": "cuota/vieja",
+    "nombre": "la ventana de 5 h muestra \"ventana nueva\" en vez de un % inventado",
+    "resultado": "falla",
+    "evidencia": [
+      "cuota-vieja/reseteada.png"
+    ],
+    "datos": {
+      "ok": false,
+      "ms": null,
+      "ultima": "Cuenta Optimum · Ventana de 5 horas: 52% real, se renueva a las 06:06 PM · Semanal: 23% real, se renueva a las 03:06 PM"
+    },
+    "ms": 17686
+  },
+  {
+    "escenario": "cuota/vieja",
+    "nombre": "no muestra el 97% de la ventana ya cerrada",
+    "resultado": "pasa",
+    "evidencia": [
+      "cuota-vieja/frames-0.json"
+    ],
+    "datos": {
+      "etiqueta": "Cuenta Optimum · Ventana de 5 horas: 52% real, se renueva a las 06:06 PM · Semanal: 23% real, se renueva a las 03:06 PM"
+    },
+    "ms": 17686
+  },
+  {
+    "escenario": "cuota/vieja",
+    "nombre": "trae la hora en que se renovó",
+    "resultado": "falla",
+    "evidencia": [
+      "cuota-vieja/frames-0.json"
+    ],
+    "datos": {
+      "etiqueta": "Cuenta Optimum · Ventana de 5 horas: 52% real, se renueva a las 06:06 PM · Semanal: 23% real, se renueva a las 03:06 PM"
+    },
+    "ms": 17686
+  },
+  {
+    "escenario": "cuota/vieja",
+    "nombre": "la semanal, que no pasó su reset, sigue mostrando su % real",
+    "resultado": "falla",
+    "evidencia": [
+      "cuota-vieja/frames-0.json"
+    ],
+    "datos": {
+      "etiqueta": "Cuenta Optimum · Ventana de 5 horas: 52% real, se renueva a las 06:06 PM · Semanal: 23% real, se renueva a las 03:06 PM"
+    },
+    "ms": 17686
+  },
+  {
+    "escenario": "cuota/vieja",
+    "nombre": "no aparece \"sin dato\" en ningún lado (hay lectura para las dos ventanas)",
+    "resultado": "pasa",
+    "evidencia": [
+      "cuota-vieja/frames-0.json"
+    ],
+    "datos": {
+      "etiqueta": "Cuenta Optimum · Ventana de 5 horas: 52% real, se renueva a las 06:06 PM · Semanal: 23% real, se renueva a las 03:06 PM"
+    },
+    "ms": 17686
+  },
+  {
+    "escenario": "headless/actividad",
+    "nombre": "hay un indicador de actividad visible antes del primer token",
+    "resultado": "pasa",
+    "evidencia": [
+      "headless-actividad/antes-del-primer-token.png"
+    ],
+    "datos": {
+      "indicador": [
+        "Thinking…\n0s\nStop\nesc",
+        "Thinking…\n0s",
+        "Stop\nesc"
+      ]
+    },
+    "ms": 16786
+  },
+  {
+    "escenario": "headless/actividad",
+    "nombre": "el razonamiento se ve mientras se genera (≤ 2,3 s)",
+    "resultado": "pasa",
+    "evidencia": [
+      "headless-actividad/razonamiento-en-vivo.png"
+    ],
+    "datos": {
+      "tRazon": 1946,
+      "tResp": 2915
+    },
+    "ms": 16786
+  },
+  {
+    "escenario": "headless/actividad",
+    "nombre": "el server reenvía deltas de pensamiento",
+    "resultado": "pasa",
+    "evidencia": [
+      "headless-actividad/frames-0.json"
+    ],
+    "datos": {
+      "deltas": 11
+    },
+    "ms": 16786
+  },
+  {
+    "escenario": "headless/actividad",
+    "nombre": "la respuesta final aparece una vez",
+    "resultado": "pasa",
+    "evidencia": [
+      "headless-actividad/final.png"
+    ],
+    "ms": 16786
+  },
+  {
+    "escenario": "headless/actividad",
+    "nombre": "(herramienta) el indicador está visible antes del primer token",
+    "resultado": "pasa",
+    "evidencia": [
+      "headless-actividad/herramienta-durante-la-tool.png"
+    ],
+    "datos": {
+      "textoDuranteTool": "Bash…\n0s"
+    },
+    "ms": 16786
+  },
+  {
+    "escenario": "headless/actividad",
+    "nombre": "el indicador muestra el nombre de la tool mientras corre",
+    "resultado": "pasa",
+    "evidencia": [
+      "headless-actividad/herramienta-durante-la-tool.png"
+    ],
+    "datos": {
+      "textoDuranteTool": "Bash…\n0s"
+    },
+    "ms": 16786
+  },
+  {
+    "escenario": "headless/actividad",
+    "nombre": "tras ≥800 ms sin texto nuevo, el indicador vuelve a verse (\"Thinking…\")",
+    "resultado": "pasa",
+    "evidencia": [
+      "headless-actividad/herramienta-reaparece-tras-hueco.png"
+    ],
+    "datos": {
+      "tReaparece": 817
+    },
+    "ms": 16786
+  },
+  {
+    "escenario": "headless/actividad",
+    "nombre": "(herramienta) la respuesta final aparece una vez",
+    "resultado": "pasa",
+    "evidencia": [
+      "headless-actividad/herramienta-final.png"
+    ],
+    "ms": 16786
+  },
+  {
+    "escenario": "headless/pensamiento",
+    "nombre": "llegan deltas de pensamiento con texto",
+    "resultado": "pasa",
+    "evidencia": [
+      "headless-pensamiento/frames-0.json"
+    ],
+    "datos": {
+      "deltas": 22
+    },
+    "ms": 14404
+  },
+  {
+    "escenario": "headless/pensamiento",
+    "nombre": "el razonamiento se ve antes de la respuesta",
+    "resultado": "pasa",
+    "evidencia": [
+      "headless-pensamiento/final.png"
+    ],
+    "datos": {
+      "tRazon": 62,
+      "tResp": 11555
+    },
+    "ms": 14404
+  },
+  {
+    "escenario": "headless/recarga",
+    "nombre": "tras recargar a mitad, el indicador de actividad sigue",
+    "resultado": "pasa",
+    "evidencia": [
+      "headless-recarga/tras-recargar.png"
+    ],
+    "ms": 9838
+  },
+  {
+    "escenario": "headless/recarga",
+    "nombre": "al terminar el turno el indicador se va",
+    "resultado": "pasa",
+    "evidencia": [
+      "headless-recarga/al-terminar.png"
+    ],
+    "ms": 9838
+  },
+  {
+    "escenario": "headless/recarga",
+    "nombre": "una sola fila completa y sin fragmentos",
+    "resultado": "pasa",
+    "evidencia": [
+      "headless-recarga/final.png"
+    ],
+    "datos": {
+      "completas": 1,
+      "conElComienzo": 1
+    },
+    "ms": 9838
+  },
+  {
+    "escenario": "headless/subagente",
+    "nombre": "a mitad del subagente, su tarjeta muestra la tool en curso (antes del mensaje completo)",
+    "resultado": "pasa",
+    "evidencia": [
+      "headless-subagente/a-mitad.png"
+    ],
+    "datos": {
+      "vistoBash": true,
+      "vistoRead": true,
+      "cruzado": false
+    },
+    "ms": 9797
+  },
+  {
+    "escenario": "headless/subagente",
+    "nombre": "dos subagentes en paralelo: una tarjeta por cada uno, cada una con su propio texto",
+    "resultado": "pasa",
+    "evidencia": [
+      "headless-subagente/paralelo.png"
+    ],
+    "datos": {
+      "tarjetaA": 1,
+      "tarjetaB": 1,
+      "vistoTextoA": true,
+      "vistoTextoB": true
+    },
+    "ms": 9797
+  },
+  {
+    "escenario": "headless/subagente",
+    "nombre": "cada tarjeta se cierra con el resultado de su propio subagente",
+    "resultado": "pasa",
+    "evidencia": [
+      "headless-subagente/final.png"
+    ],
+    "datos": {
+      "resultadoA": 1,
+      "resultadoB": 1
+    },
+    "ms": 9797
+  },
+  {
+    "escenario": "headless/subagente",
+    "nombre": "el texto de cada subagente no se escapa al hilo principal",
+    "resultado": "pasa",
+    "evidencia": [
+      "headless-subagente/final.png"
+    ],
+    "datos": {
+      "sueltasA": 0,
+      "sueltasB": 0
+    },
+    "ms": 9797
+  },
+  {
+    "escenario": "headless/subagente",
+    "nombre": "la respuesta principal no se parte ni se duplica con subagentes de por medio",
+    "resultado": "pasa",
+    "evidencia": [
+      "headless-subagente/final.png"
+    ],
+    "datos": {
+      "apariciones": 1
+    },
+    "ms": 9797
+  },
+  {
+    "escenario": "headless/tipeo",
+    "nombre": "el texto visible crece en ≥ 5 muestras distintas",
+    "resultado": "pasa",
+    "evidencia": [
+      "headless-tipeo/a-mitad.png"
+    ],
+    "datos": {
+      "distintas": 23,
+      "largos": "48,58,68,78,84,96,102,110,119,126,136,144,154,161,167,180,186,193,204,210,220,227,236,236,236"
+    },
+    "ms": 9965
+  },
+  {
+    "escenario": "headless/tipeo",
+    "nombre": "la fila en streaming no se remonta mientras se escribe",
+    "resultado": "pasa",
+    "evidencia": [
+      "headless-tipeo/frames-0.json"
+    ],
+    "datos": {
+      "mismoDuranteStream": true
+    },
+    "ms": 9965
+  },
+  {
+    "escenario": "headless/tipeo",
+    "nombre": "al terminar sigue siendo el mismo nodo (el final no pinta otra fila)",
+    "resultado": "pasa",
+    "evidencia": [
+      "headless-tipeo/frames-0.json"
+    ],
+    "datos": {
+      "mismoAlFinal": true,
+      "msFin": 1322
+    },
+    "ms": 9965
+  },
+  {
+    "escenario": "headless/tipeo",
+    "nombre": "una sola fila con la respuesta",
+    "resultado": "pasa",
+    "evidencia": [
+      "headless-tipeo/final.png"
+    ],
+    "datos": {
+      "filas": 1
+    },
+    "ms": 9965
+  },
+  {
+    "escenario": "pregunta/headless",
+    "nombre": "escritorio: la pregunta llega a la UI",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-headless/escritorio-pregunta.png"
+    ],
+    "ms": 14524
+  },
+  {
+    "escenario": "pregunta/headless",
+    "nombre": "escritorio: la pregunta pendiente se ve una sola vez",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-headless/frames-0.json"
+    ],
+    "datos": {
+      "apariciones": 1
+    },
+    "ms": 14524
+  },
+  {
+    "escenario": "pregunta/headless",
+    "nombre": "escritorio: Claude recibe exactamente lo elegido",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-headless/frames-0.json"
+    ],
+    "datos": {
+      "linea": "Elegiste: Azul | Manzana, Uva | Sí"
+    },
+    "ms": 14524
+  },
+  {
+    "escenario": "pregunta/headless",
+    "nombre": "escritorio: después de contestar, la pregunta y la respuesta aparecen una vez cada una",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-headless/escritorio-respondida.png"
+    ],
+    "datos": {
+      "pregunta": 1,
+      "respuesta": 1,
+      "filasEco": 1
+    },
+    "ms": 14524
+  },
+  {
+    "escenario": "pregunta/headless",
+    "nombre": "movil: la pregunta llega a la UI",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-headless/movil-pregunta.png"
+    ],
+    "ms": 14524
+  },
+  {
+    "escenario": "pregunta/headless",
+    "nombre": "movil: la pregunta pendiente se ve una sola vez",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-headless/frames-0.json"
+    ],
+    "datos": {
+      "apariciones": 1
+    },
+    "ms": 14524
+  },
+  {
+    "escenario": "pregunta/headless",
+    "nombre": "movil: Claude recibe exactamente lo elegido",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-headless/frames-0.json"
+    ],
+    "datos": {
+      "linea": "Elegiste: Azul | Manzana, Uva | Sí"
+    },
+    "ms": 14524
+  },
+  {
+    "escenario": "pregunta/headless",
+    "nombre": "movil: después de contestar, la pregunta y la respuesta aparecen una vez cada una",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-headless/movil-respondida.png"
+    ],
+    "datos": {
+      "pregunta": 1,
+      "respuesta": 1,
+      "filasEco": 1
+    },
+    "ms": 14524
+  },
+  {
+    "escenario": "pregunta/modos",
+    "nombre": "default: la pregunta llega a la UI (no se contesta sola)",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-modos/default-pregunta.png"
+    ],
+    "ms": 19346
+  },
+  {
+    "escenario": "pregunta/modos",
+    "nombre": "default: Claude repite exactamente lo elegido",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-modos/default-respondida.png"
+    ],
+    "datos": {
+      "linea": "Elegiste: Azul | Manzana, Uva | Sí"
+    },
+    "ms": 19346
+  },
+  {
+    "escenario": "pregunta/modos",
+    "nombre": "auto: la pregunta llega a la UI (no se contesta sola)",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-modos/auto-pregunta.png"
+    ],
+    "ms": 19346
+  },
+  {
+    "escenario": "pregunta/modos",
+    "nombre": "auto: Claude repite exactamente lo elegido",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-modos/auto-respondida.png"
+    ],
+    "datos": {
+      "linea": "Elegiste: Azul | Manzana, Uva | Sí"
+    },
+    "ms": 19346
+  },
+  {
+    "escenario": "pregunta/modos",
+    "nombre": "bypassPermissions: la pregunta llega a la UI (no se contesta sola)",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-modos/bypassPermissions-pregunta.png"
+    ],
+    "ms": 19346
+  },
+  {
+    "escenario": "pregunta/modos",
+    "nombre": "bypassPermissions: Claude repite exactamente lo elegido",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-modos/bypassPermissions-respondida.png"
+    ],
+    "datos": {
+      "linea": "Elegiste: Azul | Manzana, Uva | Sí"
+    },
+    "ms": 19346
+  },
+  {
+    "escenario": "pregunta/otra",
+    "nombre": "la pregunta llega a la UI",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-otra/pregunta.png"
+    ],
+    "ms": 6594
+  },
+  {
+    "escenario": "pregunta/otra",
+    "nombre": "el texto libre de \"Otra\" llega literal, sin romperse",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-otra/respondida.png"
+    ],
+    "datos": {
+      "linea": "Elegiste: Un \"verde azulado\", medio raro ¿no? | Manzana | Sí",
+      "esperado": "Un \"verde azulado\", medio raro ¿no?"
+    },
+    "ms": 6594
+  },
+  {
+    "escenario": "pregunta/recarga",
+    "nombre": "la pregunta llega a la UI",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-recarga/pregunta.png"
+    ],
+    "ms": 9052
+  },
+  {
+    "escenario": "pregunta/recarga",
+    "nombre": "tras recargar, la pregunta con comillas aparece una sola vez y completa",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-recarga/tras-recargar.png"
+    ],
+    "datos": {
+      "apariciones": 1
+    },
+    "ms": 9052
+  },
+  {
+    "escenario": "pregunta/recarga",
+    "nombre": "tras recargar, se ve la respuesta elegida (\"Sí\") junto a esa pregunta",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-recarga/tras-recargar-respuesta.png"
+    ],
+    "ms": 9052
+  },
+  {
+    "escenario": "pregunta/sin-repetidos",
+    "nombre": "escritorio: la pregunta llega a la UI",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-sin-repetidos/escritorio-pregunta.png"
+    ],
+    "ms": 12018
+  },
+  {
+    "escenario": "pregunta/sin-repetidos",
+    "nombre": "escritorio: \"¿Qué color preferís?\" pendiente, una sola vez en el DOM",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-sin-repetidos/frames-0.json"
+    ],
+    "datos": {
+      "apariciones": 1
+    },
+    "ms": 12018
+  },
+  {
+    "escenario": "pregunta/sin-repetidos",
+    "nombre": "escritorio: \"¿Qué frutas querés?\" pendiente, una sola vez en el DOM",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-sin-repetidos/frames-0.json"
+    ],
+    "datos": {
+      "apariciones": 0
+    },
+    "ms": 12018
+  },
+  {
+    "escenario": "pregunta/sin-repetidos",
+    "nombre": "escritorio: \"Elegí \"una\" opción con comillas\" pendiente, una sola vez en el DOM",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-sin-repetidos/frames-0.json"
+    ],
+    "datos": {
+      "apariciones": 0
+    },
+    "ms": 12018
+  },
+  {
+    "escenario": "pregunta/sin-repetidos",
+    "nombre": "escritorio: \"¿Qué color preferís?\" contestada, una sola vez en el DOM",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-sin-repetidos/escritorio-respondida.png"
+    ],
+    "datos": {
+      "apariciones": 1
+    },
+    "ms": 12018
+  },
+  {
+    "escenario": "pregunta/sin-repetidos",
+    "nombre": "escritorio: \"¿Qué frutas querés?\" contestada, una sola vez en el DOM",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-sin-repetidos/escritorio-respondida.png"
+    ],
+    "datos": {
+      "apariciones": 1
+    },
+    "ms": 12018
+  },
+  {
+    "escenario": "pregunta/sin-repetidos",
+    "nombre": "escritorio: \"Elegí \"una\" opción con comillas\" contestada, una sola vez en el DOM",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-sin-repetidos/escritorio-respondida.png"
+    ],
+    "datos": {
+      "apariciones": 1
+    },
+    "ms": 12018
+  },
+  {
+    "escenario": "pregunta/sin-repetidos",
+    "nombre": "movil: la pregunta llega a la UI",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-sin-repetidos/movil-pregunta.png"
+    ],
+    "ms": 12018
+  },
+  {
+    "escenario": "pregunta/sin-repetidos",
+    "nombre": "movil: \"¿Qué color preferís?\" pendiente, una sola vez en el DOM",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-sin-repetidos/frames-0.json"
+    ],
+    "datos": {
+      "apariciones": 1
+    },
+    "ms": 12018
+  },
+  {
+    "escenario": "pregunta/sin-repetidos",
+    "nombre": "movil: \"¿Qué frutas querés?\" pendiente, una sola vez en el DOM",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-sin-repetidos/frames-0.json"
+    ],
+    "datos": {
+      "apariciones": 0
+    },
+    "ms": 12018
+  },
+  {
+    "escenario": "pregunta/sin-repetidos",
+    "nombre": "movil: \"Elegí \"una\" opción con comillas\" pendiente, una sola vez en el DOM",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-sin-repetidos/frames-0.json"
+    ],
+    "datos": {
+      "apariciones": 0
+    },
+    "ms": 12018
+  },
+  {
+    "escenario": "pregunta/sin-repetidos",
+    "nombre": "movil: \"¿Qué color preferís?\" contestada, una sola vez en el DOM",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-sin-repetidos/movil-respondida.png"
+    ],
+    "datos": {
+      "apariciones": 1
+    },
+    "ms": 12018
+  },
+  {
+    "escenario": "pregunta/sin-repetidos",
+    "nombre": "movil: \"¿Qué frutas querés?\" contestada, una sola vez en el DOM",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-sin-repetidos/movil-respondida.png"
+    ],
+    "datos": {
+      "apariciones": 1
+    },
+    "ms": 12018
+  },
+  {
+    "escenario": "pregunta/sin-repetidos",
+    "nombre": "movil: \"Elegí \"una\" opción con comillas\" contestada, una sola vez en el DOM",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-sin-repetidos/movil-respondida.png"
+    ],
+    "datos": {
+      "apariciones": 1
+    },
+    "ms": 12018
+  },
+  {
+    "escenario": "pregunta/tmux-multi",
+    "nombre": "llegan las 3 tildadas",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-tmux-multi/pregunta.png"
+    ],
+    "datos": {
+      "ultima": "COLORES Rojo, Azul, Negro\nMD"
+    },
+    "ms": 16500
+  },
+  {
+    "escenario": "pregunta/tmux-multi",
+    "nombre": "la pregunta y la respuesta se ven una vez",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-tmux-multi/final.png"
+    ],
+    "datos": {
+      "pregunta": 1
+    },
+    "ms": 16500
+  },
+  {
+    "escenario": "pregunta/tmux-simple",
+    "nombre": "la pregunta llega a la tarjeta",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-tmux-simple/pregunta.png"
+    ],
+    "ms": 41557
+  },
+  {
+    "escenario": "pregunta/tmux-simple",
+    "nombre": "llega la elegida",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-tmux-simple/final.png"
+    ],
+    "datos": {
+      "ultima": "ELEGISTE Pera\nMD"
+    },
+    "ms": 41557
+  },
+  {
+    "escenario": "pregunta/tmux",
+    "nombre": "simple: la pregunta llega a la tarjeta",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-tmux/simple-pregunta.png"
+    ],
+    "ms": 48422
+  },
+  {
+    "escenario": "pregunta/tmux",
+    "nombre": "simple: llega la elegida",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-tmux/frames-0.json"
+    ],
+    "datos": {
+      "ultima": "ELEGISTE Pera\nMD"
+    },
+    "ms": 48422
+  },
+  {
+    "escenario": "pregunta/tmux",
+    "nombre": "múltiple: llegan las 3 tildadas",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-tmux/multi-pregunta.png"
+    ],
+    "datos": {
+      "ultima": "COLORES Rojo, Azul, Negro\nCuota: la semanal va en 60% con 41% de la semana transcurrida y proyecta 146% al reset (en 99 "
+    },
+    "ms": 48422
+  },
+  {
+    "escenario": "pregunta/tmux",
+    "nombre": "la pregunta y la respuesta se ven una vez",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-tmux/final.png"
+    ],
+    "datos": {
+      "pregunta": 1
+    },
+    "ms": 48422
+  },
+  {
+    "escenario": "tmux/commits",
+    "nombre": "8267cbe1: el mensaje muestra \"Enviado\" una vez que el pane lo recibió",
+    "resultado": "pasa",
+    "evidencia": [
+      "tmux-commits/enviado.png"
+    ],
+    "datos": {
+      "enviadoMs": 854
+    },
+    "ms": 16131
+  },
+  {
+    "escenario": "tmux/commits",
+    "nombre": "62d63c69: con la sugerencia visible, el mensaje sale y se contesta",
+    "resultado": "pasa",
+    "evidencia": [
+      "tmux-commits/final.png"
+    ],
+    "datos": {
+      "sugerencia": "Respondé solo: 2un1qa",
+      "finMs": 2383,
+      "respuestaVisible": true
+    },
+    "ms": 16131
+  },
+  {
+    "escenario": "tmux/en-vivo",
+    "nombre": "\"pensando\" visible ≤ 2 s después de enviar",
+    "resultado": "pasa",
+    "evidencia": [
+      "tmux-en-vivo/indicador.png"
+    ],
+    "datos": {
+      "tInd": 749
+    },
+    "ms": 31944
+  },
+  {
+    "escenario": "tmux/en-vivo",
+    "nombre": "el texto crece en ≥ 3 muestras",
+    "resultado": "pasa",
+    "evidencia": [
+      "tmux-en-vivo/frames-0.json"
+    ],
+    "datos": {
+      "distintas": 9,
+      "largos": "65,184,286,423,582,681,759,837,931,931,931,931,931,931,931,931,931,931,931,931,931,931,931,931,931,931,931,931,931,931,931,931,931,931,931,931,931,931,931,931,931,931,931,931,931,931,931,931,931,931,931,931,931,931,931,931,931,931,931,931"
+    },
+    "ms": 31944
+  },
+  {
+    "escenario": "tmux/en-vivo",
+    "nombre": "al final, una sola fila de respuesta",
+    "resultado": "pasa",
+    "evidencia": [
+      "tmux-en-vivo/final.png"
+    ],
+    "datos": {
+      "filas": 1
+    },
+    "ms": 31944
+  },
+  {
+    "escenario": "tmux/latencia",
+    "nombre": "la primera fila de Claude aparece ≤ 1,5 s después de escribirse en el JSONL",
+    "resultado": "pasa",
+    "evidencia": [
+      "tmux-latencia/final.png"
+    ],
+    "datos": {
+      "jsonlMs": 2901,
+      "domMs": 4377,
+      "latenciaMs": 1476
+    },
+    "ms": 8620
+  },
+  {
+    "escenario": "tmux/rafaga",
+    "nombre": "cada mensaje 1 vez en el JSONL",
+    "resultado": "pasa",
+    "evidencia": [
+      "tmux-rafaga/frames-0.json"
+    ],
+    "datos": {
+      "enJsonl": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    "ms": 19972
+  },
+  {
+    "escenario": "tmux/rafaga",
+    "nombre": "cada mensaje 1 vez en el DOM",
+    "resultado": "pasa",
+    "evidencia": [
+      "tmux-rafaga/final.png"
+    ],
+    "datos": {
+      "enDom": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    "ms": 19972
+  },
+  {
+    "escenario": "tmux/rafaga",
+    "nombre": "un solo proceso claude en el proyecto",
+    "resultado": "falla",
+    "evidencia": [
+      "tmux-rafaga/frames-0.json"
+    ],
+    "datos": {
+      "durante": [
+        "2152027",
+        "2153036"
+      ],
+      "despues": [
+        "2153036"
+      ]
+    },
+    "ms": 19972
+  },
+  {
+    "escenario": "tmux/rafaga",
+    "nombre": "todos contestados",
+    "resultado": "pasa",
+    "evidencia": [
+      "tmux-rafaga/frames-0.json"
+    ],
+    "datos": {
+      "respondidos": [
+        1,
+        1,
+        1,
+        1,
+        2
+      ]
+    },
+    "ms": 19972
+  },
+  {
+    "escenario": "tmux/recarga",
+    "nombre": "el ack de suscripción dice que está procesando",
+    "resultado": "pasa",
+    "evidencia": [
+      "tmux-recarga/frames-0.json"
+    ],
+    "datos": {
+      "isProcessing": true,
+      "runsInTmux": true
+    },
+    "ms": 10010
+  },
+  {
+    "escenario": "tmux/recarga",
+    "nombre": "tras recargar, el indicador sigue",
+    "resultado": "falla",
+    "evidencia": [
+      "tmux-recarga/tras-recargar.png"
+    ],
+    "ms": 10010
+  },
+  {
+    "escenario": "tmux/turno-corto",
+    "nombre": "cada turno pasa a libre ≤ 3 s después de que se ve la respuesta",
+    "resultado": "pasa",
+    "evidencia": [
+      "tmux-turno-corto/final.png"
+    ],
+    "datos": [
+      -136,
+      -22,
+      -67
+    ],
+    "ms": 12982
+  },
+  {
+    "escenario": "tmux/turno-corto",
+    "nombre": "cada respuesta aparece una vez",
+    "resultado": "pasa",
+    "evidencia": [
+      "tmux-turno-corto/frames-0.json"
+    ],
+    "datos": [
+      1,
+      1,
+      1
+    ],
+    "ms": 12982
+  },
+  {
+    "escenario": "visual/bocetos",
+    "nombre": "chat: movil/light sin scroll horizontal",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-bocetos/chat-movil-light.png"
+    ],
+    "datos": {
+      "desborde": 0
+    },
+    "ms": 3854
+  },
+  {
+    "escenario": "visual/bocetos",
+    "nombre": "chat: movil/light consola sin errores",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-bocetos/chat-movil-light.png"
+    ],
+    "datos": [],
+    "ms": 3854
+  },
+  {
+    "escenario": "visual/bocetos",
+    "nombre": "chat: movil/dark sin scroll horizontal",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-bocetos/chat-movil-dark.png"
+    ],
+    "datos": {
+      "desborde": 0
+    },
+    "ms": 3854
+  },
+  {
+    "escenario": "visual/bocetos",
+    "nombre": "chat: movil/dark consola sin errores",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-bocetos/chat-movil-dark.png"
+    ],
+    "datos": [],
+    "ms": 3854
+  },
+  {
+    "escenario": "visual/bocetos",
+    "nombre": "chat: escritorio/light sin scroll horizontal",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-bocetos/chat-escritorio-light.png"
+    ],
+    "datos": {
+      "desborde": 0
+    },
+    "ms": 3854
+  },
+  {
+    "escenario": "visual/bocetos",
+    "nombre": "chat: escritorio/light consola sin errores",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-bocetos/chat-escritorio-light.png"
+    ],
+    "datos": [],
+    "ms": 3854
+  },
+  {
+    "escenario": "visual/bocetos",
+    "nombre": "chat: escritorio/dark sin scroll horizontal",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-bocetos/chat-escritorio-dark.png"
+    ],
+    "datos": {
+      "desborde": 0
+    },
+    "ms": 3854
+  },
+  {
+    "escenario": "visual/bocetos",
+    "nombre": "chat: escritorio/dark consola sin errores",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-bocetos/chat-escritorio-dark.png"
+    ],
+    "datos": [],
+    "ms": 3854
+  },
+  {
+    "escenario": "visual/bocetos",
+    "nombre": "header-barra: movil/light sin scroll horizontal",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-bocetos/header-barra-movil-light.png"
+    ],
+    "datos": {
+      "desborde": 0
+    },
+    "ms": 3854
+  },
+  {
+    "escenario": "visual/bocetos",
+    "nombre": "header-barra: movil/light consola sin errores",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-bocetos/header-barra-movil-light.png"
+    ],
+    "datos": [],
+    "ms": 3854
+  },
+  {
+    "escenario": "visual/bocetos",
+    "nombre": "header-barra: movil/dark sin scroll horizontal",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-bocetos/header-barra-movil-dark.png"
+    ],
+    "datos": {
+      "desborde": 0
+    },
+    "ms": 3854
+  },
+  {
+    "escenario": "visual/bocetos",
+    "nombre": "header-barra: movil/dark consola sin errores",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-bocetos/header-barra-movil-dark.png"
+    ],
+    "datos": [],
+    "ms": 3854
+  },
+  {
+    "escenario": "visual/bocetos",
+    "nombre": "header-barra: escritorio/light sin scroll horizontal",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-bocetos/header-barra-escritorio-light.png"
+    ],
+    "datos": {
+      "desborde": 0
+    },
+    "ms": 3854
+  },
+  {
+    "escenario": "visual/bocetos",
+    "nombre": "header-barra: escritorio/light consola sin errores",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-bocetos/header-barra-escritorio-light.png"
+    ],
+    "datos": [],
+    "ms": 3854
+  },
+  {
+    "escenario": "visual/bocetos",
+    "nombre": "header-barra: escritorio/dark sin scroll horizontal",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-bocetos/header-barra-escritorio-dark.png"
+    ],
+    "datos": {
+      "desborde": 0
+    },
+    "ms": 3854
+  },
+  {
+    "escenario": "visual/bocetos",
+    "nombre": "header-barra: escritorio/dark consola sin errores",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-bocetos/header-barra-escritorio-dark.png"
+    ],
+    "datos": [],
+    "ms": 3854
+  },
+  {
+    "escenario": "visual/bocetos",
+    "nombre": "cuestionario: movil/light sin scroll horizontal",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-bocetos/cuestionario-movil-light.png"
+    ],
+    "datos": {
+      "desborde": 0
+    },
+    "ms": 3854
+  },
+  {
+    "escenario": "visual/bocetos",
+    "nombre": "cuestionario: movil/light consola sin errores",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-bocetos/cuestionario-movil-light.png"
+    ],
+    "datos": [],
+    "ms": 3854
+  },
+  {
+    "escenario": "visual/bocetos",
+    "nombre": "cuestionario: movil/dark sin scroll horizontal",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-bocetos/cuestionario-movil-dark.png"
+    ],
+    "datos": {
+      "desborde": 0
+    },
+    "ms": 3854
+  },
+  {
+    "escenario": "visual/bocetos",
+    "nombre": "cuestionario: movil/dark consola sin errores",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-bocetos/cuestionario-movil-dark.png"
+    ],
+    "datos": [],
+    "ms": 3854
+  },
+  {
+    "escenario": "visual/bocetos",
+    "nombre": "cuestionario: escritorio/light sin scroll horizontal",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-bocetos/cuestionario-escritorio-light.png"
+    ],
+    "datos": {
+      "desborde": 0
+    },
+    "ms": 3854
+  },
+  {
+    "escenario": "visual/bocetos",
+    "nombre": "cuestionario: escritorio/light consola sin errores",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-bocetos/cuestionario-escritorio-light.png"
+    ],
+    "datos": [],
+    "ms": 3854
+  },
+  {
+    "escenario": "visual/bocetos",
+    "nombre": "cuestionario: escritorio/dark sin scroll horizontal",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-bocetos/cuestionario-escritorio-dark.png"
+    ],
+    "datos": {
+      "desborde": 0
+    },
+    "ms": 3854
+  },
+  {
+    "escenario": "visual/bocetos",
+    "nombre": "cuestionario: escritorio/dark consola sin errores",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-bocetos/cuestionario-escritorio-dark.png"
+    ],
+    "datos": [],
+    "ms": 3854
+  },
+  {
+    "escenario": "visual/chat",
+    "nombre": "chat movil-light: ninguna fuente serif en los mensajes",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-chat/chat-movil-light.png"
+    ],
+    "ms": 53518
+  },
+  {
+    "escenario": "visual/chat",
+    "nombre": "chat movil-light: sin scroll horizontal",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-chat/chat-movil-light.png"
+    ],
+    "datos": {
+      "desborde": 0
+    },
+    "ms": 53518
+  },
+  {
+    "escenario": "visual/chat",
+    "nombre": "chat movil-light: consola sin errores",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-chat/chat-movil-light.png"
+    ],
+    "datos": [],
+    "ms": 53518
+  },
+  {
+    "escenario": "visual/chat",
+    "nombre": "chat movil-dark: ninguna fuente serif en los mensajes",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-chat/chat-movil-dark.png"
+    ],
+    "ms": 53518
+  },
+  {
+    "escenario": "visual/chat",
+    "nombre": "chat movil-dark: sin scroll horizontal",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-chat/chat-movil-dark.png"
+    ],
+    "datos": {
+      "desborde": 0
+    },
+    "ms": 53518
+  },
+  {
+    "escenario": "visual/chat",
+    "nombre": "chat movil-dark: consola sin errores",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-chat/chat-movil-dark.png"
+    ],
+    "datos": [],
+    "ms": 53518
+  },
+  {
+    "escenario": "visual/chat",
+    "nombre": "chat escritorio-light: ninguna fuente serif en los mensajes",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-chat/chat-escritorio-light.png"
+    ],
+    "ms": 53518
+  },
+  {
+    "escenario": "visual/chat",
+    "nombre": "chat escritorio-light: sin scroll horizontal",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-chat/chat-escritorio-light.png"
+    ],
+    "datos": {
+      "desborde": 0
+    },
+    "ms": 53518
+  },
+  {
+    "escenario": "visual/chat",
+    "nombre": "chat escritorio-light: consola sin errores",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-chat/chat-escritorio-light.png"
+    ],
+    "datos": [],
+    "ms": 53518
+  },
+  {
+    "escenario": "visual/chat",
+    "nombre": "chat escritorio-dark: ninguna fuente serif en los mensajes",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-chat/chat-escritorio-dark.png"
+    ],
+    "ms": 53518
+  },
+  {
+    "escenario": "visual/chat",
+    "nombre": "chat escritorio-dark: sin scroll horizontal",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-chat/chat-escritorio-dark.png"
+    ],
+    "datos": {
+      "desborde": 0
+    },
+    "ms": 53518
+  },
+  {
+    "escenario": "visual/chat",
+    "nombre": "chat escritorio-dark: consola sin errores",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-chat/chat-escritorio-dark.png"
+    ],
+    "datos": [],
+    "ms": 53518
+  },
+  {
+    "escenario": "visual/cuestionario",
+    "nombre": "cuestionario movil-light: la opción entra en pantalla",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-cuestionario/cuestionario-movil-light.png"
+    ],
+    "datos": {
+      "x": 25,
+      "y": 578,
+      "width": 291,
+      "height": 52
+    },
+    "ms": 14725
+  },
+  {
+    "escenario": "visual/cuestionario",
+    "nombre": "cuestionario movil-light: sin scroll horizontal",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-cuestionario/cuestionario-movil-light.png"
+    ],
+    "datos": {
+      "desborde": 0
+    },
+    "ms": 14725
+  },
+  {
+    "escenario": "visual/cuestionario",
+    "nombre": "cuestionario movil-light: consola sin errores",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-cuestionario/cuestionario-movil-light.png"
+    ],
+    "datos": [],
+    "ms": 14725
+  },
+  {
+    "escenario": "visual/cuestionario",
+    "nombre": "cuestionario movil-dark: la opción entra en pantalla",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-cuestionario/cuestionario-movil-dark.png"
+    ],
+    "datos": {
+      "x": 25,
+      "y": 578,
+      "width": 291,
+      "height": 52
+    },
+    "ms": 14725
+  },
+  {
+    "escenario": "visual/cuestionario",
+    "nombre": "cuestionario movil-dark: sin scroll horizontal",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-cuestionario/cuestionario-movil-dark.png"
+    ],
+    "datos": {
+      "desborde": 0
+    },
+    "ms": 14725
+  },
+  {
+    "escenario": "visual/cuestionario",
+    "nombre": "cuestionario movil-dark: consola sin errores",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-cuestionario/cuestionario-movil-dark.png"
+    ],
+    "datos": [],
+    "ms": 14725
+  },
+  {
+    "escenario": "visual/cuestionario",
+    "nombre": "cuestionario escritorio-light: la opción entra en pantalla",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-cuestionario/cuestionario-escritorio-light.png"
+    ],
+    "datos": {
+      "x": 335,
+      "y": 518,
+      "width": 834,
+      "height": 52
+    },
+    "ms": 14725
+  },
+  {
+    "escenario": "visual/cuestionario",
+    "nombre": "cuestionario escritorio-light: sin scroll horizontal",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-cuestionario/cuestionario-escritorio-light.png"
+    ],
+    "datos": {
+      "desborde": 0
+    },
+    "ms": 14725
+  },
+  {
+    "escenario": "visual/cuestionario",
+    "nombre": "cuestionario escritorio-light: consola sin errores",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-cuestionario/cuestionario-escritorio-light.png"
+    ],
+    "datos": [],
+    "ms": 14725
+  },
+  {
+    "escenario": "visual/cuestionario",
+    "nombre": "cuestionario escritorio-dark: la opción entra en pantalla",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-cuestionario/cuestionario-escritorio-dark.png"
+    ],
+    "datos": {
+      "x": 335,
+      "y": 518,
+      "width": 834,
+      "height": 52
+    },
+    "ms": 14725
+  },
+  {
+    "escenario": "visual/cuestionario",
+    "nombre": "cuestionario escritorio-dark: sin scroll horizontal",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-cuestionario/cuestionario-escritorio-dark.png"
+    ],
+    "datos": {
+      "desborde": 0
+    },
+    "ms": 14725
+  },
+  {
+    "escenario": "visual/cuestionario",
+    "nombre": "cuestionario escritorio-dark: consola sin errores",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-cuestionario/cuestionario-escritorio-dark.png"
+    ],
+    "datos": [],
+    "ms": 14725
+  },
+  {
+    "escenario": "visual/header-barra",
+    "nombre": "header movil-light: la cuota de 5 h se ve con su %",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-header-barra/header-movil-light.png"
+    ],
+    "datos": {
+      "texto": "Ventana 5h 41% Semanal 72%"
+    },
+    "ms": 26558
+  },
+  {
+    "escenario": "visual/header-barra",
+    "nombre": "header movil-light: sin scroll horizontal",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-header-barra/header-movil-light.png"
+    ],
+    "datos": {
+      "desborde": 0
+    },
+    "ms": 26558
+  },
+  {
+    "escenario": "visual/header-barra",
+    "nombre": "header movil-light: consola sin errores",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-header-barra/header-movil-light.png"
+    ],
+    "datos": [],
+    "ms": 26558
+  },
+  {
+    "escenario": "visual/header-barra",
+    "nombre": "header movil-dark: la cuota de 5 h se ve con su %",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-header-barra/header-movil-dark.png"
+    ],
+    "datos": {
+      "texto": "Ventana 5h 41% Semanal 72%"
+    },
+    "ms": 26558
+  },
+  {
+    "escenario": "visual/header-barra",
+    "nombre": "header movil-dark: sin scroll horizontal",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-header-barra/header-movil-dark.png"
+    ],
+    "datos": {
+      "desborde": 0
+    },
+    "ms": 26558
+  },
+  {
+    "escenario": "visual/header-barra",
+    "nombre": "header movil-dark: consola sin errores",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-header-barra/header-movil-dark.png"
+    ],
+    "datos": [],
+    "ms": 26558
+  },
+  {
+    "escenario": "visual/header-barra",
+    "nombre": "header escritorio-light: la cuota de 5 h se ve con su %",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-header-barra/header-escritorio-light.png"
+    ],
+    "datos": {
+      "texto": "Ventana 5h 41% dato real · resetea en 3 h 0 min Semanal 72% dato real · resetea en 96 h 0 min"
+    },
+    "ms": 26558
+  },
+  {
+    "escenario": "visual/header-barra",
+    "nombre": "barra escritorio-light: las sesiones muestran su estado",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-header-barra/header-escritorio-light.png"
+    ],
+    "datos": {
+      "rotulos": 20
+    },
+    "ms": 26558
+  },
+  {
+    "escenario": "visual/header-barra",
+    "nombre": "header escritorio-light: sin scroll horizontal",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-header-barra/header-escritorio-light.png"
+    ],
+    "datos": {
+      "desborde": 0
+    },
+    "ms": 26558
+  },
+  {
+    "escenario": "visual/header-barra",
+    "nombre": "header escritorio-light: consola sin errores",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-header-barra/header-escritorio-light.png"
+    ],
+    "datos": [],
+    "ms": 26558
+  },
+  {
+    "escenario": "visual/header-barra",
+    "nombre": "header escritorio-dark: la cuota de 5 h se ve con su %",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-header-barra/header-escritorio-dark.png"
+    ],
+    "datos": {
+      "texto": "Ventana 5h 41% dato real · resetea en 3 h 0 min Semanal 72% dato real · resetea en 96 h 0 min"
+    },
+    "ms": 26558
+  },
+  {
+    "escenario": "visual/header-barra",
+    "nombre": "barra escritorio-dark: las sesiones muestran su estado",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-header-barra/header-escritorio-dark.png"
+    ],
+    "datos": {
+      "rotulos": 20
+    },
+    "ms": 26558
+  },
+  {
+    "escenario": "visual/header-barra",
+    "nombre": "header escritorio-dark: sin scroll horizontal",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-header-barra/header-escritorio-dark.png"
+    ],
+    "datos": {
+      "desborde": 0
+    },
+    "ms": 26558
+  },
+  {
+    "escenario": "visual/header-barra",
+    "nombre": "header escritorio-dark: consola sin errores",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-header-barra/header-escritorio-dark.png"
+    ],
+    "datos": [],
+    "ms": 26558
+  },
+  {
+    "escenario": "visual/salidas",
+    "nombre": "arrastrar el borde izquierdo agranda el panel de Salidas",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-salidas/antes-de-arrastrar.png",
+      "visual-salidas/panel-agrandado.png"
+    ],
+    "datos": {
+      "panelAntes": 320,
+      "panelDespues": 620
+    },
+    "ms": 7060
+  },
+  {
+    "escenario": "visual/salidas",
+    "nombre": "arrastrar la manija entre lista y vista previa agranda la lista",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-salidas/lista-agrandada.png"
+    ],
+    "datos": {
+      "listaAntes": 144,
+      "listaDespues": 264
+    },
+    "ms": 7060
+  },
+  {
+    "escenario": "visual/salidas",
+    "nombre": "los dos anchos sobreviven a recargar la página",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-salidas/despues-de-recargar.png"
+    ],
+    "datos": {
+      "panelDespues": 620,
+      "panelRecarga": 620,
+      "listaDespues": 264,
+      "listaRecarga": 264
+    },
+    "ms": 7060
+  },
+  {
+    "escenario": "visual/salidas",
+    "nombre": "\"Pestaña nueva\" abre la salida HTML renderizada en otra pestaña",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-salidas/pestana-nueva.png"
+    ],
+    "datos": {
+      "url": "blob:http://127.0.0.1:4082/59de85ea-f568",
+      "titulo": "Salida de prueba 26ix9m"
+    },
+    "ms": 7060
+  },
+  {
+    "escenario": "visual/salidas",
+    "nombre": "el HTML abierto en la pestaña nueva no puede leer el localStorage de la app",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-salidas/pestana-nueva.png"
+    ],
+    "datos": {
+      "origen": "BLOQUEADO",
+      "sandbox": "allow-scripts allow-popups"
+    },
+    "ms": 7060
+  }
+]

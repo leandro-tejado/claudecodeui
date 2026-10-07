@@ -1,0 +1,73 @@
+[
+  {
+    "escenario": "tmux/rafaga",
+    "nombre": "cada mensaje 1 vez en el JSONL",
+    "resultado": "pasa",
+    "evidencia": [
+      "tmux-rafaga/frames-0.json"
+    ],
+    "datos": {
+      "enJsonl": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    "ms": 25470
+  },
+  {
+    "escenario": "tmux/rafaga",
+    "nombre": "cada mensaje 1 vez en el DOM",
+    "resultado": "pasa",
+    "evidencia": [
+      "tmux-rafaga/final.png"
+    ],
+    "datos": {
+      "enDom": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    "ms": 25470
+  },
+  {
+    "escenario": "tmux/rafaga",
+    "nombre": "un solo proceso claude en el proyecto",
+    "resultado": "pasa",
+    "evidencia": [
+      "tmux-rafaga/frames-0.json"
+    ],
+    "datos": {
+      "durante": [
+        "2165010"
+      ],
+      "despues": [
+        "2165010"
+      ]
+    },
+    "ms": 25470
+  },
+  {
+    "escenario": "tmux/rafaga",
+    "nombre": "todos contestados",
+    "resultado": "pasa",
+    "evidencia": [
+      "tmux-rafaga/frames-0.json"
+    ],
+    "datos": {
+      "respondidos": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    "ms": 25470
+  }
+]
