@@ -2,6 +2,7 @@ import path from 'node:path';
 
 import { projectsDb, sessionsDb } from '@/modules/database/index.js';
 import { generateDisplayName, resolverCuentaDeSesion, resolverTmuxDeSesion } from '@/modules/projects/index.js';
+import { marcarTitulosDeEventos } from '@/modules/websocket/services/tmux-titulo.service.js';
 import { connectedClients, WS_OPEN_STATE } from '@/modules/websocket/services/websocket-state.service.js';
 import type { SessionUpsertedEvent } from '@/shared/types.js';
 
@@ -93,6 +94,8 @@ export async function broadcastSessionUpserted(sessionIdOrProviderSessionId: str
   const event = await buildSessionUpsertedEvent(sessionIdOrProviderSessionId);
   if (event) {
     sendToConnectedClients([JSON.stringify(event)]);
+    // El título también en el pane de tmux (`@titulo`), para `orquestar.py listar`.
+    await marcarTitulosDeEventos([event]);
   }
 }
 
@@ -105,14 +108,18 @@ export async function broadcastSessionUpsertedBatch(
   sessionIds: Iterable<string>,
 ): Promise<void> {
   const payloads: string[] = [];
+  const events: SessionUpsertedEvent[] = [];
   for (const sessionId of sessionIds) {
     const event = await buildSessionUpsertedEvent(sessionId);
     if (event) {
       payloads.push(JSON.stringify(event));
+      events.push(event);
     }
   }
 
   sendToConnectedClients(payloads);
+  // Después de avisar a la barra: tmux no demora el delta.
+  await marcarTitulosDeEventos(events);
 }
 
 /** @internal Exported for the broadcast tests, which assert the payload shape directly. */

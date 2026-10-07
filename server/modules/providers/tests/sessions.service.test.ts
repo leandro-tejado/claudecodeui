@@ -42,19 +42,42 @@ test('provider session id returns the mapped native id', { concurrency: false },
   });
 });
 
-test('app session names use at most four whole words from the initial message', { concurrency: false }, async () => {
+test('app session names are a human title from the first message, not its first words', { concurrency: false }, async () => {
   await withIsolatedDatabase(() => {
     const result = sessionsService.createAppSession(
-      'codex',
+      'claude',
       '/tmp/session-name-project',
-      '  supercalifragilisticexpialidocious\nsecond   third fourth fifth  ',
+      'hola! agregá a Antonio al VPS con acceso por SSH. Tiene que poder entrar desde ~/notebook/.ssh/config',
     );
 
-    assert.equal(result.sessionName, 'supercalifragilisticexpialidocious second third fourth');
-    assert.equal(
-      sessionsDb.getSessionById(result.sessionId)?.custom_name,
-      'supercalifragilisticexpialidocious second third fourth',
-    );
+    assert.equal(result.sessionName, 'Agregá a Antonio al VPS con acceso por SSH');
+    const row = sessionsDb.getSessionById(result.sessionId);
+    assert.equal(row?.custom_name, 'Agregá a Antonio al VPS con acceso por SSH');
+    // Provisorio: el ai-title de Claude Code todavía puede mejorarlo una vez.
+    assert.equal(row?.custom_name_is_placeholder, 1);
+  });
+});
+
+test('a plan command names the session after the plan and locks the name', { concurrency: false }, async () => {
+  await withIsolatedDatabase(async () => {
+    const projectPath = await mkdtemp(path.join(os.tmpdir(), 'session-plan-project-'));
+    try {
+      await import('node:fs/promises').then((fs) => fs.mkdir(path.join(projectPath, 'plans')));
+      await writeFile(
+        path.join(projectPath, 'plans', '06-octubre-vps-multi-cuenta.md'),
+        '# VPS con varias cuentas de IA a la vez\n\n**Estado:** en-ejecucion\n',
+      );
+      const result = sessionsService.createAppSession(
+        'claude',
+        projectPath,
+        '/aos-core:ejecutar-plan plans/06-octubre-vps-multi-cuenta.md — Leandro ya aprobó, seguí con la Fase 2',
+      );
+
+      assert.equal(result.sessionName, 'VPS con varias cuentas de IA a la vez');
+      assert.equal(sessionsDb.getSessionById(result.sessionId)?.custom_name_is_placeholder, 0);
+    } finally {
+      await rm(projectPath, { recursive: true, force: true });
+    }
   });
 });
 

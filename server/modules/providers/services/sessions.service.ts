@@ -6,6 +6,7 @@ import { projectsDb, sessionsDb } from '@/modules/database/index.js';
 import { broadcastSessionUpserted, broadcastSidebarArchived, chatRunRegistry } from '@/modules/websocket/index.js';
 import { providerRegistry } from '@/modules/providers/provider.registry.js';
 import { sessionHistoryCache } from '@/modules/providers/services/session-history-cache.service.js';
+import { tituloHumano, type TituloHumano } from '@/modules/providers/services/titulo-humano.js';
 import { asegurarCuentaUsable } from '@/modules/cuentas/index.js';
 import { gobernadorService, RAM_CEILING_PERCENT, ramCeilingService } from '@/modules/system/index.js';
 import type {
@@ -90,7 +91,6 @@ type SessionDetails = {
   } | null;
 };
 
-const MAX_CLOUDCLI_SESSION_NAME_WORDS = 4;
 
 // Allowlist of cheap models, not a blocklist: an unrecognized or future model
 // id is treated as expensive so the candado (Fase 5 del plan de sesiones
@@ -112,9 +112,13 @@ export function isExpensiveModel(model: string | null | undefined): boolean {
   return !CHEAP_MODEL_VALUES.has(model.trim().toLowerCase());
 }
 
-function buildCloudCliSessionName(initialMessage: string): string {
-  const words = initialMessage.trim().split(/\s+/).filter(Boolean);
-  return words.slice(0, MAX_CLOUDCLI_SESSION_NAME_WORDS).join(' ') || 'Untitled Session';
+/**
+ * El título con el que nace una sesión de la app: el título humano del
+ * primer mensaje (`tituloHumano`), no sus primeras palabras. `definitivo`
+ * cuando sale de un plan: ese nombre ya no lo pisa el `ai-title`.
+ */
+function buildCloudCliSessionName(initialMessage: string, projectPath: string): TituloHumano {
+  return tituloHumano(initialMessage, { cwd: projectPath }) ?? { titulo: 'Untitled Session', definitivo: false };
 }
 
 /**
@@ -275,8 +279,9 @@ export const sessionsService = {
    * chat, navigates to the returned id immediately, and the id never changes
    * for the lifetime of the conversation. The provider-native id is mapped to
    * this row later, when the provider runtime announces it mid-run. Its title
-   * comes directly from the first visible CloudCLI message and is limited to
-   * four whole words before any provider-owned storage exists.
+   * is the human title of the first visible CloudCLI message (`tituloHumano`):
+   * the plan's title for a plan command, otherwise the message's first
+   * sentence without commands, paths or filler.
    */
   createAppSession(
     provider: LLMProvider,
@@ -319,8 +324,8 @@ export const sessionsService = {
     }
 
     const sessionId = randomUUID();
-    const sessionName = buildCloudCliSessionName(initialMessage);
-    sessionsDb.createAppSession(sessionId, provider, normalizedProjectPath, sessionName, cuenta);
+    const { titulo: sessionName, definitivo } = buildCloudCliSessionName(initialMessage, normalizedProjectPath);
+    sessionsDb.createAppSession(sessionId, provider, normalizedProjectPath, sessionName, cuenta, definitivo);
 
     return {
       sessionId,

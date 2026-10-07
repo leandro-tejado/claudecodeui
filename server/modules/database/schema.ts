@@ -143,6 +143,9 @@ CREATE TABLE IF NOT EXISTS sessions (
     -- any explicit user rename — from then on the name is locked and no
     -- synchronizer touches it again. NULL/0 for legacy rows and rows
     -- discovered directly on disk, which were never a CloudCLI guess.
+    -- 2 (07-oct): the human title the Claude synchronizer derived from the
+    -- first message (\`tituloHumano\`) — only an ai-title/custom-title
+    -- replaces it, never a later prompt.
     custom_name_is_placeholder BOOLEAN DEFAULT 0,
     project_path TEXT,
     jsonl_path TEXT,

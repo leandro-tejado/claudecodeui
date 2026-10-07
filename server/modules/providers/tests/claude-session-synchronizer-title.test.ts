@@ -124,9 +124,12 @@ test('a literal-command chat title updates once the SDK writes its ai-title for 
     const synchronizer = new ClaudeSessionSynchronizer();
     await synchronizer.synchronizeFile(transcriptPath);
 
+    // Desde el 07-oct el primer mensaje ya da un título humano (`tituloHumano`):
+    // sin el `/` del comando, y todavía provisorio (placeholder 2) para que el
+    // `ai-title` lo pueda mejorar una vez.
     const midRow = sessionsDb.getSessionById('app-session-1');
-    assert.equal(midRow?.custom_name, '/algo');
-    assert.equal(midRow?.custom_name_is_placeholder, 1);
+    assert.equal(midRow?.custom_name, 'Algo');
+    assert.equal(midRow?.custom_name_is_placeholder, 2);
 
     // 3) The first turn completes and the SDK appends its own bookkeeping
     // rows, including a real `ai-title`. THIS is the reproduction: before
@@ -159,5 +162,135 @@ test('a literal-command chat title updates once the SDK writes its ai-title for 
 
     const finalRow = sessionsDb.getSessionById('app-session-1');
     assert.equal(finalRow?.custom_name, 'Reviewing the deployment script');
+  });
+});
+
+/*
+ * Bug del 07-oct (sesión 6770c130): una sesión de `ct`/el orquestador quedó
+ * titulada para siempre con el prompt crudo — "/aos-core:ejecutar-plan
+ * plans/06-octubre-vps-multi-cuenta.md — la Fase 1 ya está cerrada…" —
+ * aunque su transcript tiene `ai-title` "Fase 3b diseño header". El primer
+ * sync encontró solo `last-prompt`, lo aplicó y bloqueó el nombre; el
+ * `ai-title` llegó después y ya no entró.
+ */
+function bookkeepingSinTitulo(lastPrompt: string, timestamp: string): string[] {
+  return [
+    JSON.stringify({ type: 'system', sessionId: SESSION_ID, timestamp }),
+    JSON.stringify({ type: 'last-prompt', sessionId: SESSION_ID, lastPrompt, timestamp }),
+  ];
+}
+
+const PROMPT_ANTONIO = 'hola! agregá a Antonio al VPS con acceso por SSH. Tiene que poder entrar desde su notebook';
+
+test('una sesión de tmux nace con un título humano del primer mensaje, y el ai-title lo mejora una vez', async () => {
+  await withIsolatedEnvironment(async ({ transcriptPath }) => {
+    // La fila que deja el registro de tmux antes del primer mensaje: el nombre del pane.
+    sessionsDb.createPendingTmuxSession(SESSION_ID, PROJECT_PATH, 'proyecto-chat-3');
+    const synchronizer = new ClaudeSessionSynchronizer();
+
+    const turno1 = [
+      userLine(PROMPT_ANTONIO, '2026-10-07T10:00:00.000Z'),
+      assistantLine('2026-10-07T10:00:05.000Z'),
+      ...bookkeepingSinTitulo(PROMPT_ANTONIO, '2026-10-07T10:00:05.500Z'),
+    ];
+    await writeFile(transcriptPath, `${turno1.join('\n')}\n`, 'utf8');
+    await synchronizer.synchronizeFile(transcriptPath);
+
+    let row = sessionsDb.getSessionById(SESSION_ID);
+    assert.equal(row?.custom_name, 'Agregá a Antonio al VPS con acceso por SSH');
+    assert.equal(row?.custom_name_is_placeholder, 2, 'provisorio: el ai-title todavía puede entrar');
+
+    // Un segundo turno sin ai-title no lo cambia por el último prompt.
+    const turno2 = [...turno1, userLine('seguí', '2026-10-07T10:01:00.000Z'), ...bookkeepingSinTitulo('seguí', '2026-10-07T10:01:05.000Z')];
+    await writeFile(transcriptPath, `${turno2.join('\n')}\n`, 'utf8');
+    await synchronizer.synchronizeFile(transcriptPath);
+    assert.equal(sessionsDb.getSessionById(SESSION_ID)?.custom_name, 'Agregá a Antonio al VPS con acceso por SSH');
+
+    // Llega el ai-title: lo reemplaza y queda fijo.
+    const conTitulo = [...turno2, JSON.stringify({ type: 'ai-title', sessionId: SESSION_ID, aiTitle: 'Acceso de Antonio al VPS', timestamp: '2026-10-07T10:01:06.000Z' })];
+    await writeFile(transcriptPath, `${conTitulo.join('\n')}\n`, 'utf8');
+    await synchronizer.synchronizeFile(transcriptPath);
+    row = sessionsDb.getSessionById(SESSION_ID);
+    assert.equal(row?.custom_name, 'Acceso de Antonio al VPS');
+    assert.equal(row?.custom_name_is_placeholder, 0);
+
+    const otroTitulo = [...conTitulo, JSON.stringify({ type: 'ai-title', sessionId: SESSION_ID, aiTitle: 'Otra cosa', timestamp: '2026-10-07T10:02:00.000Z' })];
+    await writeFile(transcriptPath, `${otroTitulo.join('\n')}\n`, 'utf8');
+    await synchronizer.synchronizeFile(transcriptPath);
+    assert.equal(sessionsDb.getSessionById(SESSION_ID)?.custom_name, 'Acceso de Antonio al VPS');
+  });
+});
+
+test('una sesión sin fila previa (INSERT) tampoco queda bloqueada con el prompt crudo', async () => {
+  await withIsolatedEnvironment(async ({ transcriptPath }) => {
+    const synchronizer = new ClaudeSessionSynchronizer();
+    const turno1 = [userLine(PROMPT_ANTONIO, '2026-10-07T10:00:00.000Z'), ...bookkeepingSinTitulo(PROMPT_ANTONIO, '2026-10-07T10:00:05.000Z')];
+    await writeFile(transcriptPath, `${turno1.join('\n')}\n`, 'utf8');
+    await synchronizer.synchronizeFile(transcriptPath);
+    assert.equal(sessionsDb.getSessionById(SESSION_ID)?.custom_name, 'Agregá a Antonio al VPS con acceso por SSH');
+
+    const conTitulo = [...turno1, JSON.stringify({ type: 'ai-title', sessionId: SESSION_ID, aiTitle: 'Acceso de Antonio al VPS', timestamp: '2026-10-07T10:00:06.000Z' })];
+    await writeFile(transcriptPath, `${conTitulo.join('\n')}\n`, 'utf8');
+    await synchronizer.synchronizeFile(transcriptPath);
+    assert.equal(sessionsDb.getSessionById(SESSION_ID)?.custom_name, 'Acceso de Antonio al VPS');
+  });
+});
+
+test('un comando de plan toma el título del plan, aunque haya ai-title', async () => {
+  await withIsolatedEnvironment(async ({ transcriptPath }) => {
+    const proyecto = await mkdtemp(path.join(os.tmpdir(), 'plan-sync-'));
+    try {
+      await mkdir(path.join(proyecto, 'plans'));
+      await writeFile(path.join(proyecto, 'plans', '06-octubre-vps-multi-cuenta.md'), '# VPS con varias cuentas de IA a la vez\n');
+      const prompt = '/aos-core:ejecutar-plan plans/06-octubre-vps-multi-cuenta.md — la Fase 1 ya está cerrada';
+      const lineas = [
+        JSON.stringify({ type: 'user', sessionId: SESSION_ID, cwd: proyecto, timestamp: '2026-10-07T10:00:00.000Z', message: { role: 'user', content: prompt } }),
+        JSON.stringify({ type: 'ai-title', sessionId: SESSION_ID, aiTitle: 'Fase 3b diseño header', timestamp: '2026-10-07T10:00:06.000Z' }),
+      ];
+      await writeFile(transcriptPath, `${lineas.join('\n')}\n`, 'utf8');
+      await new ClaudeSessionSynchronizer().synchronizeFile(transcriptPath);
+
+      const row = sessionsDb.getSessionById(SESSION_ID);
+      assert.equal(row?.custom_name, 'VPS con varias cuentas de IA a la vez');
+      assert.equal(row?.custom_name_is_placeholder, 0);
+    } finally {
+      await rm(proyecto, { recursive: true, force: true });
+    }
+  });
+});
+
+test('un renombrado manual nunca se pisa: ni el título humano ni el ai-title', async () => {
+  await withIsolatedEnvironment(async ({ transcriptPath }) => {
+    sessionsDb.createPendingTmuxSession(SESSION_ID, PROJECT_PATH, 'proyecto-chat-3');
+    sessionsDb.updateSessionCustomName(SESSION_ID, 'Multicuenta: prueba del selector de cuenta');
+
+    const lineas = [
+      userLine(PROMPT_ANTONIO, '2026-10-07T10:00:00.000Z'),
+      ...bookkeepingSinTitulo(PROMPT_ANTONIO, '2026-10-07T10:00:05.000Z'),
+      JSON.stringify({ type: 'ai-title', sessionId: SESSION_ID, aiTitle: 'Fase 4 y 5 sistema de cuentas', timestamp: '2026-10-07T10:00:06.000Z' }),
+    ];
+    await writeFile(transcriptPath, `${lineas.join('\n')}\n`, 'utf8');
+    await new ClaudeSessionSynchronizer().synchronizeFile(transcriptPath);
+
+    assert.equal(sessionsDb.getSessionById(SESSION_ID)?.custom_name, 'Multicuenta: prueba del selector de cuenta');
+  });
+});
+
+test('reparación: un nombre que quedó bloqueado con el prompt crudo se recalcula', async () => {
+  await withIsolatedEnvironment(async ({ transcriptPath }) => {
+    const crudo = '/aos-core:ejecutar-plan plans/no-existe-aca.md — la Fase 1 ya está cerrada (ver Continuacion de Sesion)';
+    sessionsDb.createPendingTmuxSession(SESSION_ID, PROJECT_PATH, 'proyecto-chat-3');
+    // Lo que dejaba el sync viejo: el prompt crudo, bloqueado.
+    sessionsDb.updateSessionCustomName(SESSION_ID, crudo);
+
+    const lineas = [
+      userLine(crudo, '2026-10-07T10:00:00.000Z'),
+      ...bookkeepingSinTitulo(crudo, '2026-10-07T10:00:05.000Z'),
+      JSON.stringify({ type: 'ai-title', sessionId: SESSION_ID, aiTitle: 'Fase 3b diseño header', timestamp: '2026-10-07T10:00:06.000Z' }),
+    ];
+    await writeFile(transcriptPath, `${lineas.join('\n')}\n`, 'utf8');
+    await new ClaudeSessionSynchronizer().synchronizeFile(transcriptPath);
+
+    assert.equal(sessionsDb.getSessionById(SESSION_ID)?.custom_name, 'Plan: no existe aca');
   });
 });

@@ -67,6 +67,16 @@ async function writeSessionJsonl(
   return filePath;
 }
 
+/** Como `writeSessionJsonl`, pero sin el mensaje de usuario del arranque. */
+async function writeJsonlSinMensajeDeUsuario(dirPath: string, fileName: string, lines: string[]): Promise<string> {
+  const filePath = path.join(dirPath, fileName);
+  const head = [
+    JSON.stringify({ type: 'system', subtype: 'init', cwd: '/workspace/demo', sessionId: 'test-session-1' }),
+  ];
+  await writeFile(filePath, [...head, ...lines, ''].join('\n'), 'utf8');
+  return filePath;
+}
+
 const SESSION_ID = 'claude-session-1';
 const AGENT_ID = 'a1b2c3d4e5f60718';
 const AGENT_TOOL_USE_ID = 'toolu_agent_1';
@@ -1858,8 +1868,11 @@ test('synchronizeFile falls back to history.jsonl display when JSONL has no titl
       'utf8',
     );
 
-    // Session JSONL with NO ai-title, custom-title, or last-prompt.
-    await writeSessionJsonl(workspacePath, 'test-session-1.jsonl', [
+    // Session JSONL with NO ai-title, custom-title, or last-prompt — and no
+    // user message either: since 07-oct the first user message (its
+    // `tituloHumano`) outranks history.jsonl, so the fixture's default
+    // 'first prompt' head would win. A system line carries sessionId + cwd.
+    await writeJsonlSinMensajeDeUsuario(workspacePath, 'test-session-1.jsonl', [
       JSON.stringify({
         parentUuid: 'msg-1',
         isSidechain: false,
@@ -1877,7 +1890,8 @@ test('synchronizeFile falls back to history.jsonl display when JSONL has no titl
 
       assert.ok(result);
       const session = sessionsDb.getSessionById(result!);
-      assert.equal(session?.custom_name, 'fallback display name');
+      // El display del historial es un prompt crudo: pasa por `tituloHumano`.
+      assert.equal(session?.custom_name, 'Fallback display name');
     });
   } finally {
     restoreHomeDir();
@@ -1896,8 +1910,8 @@ test('synchronizeFile falls back to Untitled Claude Session when all sources are
     await mkdir(claudeHome, { recursive: true });
     await writeFile(path.join(claudeHome, 'history.jsonl'), '', 'utf8');
 
-    // Session JSONL with NO title events at all.
-    await writeSessionJsonl(workspacePath, 'test-session-1.jsonl', [
+    // Session JSONL with NO title events at all, and no user message.
+    await writeJsonlSinMensajeDeUsuario(workspacePath, 'test-session-1.jsonl', [
       JSON.stringify({
         parentUuid: 'msg-1',
         isSidechain: false,

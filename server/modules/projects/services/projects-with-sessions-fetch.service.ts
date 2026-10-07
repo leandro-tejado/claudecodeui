@@ -415,7 +415,10 @@ async function leerRegistroSesiones(): Promise<RegistroSesiones> {
 
   try {
     const raw = await fs.readFile(rutaRegistroSesiones(), 'utf8');
-    const data = cruzarConPanesVivos(JSON.parse(raw) as RegistroSesiones, await listarPanes());
+    const crudo = JSON.parse(raw) as RegistroSesiones;
+    // Sin ninguna "viva" no hay nada que cruzar: ni se le pregunta a tmux.
+    const hayVivas = Object.values(crudo).some((entry) => entry.estado === 'viva');
+    const data = hayVivas ? cruzarConPanesVivos(crudo, await listarPanes()) : crudo;
     registroCache = { data, leidoEn: ahora };
     return data;
   } catch {

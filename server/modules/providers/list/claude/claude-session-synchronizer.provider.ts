@@ -5,6 +5,7 @@ import { readFile } from 'node:fs/promises';
 import readline from 'node:readline';
 
 import { sessionsDb } from '@/modules/database/index.js';
+import { tituloHumano } from '@/modules/providers/services/titulo-humano.js';
 import {
   buildLookupMap,
   extractFirstValidJsonlData,
@@ -18,9 +19,34 @@ type ParsedSession = {
   sessionId: string;
   projectPath: string;
   sessionName?: string;
+  /** `provisorio`: título humano del primer mensaje, que el `ai-title` todavía puede mejorar. */
+  estadoNombre?: 'provisorio' | 'definitivo';
   /** 'cli' | 'sdk-ts' | 'sdk-cli'; undefined si las primeras líneas no lo traen. */
   entrypoint?: string;
 };
+
+/** Lo que el transcript dice sobre el nombre de la sesión. */
+type TitulosDelTranscript = {
+  customTitle?: string;
+  aiTitle?: string;
+  firstPrompt?: string;
+  lastPrompt?: string;
+};
+
+/**
+ * Un nombre bloqueado que parece el prompt crudo (bug del 07-oct): un slash
+ * command, el modo bash o un mensaje largo. Solo esos justifican leer el
+ * transcript entero para ver si hay que repararlos.
+ */
+function pareceCrudo(nombre: string): boolean {
+  return /^[/!<]/.test(nombre.trim()) || nombre.length > 60;
+}
+
+function mismoTexto(nombre: string, prompt: string): boolean {
+  const a = nombre.replace(/\s+/g, ' ').trim();
+  const b = prompt.replace(/\s+/g, ' ').trim();
+  return a.length > 0 && (a === b || b.startsWith(a) || a.startsWith(b));
+}
 
 /** Líneas del arranque del .jsonl donde Claude Code deja `entrypoint`; no hace falta leer más. */
 const ENTRYPOINT_SCAN_LINES = 10;
@@ -80,7 +106,8 @@ export class ClaudeSessionSynchronizer implements IProviderSessionSynchronizer {
         timestamps.createdAt,
         timestamps.updatedAt,
         filePath,
-        parsed.entrypoint
+        parsed.entrypoint,
+        parsed.estadoNombre
       );
       processed += 1;
     }
@@ -114,7 +141,8 @@ export class ClaudeSessionSynchronizer implements IProviderSessionSynchronizer {
       timestamps.createdAt,
       timestamps.updatedAt,
       filePath,
-      parsed.entrypoint
+      parsed.entrypoint,
+      parsed.estadoNombre
     );
   }
 
@@ -159,33 +187,84 @@ export class ClaudeSessionSynchronizer implements IProviderSessionSynchronizer {
     const isLocked = Boolean(existingSessionName)
       && existingSessionName !== 'Untitled Claude Session'
       && !existingSession?.custom_name_is_placeholder;
+    const keepLockedName = () => withEntrypoint({
+      ...parsed,
+      sessionName: normalizeSessionName(existingSessionName ?? undefined, 'Untitled Claude Session'),
+    });
+    if (isLocked && !pareceCrudo(existingSessionName!)) {
+      return keepLockedName();
+    }
+
+    const titulos = await this.extractSessionTitles(filePath, parsed.sessionId);
+    const historyName = nameMap.get(parsed.sessionId);
+
     if (isLocked) {
-      return withEntrypoint({
-        ...parsed,
-        sessionName: normalizeSessionName(existingSessionName ?? undefined, 'Untitled Claude Session'),
-      });
+      // Reparación del bug del 07-oct: el sync viejo bloqueaba el primer
+      // `last-prompt` que veía. Solo se reabre si el nombre es literalmente
+      // un prompt del transcript y nadie hizo `/rename` — un renombrado de
+      // Leandro nunca se toca.
+      const esPromptCrudo = !titulos.customTitle
+        && [titulos.firstPrompt, titulos.lastPrompt, historyName]
+          .some((prompt) => prompt && mismoTexto(existingSessionName!, prompt));
+      if (!esPromptCrudo) {
+        return keepLockedName();
+      }
+      sessionsDb.desbloquearNombreCrudo(existingSession!.session_id);
     }
 
-    let sessionName = await this.extractSessionTitle(filePath, parsed.sessionId);
-    if (!sessionName) {
-      sessionName = nameMap.get(parsed.sessionId);
-    }
-
-    if (!sessionName && existingSessionName) {
-      // Nothing better on disk yet (common right after the session is
-      // created: the SDK only writes its `ai-title` bookkeeping row after
-      // the first turn completes). Report "no update" rather than the
-      // generic fallback label, so `createSession` leaves the app's
-      // placeholder guess untouched instead of downgrading it to "Untitled
-      // Claude Session". A row with no name at all yet still falls through
-      // to the normalizeSessionName fallback below, same as before.
-      return withEntrypoint({ ...parsed, sessionName: undefined });
+    const elegido = this.elegirTitulo(titulos, historyName, parsed.projectPath);
+    if (!elegido) {
+      if (existingSessionName) {
+        // Nothing better on disk yet (common right after the session is
+        // created). Report "no update" rather than the generic fallback
+        // label, so `createSession` leaves the existing name untouched
+        // instead of downgrading it to "Untitled Claude Session". A row with
+        // no name at all yet still falls through to the fallback below.
+        return withEntrypoint({ ...parsed, sessionName: undefined });
+      }
+      return withEntrypoint({ ...parsed, sessionName: normalizeSessionName(undefined, 'Untitled Claude Session') });
     }
 
     return withEntrypoint({
       ...parsed,
-      sessionName: normalizeSessionName(sessionName, 'Untitled Claude Session'),
+      sessionName: normalizeSessionName(elegido.titulo, 'Untitled Claude Session'),
+      estadoNombre: elegido.definitivo ? 'definitivo' : 'provisorio',
     });
+  }
+
+  /**
+   * El nombre que corresponde según el transcript, en este orden:
+   *
+   * 1. `custom-title` (un `/rename` en el CLI): definitivo.
+   * 2. El título del plan, si el primer mensaje es un comando de plan:
+   *    definitivo, y gana sobre el `ai-title` (pedido del 07-oct).
+   * 3. `ai-title`, que Claude Code genera solo: definitivo.
+   * 4. El título humano del primer mensaje (`tituloHumano`), o del último o
+   *    del historial si el primero no está: provisorio, así el `ai-title`
+   *    que llegue después lo mejora una vez. Nunca el prompt crudo.
+   */
+  private elegirTitulo(
+    titulos: TitulosDelTranscript,
+    historyName: string | undefined,
+    projectPath: string,
+  ): { titulo: string; definitivo: boolean } | null {
+    if (titulos.customTitle?.trim()) {
+      return { titulo: titulos.customTitle, definitivo: true };
+    }
+    const delPrimerMensaje = titulos.firstPrompt ? tituloHumano(titulos.firstPrompt, { cwd: projectPath }) : null;
+    if (delPrimerMensaje?.definitivo) {
+      return delPrimerMensaje;
+    }
+    if (titulos.aiTitle?.trim()) {
+      return { titulo: titulos.aiTitle, definitivo: true };
+    }
+    for (const candidato of [titulos.firstPrompt, titulos.lastPrompt, historyName]) {
+      const titulo = candidato ? tituloHumano(candidato, { cwd: projectPath }) : null;
+      if (titulo) {
+        return titulo;
+      }
+    }
+    return null;
   }
 
   /**
@@ -234,26 +313,23 @@ export class ClaudeSessionSynchronizer implements IProviderSessionSynchronizer {
   }
 
   /**
-   * Returns the best available title for one session from its transcript.
+   * Everything the transcript says about the session's name.
    *
-   * Scans forward keeping the last match of each event type, then prefers
-   * `custom-title` (a manual `/rename`) over `ai-title` over `last-prompt`.
-   * Claude writes `custom-title` immediately before `ai-title`, so a reverse
-   * scan that returns its first hit would always lose the manual rename.
+   * Scans forward keeping the last match of each bookkeeping event type
+   * (Claude writes `custom-title` immediately before `ai-title`, so a reverse
+   * scan that returns its first hit would always lose the manual rename),
+   * plus the first real user message — the one the human title comes from.
    *
-   * Returns undefined on a missing or unreadable file so sync can continue.
+   * Returns an empty object on a missing or unreadable file so sync can continue.
    */
-  private async extractSessionTitle(
+  private async extractSessionTitles(
     filePath: string,
     sessionId: string
-  ): Promise<string | undefined> {
+  ): Promise<TitulosDelTranscript> {
+    const titulos: TitulosDelTranscript = {};
     try {
       const content = await readFile(filePath, 'utf8');
       const lines = content.split(/\r?\n/);
-
-      let foundCustomTitle: string | undefined;
-      let foundAiTitle: string | undefined;
-      let foundLastPrompt: string | undefined;
 
       for (let index = 0; index < lines.length; index += 1) {
         const line = lines[index]?.trim();
@@ -279,26 +355,53 @@ export class ClaudeSessionSynchronizer implements IProviderSessionSynchronizer {
         if (eventType === 'custom-title') {
           const title = typeof data.customTitle === 'string' ? data.customTitle : undefined;
           if (title?.trim()) {
-            foundCustomTitle = title;
+            titulos.customTitle = title;
           }
         } else if (eventType === 'ai-title') {
           const title = typeof data.aiTitle === 'string' ? data.aiTitle : undefined;
           if (title?.trim()) {
-            foundAiTitle = title;
+            titulos.aiTitle = title;
           }
         } else if (eventType === 'last-prompt') {
           const prompt = typeof data.lastPrompt === 'string' ? data.lastPrompt : undefined;
           if (prompt?.trim()) {
-            foundLastPrompt = prompt;
+            titulos.lastPrompt = prompt;
+          }
+        } else if (eventType === 'user' && titulos.firstPrompt === undefined && data.isMeta !== true) {
+          const texto = textoDeMensajeDeUsuario(data.message);
+          if (texto) {
+            titulos.firstPrompt = texto;
           }
         }
       }
-
-      return foundCustomTitle || foundAiTitle || foundLastPrompt;
     } catch {
       // Ignore missing/unreadable files so sync can continue.
     }
 
+    return titulos;
+  }
+}
+
+/**
+ * El texto que escribió la persona en un mensaje `user` del transcript, o
+ * `undefined` si no es eso: resultados de herramientas, la salida de un
+ * comando local o el aviso que Claude Code antepone a esa salida.
+ */
+function textoDeMensajeDeUsuario(message: unknown): string | undefined {
+  const content = (message as { content?: unknown } | undefined)?.content;
+  let texto: string | undefined;
+  if (typeof content === 'string') {
+    texto = content;
+  } else if (Array.isArray(content)) {
+    texto = content
+      .filter((bloque): bloque is { type: 'text'; text: string } =>
+        (bloque as { type?: unknown })?.type === 'text' && typeof (bloque as { text?: unknown }).text === 'string')
+      .map((bloque) => bloque.text)
+      .join('\n');
+  }
+  texto = texto?.trim();
+  if (!texto || /^<local-command|^Caveat:/.test(texto)) {
     return undefined;
   }
+  return texto;
 }

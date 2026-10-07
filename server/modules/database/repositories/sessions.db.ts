@@ -11,10 +11,12 @@ type SessionRow = {
   jsonl_path: string | null;
   custom_name: string | null;
   /**
-   * 1 while `custom_name` is still `createAppSession`'s literal-first-words
-   * guess and a provider synchronizer may still replace it with a real
-   * title; 0/NULL once locked (a synchronizer upgraded it once, or the user
-   * renamed it). See the column comment in schema.ts.
+   * 1 while `custom_name` is still `createAppSession`'s guess and a provider
+   * synchronizer may still replace it with a real title; 2 while it is the
+   * human title the Claude synchronizer derived from the first message
+   * (`tituloHumano`), which only an `ai-title`/`custom-title` may replace;
+   * 0/NULL once locked (a synchronizer upgraded it once, or the user renamed
+   * it). See the column comment in schema.ts.
    */
   custom_name_is_placeholder: number | null;
   /** Model this session runs with; NULL until the app records one for it. */
@@ -114,9 +116,16 @@ export const sessionsDb = {
     createdAt?: string,
     updatedAt?: string,
     jsonlPath?: string | null,
-    entrypoint?: string | null
+    entrypoint?: string | null,
+    /**
+     * `provisorio`: `customName` es el título humano del primer mensaje
+     * (`tituloHumano`), y el `ai-title` todavía puede reemplazarlo una vez
+     * (`custom_name_is_placeholder = 2`). Sin esto, el nombre queda fijo.
+     */
+    estadoNombre?: 'provisorio' | 'definitivo'
   ): string {
     const db = getConnection();
+    const placeholderNuevo = estadoNombre === 'provisorio' ? 2 : 0;
     const createdAtValue = normalizeTimestamp(createdAt);
     const updatedAtValue = normalizeTimestamp(updatedAt);
     const normalizedProjectPath = normalizeProjectPathForProvider(provider, projectPath);
@@ -158,7 +167,7 @@ export const sessionsDb = {
                AND custom_name IS NOT NULL
                AND COALESCE(custom_name_is_placeholder, 0) = 0
                THEN custom_name_is_placeholder
-             WHEN ? IS NOT NULL THEN 0
+             WHEN ? IS NOT NULL THEN ?
              ELSE custom_name_is_placeholder
            END,
            entrypoint = COALESCE(entrypoint, ?)
@@ -170,6 +179,7 @@ export const sessionsDb = {
         jsonlPath ?? null,
         customName ?? null,
         customName ?? null,
+        placeholderNuevo,
         entrypoint ?? null,
         existing.session_id
       );
@@ -184,8 +194,8 @@ export const sessionsDb = {
     // Same reasoning as the UPDATE branch above: isArchived is excluded from
     // DO UPDATE SET so a re-scan can never resurrect an archived session.
     db.prepare(
-      `INSERT INTO sessions (session_id, provider, provider_session_id, custom_name, project_path, jsonl_path, entrypoint, isArchived, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, 0, COALESCE(?, CURRENT_TIMESTAMP), COALESCE(?, CURRENT_TIMESTAMP))
+      `INSERT INTO sessions (session_id, provider, provider_session_id, custom_name, custom_name_is_placeholder, project_path, jsonl_path, entrypoint, isArchived, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, COALESCE(?, CURRENT_TIMESTAMP), COALESCE(?, CURRENT_TIMESTAMP))
        ON CONFLICT(session_id) DO UPDATE SET
          provider = excluded.provider,
          provider_session_id = excluded.provider_session_id,
@@ -197,12 +207,19 @@ export const sessionsDb = {
            WHEN sessions.session_id <> sessions.provider_session_id AND sessions.custom_name IS NOT NULL
              THEN sessions.custom_name
            ELSE COALESCE(excluded.custom_name, sessions.custom_name)
+         END,
+         custom_name_is_placeholder = CASE
+           WHEN sessions.session_id <> sessions.provider_session_id AND sessions.custom_name IS NOT NULL
+             THEN sessions.custom_name_is_placeholder
+           WHEN excluded.custom_name IS NOT NULL THEN excluded.custom_name_is_placeholder
+           ELSE sessions.custom_name_is_placeholder
          END`
     ).run(
       providerSessionId,
       provider,
       providerSessionId,
       customName ?? null,
+      customName ? placeholderNuevo : null,
       normalizedProjectPath,
       jsonlPath ?? null,
       entrypoint ?? null,
@@ -313,6 +330,8 @@ export const sessionsDb = {
     projectPath: string,
     customName?: string,
     cuenta?: string | null,
+    /** El nombre salió de un plan (`tituloHumano`): queda fijo, sin placeholder. */
+    nombreDefinitivo = false,
   ): string {
     const db = getConnection();
     const normalizedProjectPath = normalizeProjectPathForProvider(provider, projectPath);
@@ -321,8 +340,8 @@ export const sessionsDb = {
 
     db.prepare(
       `INSERT INTO sessions (session_id, provider, provider_session_id, custom_name, custom_name_is_placeholder, project_path, jsonl_path, cuenta, isArchived, created_at, updated_at)
-       VALUES (?, ?, NULL, ?, 1, ?, NULL, ?, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`
-    ).run(sessionId, provider, customName ?? null, normalizedProjectPath, cuenta ?? null);
+       VALUES (?, ?, NULL, ?, ?, ?, NULL, ?, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`
+    ).run(sessionId, provider, customName ?? null, nombreDefinitivo ? 0 : 1, normalizedProjectPath, cuenta ?? null);
 
     return sessionId;
   },
@@ -684,6 +703,22 @@ export const sessionsDb = {
        SET custom_name = ?, custom_name_is_placeholder = 0
        WHERE session_id = ?`
     ).run(customName, sessionId);
+  },
+
+  /**
+   * Reparación del bug del 07-oct: un nombre que el sync viejo dejó bloqueado
+   * con el prompt crudo (no un renombrado) vuelve a ser placeholder, así el
+   * próximo upsert lo puede reemplazar por el título humano. Solo lo llama el
+   * synchronizer de Claude, después de comprobar contra el transcript que el
+   * nombre es literalmente el prompt y que no hubo `/rename`.
+   */
+  desbloquearNombreCrudo(sessionId: string): void {
+    const db = getConnection();
+    db.prepare(
+      `UPDATE sessions
+       SET custom_name_is_placeholder = 1
+       WHERE session_id = ? AND COALESCE(custom_name_is_placeholder, 0) = 0`
+    ).run(sessionId);
   },
 
   getSessionById(sessionId: string): SessionRow | null {
