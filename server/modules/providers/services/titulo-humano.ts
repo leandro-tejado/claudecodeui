@@ -157,6 +157,12 @@ export function tituloHumano(texto: string, opciones: OpcionesTituloHumano = {})
     mensaje = `/${comandoTranscript[1]} ${args}`.trim();
   }
 
+  // Así queda el modo bash del CLI en el transcript.
+  const bashTranscript = /<bash-input>([\s\S]*?)(?:<\/bash-input>|$)/.exec(mensaje);
+  if (bashTranscript) {
+    mensaje = `!${bashTranscript[1]}`;
+  }
+
   // Modo bash del CLI (`! comando`): el comando, hasta el primer `;`.
   if (mensaje.startsWith('!')) {
     const comando = mensaje.slice(1).split('\n')[0].split(';')[0].trim();

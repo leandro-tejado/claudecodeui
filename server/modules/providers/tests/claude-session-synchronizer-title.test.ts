@@ -324,3 +324,15 @@ test('reparación al arrancar: un nombre crudo se recalcula aunque su transcript
     assert.equal(sessionsDb.getSessionById(SESSION_ID)?.custom_name, '/rename a mano, que no es el prompt');
   });
 });
+
+test('reparación al arrancar: también un nombre provisorio que quedó crudo (<bash-input>)', async () => {
+  await withIsolatedEnvironment(async ({ transcriptPath }) => {
+    const crudo = '<bash-input>for i in $(seq 1 40); do echo $i; done</bash-input>';
+    await writeFile(transcriptPath, `${[userLine(crudo, '2026-10-07T10:00:00.000Z'), ...bookkeepingSinTitulo(crudo, '2026-10-07T10:00:05.000Z')].join('\n')}\n`, 'utf8');
+    sessionsDb.createSession(SESSION_ID, 'claude', PROJECT_PATH, '<bash-input>for i in $(seq 1 40)', undefined, undefined, transcriptPath, null, 'provisorio');
+
+    await new ClaudeSessionSynchronizer().synchronize(new Date(Date.now() + 60_000));
+
+    assert.equal(sessionsDb.getSessionById(SESSION_ID)?.custom_name, 'Comando: for i in $(seq 1 40)');
+  });
+});

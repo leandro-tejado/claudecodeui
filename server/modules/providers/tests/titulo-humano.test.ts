@@ -69,3 +69,12 @@ test('sin nada que se pueda leer como título, null', () => {
   assert.equal(titulo('   '), null);
   assert.equal(titulo('`ls -la`'), null);
 });
+
+// Visto en la base el 07-oct (f21c5678): el modo bash del CLI queda en el
+// transcript como `<bash-input>…</bash-input>`, no con el `!` delante.
+test('el formato de transcript del modo bash (<bash-input>) también', () => {
+  assert.deepEqual(titulo('<bash-input>for i in $(seq 1 40); do echo $i; done</bash-input>'), {
+    titulo: 'Comando: for i in $(seq 1 40)',
+    definitivo: false,
+  });
+});

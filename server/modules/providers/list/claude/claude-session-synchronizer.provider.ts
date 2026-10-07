@@ -119,8 +119,8 @@ export class ClaudeSessionSynchronizer implements IProviderSessionSynchronizer {
   private readonly crudosRevisados = new Set<string>();
 
   /**
-   * Los transcripts de las filas bloqueadas con un nombre que parece el
-   * prompt crudo, aunque no hayan cambiado: el escaneo es incremental, y sin
+   * Los transcripts de las filas con un nombre que parece el prompt crudo
+   * (bloqueadas o provisorias), aunque no hayan cambiado: el escaneo es incremental, y sin
    * esto una sesión quieta (la 6770c130, 07-oct) no se reparaba nunca. Una
    * vez por fila y por proceso — un nombre que de verdad es así (un renombre
    * manual) no se relee en cada escaneo.
@@ -133,7 +133,6 @@ export class ClaudeSessionSynchronizer implements IProviderSessionSynchronizer {
         row.provider !== this.provider
         || !row.jsonl_path
         || !row.custom_name
-        || row.custom_name_is_placeholder
         || !pareceCrudo(row.custom_name)
         || this.crudosRevisados.has(row.session_id)
       ) {
