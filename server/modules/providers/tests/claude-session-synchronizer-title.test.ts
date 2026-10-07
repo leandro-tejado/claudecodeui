@@ -294,3 +294,33 @@ test('reparación: un nombre que quedó bloqueado con el prompt crudo se recalcu
     assert.equal(sessionsDb.getSessionById(SESSION_ID)?.custom_name, 'Plan: no existe aca');
   });
 });
+
+/*
+ * Visto en vivo tras el reinicio del 07-oct: el sync del arranque es
+ * incremental (solo los transcripts que cambiaron desde el último escaneo),
+ * así que la 6770c130 —sin actividad nueva— siguió con
+ * "/aos-core:ejecutar-plan plans/…" aunque la reparación ya estaba.
+ */
+test('reparación al arrancar: un nombre crudo se recalcula aunque su transcript no haya cambiado', async () => {
+  await withIsolatedEnvironment(async ({ transcriptPath }) => {
+    const crudo = '/aos-core:ejecutar-plan plans/no-existe-aca.md — la Fase 1 ya está cerrada (ver Continuacion de Sesion)';
+    const lineas = [
+      userLine(crudo, '2026-10-07T10:00:00.000Z'),
+      ...bookkeepingSinTitulo(crudo, '2026-10-07T10:00:05.000Z'),
+    ];
+    await writeFile(transcriptPath, `${lineas.join('\n')}\n`, 'utf8');
+    // Lo que dejaba el sync viejo: la fila indexada con el prompt crudo, bloqueado.
+    sessionsDb.createSession(SESSION_ID, 'claude', PROJECT_PATH, 'x', undefined, undefined, transcriptPath);
+    sessionsDb.updateSessionCustomName(SESSION_ID, crudo);
+
+    // Un escaneo que no ve el archivo por fecha (el del arranque, incremental).
+    const sincronizador = new ClaudeSessionSynchronizer();
+    await sincronizador.synchronize(new Date(Date.now() + 60_000));
+    assert.equal(sessionsDb.getSessionById(SESSION_ID)?.custom_name, 'Plan: no existe aca');
+
+    // Un renombre manual que se parece a un comando no es un prompt: no se toca.
+    sessionsDb.updateSessionCustomName(SESSION_ID, '/rename a mano, que no es el prompt');
+    await sincronizador.synchronize(new Date(Date.now() + 60_000));
+    assert.equal(sessionsDb.getSessionById(SESSION_ID)?.custom_name, '/rename a mano, que no es el prompt');
+  });
+});

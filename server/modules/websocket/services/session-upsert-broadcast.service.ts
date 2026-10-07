@@ -1,8 +1,13 @@
 import path from 'node:path';
 
 import { projectsDb, sessionsDb } from '@/modules/database/index.js';
-import { generateDisplayName, resolverCuentaDeSesion, resolverTmuxDeSesion } from '@/modules/projects/index.js';
-import { marcarTitulosDeEventos } from '@/modules/websocket/services/tmux-titulo.service.js';
+import {
+  generateDisplayName,
+  leerVivoEfectivoPorSesion,
+  resolverCuentaDeSesion,
+  resolverTmuxDeSesion,
+} from '@/modules/projects/index.js';
+import { marcarTitulosDeEventos, marcarTitulosDeTmuxVivos } from '@/modules/websocket/services/tmux-titulo.service.js';
 import { connectedClients, WS_OPEN_STATE } from '@/modules/websocket/services/websocket-state.service.js';
 import type { SessionUpsertedEvent } from '@/shared/types.js';
 
@@ -120,6 +125,11 @@ export async function broadcastSessionUpsertedBatch(
   sendToConnectedClients(payloads);
   // Después de avisar a la barra: tmux no demora el delta.
   await marcarTitulosDeEventos(events);
+}
+
+/** `@titulo` en todos los panes vivos, al arrancar el servidor (lo llama el vigía de sesiones). */
+export async function marcarTitulosAlArrancar(): Promise<void> {
+  await marcarTitulosDeTmuxVivos({ leerVivos: leerVivoEfectivoPorSesion, construirEvento: buildSessionUpsertedEvent });
 }
 
 /** @internal Exported for the broadcast tests, which assert the payload shape directly. */

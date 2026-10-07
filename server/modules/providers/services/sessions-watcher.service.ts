@@ -15,7 +15,12 @@ import {
   sincronizarSesionesTmuxSinTranscript,
 } from '@/modules/providers/services/tmux-registry-sessions.service.js';
 import { crearVigiaTmux } from '@/modules/providers/services/vigia-tmux.service.js';
-import { broadcastSessionUpsertedBatch, broadcastSidebarArchived, tmuxBridgeService } from '@/modules/websocket/index.js';
+import {
+  broadcastSessionUpsertedBatch,
+  broadcastSidebarArchived,
+  marcarTitulosAlArrancar,
+  tmuxBridgeService,
+} from '@/modules/websocket/index.js';
 import { scheduleUsageWindowBroadcast } from '@/modules/usage-window/index.js';
 import type { LLMProvider } from '@/shared/types.js';
 
@@ -364,6 +369,13 @@ export async function initializeSessionsWatcher(): Promise<void> {
 
   // La primera pasada toma la foto de referencia; las siguientes avisan.
   await avisarCambiosDeTmux();
+  // Las sesiones quietas no producen upsert: su `@titulo` se marca acá.
+  try {
+    await marcarTitulosAlArrancar();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error('Falló el marcado de títulos de tmux al arrancar', { error: message });
+  }
   vigiaTmuxTimer = setInterval(() => {
     void avisarCambiosDeTmux();
   }, VIGIA_TMUX_INTERVALO_MS);

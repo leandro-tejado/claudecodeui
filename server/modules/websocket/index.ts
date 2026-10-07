@@ -8,7 +8,11 @@ export { chatRunRegistry } from './services/chat-run-registry.service.js';
 // Consumed by the providers module's sessions watcher, which announces the
 // sessions it (re)indexed from disk through the same builder the chat gateway
 // uses, so both paths put the identical delta on the wire.
-export { broadcastSessionUpserted, broadcastSessionUpsertedBatch } from './services/session-upsert-broadcast.service.js';
+export {
+  broadcastSessionUpserted,
+  broadcastSessionUpsertedBatch,
+  marcarTitulosAlArrancar,
+} from './services/session-upsert-broadcast.service.js';
 // Archivar saca de la barra en vivo: lo consumen el archivado manual de
 // proyectos y, desde la Fase 5, el servicio de limpieza.
 export { broadcastSidebarArchived } from './services/sidebar-archived-broadcast.service.js';

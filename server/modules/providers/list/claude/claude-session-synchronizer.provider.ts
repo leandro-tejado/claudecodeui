@@ -1,6 +1,6 @@
 import os from 'node:os';
 import path from 'node:path';
-import { createReadStream } from 'node:fs';
+import { createReadStream, existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import readline from 'node:readline';
 
@@ -87,7 +87,7 @@ export class ClaudeSessionSynchronizer implements IProviderSessionSynchronizer {
     );
 
     let processed = 0;
-    for (const filePath of files) {
+    for (const filePath of [...files, ...this.transcriptsConNombreCrudo(files)]) {
       if (this.isSubagentTranscript(filePath)) {
         continue;
       }
@@ -113,6 +113,38 @@ export class ClaudeSessionSynchronizer implements IProviderSessionSynchronizer {
     }
 
     return processed;
+  }
+
+  /** Filas ya revisadas por `transcriptsConNombreCrudo` en este proceso. */
+  private readonly crudosRevisados = new Set<string>();
+
+  /**
+   * Los transcripts de las filas bloqueadas con un nombre que parece el
+   * prompt crudo, aunque no hayan cambiado: el escaneo es incremental, y sin
+   * esto una sesión quieta (la 6770c130, 07-oct) no se reparaba nunca. Una
+   * vez por fila y por proceso — un nombre que de verdad es así (un renombre
+   * manual) no se relee en cada escaneo.
+   */
+  private transcriptsConNombreCrudo(yaIncluidos: string[]): string[] {
+    const incluidos = new Set(yaIncluidos);
+    const rutas: string[] = [];
+    for (const row of sessionsDb.getAllSessions()) {
+      if (
+        row.provider !== this.provider
+        || !row.jsonl_path
+        || !row.custom_name
+        || row.custom_name_is_placeholder
+        || !pareceCrudo(row.custom_name)
+        || this.crudosRevisados.has(row.session_id)
+      ) {
+        continue;
+      }
+      this.crudosRevisados.add(row.session_id);
+      if (!incluidos.has(row.jsonl_path) && existsSync(row.jsonl_path)) {
+        rutas.push(row.jsonl_path);
+      }
+    }
+    return rutas;
   }
 
   /**

@@ -88,3 +88,26 @@ export async function marcarTitulosDeEventos(
     }
   }
 }
+
+/**
+ * Marca el título de todas las sesiones con tmux vivo, sin esperar un
+ * `session_upserted`: al arrancar, una sesión quieta no produce ninguno y su
+ * pane se quedaba sin `@titulo` hasta el próximo turno (visto el 07-oct).
+ */
+export async function marcarTitulosDeTmuxVivos({
+  leerVivos,
+  construirEvento,
+  marcar = (nombre: string, titulo: string) => marcarTituloTmux(nombre, titulo),
+}: {
+  leerVivos: () => Promise<Map<string, boolean>>;
+  construirEvento: (sessionId: string) => Promise<EventoConTmux | null>;
+  marcar?: (nombre: string, titulo: string) => Promise<boolean>;
+}): Promise<void> {
+  const eventos: EventoConTmux[] = [];
+  for (const [sessionId, vivo] of await leerVivos()) {
+    if (!vivo) continue;
+    const evento = await construirEvento(sessionId);
+    if (evento) eventos.push(evento);
+  }
+  await marcarTitulosDeEventos(eventos, { marcar });
+}
