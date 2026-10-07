@@ -428,7 +428,7 @@ export default function ChatComposer({
             </PromptInputHeader>
           )}
 
-          <input {...getInputProps()} />
+          <input {...getInputProps()} aria-label={t('input.attachFiles', { defaultValue: 'Attach files' })} />
 
           <PromptInputBody>
             <div ref={inputHighlightRef} aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden rounded-xl">

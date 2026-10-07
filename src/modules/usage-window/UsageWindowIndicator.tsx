@@ -86,7 +86,7 @@ function VentanaBarra({ rotulo, estado, now }: { rotulo: string; estado: EstadoV
       </div>
       <div className="flex min-w-0 flex-col leading-tight">
         <span className="whitespace-nowrap text-ds-muted" style={{ fontSize: 'var(--skin-text-xs)' }}>
-          <span className="hidden sm:inline">{rotulo}{' '}</span>
+          {rotulo}{' '}
           <b className={cn('font-semibold text-ds-ink', stale && 'opacity-60')}>
             {esDato
               ? `${Math.round(estado.porcentaje)}%`
@@ -145,11 +145,10 @@ export default function UsageWindowIndicator({ cuenta }: Props = {}) {
         ref={buttonRef}
         type="button"
         onClick={toggle}
-        aria-label={label}
         aria-expanded={open}
         title={label}
         className={cn(
-          'flex flex-shrink-0 items-center gap-3 rounded-md outline-none',
+          'flex flex-shrink-0 items-center gap-2 rounded-md outline-none sm:gap-3',
           'hover:opacity-80 focus-visible:ring-2 focus-visible:ring-primary/60',
         )}
       >

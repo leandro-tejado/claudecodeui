@@ -24,7 +24,7 @@ function escribirConResetPasado(cinco, siete) {
   fs.renameSync(`${CUOTA_JSON}.tmp`, CUOTA_JSON);
 }
 
-const etiqueta = (s) => s.pagina.locator('button[aria-label^="Ventana de 5 horas"]').first().getAttribute('aria-label').catch(() => null);
+const etiqueta = (s) => s.pagina.locator('button[title*="Ventana de 5 horas"]').first().getAttribute('title').catch(() => null);
 
 async function esperarEtiqueta(s, re, topeMs) {
   const t0 = Date.now(); let ultima = null;

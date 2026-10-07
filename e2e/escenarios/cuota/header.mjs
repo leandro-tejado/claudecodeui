@@ -19,7 +19,7 @@ function escribir(cinco, siete) {
   fs.renameSync(`${CUOTA_JSON}.tmp`, CUOTA_JSON);
 }
 
-const etiqueta = (s) => s.pagina.locator('button[aria-label^="Ventana de 5 horas"]').first().getAttribute('aria-label').catch(() => null);
+const etiqueta = (s) => s.pagina.locator('button[title*="Ventana de 5 horas"]').first().getAttribute('title').catch(() => null);
 
 async function esperarEtiqueta(s, re, topeMs) {
   const t0 = Date.now(); let ultima = null;
@@ -52,7 +52,7 @@ export async function correr(ctx) {
   escribir(52, 23);
   const r2 = await esperarEtiqueta(s, /52%/, 15_000);
   ctx.check('el header sigue el cambio sin recargar (≤ 15 s)', r2.ok, { evidencia: await ctx.captura(s, 'segunda-lectura'), datos: r2 });
-  const boton = s.pagina.locator('button[aria-label^="Ventana de 5 horas"]').first();
+  const boton = s.pagina.locator('button[title*="Ventana de 5 horas"]').first();
   await boton.click().catch(() => {});
   await s.pagina.waitForTimeout(400);
   const pop = await s.pagina.locator('body').innerText();

@@ -34,14 +34,14 @@ type Severidad = 0 | 1 | 2;
 
 function severidadDeClase(colorClass: string): Severidad {
   if (colorClass === 'text-red-500') return 2;
-  if (colorClass === 'text-amber-500') return 1;
+  if (colorClass === 'text-amber-700 dark:text-amber-400') return 1;
   return 0;
 }
 
 function colorRam(pct: number | null, techo: number): string {
   if (pct === null) return 'text-muted-foreground';
   if (pct >= techo) return 'text-red-500';
-  if (pct >= AMBER_AT) return 'text-amber-500';
+  if (pct >= AMBER_AT) return 'text-amber-700 dark:text-amber-400';
   return 'text-primary';
 }
 
@@ -50,10 +50,12 @@ function colorDisco(pct: number | null): string {
   return trackClass(pct).replace('bg-', 'text-');
 }
 
+const textoPct = (pct: number | null) => (pct === null ? '—' : `${Math.round(pct)}%`);
+
 function ChipContent({ pct, colorClass }: { pct: number | null; colorClass: string }) {
   return (
     <span className={cn('tabular-nums', colorClass)} style={{ fontSize: 'var(--skin-text-xs)' }}>
-      {pct === null ? '—' : `${Math.round(pct)}%`}
+      {textoPct(pct)}
     </span>
   );
 }
@@ -109,7 +111,9 @@ export default function SkinRecursos() {
         ref={buttonRef}
         type="button"
         onClick={toggle}
-        aria-label={label}
+        // Los % visibles van al principio del nombre: axe pide que el texto que
+        // se ve esté dentro del nombre accesible (label-content-name-mismatch).
+        aria-label={`${textoPct(ramPct)} ${textoPct(discoPct)} · ${label}`}
         aria-expanded={open}
         title={label}
         className="flex items-center gap-1.5 rounded-full outline-none hover:opacity-80 focus-visible:ring-2 focus-visible:ring-primary/60"
