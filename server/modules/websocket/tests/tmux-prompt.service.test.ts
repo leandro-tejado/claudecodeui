@@ -534,7 +534,7 @@ test('un pie suelto en la conversación, o un pie sin raya que abra el diálogo,
 });
 
 test('el cuadro de texto: vacío, con el ejemplo atenuado, con algo escrito, o tapado por un formulario', () => {
-  assert.deepEqual(leerEstadoPane(EN_REPOSO), { prompt: null, cuadro: { texto: '' } });
+  assert.deepEqual(leerEstadoPane(EN_REPOSO), { prompt: null, cuadro: { texto: '' }, vista: 'conversacion', ultimaLinea: '⏸ manual mode on · ← for agents' });
   const conEjemplo = EN_REPOSO.replace('❯ ', '\x1b[39m❯\u00a0\x1b[2mTry "create a util logging.py that..."\x1b[0m');
   assert.deepEqual(leerEstadoPane(conEjemplo).cuadro, { texto: '' });
   const escrito = EN_REPOSO.replace('❯ ', '\x1b[39m❯\u00a0hola mundo\n  segundo renglón');
@@ -952,6 +952,8 @@ test('una sesión con nombre lleva el nombre en la raya de arriba y el cuadro se
     '  ctx 7% · 5h ?',
     '  ⏵⏵ auto mode on (shift+tab to cycle) · ← for agents',
   ].join('\n');
-  assert.deepEqual(leerEstadoPane(conNombre), { prompt: null, cuadro: { texto: '' } });
+  const estado = leerEstadoPane(conNombre);
+  assert.equal(estado.prompt, null);
+  assert.deepEqual(estado.cuadro, { texto: '' });
   assert.deepEqual(leerEstadoPane(conNombre.replace('❯ ', '❯ hola')).cuadro, { texto: 'hola' });
 });

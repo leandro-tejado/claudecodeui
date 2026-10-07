@@ -161,7 +161,6 @@ function teclasDelPie(pie: string, conCursor: boolean): TeclaDialogoTmux[] {
 const SECUENCIA_SGR = /\x1b\[[0-9;?]*[A-Za-z]/g;
 // La primera línea del cuadro de texto: `❯` (o `!` en modo bash) y lo escrito.
 const INICIO_CUADRO = /^\s{0,2}[❯!]/;
-const MAX_LINEAS_ESTADO = 8;
 const MAX_LINEAS_CUADRO = 40;
 
 export function sinEscapes(texto: string): string {
@@ -242,14 +241,22 @@ function ubicarCuadroDeEntrada(crudas: string[]): CuadroDeEntrada | null {
   let fin = lineas.length - 1;
   while (fin >= 0 && !lineas[fin].trim()) fin -= 1;
 
+  // La raya de abajo es la última del pane, esté a la distancia que esté del
+  // pie. Hasta el 7-oct se buscaba solo en las últimas 8 líneas, y lo que
+  // Claude Code dibuja debajo del cuadro puede ser más: el panel de atajos
+  // (`?`) en un pane de 60 columnas ocupa 11 (medido en 2.1.292), y el chat
+  // contestaba `sin-cuadro` sobre un cuadro vacío y a la vista. Lo que separa
+  // al cuadro de un diálogo es la forma: un pie de teclas ("Enter to select ·
+  // Esc to cancel") debajo de esa raya es un diálogo, y el cuadro no lo tiene.
   let rayaInferior = -1;
-  for (let i = fin; i >= 0 && fin - i <= MAX_LINEAS_ESTADO; i -= 1) {
+  for (let i = fin; i >= 0; i -= 1) {
     if (REGLA.test(lineas[i])) {
       rayaInferior = i;
       break;
     }
   }
   if (rayaInferior < 1) return null;
+  if (lineas.slice(rayaInferior + 1, fin + 1).some(esPie)) return null;
 
   let rayaSuperior = -1;
   for (let i = rayaInferior - 1; i >= 0 && rayaInferior - i <= MAX_LINEAS_CUADRO; i -= 1) {
@@ -1089,17 +1096,66 @@ export async function responderSeleccionCompuestaTmux(
   return { ok: true };
 }
 
+/**
+ * Qué pantalla muestra el pane, para decirle a la persona por qué no se mandó
+ * su mensaje en vez de una frase genérica:
+ *
+ * - `conversacion`: el cuadro de texto de la conversación, a la vista.
+ * - `agentes`: la vista de agentes que abre `←` ("Your conversation moved to
+ *   the background"). Tiene su propio cuadro, pero lo que se escribe ahí abre
+ *   OTRA sesión: no es el cuadro de la conversación.
+ * - `transcript`: el modo transcript (`ctrl+o`), sin cuadro.
+ * - `dialogo`: un diálogo con pie de teclas que no se pudo leer como pregunta.
+ * - `shell`: `claude` se cerró y el pane quedó en bash (`ct` hace `exec bash`).
+ * - `vacia`: no dibujó nada todavía.
+ * - `ilegible`: `capture-pane` falló (lo pone quien captura, no esta lectura).
+ * - `otra`: ninguna de esas; `ultimaLinea` dice qué hay.
+ *
+ * Medidas en Claude Code 2.1.292 (7-oct, e2e/fixtures/panes/2.1.292/).
+ */
+export type VistaPaneTmux = 'conversacion' | 'agentes' | 'transcript' | 'dialogo' | 'shell' | 'vacia' | 'ilegible' | 'otra';
+
 export type EstadoPaneTmux = {
   /** El diálogo abierto, si hay uno. */
   prompt: PromptTmux | null;
   /** El cuadro de texto de Claude Code, o `null` si no está a la vista (un formulario, `claude` cerrado). */
   cuadro: { texto: string } | null;
+  vista: VistaPaneTmux;
+  /** La última línea con texto del pane, recortada: lo que se le muestra a la persona si la vista es `otra`. */
+  ultimaLinea: string;
 };
+
+// Las dos se reconocen por el pie (las últimas líneas), nunca por el texto de
+// arriba: una conversación que las cite sigue siendo una conversación.
+const VISTA_AGENTES = /\benter to return · space to reply\b/;
+const VISTA_TRANSCRIPT = /Showing detailed transcript · ctrl\+o to toggle/;
+// El prompt de bash: termina en `$` o `#` (el de `ct` parte la ruta larga en
+// dos renglones, así que se mira solo el final).
+const PROMPT_SHELL = /\S*[$#]$/;
+
+function vistaDelPane(lineas: string[], cuadro: CuadroDeEntrada | null): VistaPaneTmux {
+  const conTexto = lineas.filter((linea) => linea.trim());
+  if (conTexto.length === 0) return 'vacia';
+  const pie = conTexto.slice(-3);
+  if (pie.some((linea) => VISTA_AGENTES.test(linea))) return 'agentes';
+  if (pie.some((linea) => VISTA_TRANSCRIPT.test(linea))) return 'transcript';
+  if (cuadro) return 'conversacion';
+  const ultima = conTexto[conTexto.length - 1].trim();
+  if (esPie(ultima)) return 'dialogo';
+  if (PROMPT_SHELL.test(ultima)) return 'shell';
+  return 'otra';
+}
 
 /** Lo que muestra el pane: si hay un diálogo y qué tiene escrito el cuadro de texto. Pura, sobre `capture-pane -p -e`. */
 export function leerEstadoPane(pantalla: string): EstadoPaneTmux {
-  const cuadro = ubicarCuadroDeEntrada(pantalla.replace(/\r/g, '').split('\n'));
-  return { prompt: detectarPromptTmux(pantalla), cuadro: cuadro ? { texto: cuadro.texto } : null };
+  const crudas = pantalla.replace(/\r/g, '').split('\n');
+  const lineas = crudas.map((linea) => sinEscapes(linea).replace(/\s+$/, ''));
+  const encontrado = ubicarCuadroDeEntrada(crudas);
+  const vista = vistaDelPane(lineas, encontrado);
+  // El cuadro de la vista de agentes manda el texto a una sesión nueva.
+  const cuadro = vista === 'conversacion' && encontrado ? { texto: encontrado.texto } : null;
+  const ultimaLinea = [...lineas].reverse().find((linea) => linea.trim())?.trim() ?? '';
+  return { prompt: detectarPromptTmux(pantalla), cuadro, vista, ultimaLinea };
 }
 
 /**

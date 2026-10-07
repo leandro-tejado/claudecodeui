@@ -458,6 +458,30 @@ function recortar(texto: string, largo = 60): string {
 }
 
 /**
+ * Por qué no se mandó, con lo que el pane muestra. Hasta el 7-oct era una sola
+ * frase ("está en otra pantalla o claude se cerró") para todo, y no dejaba
+ * saber qué hacer desde la terminal.
+ */
+function explicarSinCuadro(estado: EstadoPaneTmux): string {
+  switch (estado.vista) {
+    case 'agentes':
+      return 'La sesión está en la vista de agentes de Claude (la que abre la flecha ←), no en la conversación. No se mandó nada: volvé con Esc desde la terminal y mandá el mensaje de nuevo.';
+    case 'transcript':
+      return 'La sesión está en el modo transcript de Claude (ctrl+o). No se mandó nada: salí con ctrl+o desde la terminal y mandá el mensaje de nuevo.';
+    case 'dialogo':
+      return `La sesión tiene abierto un diálogo de Claude que el chat no sabe contestar («${recortar(estado.ultimaLinea)}»). No se mandó nada: contestalo desde la terminal.`;
+    case 'shell':
+      return 'Claude se cerró en esa sesión: el pane quedó en la terminal de bash. No se mandó nada.';
+    case 'ilegible':
+      return 'No se pudo leer la pantalla de la sesión: tmux no contestó o el pane ya no existe. No se mandó nada.';
+    case 'vacia':
+      return 'La sesión todavía no muestra nada (claude puede estar arrancando). No se mandó nada: probá de nuevo en unos segundos.';
+    default:
+      return `La sesión no muestra el cuadro de texto de Claude. Lo último que se ve: «${recortar(estado.ultimaLinea)}». No se mandó nada.`;
+  }
+}
+
+/**
  * Manda un mensaje a un pane y confirma que llegó, en vez de darlo por
  * mandado porque `send-keys` no falló.
  *
@@ -482,7 +506,7 @@ export async function enviarPromptVerificado(
     try {
       return leerEstadoPane(await dependencies.capturarPantalla(nombreSesion));
     } catch {
-      return { prompt: null, cuadro: null };
+      return { prompt: null, cuadro: null, vista: 'ilegible', ultimaLinea: '' };
     }
   };
 
@@ -493,11 +517,7 @@ export async function enviarPromptVerificado(
   }
   if (estado.prompt) return { ok: false, motivo: 'dialogo' };
   if (!estado.cuadro) {
-    return {
-      ok: false,
-      motivo: 'sin-cuadro',
-      mensaje: 'La sesión no muestra el cuadro de texto de Claude: está en otra pantalla o claude se cerró. No se mandó nada.',
-    };
+    return { ok: false, motivo: 'sin-cuadro', mensaje: explicarSinCuadro(estado) };
   }
   if (estado.cuadro.texto) {
     return {
