@@ -119,7 +119,7 @@ Las sesiones nuevas del orquestador llegan por polling de 3 s sobre `~/.cache/ao
 - [x] Barra: `fs.watch` sobre `~/.cache/aos/sesiones.json` — acepta: `orquestar.py crear e2e-orq ejecutora /tmp/cloudcli-e2e/proyecto` aparece en la barra abierta en ≤ 3 s sin recargar | valida: `node e2e/correr.mjs barra/orquestador`
 - [x] Inventario `docs/actualizacion-en-vivo.md`: cada componente con estado del servidor, su fuente de actualización y si es en vivo — acepta: tabla completa y cero filas "ninguna" sin justificar | valida: lectura + `node e2e/correr.mjs barra/componentes`
 - [x] Cuestionario headless en los modos `default`, `auto` y `bypassPermissions` — acepta: en los tres modos la pregunta llega a la UI y Claude recibe la respuesta elegida (la repite literal) | valida: `node e2e/correr.mjs pregunta/modos`
-- [ ] Cuestionario tmux: la selección se compone en el cliente y se teclea de una vez; la huella no incluye lo tildado — acepta: 3 casillas marcadas con clics a 100 ms de distancia llegan las 3 | valida: `node e2e/correr.mjs pregunta/tmux-multi`
+- [x] Cuestionario tmux: la selección se compone en el cliente y se teclea de una vez; la huella no incluye lo tildado — acepta: 3 casillas marcadas con clics a 100 ms de distancia llegan las 3 | valida: `node e2e/correr.mjs pregunta/tmux-multi`
 - [x] Una sola representación de la pregunta: pendiente = cuestionario; respondida = resumen Pregunta → Respuesta, una vez — acepta: cero textos de pregunta repetidos en el DOM antes y después de contestar, en headless y en tmux | valida: `node e2e/correr.mjs pregunta/sin-repetidos`
 - [x] Respuestas del historial desde `toolUseResult`, no por regex — acepta: una pregunta con comillas se muestra bien tras recargar | valida: `NODE_ENV=test npm test -- message-unification`
 - [x] Recibir de Leandro el prompt de ejemplo del cuestionario (lo propuso el orquestador, por decisión de Leandro) — acepta: guardado en `design-system/visual-refs/05-octubre-cuestionario-ejemplo.md` | valida: el archivo existe
@@ -128,8 +128,8 @@ Las sesiones nuevas del orquestador llegan por polling de 3 s sobre `~/.cache/ao
 - [x] Boceto del cuestionario (simple, múltiple, "Otra", revisión, enviado, resumen; headless y tmux; 1280 y 390, claro y oscuro) — acepta: OK de Leandro | valida: `design-system/visual-refs/05-octubre-cuestionario.html`
 - [x] Boceto del header de cuota y de la barra lateral — acepta: OK de Leandro | valida: `design-system/visual-refs/05-octubre-header-barra.html`
 - [ ] Implementar el lenguaje visual del chat (sans única, Claude sin burbuja, columna de lectura, actividad en una línea con detalle plegable) — acepta: capturas 390/1280 × claro/oscuro iguales al boceto aprobado | valida: `node e2e/correr.mjs visual/chat`
-- [ ] Implementar `Cuestionario` (un componente, dos adaptadores) — acepta: los escenarios de `pregunta/*` siguen verdes con el componente nuevo | valida: `node e2e/correr.mjs pregunta`
-- [ ] Implementar el header y la barra rediseñados — acepta: capturas iguales al boceto; cuota y barra en vivo siguen verdes | valida: `node e2e/correr.mjs visual/header-barra cuota barra`
+- [x] Implementar `Cuestionario` (un componente, dos adaptadores) — acepta: los escenarios de `pregunta/*` siguen verdes con el componente nuevo | valida: `node e2e/correr.mjs pregunta`
+- [x] Implementar el header y la barra rediseñados — acepta: capturas iguales al boceto; cuota y barra en vivo siguen verdes | valida: `node e2e/correr.mjs visual/header-barra cuota barra`
 - [ ] Accesibilidad: objetivos de toque de 44 px, foco visible, contraste 4,5:1, `prefers-reduced-motion` — acepta: auditoría axe sin violaciones serias en chat y cuestionario | valida: `node e2e/correr.mjs a11y`
 - [ ] Suite completa verde en `:3901` y `:3902` — acepta: `e2e/evidencia/final-3901/informe.md` con todos los checks en pasa | valida: `node e2e/correr.mjs todo`
 - [ ] Leandro reinicia `:3001`; pasada final con su login por variable de entorno — acepta: `e2e/evidencia/final-3001/informe.md` todo en pasa y Leandro confirma en el celular | valida: `CLOUDCLI_URL=http://100.77.186.53:3001 node e2e/correr.mjs todo --solo-lectura-de-leandro`
@@ -436,11 +436,11 @@ Las sesiones nuevas del orquestador llegan por polling de 3 s sobre `~/.cache/ao
 #### Estado (arranca todo en fail)
 - [pass: con CLI falso; sin turno real en auto] Headless, modos `default`/`auto`/`bypassPermissions`: la pregunta aparece y Claude repite exactamente lo elegido | valida: `node e2e/correr.mjs pregunta/modos`
 - [pass] Tmux, opción única: llega la elegida | valida: `node e2e/correr.mjs pregunta/tmux-simple`
-- [fail: las 3 llegan al pane pero queda en la revisión de la TUI; la orden compuesta del server no está cableada a la UI → Fase 11 paso 3] Tmux, múltiple con clics a 100 ms: llegan las 3 | valida: `node e2e/correr.mjs pregunta/tmux-multi`
+- [pass] Tmux, múltiple con clics a 100 ms: llegan las 3 | valida: `node e2e/correr.mjs pregunta/tmux-multi`
 - [fail: headless pasa; tmux sin escenario] "Otra" con texto libre llega literal (headless y tmux) | valida: `node e2e/correr.mjs pregunta/otra`
 - [pass] Cero textos de pregunta repetidos en el DOM antes y después de contestar | valida: `node e2e/correr.mjs pregunta/sin-repetidos`
 - [pass] Pregunta con comillas bien tras recargar | valida: `NODE_ENV=test npm test -- message-unification` + `pregunta/recarga`
-- [fail: simple verde, múltiple roja por lo mismo que tmux-multi] Línea base de `4158e887` sigue verde | valida: `node e2e/correr.mjs linea-base/4158e887`
+- [pass] Línea base de `4158e887` sigue verde | valida: `node e2e/correr.mjs linea-base/4158e887`
 
 ---
 
@@ -611,7 +611,7 @@ Fase 1 (arnés) → Fase 2 (línea base)
 ## Continuación de Sesión
 
 **Fases completadas:** 1, 2, 3, 4, 5, 6, 7, 8, 10. La 9 está hecha salvo tmux múltiple, que pasa a la 11 paso 3. De la 11 están hechos los pasos 1 y 2.
-**Fase actual:** 11, pasos 3 a 6.
-**Próximo paso exacto:** paso 4 mergeado (`3ea7c013`; vitest 796, tsc limpio; falta probar que `cuota/*` ya fallaba antes de este cambio). El paso 3 (`worktree-agent-aa54ff39bf6ac30f5`, pusheado) da vitest 803, tsc limpio y `pregunta/*` con CLI falso 33/33, pero **no se mergea hasta correr `pregunta/tmux-simple`, `pregunta/tmux-multi` y `linea-base/4158e887` con `--con-cuota`**. Borra `TmuxPromptBanner` y tienen que pasar los tres. Están bloqueados por el gobernador (5 h al 100 %). Script listo: `bash <scratchpad>/f11q.sh`, o a mano con `E2E_PUERTO_BASE=4040`.
+**Fase actual:** 11, pasos 5 y 6.
+**Próximo paso exacto:** pasos 3 y 4 de la Fase 11 mergeados. El 3 se revalidó con tmux real: simple, múltiple y línea base `4158e887`, todo en verde. Falta probar que `cuota/*` ya fallaba antes del paso 4.
 Después: pasos 5 y 6, y la Fase 12.
 **Bloqueantes:** la cuota semanal (proyecta 169 %).
