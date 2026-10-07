@@ -6,6 +6,7 @@ import { test } from 'vitest';
 import { useChatRealtimeHandlers } from '@/modules/chat/hooks/useChatRealtimeHandlers';
 import { normalizedToChatMessages } from '@/modules/chat/hooks/useChatMessages';
 import { useSessionStore } from '@/modules/chat/hooks/useSessionStore';
+import { readDraftText, writeDraftText } from '@/shared/chatDrafts';
 import type { NormalizedMessage, ProjectSession, ServerEvent } from '@/shared/types';
 
 /*
@@ -184,4 +185,41 @@ test('un provider que tmux no soporta sí vuelve a stream-json', () => {
   pane.emitEvent({ kind: 'protocol_error', code: 'TMUX_PROVIDER_UNSUPPORTED', error: 'codex', sessionId: SID } as ServerEvent);
 
   assert.equal(pane.runsInTmux(), false);
+});
+
+/*
+ * 7-oct: un mensaje que el pane rechazó sin teclear nada (sin cuadro, o con
+ * el cuadro ya ocupado) se perdía: el compositor se vacía al mandar y el eco
+ * fallido desaparece al recargar, porque nunca llegó al transcript. Vuelve al
+ * borrador de la sesión, que es lo que muestra el compositor.
+ */
+test('un mensaje que el pane rechazó sin teclear nada vuelve al borrador de la sesión', () => {
+  writeDraftText(SID, '');
+  const pane = renderPane();
+  pane.echo('local_1_a', 'hola, seguí con la fase 2');
+  pane.emitEvent({
+    kind: 'protocol_error',
+    code: 'PANE_NOT_AT_PROMPT',
+    error: 'La sesión está en la vista de agentes de Claude.',
+    sessionId: SID,
+    clientMessageId: 'local_1_a',
+  } as ServerEvent);
+  assert.equal(readDraftText(SID), 'hola, seguí con la fase 2');
+});
+
+test('no pisa lo que ya se empezó a escribir, ni devuelve un texto que pudo haber quedado en el pane', () => {
+  writeDraftText(SID, 'lo próximo');
+  const pane = renderPane();
+  pane.echo('local_1_a', 'hola');
+  pane.emitEvent({
+    kind: 'protocol_error', code: 'PANE_INPUT_NOT_EMPTY', error: 'ocupado', sessionId: SID, clientMessageId: 'local_1_a',
+  } as ServerEvent);
+  assert.equal(readDraftText(SID), 'lo próximo');
+
+  writeDraftText(SID, '');
+  pane.echo('local_2_b', 'otro');
+  pane.emitEvent({
+    kind: 'protocol_error', code: 'PANE_SEND_UNCONFIRMED', error: 'no salió', sessionId: SID, clientMessageId: 'local_2_b',
+  } as ServerEvent);
+  assert.equal(readDraftText(SID), '');
 });

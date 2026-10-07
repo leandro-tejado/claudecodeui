@@ -9,6 +9,7 @@ import { publishSessionBudget } from '@/modules/skin';
 import type { SessionStore } from '@/modules/chat/hooks/useSessionStore';
 import { normalizedToChatMessages } from '@/modules/chat/hooks/useChatMessages';
 import { collectRunningBackgroundTasks } from '@/modules/chat/utils/backgroundTasks';
+import { readDraftText, writeDraftText } from '@/shared/chatDrafts';
 import { appendStreamDelta, appendThinkingDelta, discardStreamDraft, finalizeStreamBuffer, settleStreamBuffer, setStreamDraft } from '@/modules/chat/utils/streamBuffers';
 import type { StreamBuffers } from '@/modules/chat/utils/streamBuffers';
 
@@ -28,6 +29,12 @@ const isActionablePermissionRequest = (request: { toolName?: unknown } | null | 
 
 // Protocol errors that answer a stop request, not a send.
 const NOT_ABOUT_A_SEND = new Set(['NO_ACTIVE_RUN', 'NO_SUCH_TASK', 'TASK_ID_REQUIRED']);
+
+// A tmux pane that refused a message before anything was typed into it (no
+// input box on screen, or one already holding text). Its text goes back to
+// the session's draft: the composer cleared it on send, and the failed echo
+// is gone on the next reload because it never reached the transcript (7-oct).
+const PANE_REFUSED_UNTYPED = new Set(['PANE_NOT_AT_PROMPT', 'PANE_INPUT_NOT_EMPTY']);
 
 const hasActionablePermissionRequests = (requests: Array<{ toolName?: unknown }> | null | undefined): boolean => {
   return Array.isArray(requests) && requests.some((request) => isActionablePermissionRequest(request));
@@ -293,6 +300,15 @@ export function useChatRealtimeHandlers({
                   .find((message) => message.deliveryState === 'sending')?.id;
               if (failedId) {
                 sessionStore.setDeliveryState(sid, failedId, 'failed');
+                const failed = sessionStore.getMessages(sid).find((message) => message.id === failedId);
+                if (
+                  PANE_REFUSED_UNTYPED.has(String(msg.code))
+                  && typeof failed?.content === 'string'
+                  && failed.content.trim()
+                  && !readDraftText(sid).trim()
+                ) {
+                  writeDraftText(sid, failed.content);
+                }
               }
             }
             sessionStore.appendRealtime(sid, {
