@@ -127,10 +127,10 @@ Las sesiones nuevas del orquestador llegan por polling de 3 s sobre `~/.cache/ao
 - [x] Boceto del chat (recorrido: barra → sesión → enviar → pensando → tool → subagente → respuesta escribiéndose → fin) — acepta: OK de Leandro por AskUserQuestion | valida: `design-system/visual-refs/05-octubre-chat.html`
 - [x] Boceto del cuestionario (simple, múltiple, "Otra", revisión, enviado, resumen; headless y tmux; 1280 y 390, claro y oscuro) — acepta: OK de Leandro | valida: `design-system/visual-refs/05-octubre-cuestionario.html`
 - [x] Boceto del header de cuota y de la barra lateral — acepta: OK de Leandro | valida: `design-system/visual-refs/05-octubre-header-barra.html`
-- [ ] Implementar el lenguaje visual del chat (sans única, Claude sin burbuja, columna de lectura, actividad en una línea con detalle plegable) — acepta: capturas 390/1280 × claro/oscuro iguales al boceto aprobado | valida: `node e2e/correr.mjs visual/chat`
+- [x] Implementar el lenguaje visual del chat (sans única, Claude sin burbuja, columna de lectura, actividad en una línea con detalle plegable) — acepta: capturas 390/1280 × claro/oscuro iguales al boceto aprobado | valida: `node e2e/correr.mjs visual/chat`
 - [x] Implementar `Cuestionario` (un componente, dos adaptadores) — acepta: los escenarios de `pregunta/*` siguen verdes con el componente nuevo | valida: `node e2e/correr.mjs pregunta`
 - [x] Implementar el header y la barra rediseñados — acepta: capturas iguales al boceto; cuota y barra en vivo siguen verdes | valida: `node e2e/correr.mjs visual/header-barra cuota barra`
-- [ ] Accesibilidad: objetivos de toque de 44 px, foco visible, contraste 4,5:1, `prefers-reduced-motion` — acepta: auditoría axe sin violaciones serias en chat y cuestionario | valida: `node e2e/correr.mjs a11y`
+- [x] Accesibilidad: objetivos de toque de 44 px, foco visible, contraste 4,5:1, `prefers-reduced-motion` — acepta: auditoría axe sin violaciones serias en chat y cuestionario | valida: `node e2e/correr.mjs a11y`
 - [ ] Suite completa verde en `:3901` y `:3902` — acepta: `e2e/evidencia/final-3901/informe.md` con todos los checks en pasa | valida: `node e2e/correr.mjs todo`
 - [ ] Leandro reinicia `:3001`; pasada final con su login por variable de entorno — acepta: `e2e/evidencia/final-3001/informe.md` todo en pasa y Leandro confirma en el celular | valida: `CLOUDCLI_URL=http://100.77.186.53:3001 node e2e/correr.mjs todo --solo-lectura-de-leandro`
 - [ ] Tests unitarios del repo verdes — acepta: los dos comandos salen con 0 | valida: `NODE_ENV=test npx vitest run && NODE_ENV=test npm test`
@@ -489,11 +489,11 @@ Las sesiones nuevas del orquestador llegan por polling de 3 s sobre `~/.cache/ao
 
 #### Estado (arranca todo en fail)
 - [pass] Cero `font-serif` / Merriweather en `src/` | valida: `! grep -rn "font-serif\|Merriweather" src`
-- [fail] Capturas `visual/chat`, `visual/cuestionario`, `visual/header-barra` en 4 variantes cada una, revisadas contra el boceto | valida: `node e2e/correr.mjs visual`
-- [fail] Escenarios funcionales de las fases 3 a 9 verdes con el diseño nuevo | valida: `node e2e/correr.mjs cuota headless tmux barra pregunta`
-- [fail] axe sin violaciones `serious`/`critical` en chat y cuestionario | valida: `node e2e/correr.mjs a11y`
-- [fail] Presupuesto de bundle respetado | valida: `npm run build:client`
-- [fail] Vitest verde | valida: `NODE_ENV=test npx vitest run`
+- [pass] Capturas `visual/chat`, `visual/cuestionario`, `visual/header-barra` en 4 variantes cada una, revisadas contra el boceto | valida: `node e2e/correr.mjs visual`
+- [pass] Escenarios funcionales de las fases 3 a 9 verdes con el diseño nuevo | valida: `node e2e/correr.mjs cuota headless tmux barra pregunta`
+- [pass] axe sin violaciones `serious`/`critical` en chat y cuestionario | valida: `node e2e/correr.mjs a11y`
+- [pass] Presupuesto de bundle respetado | valida: `npm run build:client`
+- [pass] Vitest verde | valida: `NODE_ENV=test npx vitest run`
 
 ---
 
@@ -608,10 +608,21 @@ Fase 1 (arnés) → Fase 2 (línea base)
 
 ---
 
+**Fase 11, pasos 5 y 6 (07-oct, merge en `diseno/propio`):**
+- Escenarios nuevos `visual/chat`, `visual/cuestionario`, `visual/header-barra` y `a11y/chat` (axe-core 4.14.0 en `e2e/package.json`, junto a playwright). Ayudas en `e2e/lib/visual.mjs`.
+- axe arrancó con violaciones graves en las 8 combinaciones (contraste y `label-content-name-mismatch`). Arreglado de raíz: `--muted-foreground` claro 44 % → 38 %, `--ds-faint` `#8A97B0` → `#5F6B85` en claro y `#68749C` → `#8792B8` en oscuro (**se aparta del boceto aprobado** para llegar a 4,5:1); horas y MD/TXT un gris más fuerte; insignia "fija" `text-blue-700`/`dark:text-blue-300`; ámbar de RAM `text-amber-700`/`dark:text-amber-400`; botón del Cuestionario en oscuro con texto oscuro; nombres accesibles que contienen el texto visible (copiar, modelo, recursos) e input de adjuntos con label.
+- El indicador de cuota deja `aria-label` y queda con `title` (axe no acepta un nombre que no contenga "dato real · resetea…"). Los escenarios `cuota/*` buscan `title*="Ventana de 5 horas"`: con cuenta el texto arranca con "Cuenta …", y el `^=` viejo no encontraba nada.
+- Header a 390 px en dos filas como el boceto: arriba título y acciones, abajo los medidores con "Ventana 5h" y "Semanal" visibles. Antes el título quedaba en 0 px y el chip de cuenta se montaba sobre el anillo.
+- `tmux/recarga` mira el Stop del indicador, mismo arreglo que `headless/recarga`.
+- 🟡 **Deuda del arnés:** corrida conjunta 169 bien y 8 mal; los 8 pasan aislados. `cuota/sin-turnos` y `cuota/vieja` comparten `cuota.json` con la instancia real, que lo reescribe en sus turnos; `tmux/rafaga` ve el `claude` del escenario anterior todavía vivo. La Fase 12 pide `correr.mjs todo` verde: hay que aislar eso primero.
+- 🟡 **Diferencia con el boceto que queda:** a 390 px el riel colapsado del panel derecho ocupa ~50 px. No lo toqué.
+
+---
+
 ## Continuación de Sesión
 
-**Fases completadas:** 1, 2, 3, 4, 5, 6, 7, 8, 10. La 9 está hecha salvo tmux múltiple, que pasa a la 11 paso 3. De la 11 están hechos los pasos 1 y 2.
-**Fase actual:** 11, pasos 5 y 6.
-**Próximo paso exacto:** pasos 3 y 4 de la Fase 11 mergeados. El 3 se revalidó con tmux real: simple, múltiple y línea base `4158e887`, todo en verde. Falta probar que `cuota/*` ya fallaba antes del paso 4.
-Después: pasos 5 y 6, y la Fase 12.
-**Bloqueantes:** la cuota semanal (proyecta 169 %).
+**Fases completadas:** 1 a 11.
+**Fase actual:** 12.
+**Próximo paso exacto:** aislar en el arnés el `cuota.json` entre instancias y esperar a que muera el `claude` del escenario anterior en tmux (ver la deuda en Cambios realizados), y después correr `node e2e/correr.mjs todo` (paso 1 de la Fase 12).
+Después: Leandro reinicia `:3001` desde `ct` o ttyd (`npm run build && systemctl --user restart cloudcli`, más `Ctrl+Shift+R`) y se hace la pasada final.
+**Bloqueantes:** el reinicio de `:3001` lo hace Leandro, y la cuota semanal (proyecta 144 %).
