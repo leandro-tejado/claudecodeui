@@ -6,7 +6,7 @@ import type { PendingPermissionRequest } from '@/shared/types';
 import { buildClaudeToolPermissionEntry, formatToolInputForDisplay } from '@/modules/chat/utils/chatPermissions';
 import { getClaudeSettings } from '@/modules/chat/utils/chatStorage';
 import { getPermissionPanel, registerPermissionPanel } from '@/modules/chat/tools/configs/permissionPanelRegistry';
-import { AskUserQuestionPanel } from '@/modules/chat/tools/InteractiveRenderers/AskUserQuestionPanel';
+import { CuestionarioHeadless } from '@/modules/chat/Cuestionario';
 import {
   Confirmation,
   ConfirmationAction,
@@ -15,7 +15,7 @@ import {
   ConfirmationTitle,
 } from '@/modules/chat/composer/Confirmation';
 
-registerPermissionPanel('AskUserQuestion', AskUserQuestionPanel);
+registerPermissionPanel('AskUserQuestion', CuestionarioHeadless);
 
 type PermissionRequestsBannerProps = {
   pendingPermissionRequests: PendingPermissionRequest[];
