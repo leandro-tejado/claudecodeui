@@ -112,3 +112,63 @@ test('sin cuadro, el error dice qué muestra el pane y no se teclea nada', async
   const resultado = await enviarPromptVerificado('demo', 'hola', deps);
   assert.match(!resultado.ok && 'mensaje' in resultado ? resultado.mensaje : '', /«Presione una tecla para seguir»/);
 });
+
+/*
+ * 7-oct: un mensaje con una captura adjunta salía siempre con "El texto no
+ * apareció en el cuadro". Claude Code cambia la ruta de una imagen pegada
+ * (png, jpg, gif, webp) por "[Image #N]" al principio del cuadro, así que el
+ * final del mensaje —la ruta— nunca se ve. Capturas de `aislado-adjunto-*`: un
+ * `claude` en un tmux aparte con el mismo pegado que manda el chat; Claude
+ * recibió cada imagen y la leyó. svg, txt y pdf no se cambian: quedan como
+ * "[Pasted text #N]".
+ */
+const RUTA_ADJUNTO = '/home/leantejado/.cloudcli/assets';
+function conAdjuntos(texto: string, archivos: string[]): string {
+  return `${texto}\n\nArchivos adjuntos (leelos desde estas rutas):\n${archivos.map((archivo) => `- ${RUTA_ADJUNTO}/${archivo}`).join('\n')}`;
+}
+
+/** Un pane que muestra `vacio` hasta que se teclea, `tecleado` hasta el Enter y `enviado` después. */
+function paneEnSecuencia(vacio: string, tecleado: string, enviado: string): { deps: EnvioVerificadoDependencias; acciones: string[] } {
+  const acciones: string[] = [];
+  let pantalla = vacio;
+  return {
+    acciones,
+    deps: {
+      sendKeysLiteral: async (_pane, payload) => { acciones.push(`texto:${payload}`); pantalla = tecleado; },
+      sendEnter: async () => { acciones.push('Enter'); pantalla = enviado; },
+      capturarPantalla: async () => pantalla,
+      esperar: async () => {},
+    },
+  };
+}
+
+test('una imagen adjunta se ve como [Image #N] y el mensaje sale con su Enter', async () => {
+  const casos: Array<[string, string]> = [
+    ['aislado-adjunto-imagen-e', conAdjuntos('que palabra dice la imagen?', ['1791400000001-111111111-image.png'])],
+    ['aislado-adjunto-dos-imagenes-e', conAdjuntos('que palabra dice cada imagen?', ['1791400000001-111111111-image.png', '1791400000002-222222222-image.png'])],
+    ['aislado-adjunto-sin-texto-e', conAdjuntos('', ['1791400000002-222222222-image.png'])],
+  ];
+  for (const [nombre, mensaje] of casos) {
+    const { deps, acciones } = paneEnSecuencia(fixture('aislado-idle'), fixture(nombre), fixture('aislado-adjunto-tras-enter-e'));
+    const resultado = await enviarPromptVerificado('demo', mensaje, deps);
+    assert.deepEqual(resultado, { ok: true }, nombre);
+    assert.deepEqual(acciones.at(-1), 'Enter', nombre);
+    assert.equal(acciones.filter((accion) => accion === 'Enter').length, 1, `${nombre}: un solo Enter, el cuadro se vació`);
+  }
+});
+
+test('con imagen adjunta, el texto del mensaje igual tiene que estar en el cuadro', async () => {
+  // La etiqueta sola no alcanza: si el texto no llegó, no se manda el Enter.
+  const tecleado = fixture('aislado-adjunto-imagen-e').replace('que palabra dice la imagen?', 'otra cosa');
+  const { deps, acciones } = paneEnSecuencia(fixture('aislado-idle'), tecleado, fixture('aislado-adjunto-tras-enter-e'));
+  const resultado = await enviarPromptVerificado('demo', conAdjuntos('que palabra dice la imagen? y que color tiene', ['1-image.png']), deps);
+  assert.equal(!resultado.ok && resultado.motivo, 'no-aparecio');
+  assert.ok(!acciones.includes('Enter'));
+});
+
+test('con la imagen todavía sin cambiar por [Image #N], el cuadro con la ruta también vale', async () => {
+  const mensaje = conAdjuntos('mira', ['1-image.png']);
+  const tecleado = fixture('aislado-idle').replace(/❯\s.*/, `❯ ${mensaje.split(/\n+/).join('\n  ')}`);
+  const { deps } = paneEnSecuencia(fixture('aislado-idle'), tecleado, fixture('aislado-adjunto-tras-enter-e'));
+  assert.deepEqual(await enviarPromptVerificado('demo', mensaje, deps), { ok: true });
+});

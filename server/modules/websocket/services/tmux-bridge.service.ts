@@ -444,12 +444,31 @@ const REINTENTO_ENTER_MS = 2000;
  * cuadro parte los renglones largos donde le entra; por el final del texto,
  * que es lo último en llegar; y un pegado largo se ve como "[Pasted text #1
  * +39 lines]" (medido el 5-oct), que alcanza porque antes el cuadro estaba vacío.
+ *
+ * La ruta de una imagen pegada tampoco se ve: Claude Code la saca del texto y
+ * pone "[Image #N]" al principio del cuadro (medido el 7-oct con png, jpg, gif
+ * y webp; svg, txt y pdf quedan como "[Pasted text #N]"). Los adjuntos del chat
+ * van al final del mensaje, así que con una imagen el final nunca aparecía y
+ * todo mensaje con una captura daba `no-aparecio`. Con una etiqueta por imagen,
+ * se busca el texto sin las rutas, por el principio y por el final: sin las
+ * rutas, el final es el renglón fijo de los adjuntos y no dice si el texto de
+ * la persona llegó.
  */
+const RUTA_IMAGEN = /\/\S+\.(?:png|jpe?g|gif|webp)(?=\s|$)/gi;
+
 function cuadroMuestra(cuadro: string, texto: string): boolean {
   if (/\[Pasted text #\d+/.test(cuadro)) return true;
+  const plano = cuadro.replace(/\s+/g, '');
   // `!` al principio pasa el cuadro a modo bash y no se dibuja como texto.
-  const buscado = texto.replace(/\s+/g, '').replace(/^!/, '').slice(-40);
-  return buscado.length > 0 && cuadro.replace(/\s+/g, '').includes(buscado);
+  const esperado = (crudo: string): string => crudo.replace(/\s+/g, '').replace(/^!/, '');
+  const final = esperado(texto).slice(-40);
+  if (final.length > 0 && plano.includes(final)) return true;
+
+  const imagenes = texto.match(RUTA_IMAGEN)?.length ?? 0;
+  const etiquetas = cuadro.match(/\[Image #\d+\]/g)?.length ?? 0;
+  if (imagenes === 0 || etiquetas < imagenes) return false;
+  const sinRutas = esperado(texto.replace(RUTA_IMAGEN, ''));
+  return sinRutas.length > 0 && plano.includes(sinRutas.slice(0, 40)) && plano.includes(sinRutas.slice(-40));
 }
 
 function recortar(texto: string, largo = 60): string {
