@@ -30,7 +30,7 @@ const formatTokens = (value: number): string => {
 };
 
 /** Barra apagada: ocupa el mismo lugar para que la cabecera no salte. */
-const EmptyBar = () => <div className="h-1.5 w-16 flex-none" aria-hidden="true" />;
+const EmptyBar = () => <div className="h-1.5 w-10 flex-none sm:w-16" aria-hidden="true" />;
 
 function SkinCompactBar() {
   const meter = useContextMeter();
@@ -58,7 +58,7 @@ function SkinCompactBar() {
           aria-valuemin={0}
           aria-valuemax={100}
           aria-label={label}
-          className="h-1.5 w-16 overflow-hidden rounded-full bg-muted"
+          className="h-1.5 w-10 overflow-hidden rounded-full bg-muted sm:w-16"
         >
           <div
             className={`h-full rounded-full transition-[width] ${overdue ? 'bg-red-500' : trackClass(percent)}`}

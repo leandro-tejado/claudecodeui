@@ -1044,7 +1044,7 @@ export function SkinSidebar({
               Session Orquestadora
             </span>
             <span
-              className="flex-none rounded-full bg-primary/15 px-1.5 font-medium text-primary"
+              className="flex-none rounded-full bg-primary/15 px-1.5 font-medium text-blue-700 dark:text-blue-300"
               style={{ fontSize: 'var(--skin-text-xs)' }}
             >
               fija

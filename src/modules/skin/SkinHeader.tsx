@@ -170,7 +170,10 @@ export default function SkinHeader({
     // "Materiales"), que cae a `--ds-surface-2` opaco con `prefers-reduced-transparency`
     // (Fase 11, paso 4 — boceto `05-octubre-header-barra.html`).
     <header className="ds-material-chrome flex-shrink-0 border-b border-border/60 px-3 py-1.5">
-      <div className="flex min-w-0 items-center gap-2">
+      {/* A 390 px la fila parte en dos, como el boceto (05-octubre-header-barra):
+          título y acciones arriba, medidores abajo a lo ancho. En una sola fila
+          el título quedaba en 0 px y el chip de cuenta se montaba sobre el anillo. */}
+      <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 sm:flex-nowrap">
         {isMobile && <SkinMenuButton onMenuClick={onMenuClick} />}
 
         {!isMobile && (
@@ -222,7 +225,7 @@ export default function SkinHeader({
             cosa (245K de entrada, no la ventana del modelo), y en una sesión de
             1M el anillo está en 24% —verde— justo cuando esta barra está llena.
             Si se parecieran, se leerían como si midieran lo mismo. */}
-        <div className="flex flex-none items-center gap-2">
+        <div className="order-last flex w-full flex-none items-center justify-between gap-1.5 sm:order-none sm:justify-start sm:gap-2 sm:w-auto">
           <SkinContextRing />
           <SkinCompactBar />
           <UsageWindowIndicator cuenta={cuentaActiva} />

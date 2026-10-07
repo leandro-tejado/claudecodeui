@@ -17,7 +17,9 @@ export async function correr(ctx) {
   const ack = await abrirSesion(s, sid);
   const ackNuevo = s.frames.filter((f) => f.t >= desde && f.datos?.kind === 'chat_subscribed' && f.datos.sessionId === sid).at(-1)?.datos ?? ack;
   ctx.check('el ack de suscripción dice que está procesando', ackNuevo.isProcessing === true, { datos: { isProcessing: ackNuevo.isProcessing, runsInTmux: ackNuevo.runsInTmux } });
-  const ind = await s.pagina.getByText(/Thinking|Pensando|Processing/).first().isVisible().catch(() => false);
+  // El rótulo "Thinking" se oculta mientras llega texto (Fase 5, paso 7): la
+  // señal estable del indicador es su botón Stop con el atajo `esc`.
+  const ind = await s.pagina.locator('button:has(kbd)', { hasText: 'Stop' }).first().isVisible().catch(() => false);
   ctx.check('tras recargar, el indicador sigue', ind, { evidencia: await ctx.captura(s, 'tras-recargar') });
   await esperarFin(s, t, 120_000);
 }

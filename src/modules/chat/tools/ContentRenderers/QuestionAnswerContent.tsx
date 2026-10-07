@@ -39,7 +39,7 @@ export const QuestionAnswerContent: React.FC<QuestionAnswerContentProps> = ({
   // then this collapses to one line instead of repeating the question.
   if (!hasAnyAnswer) {
     return (
-      <div className={`text-xs italic text-gray-400 dark:text-gray-500 ${className}`}>
+      <div className={`text-xs italic text-gray-500 dark:text-gray-400 ${className}`}>
         {total > 1 ? `${total} open questions ↓` : 'Open question ↓'}
       </div>
     );

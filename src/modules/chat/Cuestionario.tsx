@@ -309,7 +309,7 @@ export const CuestionarioHeadless: React.FC<PermissionPanelProps> = ({ request, 
         </div>
 
         <div className="px-4 py-5">
-          <p className="mb-1.5 flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide text-ds-primary-dark">
+          <p className="mb-1.5 flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide text-ds-primary-dark dark:text-ds-primary">
             {multi ? <SquareCheckIcon className="h-3.5 w-3.5" aria-hidden="true" /> : <CircleDotIcon className="h-3.5 w-3.5" aria-hidden="true" />}
             {multi ? 'Selección múltiple' : 'Opción única'}
           </p>
@@ -407,7 +407,7 @@ export const CuestionarioHeadless: React.FC<PermissionPanelProps> = ({ request, 
                 type="button"
                 onClick={handleSubmit}
                 disabled={!hasCurrentSelection && Object.keys(buildAnswers()).length === 0}
-                className="flex min-h-9 items-center gap-1 rounded-ds-sm bg-ds-primary px-3.5 text-[13px] font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40"
+                className="flex min-h-9 items-center gap-1 rounded-ds-sm bg-ds-primary px-3.5 text-[13px] font-semibold text-white dark:text-primary-foreground disabled:cursor-not-allowed disabled:opacity-40"
               >
                 Submit
               </button>
@@ -415,7 +415,7 @@ export const CuestionarioHeadless: React.FC<PermissionPanelProps> = ({ request, 
               <button
                 type="button"
                 onClick={() => setCurrentStep((s) => s + 1)}
-                className="flex min-h-9 items-center gap-1 rounded-ds-sm bg-ds-primary px-3.5 text-[13px] font-semibold text-white"
+                className="flex min-h-9 items-center gap-1 rounded-ds-sm bg-ds-primary px-3.5 text-[13px] font-semibold text-white dark:text-primary-foreground"
               >
                 Next
                 <ChevronRightIcon className="h-3.5 w-3.5" aria-hidden="true" />
@@ -614,7 +614,7 @@ function TarjetaPromptTmux({
       )}
 
       <div className="px-4 py-4">
-        <p className="mb-1.5 flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide text-ds-primary-dark">
+        <p className="mb-1.5 flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide text-ds-primary-dark dark:text-ds-primary">
           {multiple ? <SquareCheckIcon className="h-3.5 w-3.5" aria-hidden="true" /> : <CircleDotIcon className="h-3.5 w-3.5" aria-hidden="true" />}
           {multiple ? 'Selección múltiple' : 'Opción única'}
         </p>
@@ -778,7 +778,7 @@ function TarjetaPromptTmux({
                 type="button"
                 disabled={enviando || (!!libreCasilla && marcadas.has(libreCasilla.indice) && !textoLibre.trim())}
                 onClick={enviarSeleccion}
-                className="flex min-h-9 items-center gap-1 rounded-ds-sm bg-ds-primary px-3.5 text-[13px] font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40"
+                className="flex min-h-9 items-center gap-1 rounded-ds-sm bg-ds-primary px-3.5 text-[13px] font-semibold text-white dark:text-primary-foreground disabled:cursor-not-allowed disabled:opacity-40"
               >
                 {enviando
                   ? t('tmuxPrompt.sending')
@@ -789,7 +789,7 @@ function TarjetaPromptTmux({
                 type="button"
                 disabled={enviando}
                 onClick={() => responderTecla('Right')}
-                className="flex min-h-9 items-center gap-1 rounded-ds-sm bg-ds-primary px-3.5 text-[13px] font-semibold text-white disabled:opacity-40"
+                className="flex min-h-9 items-center gap-1 rounded-ds-sm bg-ds-primary px-3.5 text-[13px] font-semibold text-white dark:text-primary-foreground disabled:opacity-40"
               >
                 {enviando ? t('tmuxPrompt.sending') : (nextKey.accion === 'review' ? 'Revisar y enviar' : 'Siguiente')}
                 <ChevronRightIcon className="h-3.5 w-3.5" aria-hidden="true" />
