@@ -9,7 +9,12 @@ import { PROVIDER_LABELS, createSessionViewModel, formatCompactAge } from '@/mod
 import { useCompactSidebar } from '@/modules/sidebar/hooks/useCompactSidebar';
 import { useProviderSessionIdCopy } from '@/modules/sidebar/hooks/useProviderSessionIdCopy';
 import SessionOptions from '@/modules/sidebar/SessionOptions';
-import { COLOR_ESTADO_SESION, ROTULO_ESTADO_SESION, estadoDeSesion } from '@/modules/sidebar/estadoSesion';
+import {
+  COLOR_ESTADO_SESION,
+  DESCRIPCION_ESTADO_SESION,
+  ROTULO_ESTADO_SESION,
+  estadoDeSesion,
+} from '@/modules/sidebar/estadoSesion';
 
 type SidebarSessionItemProps = {
   project: Project;
@@ -89,9 +94,13 @@ function SidebarSessionItem({
     tieneTrabajoDeFondo: showBackgroundIndicator,
     necesitaAtencion: showAttentionIndicator,
     tocadaRecientemente: showRecentIndicator,
+    procesoVivo: (session as { tmux?: { vivo: boolean } | null }).tmux?.vivo ?? null,
   });
   const rotuloEstado = (
-    <span className={cn('whitespace-nowrap text-[10px] font-medium', COLOR_ESTADO_SESION[estadoSesion])}>
+    <span
+      title={DESCRIPCION_ESTADO_SESION[estadoSesion]}
+      className={cn('whitespace-nowrap text-[10px] font-medium', COLOR_ESTADO_SESION[estadoSesion])}
+    >
       {ROTULO_ESTADO_SESION[estadoSesion]}
     </span>
   );

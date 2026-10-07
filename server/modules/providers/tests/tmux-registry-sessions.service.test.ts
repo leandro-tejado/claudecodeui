@@ -5,7 +5,11 @@ import path from 'node:path';
 import test from 'node:test';
 
 import { closeConnection, getConnection, initializeDatabase, projectsDb, sessionsDb } from '@/modules/database/index.js';
-import { getProjectsWithSessions, invalidarRegistroSesiones } from '@/modules/projects/index.js';
+import {
+  _setListarPanesTmuxParaTests,
+  getProjectsWithSessions,
+  invalidarRegistroSesiones,
+} from '@/modules/projects/index.js';
 import {
   buscarPaneTmuxRegistrado,
   esFilaTmuxSinTranscript,
@@ -45,6 +49,9 @@ async function withEntorno(runTest: (escribirRegistro: (registro: Registro | nul
   process.env.DATABASE_PATH = path.join(tempDirectory, 'auth.db');
   process.env.AOS_SESIONES_REGISTRO_PATH = registroPath;
   await initializeDatabase();
+  // Sin consultar el tmux real: estas filas son del registro de prueba, que
+  // es lo que se mide acá (el cruce con tmux tiene su propio test).
+  _setListarPanesTmuxParaTests(async () => null);
 
   const escribirRegistro = async (registro: Registro | null) => {
     if (registro === null) {
@@ -63,6 +70,7 @@ async function withEntorno(runTest: (escribirRegistro: (registro: Registro | nul
     else process.env.DATABASE_PATH = previousDatabasePath;
     if (previousRegistroPath === undefined) delete process.env.AOS_SESIONES_REGISTRO_PATH;
     else process.env.AOS_SESIONES_REGISTRO_PATH = previousRegistroPath;
+    _setListarPanesTmuxParaTests(null);
     invalidarRegistroSesiones();
     await rm(tempDirectory, { recursive: true, force: true });
   }

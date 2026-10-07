@@ -1,8 +1,12 @@
 export {
+  // Solo para tests de otros módulos: reemplaza la consulta a tmux.
+  _setListarPanesTmuxParaTests,
   generateDisplayName,
   getProjectsWithSessions,
   invalidarRegistroSesiones,
+  leerVivoEfectivoPorSesion,
   resolverTmuxDeSesion,
+  sesionesConVivoCambiado,
   resolverCuentaDeSesion,
 } from './services/projects-with-sessions-fetch.service.js';
 export { updateProjectDisplayName } from './services/project-management.service.js';

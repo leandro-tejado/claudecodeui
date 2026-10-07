@@ -1,6 +1,8 @@
+import { execFile } from 'node:child_process';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
+import { promisify } from 'node:util';
 
 import { cuentaDeTmux } from '@/modules/cuentas/index.js';
 import { projectsDb, sessionsDb } from '@/modules/database/index.js';
@@ -305,6 +307,102 @@ function rutaRegistroSesiones(): string {
   return process.env.AOS_SESIONES_REGISTRO_PATH || path.join(os.homedir(), '.cache', 'aos', 'sesiones.json');
 }
 
+const execFileAsync = promisify(execFile);
+
+/**
+ * Nombres de las sesiones de tmux vivas ahora mismo. Un `Set` vacío si no
+ * hay servidor de tmux (ninguna viva); `null` si tmux no responde o no está
+ * instalado — no se sabe, y quien llama confía en el registro como antes.
+ * `argsSocket` es solo para los tests, contra un tmux aislado (`-L`).
+ */
+export async function listarPanesTmux(argsSocket: string[] = []): Promise<Set<string> | null> {
+  try {
+    const { stdout } = await execFileAsync('tmux', [...argsSocket, 'list-sessions', '-F', '#{session_name}'], {
+      timeout: 2_000,
+    });
+    return new Set(stdout.split('\n').map((linea) => linea.trim()).filter(Boolean));
+  } catch (error) {
+    const stderr = String((error as { stderr?: unknown }).stderr ?? '');
+    if (/no server running|error connecting to/.test(stderr)) {
+      return new Set();
+    }
+    return null;
+  }
+}
+
+let listarPanes: () => Promise<Set<string> | null> = () => listarPanesTmux();
+
+/** Solo para tests: reemplaza la consulta a tmux (`null` vuelve a la real). */
+export function _setListarPanesTmuxParaTests(fn: (() => Promise<Set<string> | null>) | null): void {
+  listarPanes = fn ?? (() => listarPanesTmux());
+}
+
+/**
+ * Bug del 07-oct: "viva" en el registro no alcanza. `orquestar.py dormir`
+ * mata el pane sin reescribir `sesiones.json`, y `aos-ciclo` lo refresca cada
+ * 10 min: un pane muerto seguía vivo en la barra. Una entrada "viva" cuyo
+ * pane ya no existe se devuelve como "caida" — en una copia, el registro en
+ * disco no se toca.
+ */
+function cruzarConPanesVivos(registro: RegistroSesiones, panes: Set<string> | null): RegistroSesiones {
+  if (!panes) {
+    return registro;
+  }
+  const cruzado: RegistroSesiones = {};
+  for (const [clave, entry] of Object.entries(registro)) {
+    cruzado[clave] = entry.estado === 'viva' && !panes.has(entry.nombre) ? { ...entry, estado: 'caida' } : entry;
+  }
+  return cruzado;
+}
+
+/**
+ * Si cada sesión del registro tiene su tmux vivo de verdad (el registro dice
+ * "viva" y el pane existe), por `session_id`. Es lo que termina en el
+ * `tmux.vivo` de la barra.
+ */
+export function vivoEfectivoPorSesion(
+  registro: RegistroSesiones,
+  panes: ReadonlySet<string> | null,
+): Map<string, boolean> {
+  const vivos = new Map<string, boolean>();
+  for (const entry of Object.values(cruzarConPanesVivos(registro, panes as Set<string> | null))) {
+    if (!entry.session_id) continue;
+    // Dos entradas con el mismo `session_id`: gana la viva, como en `resolverTmux`.
+    vivos.set(entry.session_id, vivos.get(entry.session_id) === true || entry.estado === 'viva');
+  }
+  return vivos;
+}
+
+/**
+ * Los `session_id` cuyo tmux pasó de vivo a muerto o al revés entre dos
+ * lecturas: las filas de la barra que tienen que enterarse, sin recargar,
+ * de que su sesión pasó a libre o a dormida.
+ */
+export function sesionesConVivoCambiado(
+  antes: ReadonlyMap<string, boolean>,
+  despues: ReadonlyMap<string, boolean>,
+): string[] {
+  const cambiadas: string[] = [];
+  for (const [sessionId, vivo] of despues) {
+    if ((antes.get(sessionId) ?? false) !== vivo) cambiadas.push(sessionId);
+  }
+  for (const [sessionId, vivo] of antes) {
+    if (vivo && !despues.has(sessionId)) cambiadas.push(sessionId);
+  }
+  return cambiadas;
+}
+
+/** `vivoEfectivoPorSesion` de ahora mismo, sin cache: lo usa el vigía de panes del watcher. */
+export async function leerVivoEfectivoPorSesion(): Promise<Map<string, boolean>> {
+  let registro: RegistroSesiones = {};
+  try {
+    registro = JSON.parse(await fs.readFile(rutaRegistroSesiones(), 'utf8')) as RegistroSesiones;
+  } catch {
+    // Sin registro: ninguna sesión con tmux.
+  }
+  return vivoEfectivoPorSesion(registro, await listarPanes());
+}
+
 /** 5 s: barato de recalcular, y evita un `readFile` por cada fila de cada proyecto en la misma respuesta. */
 const REGISTRO_CACHE_MS = 5000;
 let registroCache: { data: RegistroSesiones; leidoEn: number } | null = null;
@@ -317,7 +415,7 @@ async function leerRegistroSesiones(): Promise<RegistroSesiones> {
 
   try {
     const raw = await fs.readFile(rutaRegistroSesiones(), 'utf8');
-    const data = JSON.parse(raw) as RegistroSesiones;
+    const data = cruzarConPanesVivos(JSON.parse(raw) as RegistroSesiones, await listarPanes());
     registroCache = { data, leidoEn: ahora };
     return data;
   } catch {

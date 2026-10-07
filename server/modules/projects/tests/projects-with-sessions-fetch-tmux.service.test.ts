@@ -7,6 +7,7 @@ import test from 'node:test';
 import { closeConnection, initializeDatabase, sessionsDb } from '@/modules/database/index.js';
 import {
   _resetRegistroSesionesCacheParaTests,
+  _setListarPanesTmuxParaTests,
   getProjectsWithSessions,
 } from '@/modules/projects/services/projects-with-sessions-fetch.service.js';
 import { nombreTmux } from '@/modules/websocket/index.js';
@@ -60,6 +61,9 @@ async function withRegistro(
     await writeFile(registroPath, JSON.stringify(registro));
   }
   process.env.AOS_SESIONES_REGISTRO_PATH = registroPath;
+  // Sin consultar el tmux real: acá se mide qué dice el registro (el cruce
+  // con tmux está en `projects-tmux-panes-vivos.test.ts`).
+  _setListarPanesTmuxParaTests(async () => null);
   _resetRegistroSesionesCacheParaTests();
 
   try {
@@ -70,6 +74,7 @@ async function withRegistro(
     } else {
       process.env.AOS_SESIONES_REGISTRO_PATH = previousPath;
     }
+    _setListarPanesTmuxParaTests(null);
     _resetRegistroSesionesCacheParaTests();
     await rm(tempDirectory, { recursive: true, force: true });
   }

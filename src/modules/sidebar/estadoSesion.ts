@@ -15,11 +15,17 @@
  * - `pensando`: el turno principal está en curso, o cerró pero todavía corren
  *   subagentes o workflows que lanzó (ninguno de los dos tiene rótulo propio
  *   en el boceto, así que comparten "pensando": el agente sigue ocupado).
- * - `libre`: turno cerrado, sin nada pendiente, tocada hace menos de 10 min
- *   (`createSessionViewModel.isActive`).
- * - `dormida`: ídem, pero hace más de 10 min. No es la hibernación del
- *   gobernador (eso es tmux, fuera de esta lista) — es la misma idea aplicada
- *   a "esta sesión no tiene nada pasando ahora y hace rato que nadie la mira".
+ * - `libre`: turno cerrado y sin nada pendiente, con un proceso vivo que
+ *   espera el próximo mensaje: su pane de tmux sigue en pie.
+ * - `dormida`: turno cerrado y sin proceso vivo detrás — el pane murió o lo
+ *   hibernó el gobernador. Al escribirle se retoma con `--resume`.
+ *
+ * Bug del 07-oct: "dormida" se decidía solo por la edad del último cambio
+ * (más de 10 min), y una sesión con su tmux vivo esperando el próximo
+ * mensaje figuraba dormida. Ahora manda `procesoVivo` (el `tmux.vivo` que ya
+ * manda el servidor). Solo una sesión sin dato de tmux —el chat por SDK, que
+ * no deja proceso entre turnos— sigue con la regla vieja de los 10 min
+ * (`createSessionViewModel.isActive`).
  */
 export type EstadoSesion = 'pensando' | 'esperando' | 'libre' | 'dormida';
 
@@ -28,6 +34,11 @@ export type SenalesEstadoSesion = {
   tieneTrabajoDeFondo: boolean;
   necesitaAtencion: boolean;
   tocadaRecientemente: boolean;
+  /**
+   * `true`/`false`: la sesión tiene pane de tmux y está vivo o no.
+   * `null`/ausente: no se sabe (sin tmux, como el chat por SDK).
+   */
+  procesoVivo?: boolean | null;
 };
 
 export function estadoDeSesion({
@@ -35,9 +46,11 @@ export function estadoDeSesion({
   tieneTrabajoDeFondo,
   necesitaAtencion,
   tocadaRecientemente,
+  procesoVivo = null,
 }: SenalesEstadoSesion): EstadoSesion {
   if (necesitaAtencion) return 'esperando';
   if (isProcessing || tieneTrabajoDeFondo) return 'pensando';
+  if (procesoVivo !== null) return procesoVivo ? 'libre' : 'dormida';
   if (tocadaRecientemente) return 'libre';
   return 'dormida';
 }
@@ -48,6 +61,18 @@ export const ROTULO_ESTADO_SESION: Record<EstadoSesion, string> = {
   esperando: 'esperando',
   libre: 'libre',
   dormida: 'dormida',
+};
+
+/**
+ * Qué quiere decir cada estado, para el `title` y el lector de pantalla: el
+ * rótulo de una palabra solo no le dice a una persona si tiene que hacer
+ * algo. Empieza siempre con el rótulo.
+ */
+export const DESCRIPCION_ESTADO_SESION: Record<EstadoSesion, string> = {
+  pensando: 'pensando: está trabajando en un turno',
+  esperando: 'esperando: necesita tu respuesta',
+  libre: 'libre: terminó su turno y espera tu próximo mensaje',
+  dormida: 'dormida: sin proceso vivo — al escribirle se retoma',
 };
 
 /** Clase de color (tokens `ds` de `design-system/branding.md`) por estado. */

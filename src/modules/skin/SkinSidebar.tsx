@@ -43,7 +43,7 @@ import {
 } from '@/modules/project-creation-wizard';
 import { api } from '@/shared/api';
 import { cn } from '@/shared/utils';
-import { COLOR_ESTADO_SESION, ROTULO_ESTADO_SESION, estadoDeSesion } from '@/modules/sidebar';
+import { COLOR_ESTADO_SESION, DESCRIPCION_ESTADO_SESION, ROTULO_ESTADO_SESION, estadoDeSesion } from '@/modules/sidebar';
 import type { EstadoSesion } from '@/modules/sidebar';
 import { Dialog, DialogContent, DialogTitle, TreeChevron, TreeCollapse, TreeItem } from '@/shared/ui';
 import type {
@@ -204,12 +204,26 @@ const sessionTitle = (session: ProjectSession): string =>
  * que `isActive` en `sidebarProjectFormatting.ts`, calculado acá porque esta
  * sidebar no pasa por ese módulo.
  */
-const estaTocadaRecientemente = (session: ProjectSession): boolean => {
+const estaTocadaRecientemente = (session: ProjectSession, ahora: number): boolean => {
   const raw = session.lastActivity ?? session.updated_at ?? session.createdAt ?? session.created_at;
   if (!raw) return false;
   const then = new Date(raw as string).getTime();
   if (!Number.isFinite(then)) return false;
-  return Date.now() - then < 10 * 60_000;
+  return ahora - then < 10 * 60_000;
+};
+
+/**
+ * "Ahora", refrescado cada minuto: el paso de libre a dormida por la regla de
+ * los 10 min (sesiones sin tmux) no llega por ningún evento, así que sin esto
+ * la fila quedaba "libre" hasta que algo más la volviera a dibujar.
+ */
+const useAhoraPorMinuto = (): number => {
+  const [ahora, setAhora] = useState(() => Date.now());
+  useEffect(() => {
+    const id = window.setInterval(() => setAhora(Date.now()), 60_000);
+    return () => window.clearInterval(id);
+  }, []);
+  return ahora;
 };
 
 /** Ícono por estado de sesión (Fase 11, paso 4) — el color viene de `COLOR_ESTADO_SESION`. */
@@ -464,6 +478,7 @@ export function SkinSidebar({
    * `optimumads-guia-1` estuvo casi 10 h así el 30-sep sin que nada lo dijera.
    */
   const { prompts: tmuxPrompts } = useTmuxPrompts();
+  const ahora = useAhoraPorMinuto();
   const waitingPrompt = useMemo(() => {
     const bySession = new Map<string, string>();
     tmuxPrompts.forEach((prompt) => {
@@ -1254,12 +1269,15 @@ export function SkinSidebar({
                       isProcessing: isRunning,
                       tieneTrabajoDeFondo: liveRows.length > 0,
                       necesitaAtencion: waitingQuestion !== undefined || attention.has(session.id),
-                      tocadaRecientemente: estaTocadaRecientemente(session),
+                      tocadaRecientemente: estaTocadaRecientemente(session, ahora),
+                      // Con pane de tmux, manda si está vivo (bug 07-oct:
+                      // "dormida" con el tmux vivo esperando un mensaje).
+                      procesoVivo: tmux ? tmux.vivo : null,
                     });
                     const IconoEstadoSesion = ICONO_ESTADO_SESION[estadoSesion];
                     const indicadorEstado = (
                       <span
-                        title={ROTULO_ESTADO_SESION[estadoSesion]}
+                        title={DESCRIPCION_ESTADO_SESION[estadoSesion]}
                         className={cn('flex-none', COLOR_ESTADO_SESION[estadoSesion])}
                       >
                         <IconoEstadoSesion

@@ -4,12 +4,17 @@ import { promises as fsPromises, watch as watchFsNative, type FSWatcher as Nativ
 
 import chokidar, { type FSWatcher } from 'chokidar';
 
-import { invalidarRegistroSesiones } from '@/modules/projects/index.js';
+import {
+  invalidarRegistroSesiones,
+  leerVivoEfectivoPorSesion,
+  sesionesConVivoCambiado,
+} from '@/modules/projects/index.js';
 import { sessionSynchronizerService } from '@/modules/providers/services/session-synchronizer.service.js';
 import {
   rutaRegistroSesionesTmux,
   sincronizarSesionesTmuxSinTranscript,
 } from '@/modules/providers/services/tmux-registry-sessions.service.js';
+import { crearVigiaTmux } from '@/modules/providers/services/vigia-tmux.service.js';
 import { broadcastSessionUpsertedBatch, broadcastSidebarArchived, tmuxBridgeService } from '@/modules/websocket/index.js';
 import { scheduleUsageWindowBroadcast } from '@/modules/usage-window/index.js';
 import type { LLMProvider } from '@/shared/types.js';
@@ -235,6 +240,40 @@ function scheduleRegistroSync(): void {
 }
 
 /**
+ * Cada cuánto el vigía le pregunta a tmux qué panes siguen vivos. Un pane que
+ * muere no escribe nada en `~/.cache/aos` (un `/exit`, un `kill-session`), así
+ * que sin esta pasada periódica la barra no se enteraba hasta recargar.
+ */
+const VIGIA_TMUX_INTERVALO_MS = 10_000;
+let vigiaTmuxTimer: ReturnType<typeof setInterval> | null = null;
+const revisarVivoTmux = crearVigiaTmux({
+  leerVivos: leerVivoEfectivoPorSesion,
+  diferencias: sesionesConVivoCambiado,
+});
+
+/**
+ * Bug del 07-oct: una sesión cuyo tmux murió o revivió seguía mostrando el
+ * estado de la última carga. Las que cambiaron salen como `session_upserted`
+ * con su `tmux` recalculado, y la fila pasa a libre o a dormida en vivo.
+ */
+async function avisarCambiosDeTmux(): Promise<void> {
+  try {
+    const cambiadas = await revisarVivoTmux();
+    if (cambiadas.length === 0) {
+      return;
+    }
+    // Sin esto el `session_upserted` saldría con el cache de 5 s del listado.
+    invalidarRegistroSesiones();
+    for (const sessionId of cambiadas) {
+      queuePendingWatcherUpdate('change', 'claude', sessionId);
+    }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error('Falló la revisión de los panes de tmux', { error: message });
+  }
+}
+
+/**
  * Algo cambió en `~/.cache/aos`: una sesión nueva sin transcript todavía no
  * dispara ningún evento de `.jsonl`, así que esto es el único aviso de que
  * existe. No se filtra por nombre de archivo exacto — antes esto reaccionaba
@@ -264,6 +303,9 @@ async function onRegistroDirectoryChange(): Promise<void> {
       // cerrar afuera una sesión pendiente cambia su estado en vivo).
       broadcastSidebarArchived({ sessionIds: podadas });
     }
+    // Una sesión que el orquestador despertó (o durmió) cambia el registro
+    // sin ser nueva: su fila también tiene que enterarse.
+    await avisarCambiosDeTmux();
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     console.error('Falló la sincronización del registro de tmux', { error: message });
@@ -320,6 +362,13 @@ export async function initializeSessionsWatcher(): Promise<void> {
     }
   }
 
+  // La primera pasada toma la foto de referencia; las siguientes avisan.
+  await avisarCambiosDeTmux();
+  vigiaTmuxTimer = setInterval(() => {
+    void avisarCambiosDeTmux();
+  }, VIGIA_TMUX_INTERVALO_MS);
+  vigiaTmuxTimer.unref?.();
+
   // Se vigila el directorio, no el archivo: el registro se reescribe entero y
   // puede no existir todavía en una máquina donde el hook nunca corrió.
   const registroDirectory = path.dirname(rutaRegistroSesionesTmux());
@@ -372,6 +421,10 @@ export async function closeSessionsWatcher(): Promise<void> {
   if (registroSyncTimer) {
     clearTimeout(registroSyncTimer);
     registroSyncTimer = null;
+  }
+  if (vigiaTmuxTimer) {
+    clearInterval(vigiaTmuxTimer);
+    vigiaTmuxTimer = null;
   }
 
   await Promise.all(
