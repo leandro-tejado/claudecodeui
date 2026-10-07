@@ -1,0 +1,92 @@
+[
+  {
+    "escenario": "linea-base/4158e887",
+    "nombre": "simple: la pregunta llega a la tarjeta",
+    "resultado": "pasa",
+    "evidencia": [
+      "linea-base-4158e887/simple-pregunta.png"
+    ],
+    "ms": 53014
+  },
+  {
+    "escenario": "linea-base/4158e887",
+    "nombre": "simple: llega la elegida",
+    "resultado": "pasa",
+    "evidencia": [
+      "linea-base-4158e887/frames-0.json"
+    ],
+    "datos": {
+      "ultima": "ELEGISTE Pera\nMD"
+    },
+    "ms": 53014
+  },
+  {
+    "escenario": "linea-base/4158e887",
+    "nombre": "múltiple: llegan las 3 tildadas",
+    "resultado": "pasa",
+    "evidencia": [
+      "linea-base-4158e887/multi-pregunta.png"
+    ],
+    "datos": {
+      "ultima": "COLORES Rojo, Azul, Negro\nCuota: 7d en 58% con 34% de la semana transcurrida, proyecta 172% al reset (en 111 h). Convien"
+    },
+    "ms": 53014
+  },
+  {
+    "escenario": "linea-base/4158e887",
+    "nombre": "la pregunta y la respuesta se ven una vez",
+    "resultado": "pasa",
+    "evidencia": [
+      "linea-base-4158e887/final.png"
+    ],
+    "datos": {
+      "pregunta": 1
+    },
+    "ms": 53014
+  },
+  {
+    "escenario": "pregunta/tmux-multi",
+    "nombre": "llegan las 3 tildadas",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-tmux-multi/pregunta.png"
+    ],
+    "datos": {
+      "ultima": "COLORES Rojo, Azul, Negro\nMD"
+    },
+    "ms": 14404
+  },
+  {
+    "escenario": "pregunta/tmux-multi",
+    "nombre": "la pregunta y la respuesta se ven una vez",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-tmux-multi/final.png"
+    ],
+    "datos": {
+      "pregunta": 1
+    },
+    "ms": 14404
+  },
+  {
+    "escenario": "pregunta/tmux-simple",
+    "nombre": "la pregunta llega a la tarjeta",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-tmux-simple/pregunta.png"
+    ],
+    "ms": 41197
+  },
+  {
+    "escenario": "pregunta/tmux-simple",
+    "nombre": "llega la elegida",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-tmux-simple/final.png"
+    ],
+    "datos": {
+      "ultima": "ELEGISTE Pera\nMD"
+    },
+    "ms": 41197
+  }
+]
