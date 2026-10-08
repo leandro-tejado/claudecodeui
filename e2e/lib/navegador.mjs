@@ -1,8 +1,7 @@
 // Chromium headless con el token de la instancia cargado, más los helpers de
 // medición que usan los escenarios. Cada helper mide: ningún `sleep` fijo.
-import fs from 'node:fs';
 import { chromium } from 'playwright-core';
-import { CHROMIUM, archivoToken, urlBase } from './config.mjs';
+import { CHROMIUM, tokenDe, urlBase } from './config.mjs';
 
 export const VIEWPORTS = {
   movil: { width: 390, height: 844 },
@@ -16,7 +15,7 @@ export async function abrir({ puerto, viewport = 'escritorio', tema = 'light', t
     colorScheme: tema,
     deviceScaleFactor: 1,
   });
-  const tk = token ?? fs.readFileSync(archivoToken(puerto), 'utf8').trim();
+  const tk = token ?? await tokenDe(puerto);
   // El tema es una preferencia del usuario guardada en el server (gana sobre
   // localStorage). Solo en las instancias de prueba: contra :3001 no se toca.
   if (!process.env.CLOUDCLI_URL) {

@@ -5,9 +5,9 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { CUOTA_JSON } from '../../lib/config.mjs';
-import { abrirSesion, crearSesionFalsa } from '../../lib/chat.mjs';
+import { abrirProyecto, abrirSesion, crearSesionFalsa } from '../../lib/chat.mjs';
 
-export const meta = { descripcion: 'ventanas 5 h y semanal en el header, y su actualización en vivo', puerto: 3902 };
+export const meta = { descripcion: 'ventanas 5 h y semanal en el header, y su actualización en vivo', puerto: 3902, contraReal: true }; // contra :3001 solo lee el cuota.json real
 
 const REAL = path.join(os.homedir(), '.cache/aos/cuota.json');
 const contraReal = Boolean(process.env.CLOUDCLI_URL);
@@ -36,6 +36,8 @@ export async function correr(ctx) {
     const real = JSON.parse(fs.readFileSync(REAL, 'utf8'));
     const s = await ctx.abrir();
     await s.pagina.goto(`${s.base}/`, { waitUntil: 'networkidle' });
+    // El indicador vive en el header del chat (Fase 11): sin proyecto abierto no hay header.
+    await abrirProyecto(s);
     const r = await esperarEtiqueta(s, new RegExp(`${Math.round(real.five_hour)}%`), 15_000);
     ctx.check('5 h coincide con ~/.cache/aos/cuota.json', r.ok, { evidencia: await ctx.captura(s, 'real'), datos: { archivo: real.five_hour, etiqueta: r.ultima } });
     ctx.check('la semanal tiene %', /Semanal: ~?\d+%/.test(r.ultima ?? ''), { datos: { etiqueta: r.ultima } });

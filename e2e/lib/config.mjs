@@ -78,3 +78,34 @@ export function urlBase(puerto = PUERTO_REAL) {
 export function archivoToken(puerto) {
   return path.join(RAIZ_TMP, `token-${puerto}`);
 }
+
+// Contra :3001 el login va por el entorno y el token vive solo en memoria:
+// nunca se escribe a disco (Fase 12, paso 4). Usuario y contraseña se sacan de
+// process.env al importar, para que no los herede ningún hijo (orquestar.py,
+// tmux, claude).
+const LOGIN_EXTERNO = process.env.CLOUDCLI_URL
+  ? { username: process.env.CLOUDCLI_USER, password: process.env.CLOUDCLI_PASS }
+  : null;
+delete process.env.CLOUDCLI_USER;
+delete process.env.CLOUDCLI_PASS;
+let tokenExterno = null;
+
+export async function tokenDe(puerto) {
+  if (!LOGIN_EXTERNO) return fs.readFileSync(archivoToken(puerto), 'utf8').trim();
+  if (tokenExterno) return tokenExterno;
+  if (!LOGIN_EXTERNO.username || !LOGIN_EXTERNO.password) {
+    throw new Error('contra CLOUDCLI_URL hacen falta CLOUDCLI_USER y CLOUDCLI_PASS en el entorno');
+  }
+  const r = await fetch(`${process.env.CLOUDCLI_URL}/api/auth/login`, {
+    method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(LOGIN_EXTERNO),
+  });
+  if (!r.ok) throw new Error(`login en ${process.env.CLOUDCLI_URL}: HTTP ${r.status}`);
+  tokenExterno = (await r.json()).token;
+  return tokenExterno;
+}
+
+// Todo lo que va a la evidencia pasa por acá: los frames guardan la URL del
+// WebSocket con `?token=`, y contra :3001 ese es el JWT de Leandro.
+export function taparTokens(texto) {
+  return texto.replace(/eyJ[\w-]+\.[\w-]+\.[\w-]+/g, '<jwt tapado>');
+}

@@ -10,6 +10,7 @@ import { abrirProyecto, nonce } from '../../lib/chat.mjs';
 export const meta = {
   descripcion: 'Salidas: manijas de ancho persistentes y vista previa en pestaña nueva',
   puerto: 3902,
+  contraReal: true, // solo UI y un archivo en el proyecto descartable: no habla con el CLI
   checks: [
     'arrastrar el borde izquierdo agranda el panel de Salidas',
     'arrastrar la manija entre lista y vista previa agranda la lista',
