@@ -114,6 +114,17 @@ const settle = async () => {
   }
 };
 
+// `settle` alcanza para afirmar que algo NO pasó, pero no para esperar que
+// pase: el runtime también hace I/O real (índice de sesiones, disco) y bajo la
+// suite completa 200 rondas se terminaban antes (8-oct, 1 de cada 3 corridas).
+// Lo positivo se espera por condición, con tope de reloj.
+const until = async (condition: () => boolean, timeoutMs = 5000) => {
+  const start = Date.now();
+  while (!condition() && Date.now() - start < timeoutMs) {
+    await new Promise((resolve) => { setTimeout(resolve, 5); });
+  }
+};
+
 const init = () => ({ type: 'system', subtype: 'init', session_id: NATIVE_ID });
 const toolUse = (id: string, name: string, input: Record<string, unknown>) => ({
   type: 'assistant', session_id: NATIVE_ID, parent_tool_use_id: null,
@@ -139,7 +150,7 @@ test('stopping the last outstanding task releases the held process', async () =>
     script.emit(taskStarted('wf1', 'toolu_wf', 'local_workflow'));
     script.emit(ack('toolu_wf', 'Workflow launched in background. Task ID: wf1', { status: 'async_launched', taskId: 'wf1', taskType: 'local_workflow' }));
     script.emit(result());
-    await settle();
+    await until(() => sent.some((message) => message.kind === 'complete') && listClaudeSDKBackgroundWork().length > 0);
 
     // The turn is over for the client, the process is held for the workflow.
     assert.ok(sent.some((message) => message.kind === 'complete'));
@@ -151,7 +162,7 @@ test('stopping the last outstanding task releases the held process', async () =>
     assert.equal(await stopClaudeSDKTask(SESSION_ID, 'wf1'), true);
     assert.deepEqual(script.stopped, ['wf1']);
     script.emit(taskNotification('wf1', 'toolu_wf', 'stopped'));
-    await settle();
+    await until(() => script.released());
 
     assert.deepEqual(listClaudeSDKBackgroundWork(), []);
     assert.equal(script.released(), true, 'the process is let go once nothing is outstanding');
@@ -175,7 +186,7 @@ test('a task that reported completed keeps the hold for the turn that relays its
     assert.equal(script.released(), false);
 
     script.emit(result());
-    await settle();
+    await until(() => script.released());
     assert.equal(script.released(), true, 'the follow-up turn\'s result ends the hold');
   });
 });
@@ -191,7 +202,7 @@ test('an agent that ran in the foreground and settled before the result does not
     script.emit(taskNotification('a1', 'toolu_agent', 'completed'));
     script.emit(ack('toolu_agent', 'FOUR', { status: 'completed', agentId: 'a1' }));
     script.emit(result());
-    await settle();
+    await until(() => script.released());
 
     assert.deepEqual(listClaudeSDKBackgroundWork(), []);
     assert.equal(script.released(), true, 'nothing is outstanding, so nothing to hold for');

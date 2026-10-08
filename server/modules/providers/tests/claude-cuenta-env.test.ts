@@ -30,8 +30,12 @@ async function conRegistro(run: () => void): Promise<void> {
   );
   const previoRegistro = process.env.AOS_CUENTAS_JSON;
   const previoToken = process.env.CLAUDE_CODE_OAUTH_TOKEN;
+  // Una shell de tmux con `--cuenta personal` exporta AOS_CUENTA: sin borrarla,
+  // el caso "sin cuenta" heredaba 'personal' del proceso que corre los tests.
+  const previaCuenta = process.env.AOS_CUENTA;
   process.env.AOS_CUENTAS_JSON = registro;
   process.env.CLAUDE_CODE_OAUTH_TOKEN = TOKEN_OPTIMUM_DEL_PROCESO;
+  delete process.env.AOS_CUENTA;
   try {
     run();
   } finally {
@@ -39,6 +43,7 @@ async function conRegistro(run: () => void): Promise<void> {
     else process.env.AOS_CUENTAS_JSON = previoRegistro;
     if (previoToken === undefined) delete process.env.CLAUDE_CODE_OAUTH_TOKEN;
     else process.env.CLAUDE_CODE_OAUTH_TOKEN = previoToken;
+    if (previaCuenta !== undefined) process.env.AOS_CUENTA = previaCuenta;
     await rm(dir, { recursive: true, force: true });
   }
 }

@@ -1,5 +1,8 @@
 import assert from 'node:assert/strict';
 import { EventEmitter } from 'node:events';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 import test from 'node:test';
 
 import { WebSocket } from 'ws';
@@ -10,7 +13,10 @@ import {
   nombreTmux,
 } from '@/modules/websocket/services/shell-websocket.service.js';
 
-const PROJECT_PATH = '/home/leantejado/worktrees/cloudcli/fase2-tmux';
+// Tiene que existir: el handler valida el directorio antes de abrir el pty, y
+// la ruta fija de antes (un worktree ya borrado) cortaba ahí los tests de spawn.
+const PROJECT_PATH = fs.mkdtempSync(path.join(os.tmpdir(), 'shell-tmux-'));
+test.after(() => fs.rmSync(PROJECT_PATH, { recursive: true, force: true }));
 
 function agentMessage(overrides: Record<string, unknown> = {}) {
   return {
