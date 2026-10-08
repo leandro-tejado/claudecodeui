@@ -21,3 +21,18 @@ export function streamRowId(sessionId: string, messageId?: string, blockIndex?: 
     ? `stream:${messageId}:${blockIndex}`
     : `__streaming_${sessionId}`;
 }
+
+/**
+ * The tmux pane reader's draft (Fase 7, paso 8: `tmux-pane-vivo.service.ts`)
+ * carries a synthetic `messageId` of this shape instead of a real Claude
+ * block identity — there is no `message_start` to take one from, since the
+ * draft is reread off the pane's screen, not off the SDK stream. The real
+ * answer lands separately, under the transcript's own `uuid`/`messageId`,
+ * which never collides with this one.
+ */
+export const TMUX_BORRADOR_PREFIX = 'tmux-borrador:';
+
+/** Whether a stream identity's `messageId` is the tmux draft's synthetic one, not a real Claude block identity. */
+export function esIdentidadBorradorTmux(messageId?: string): boolean {
+  return typeof messageId === 'string' && messageId.startsWith(TMUX_BORRADOR_PREFIX);
+}

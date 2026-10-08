@@ -12,7 +12,7 @@ import { useCallback, useMemo, useRef, useState } from 'react';
 import { api } from '@/shared/api';
 import type { LLMProvider, MessageDeliveryState, NormalizedMessage } from '@/shared/types';
 import { removeOptimisticUserEchoes, removeQueuedCommandEchoes } from '@/modules/chat/utils/sessionMessageReconciliation';
-import { streamRowId } from '@/modules/chat/utils/streamRowId';
+import { esIdentidadBorradorTmux, streamRowId } from '@/modules/chat/utils/streamRowId';
 import {
   hasReachedCachedTailTimeBoundary,
   mergeLatestServerPage,
@@ -974,7 +974,19 @@ export function useSessionStore() {
    * (`appendRealtime`'s id override), so renaming here would only make that
    * replacement miss.
    *
-   * Without one (Cursor, OpenCode, Codex): the well-known
+   * The tmux draft's identity (`esIdentidadBorradorTmux`) looks like a Claude
+   * identity (it has a `messageId` and a numeric `blockIndex`) but is not
+   * one: it is minted by `tmux-pane-vivo.service.ts` from the pane's screen,
+   * never from the SDK stream, so no final message is ever going to arrive
+   * on this exact id and replace it — the real one lands separately, under
+   * the transcript's own `uuid`. Normally `stream_reemplazo` removes this row
+   * first (`discardStreaming`), but the JSONL-driven `complete` that calls
+   * this function can race ahead of that 400ms pane poll and get here first
+   * (8-oct: the race the dirty draft row survived on). Left alone like the
+   * real-Claude-identity case, the row would sit there forever — nothing
+   * else is coming to clear it — so this discards it here too instead.
+   *
+   * Without any identity (Cursor, OpenCode, Codex): the well-known
    * `__streaming_<sessionId>` id is renamed to a fresh one, so the next
    * turn's first delta — which reuses that same session-literal id — does
    * not silently overwrite this finalized row.
@@ -990,6 +1002,11 @@ export function useSessionStore() {
     if (idx < 0) return;
 
     if (identity?.messageId && typeof identity.blockIndex === 'number') {
+      if (esIdentidadBorradorTmux(identity.messageId)) {
+        slot.realtimeMessages = slot.realtimeMessages.filter((_, i) => i !== idx);
+        recomputeMergedIfNeeded(slot);
+        notify(sessionId);
+      }
       return;
     }
 

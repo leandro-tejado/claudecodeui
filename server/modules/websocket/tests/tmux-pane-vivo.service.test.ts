@@ -24,9 +24,17 @@ import {
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const FIXTURES_DIR = path.join(__dirname, '..', '..', '..', '..', 'e2e', 'fixtures', 'panes', '2.1.289');
+// 8-oct: un fixture más reciente (2.1.292, sin escapes de color — ver
+// `tmux-cuadro-panes-reales.test.ts`) para la regresión del AskUserQuestion
+// contestado con cuota semanal alta.
+const FIXTURES_DIR_292 = path.join(__dirname, '..', '..', '..', '..', 'e2e', 'fixtures', 'panes', '2.1.292');
 
 function fixture(nombre: string): string {
   return readFileSync(path.join(FIXTURES_DIR, `${nombre}.txt`), 'utf8');
+}
+
+function fixture292(nombre: string): string {
+  return readFileSync(path.join(FIXTURES_DIR_292, `${nombre}.txt`), 'utf8');
 }
 
 test('leerActividadPane: "pensando" es thinking, con el texto del spinner', () => {
@@ -74,6 +82,22 @@ test('extraerBorrador: "dialogo" no tiene borrador (null)', () => {
 
 test('extraerBorrador: "libre" no tiene borrador — no hay turno en curso', () => {
   assert.equal(extraerBorrador(fixture('libre')), null);
+});
+
+/*
+ * 8-oct: regresión de `pregunta/tmux-multi` (e2e). Después de contestar un
+ * AskUserQuestion con multiSelect quedaba en el chat una fila con texto
+ * crudo del pane: el final del prompt del usuario envuelto en varias
+ * líneas, el resumen "User answered Claude's questions: ⎿ · pregunta →
+ * respuesta", el aviso de cuota semanal ("You've used NN% of your weekly
+ * limit…", nuevo cuando la cuota 7d pasa el 75%) y la statusline con el
+ * prefijo de cuenta de multi-cuenta ("personal · ctx 5% · …"). Fixture
+ * armado a partir de los frames reales de
+ * `e2e/evidencia/final-3901/pregunta-tmux-multi/frames-0.json`.
+ */
+test('extraerBorrador: tras un AskUserQuestion contestado, el borrador es solo la respuesta — sin el eco del prompt, el resumen de la pregunta, el aviso de cuota ni la statusline con cuenta', () => {
+  const borrador = extraerBorrador(fixture292('vivo-pregunta-colores-cuota'));
+  assert.equal(borrador, 'COLORES Rojo, Azul, Negro');
 });
 
 test('messageIdBorrador: estable por sesión', () => {

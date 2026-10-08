@@ -111,6 +111,19 @@ export function leerActividadPane(pantalla: string): ActividadPane | null {
 
 // Líneas de contabilidad de tools que no son texto de la respuesta: no
 // forman parte del borrador aunque estén dentro del rango que se extrae.
+//
+// 8-oct: tres agregados nuevos de la pantalla real que esta función no
+// reconocía y se colaban enteros en el borrador —
+//
+//   - el recuadro que Claude Code deja al contestar un AskUserQuestion
+//     ("User answered Claude's questions:" + la línea `⎿  · pregunta →
+//     respuesta`, Fase 7 del chat);
+//   - el aviso de cuota semanal ("You've used NN% of your weekly limit ·
+//     resets ..."), que aparece recién cuando la cuota 7d pasa el 75% —
+//     no existía en ningún fixture hasta hoy;
+//   - la statusline con el prefijo de cuenta de multi-cuenta (6-oct):
+//     "personal · ctx 5% · ..." en vez de "ctx 5% · ...", que el regex de
+//     `ctx` exigía al principio de la línea y por eso dejaba de matchear.
 function esLineaDeContabilidad(linea: string): boolean {
   const t = linea.trim();
   if (!t) return false;
@@ -120,9 +133,18 @@ function esLineaDeContabilidad(linea: string): boolean {
   if (/^Ran\s+\d+\s+shell\s+command/i.test(sinBullet)) return true;
   if (/^(Running|Waiting)\b.+/i.test(sinBullet)) return true;
   if (/^\$\s+\S/.test(sinBullet)) return true;
-  if (/^ctx\s+\d+%/i.test(t)) return true;
+  // Prefijo de cuenta opcional ("personal · ") antes de "ctx NN% · ...".
+  if (/^(?:\S+\s*·\s*)?ctx\s+\d+%/i.test(t)) return true;
   if (/auto mode on|manual mode on/i.test(t)) return true;
   if (/^●?\s*high\s*·\s*\/effort$/i.test(t)) return true;
+  // El cuadro de entrada actual, vacío: sólo el glifo, sin texto tipeado
+  // todavía. No es respuesta — es el prompt en blanco esperando al usuario.
+  if (t === '❯') return true;
+  // El resumen que deja un AskUserQuestion ya contestado, y su aviso de
+  // cuota semanal cuando lo trae pegado (ver comentario de arriba).
+  if (/^User answered\b.*questions?:?\s*$/i.test(t)) return true;
+  if (/^·\s.+→/.test(sinBullet)) return true;
+  if (/^You've used\s+\d+%\s+of your\s+\S+\s+limit\b/i.test(t)) return true;
   return false;
 }
 
@@ -143,8 +165,18 @@ export function extraerBorrador(pantalla: string): string | null {
   }
   if (desde < 0) return null;
 
+  // El prompt ecoado puede envolver en varias líneas — ninguna raya lo separa
+  // de lo que sigue, y sólo la primera empieza con "❯" — así que la primera
+  // línea en blanco después del ancla cierra la cita. Sin este salto, las
+  // líneas de continuación del prompt del usuario se leían como si fueran
+  // parte de la respuesta en curso (8-oct: "el final del prompt del usuario"
+  // colándose en el borrador).
+  let inicio = desde + 1;
+  while (inicio < lineas.length && lineas[inicio].trim().length > 0) inicio += 1;
+  inicio += 1;
+
   const texto = lineas
-    .slice(desde + 1)
+    .slice(inicio)
     .filter((linea) => linea.trim().length > 0 && !esLineaDeContabilidad(linea))
     .map((linea) => linea.replace(/^●\s*/, ''))
     .join('\n')
