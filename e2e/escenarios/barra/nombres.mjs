@@ -20,8 +20,8 @@
 //   `mensaje.startsWith('!')` y da literal `Comando: echo hola-<nonce>`.
 import { execFileSync } from 'node:child_process';
 import { nonce, mostrarTodasLasSesiones, filaProyecto } from '../../lib/chat.mjs';
-import { prepararTmux } from '../../lib/tmux.mjs';
-import { cerrarTmux } from '../../sesiones.mjs';
+import { prepararTmux, filasTranscript } from '../../lib/tmux.mjs';
+import { cerrarTmux, leerPane } from '../../sesiones.mjs';
 
 export const meta = {
   descripcion: 'título humano al nacer + @titulo de tmux; el modo bash no deja etiquetas crudas',
@@ -49,6 +49,23 @@ function leerTituloTmux(nombreSesionTmux) {
 // `orquestador.mjs`): el árbol del proyecto puede venir ya expandido por la
 // sesión activa. Clickear la fila del proyecto a ciegas la puede colapsar en
 // vez de expandirla, así que solo se clickea si la fila todavía no se ve.
+// `@titulo` lo marca el server al emitir el upsert del título: puede llegar
+// un poco después de que la barra lo muestre.
+async function esperarTituloTmux(nombreSesionTmux, esperado, topeMs = 15_000) {
+  const t0 = Date.now();
+  let visto = leerTituloTmux(nombreSesionTmux);
+  while (visto !== esperado && Date.now() - t0 < topeMs) {
+    await new Promise((r) => setTimeout(r, 500));
+    visto = leerTituloTmux(nombreSesionTmux);
+  }
+  return visto;
+}
+
+// Títulos humanos válidos: el que deriva titulo-humano.ts del primer mensaje,
+// o el `ai-title` que Claude Code escribe en el transcript y lo reemplaza (a
+// veces antes de que la barra llegue a mostrar el derivado).
+const titulosAi = (sid) => filasTranscript(sid).filter((f) => f.type === 'ai-title').map((f) => f.aiTitle);
+
 async function asegurarFilaVisible(s, sid) {
   await mostrarTodasLasSesiones(s);
   if (await s.pagina.locator(`a[href$="/session/${sid}"]`).count()) return;
@@ -61,7 +78,9 @@ async function asegurarFilaVisible(s, sid) {
 // con el envío. `SkinSidebar.tsx` pinta el título en el único `span.truncate`
 // de esa fila (el otro texto de la fila —el rótulo de estado— no lleva esa
 // clase).
-async function tituloEnBarra(s, sid, topeMs = 45_000) {
+// `nombreTmux`: mientras no hay transcript, la fila pendiente se llama como su
+// pane (createPendingTmuxSession); eso todavía no es el título humano.
+async function tituloEnBarra(s, sid, nombreTmux, topeMs = 45_000) {
   await asegurarFilaVisible(s, sid);
   const loc = s.pagina.locator(`a[href$="/session/${sid}"] span.truncate`).first();
   const t0 = Date.now();
@@ -73,7 +92,7 @@ async function tituloEnBarra(s, sid, topeMs = 45_000) {
         visto = texto;
         // Provisorio (no "definitivo"): un `ai-title` que llegue después lo
         // puede reemplazar una vez. Alcanza con verlo una vez estable.
-        if (texto !== 'Sesión sin título' && texto !== sid) return texto;
+        if (texto !== 'Sesión sin título' && texto !== sid && texto !== nombreTmux) return texto;
       }
     }
     await s.pagina.waitForTimeout(500);
@@ -89,19 +108,20 @@ export async function correr(ctx) {
   await caja.fill(MENSAJE_PROSA);
   await caja.press('Enter');
 
-  const tituloProsa = await tituloEnBarra(s, sidProsa);
+  const tituloProsa = await tituloEnBarra(s, sidProsa, nombreProsa);
   const capProsa = await ctx.captura(s, 'barra-prosa');
+  ctx.guardar('pane-prosa.txt', leerPane(nombreProsa));
   ctx.check(
     'la fila de la barra muestra el título humano, no el prompt crudo ni un id',
-    tituloProsa === TITULO_PROSA_ESPERADO,
-    { evidencia: capProsa, datos: { tituloProsa, esperado: TITULO_PROSA_ESPERADO, mensaje: MENSAJE_PROSA } },
+    tituloProsa === TITULO_PROSA_ESPERADO || titulosAi(sidProsa).includes(tituloProsa),
+    { evidencia: capProsa, datos: { tituloProsa, derivado: TITULO_PROSA_ESPERADO, aiTitles: titulosAi(sidProsa), mensaje: MENSAJE_PROSA } },
   );
 
-  const tituloTmuxProsa = leerTituloTmux(nombreProsa);
+  const tituloTmuxProsa = await esperarTituloTmux(nombreProsa, tituloProsa);
   ctx.check(
     'tmux show-options -v @titulo devuelve ese mismo título',
-    tituloTmuxProsa === TITULO_PROSA_ESPERADO,
-    { datos: { tituloTmuxProsa, esperado: TITULO_PROSA_ESPERADO, nombre: nombreProsa } },
+    Boolean(tituloTmuxProsa) && tituloTmuxProsa === tituloProsa,
+    { datos: { tituloTmuxProsa, enLaBarra: tituloProsa, nombre: nombreProsa } },
   );
 
   // Se cierra antes de abrir la segunda: `prepararTmux` espera (hasta 30 s y
@@ -122,8 +142,9 @@ export async function correr(ctx) {
   await caja2.fill(`!${comandoBash}`);
   await caja2.press('Enter');
 
-  const tituloBash = await tituloEnBarra(s2, sidBash);
+  const tituloBash = await tituloEnBarra(s2, sidBash, nombreBash);
   const capBash = await ctx.captura(s2, 'barra-bash');
+  ctx.guardar('pane-bash.txt', leerPane(nombreBash));
   const sinEtiquetasCrudas = typeof tituloBash === 'string' && !tituloBash.includes('<') && !tituloBash.includes('bash-input');
   ctx.check(
     'un mensaje en modo bash (<bash-input>) no deja un título crudo con etiquetas en la barra',
@@ -131,7 +152,7 @@ export async function correr(ctx) {
     { evidencia: capBash, datos: { tituloBash, esperado: tituloBashEsperado, sinEtiquetasCrudas } },
   );
 
-  const tituloTmuxBash = leerTituloTmux(nombreBash);
+  const tituloTmuxBash = await esperarTituloTmux(nombreBash, tituloBashEsperado);
   const tmuxSinEtiquetasCrudas = typeof tituloTmuxBash === 'string' && !tituloTmuxBash.includes('<') && !tituloTmuxBash.includes('bash-input');
   ctx.check(
     'tmux show-options -v @titulo del modo bash tampoco queda crudo',

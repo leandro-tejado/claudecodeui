@@ -3,11 +3,11 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
-import { PROYECTO } from './config.mjs';
+import { PROYECTO, REGISTRO_SESIONES } from './config.mjs';
 import { crearTmux } from '../sesiones.mjs';
 import { abrirSesion } from './chat.mjs';
 
-const REGISTRO = path.join(os.homedir(), '.cache/aos/sesiones.json');
+const REGISTRO = REGISTRO_SESIONES;
 export const TRANSCRIPTS = path.join(os.homedir(), '.claude/projects', PROYECTO.replace(/[^a-zA-Z0-9]/g, '-'));
 
 export function sidDeRegistro(nombre) {

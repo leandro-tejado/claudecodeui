@@ -44,10 +44,22 @@ export const PREFIJO = process.env.E2E_PREFIJO || 'e2e-';
 // `$TMUX` (que pisa a TMUX_TMPDIR) nadie se engancha al socket de Leandro.
 // Se fija acá, al importar, para que lo hereden todos los hijos. Contra
 // :3001 (CLOUDCLI_URL) no se aísla: ese server solo ve el socket por defecto.
+//
+// El registro de sesiones va aparte por lo mismo: `sesiones.py construir` lo
+// reconcilia contra el `tmux ls` del socket en que corre, y la statusline o
+// aos-ciclo de Leandro, en el socket por defecto, marcaban las e2e-* como
+// `caida` a mitad del escenario (el server las podaba y el envío fallaba).
+// Lo respetan el server, sesiones.py/orquestar.py y el hook registro-sesion.sh,
+// que lo hereda del entorno del servidor de tmux del arnés.
 export const TMUX_TMPDIR = path.join(RAIZ_TMP, 'tmux');
+export const REGISTRO_SESIONES = process.env.CLOUDCLI_URL
+  ? path.join(os.homedir(), '.cache/aos/sesiones.json')
+  : path.join(RAIZ_TMP, 'aos', 'sesiones.json');
 if (!process.env.CLOUDCLI_URL) {
   fs.mkdirSync(TMUX_TMPDIR, { recursive: true, mode: 0o700 });
+  fs.mkdirSync(path.dirname(REGISTRO_SESIONES), { recursive: true, mode: 0o700 });
   process.env.TMUX_TMPDIR = TMUX_TMPDIR;
+  process.env.AOS_SESIONES_REGISTRO_PATH = REGISTRO_SESIONES;
   delete process.env.TMUX;
   delete process.env.TMUX_PANE;
 }
