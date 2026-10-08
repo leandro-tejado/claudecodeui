@@ -12,9 +12,7 @@ import { collectRunningBackgroundTasks } from '@/modules/chat/utils/backgroundTa
 import { readDraftText, writeDraftText } from '@/shared/chatDrafts';
 import { appendStreamDelta, appendThinkingDelta, discardStreamDraft, finalizeStreamBuffer, settleStreamBuffer, setStreamDraft } from '@/modules/chat/utils/streamBuffers';
 import type { StreamBuffers } from '@/modules/chat/utils/streamBuffers';
-
-/** Prefix of the tmux pane reader's synthetic draft `messageId` (Fase 7, paso 8; `tmux-pane-vivo.service.ts`'s `messageIdBorrador`). */
-const TMUX_BORRADOR_PREFIX = 'tmux-borrador:';
+import { TMUX_BORRADOR_PREFIX } from '@/modules/chat/utils/streamRowId';
 
 /**
  * How long a session's main-thread activity label stays quiet after the last

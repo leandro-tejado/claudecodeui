@@ -122,3 +122,57 @@ test('"stream_reemplazo" borra el borrador sin dejar una fila huérfana', async 
     'una sola fila final, no dos',
   );
 });
+
+/*
+ * 8-oct: regresión de `pregunta/tmux-multi` (e2e, ver
+ * `e2e/evidencia/final-3901/pregunta-tmux-multi/frames-0.json`). El orden que
+ * se vio en esa corrida no fue el del test de arriba: el `text` real (con su
+ * propio `messageId`/`blockIndex` de Claude, no el sintético del borrador) y
+ * el `complete` llegaron ANTES que el `stream_reemplazo` — el poll de 400ms
+ * del pane se atrasó respecto del `.jsonl`. `complete` dispara
+ * `finalizeStreamBuffer`, que antes del fix dejaba la fila del borrador
+ * intacta (la rama "ya viene a reemplazarla" de `finalizeStreaming`, pensada
+ * para la identidad real de Claude, también se aplicaba por error a la
+ * sintética `tmux-borrador:`) y encima borraba el buffer — así que cuando el
+ * `stream_reemplazo` llegaba después, ya no encontraba nada que descartar.
+ * El borrador sucio quedaba para siempre, al lado de la fila limpia.
+ */
+test('"complete" antes que "stream_reemplazo" (el poll del pane se atrasa) igual descarta el borrador', async () => {
+  const pane = renderPane();
+
+  pane.emitEvent({
+    kind: 'stream_delta',
+    sessionId: SID,
+    messageId: `tmux-borrador:${SID}`,
+    blockIndex: 0,
+    content: 'texto crudo del pane, con el eco del prompt y la statusline',
+  } as ServerEvent);
+  await pane.wait(150);
+  assert.equal(pane.rendered().filter(([type]) => type === 'assistant').length, 1, 'el borrador se ve mientras llega');
+
+  // La fila definitiva — con su propio messageId/blockIndex de Claude, nunca
+  // el sintético del borrador — llega antes del stream_reemplazo.
+  pane.emitEvent({
+    kind: 'text',
+    role: 'assistant',
+    id: 'uuid-real',
+    sessionId: SID,
+    content: 'COLORES Rojo, Azul, Negro',
+    messageId: 'msg_real_de_claude',
+    blockIndex: 0,
+  } as ServerEvent);
+
+  pane.emitEvent({ kind: 'complete', sessionId: SID, success: true } as ServerEvent);
+
+  // Recién ahora llega el stream_reemplazo, tarde — no debe hacer falta para
+  // limpiar el borrador: "complete" ya tuvo que descartarlo.
+  pane.emitEvent({
+    kind: 'stream_reemplazo', sessionId: SID, messageId: `tmux-borrador:${SID}`, blockIndex: 0,
+  } as ServerEvent);
+
+  assert.deepEqual(
+    pane.rendered().filter(([type]) => type === 'assistant'),
+    [['assistant', 'COLORES Rojo, Azul, Negro']],
+    'una sola fila final y limpia, no el borrador sucio al lado',
+  );
+});
