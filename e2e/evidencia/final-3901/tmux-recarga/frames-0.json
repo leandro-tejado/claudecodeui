@@ -1,0 +1,539 @@
+[
+  {
+    "t": 1791489243966,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "type": "chat.tmux-prompts"
+    }
+  },
+  {
+    "t": 1791489244066,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "kind": "tmux_prompts",
+      "prompts": [],
+      "timestamp": "2026-10-08T19:54:04.044Z"
+    }
+  },
+  {
+    "t": 1791489244994,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "kind": "recursos",
+      "ram": {
+        "porcentajePct": 76.90831621530155,
+        "usadaGb": 5.964290618896484,
+        "totalGb": 7.75506591796875
+      },
+      "disco": {
+        "usadoPct": 43.399668874330374,
+        "usadoGb": 41.58643341064453,
+        "totalGb": 95.82200622558594
+      },
+      "sesionesTmux": 7,
+      "techoRam": 90
+    }
+  },
+  {
+    "t": 1791489245043,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "kind": "session_upserted",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "providerSessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "provider": "claude",
+      "session": {
+        "id": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+        "summary": "Plan 05 revisión punta a punta",
+        "messageCount": 0,
+        "lastActivity": "2026-10-08T19:54:03.709Z",
+        "tmux": null
+      },
+      "project": {
+        "projectId": "09846a36-d00b-475f-ba7d-e935b86f9b2c",
+        "path": "/home/leantejado/cloudcli",
+        "fullPath": "/home/leantejado/cloudcli",
+        "displayName": "cloudcli",
+        "isStarred": false
+      },
+      "timestamp": "2026-10-08T19:54:05.041Z"
+    }
+  },
+  {
+    "t": 1791489245377,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "type": "chat.subscribe",
+      "sessions": [
+        {
+          "sessionId": "aed0228d-e7ec-4c4a-8131-f45173d606f8",
+          "lastSeq": 0
+        }
+      ]
+    }
+  },
+  {
+    "t": 1791489245397,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "kind": "chat_subscribed",
+      "sessionId": "aed0228d-e7ec-4c4a-8131-f45173d606f8",
+      "isProcessing": false,
+      "lastSeq": 0,
+      "pendingPermissions": [],
+      "runsInTmux": true,
+      "timestamp": "2026-10-08T19:54:05.388Z"
+    }
+  },
+  {
+    "t": 1791489245521,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": null,
+      "sevenDay": null,
+      "cuenta": "optimum"
+    }
+  },
+  {
+    "t": 1791489245532,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": null,
+      "sevenDay": null,
+      "cuenta": "personal"
+    }
+  },
+  {
+    "t": 1791489246254,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "type": "chat.send-tmux",
+      "sessionId": "aed0228d-e7ec-4c4a-8131-f45173d606f8",
+      "content": "Escribí un párrafo de 120 palabras sobre trenes. Terminá con 663yd4.",
+      "clientMessageId": "local_1791489246227_jp32mt",
+      "options": {
+        "model": "default",
+        "effort": "default",
+        "permissionMode": "default",
+        "toolsSettings": {
+          "allowedTools": [],
+          "disallowedTools": [],
+          "skipPermissions": false
+        },
+        "skipPermissions": false,
+        "sessionSummary": "e2e-recarga-ejecutora-1",
+        "attachments": []
+      }
+    }
+  },
+  {
+    "t": 1791489246840,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "kind": "message_status",
+      "sessionId": "aed0228d-e7ec-4c4a-8131-f45173d606f8",
+      "clientMessageId": "local_1791489246227_jp32mt",
+      "status": "sent",
+      "timestamp": "2026-10-08T19:54:06.838Z"
+    }
+  },
+  {
+    "t": 1791489246856,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "kind": "status",
+      "sessionId": "aed0228d-e7ec-4c4a-8131-f45173d606f8",
+      "text": null,
+      "canInterrupt": false,
+      "timestamp": "2026-10-08T19:54:06.838Z"
+    }
+  },
+  {
+    "t": 1791489247042,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "aed0228d-e7ec-4c4a-8131-f45173d606f8",
+      "activityKind": "thinking",
+      "texto": "Concocting… (running SessionStart hooks… 5/6 · 0s)",
+      "timestamp": "2026-10-08T19:54:07.019Z"
+    }
+  },
+  {
+    "t": 1791489247042,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "kind": "stream_delta",
+      "sessionId": "aed0228d-e7ec-4c4a-8131-f45173d606f8",
+      "messageId": "tmux-borrador:aed0228d-e7ec-4c4a-8131-f45173d606f8",
+      "blockIndex": 0,
+      "content": "personal · 5h ?",
+      "timestamp": "2026-10-08T19:54:07.019Z"
+    }
+  },
+  {
+    "t": 1791489247410,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "aed0228d-e7ec-4c4a-8131-f45173d606f8",
+      "activityKind": "thinking",
+      "texto": "Concocting… (running SessionStart hooks… 5/6 · 0s)",
+      "timestamp": "2026-10-08T19:54:07.408Z"
+    }
+  },
+  {
+    "t": 1791489247817,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "aed0228d-e7ec-4c4a-8131-f45173d606f8",
+      "activityKind": "thinking",
+      "texto": "Concocting… (running SessionStart hooks… 5/6 · 1s)",
+      "timestamp": "2026-10-08T19:54:07.813Z"
+    }
+  },
+  {
+    "t": 1791489248223,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "aed0228d-e7ec-4c4a-8131-f45173d606f8",
+      "activityKind": "thinking",
+      "texto": "Concocting… (running SessionStart hooks… 5/6 · 1s)",
+      "timestamp": "2026-10-08T19:54:08.215Z"
+    }
+  },
+  {
+    "t": 1791489248637,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "aed0228d-e7ec-4c4a-8131-f45173d606f8",
+      "activityKind": "thinking",
+      "texto": "Concocting… (running UserPromptSubmit hooks… 1/2 · 1s)",
+      "timestamp": "2026-10-08T19:54:08.623Z"
+    }
+  },
+  {
+    "t": 1791489249020,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "kind": "stream_reemplazo",
+      "sessionId": "aed0228d-e7ec-4c4a-8131-f45173d606f8",
+      "messageId": "tmux-borrador:aed0228d-e7ec-4c4a-8131-f45173d606f8",
+      "blockIndex": 0,
+      "timestamp": "2026-10-08T19:54:09.016Z"
+    }
+  },
+  {
+    "t": 1791489249025,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "aed0228d-e7ec-4c4a-8131-f45173d606f8",
+      "idle": true,
+      "timestamp": "2026-10-08T19:54:09.016Z"
+    }
+  },
+  {
+    "t": 1791489249515,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "type": "chat.tmux-prompts"
+    }
+  },
+  {
+    "t": 1791489249563,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "kind": "tmux_prompts",
+      "prompts": [],
+      "timestamp": "2026-10-08T19:54:09.550Z"
+    }
+  },
+  {
+    "t": 1791489250377,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "type": "chat.subscribe",
+      "sessions": [
+        {
+          "sessionId": "aed0228d-e7ec-4c4a-8131-f45173d606f8",
+          "lastSeq": 0
+        }
+      ]
+    }
+  },
+  {
+    "t": 1791489250386,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "kind": "chat_subscribed",
+      "sessionId": "aed0228d-e7ec-4c4a-8131-f45173d606f8",
+      "isProcessing": true,
+      "lastSeq": 0,
+      "pendingPermissions": [],
+      "runsInTmux": true,
+      "timestamp": "2026-10-08T19:54:10.375Z"
+    }
+  },
+  {
+    "t": 1791489251128,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "id": "a56fa010-2992-42d3-a31a-bc5aec8aa1f9",
+      "sessionId": "aed0228d-e7ec-4c4a-8131-f45173d606f8",
+      "timestamp": "2026-10-08T19:54:08.391Z",
+      "provider": "claude",
+      "kind": "text",
+      "role": "user",
+      "content": "Escribí un párrafo de 120 palabras sobre trenes. Terminá con 663yd4.",
+      "transcriptAnchorId": "a56fa010-2992-42d3-a31a-bc5aec8aa1f9"
+    }
+  },
+  {
+    "t": 1791489251277,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "aed0228d-e7ec-4c4a-8131-f45173d606f8",
+      "activityKind": "thinking",
+      "texto": "Moseying… (4s · ↓ 4 tokens)",
+      "timestamp": "2026-10-08T19:54:11.270Z"
+    }
+  },
+  {
+    "t": 1791489251279,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "kind": "stream_delta",
+      "sessionId": "aed0228d-e7ec-4c4a-8131-f45173d606f8",
+      "messageId": "tmux-borrador:aed0228d-e7ec-4c4a-8131-f45173d606f8",
+      "blockIndex": 0,
+      "content": "Los trenes transformaron la manera en que las personas se mueven y se\n  conectan. Desde las primeras locomotoras de vapor del siglo diecinueve hasta\n  personal · 5h ?",
+      "timestamp": "2026-10-08T19:54:11.270Z"
+    }
+  },
+  {
+    "t": 1791489251595,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "kind": "session_upserted",
+      "sessionId": "aed0228d-e7ec-4c4a-8131-f45173d606f8",
+      "providerSessionId": "aed0228d-e7ec-4c4a-8131-f45173d606f8",
+      "provider": "claude",
+      "session": {
+        "id": "aed0228d-e7ec-4c4a-8131-f45173d606f8",
+        "summary": "Párrafo sobre trenes",
+        "messageCount": 0,
+        "lastActivity": "2026-10-08T19:54:09.327Z",
+        "tmux": {
+          "nombre": "e2e-recarga-ejecutora-1",
+          "vivo": true
+        },
+        "cuenta": "optimum"
+      },
+      "project": {
+        "projectId": "88c27a9c-604f-4dfd-a458-260060b27f03",
+        "path": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
+        "fullPath": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
+        "displayName": "e2e-proyecto",
+        "isStarred": false
+      },
+      "timestamp": "2026-10-08T19:54:11.591Z"
+    }
+  },
+  {
+    "t": 1791489251664,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "aed0228d-e7ec-4c4a-8131-f45173d606f8",
+      "activityKind": "thinking",
+      "texto": "Moseying… (5s · ↓ 27 tokens)",
+      "timestamp": "2026-10-08T19:54:11.660Z"
+    }
+  },
+  {
+    "t": 1791489251669,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "kind": "stream_delta",
+      "sessionId": "aed0228d-e7ec-4c4a-8131-f45173d606f8",
+      "messageId": "tmux-borrador:aed0228d-e7ec-4c4a-8131-f45173d606f8",
+      "blockIndex": 0,
+      "content": "Los trenes transformaron la manera en que las personas se mueven y se\n  conectan. Desde las primeras locomotoras de vapor del siglo diecinueve hasta\n  los modernos trenes de alta velocidad, el ferrocarril ha acortado distancias,\n  personal · 5h ?",
+      "timestamp": "2026-10-08T19:54:11.660Z"
+    }
+  },
+  {
+    "t": 1791489252075,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": null,
+      "sevenDay": null,
+      "cuenta": "optimum"
+    }
+  },
+  {
+    "t": 1791489252077,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": null,
+      "sevenDay": null,
+      "cuenta": "personal"
+    }
+  },
+  {
+    "t": 1791489252078,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "aed0228d-e7ec-4c4a-8131-f45173d606f8",
+      "activityKind": "thinking",
+      "texto": "Moseying… (5s · ↓ 39 tokens)",
+      "timestamp": "2026-10-08T19:54:12.076Z"
+    }
+  },
+  {
+    "t": 1791489252086,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "kind": "stream_delta",
+      "sessionId": "aed0228d-e7ec-4c4a-8131-f45173d606f8",
+      "messageId": "tmux-borrador:aed0228d-e7ec-4c4a-8131-f45173d606f8",
+      "blockIndex": 0,
+      "content": "Los trenes transformaron la manera en que las personas se mueven y se\n  conectan. Desde las primeras locomotoras de vapor del siglo diecinueve hasta\n  los modernos trenes de alta velocidad, el ferrocarril ha acortado distancias,\n  impulsado economías y unido ciudades enteras. Viajar en tren ofrece algo que\n  otros medios han perdido: tiempo para mirar por la ventana, leer sin prisa o\n  personal · 5h ?",
+      "timestamp": "2026-10-08T19:54:12.076Z"
+    }
+  },
+  {
+    "t": 1791489252462,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "aed0228d-e7ec-4c4a-8131-f45173d606f8",
+      "activityKind": "thinking",
+      "texto": "Moseying… (5s · ↓ 88 tokens)",
+      "timestamp": "2026-10-08T19:54:12.460Z"
+    }
+  },
+  {
+    "t": 1791489252466,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "kind": "stream_delta",
+      "sessionId": "aed0228d-e7ec-4c4a-8131-f45173d606f8",
+      "messageId": "tmux-borrador:aed0228d-e7ec-4c4a-8131-f45173d606f8",
+      "blockIndex": 0,
+      "content": "Los trenes transformaron la manera en que las personas se mueven y se\n  conectan. Desde las primeras locomotoras de vapor del siglo diecinueve hasta\n  los modernos trenes de alta velocidad, el ferrocarril ha acortado distancias,\n  impulsado economías y unido ciudades enteras. Viajar en tren ofrece algo que\n  otros medios han perdido: tiempo para mirar por la ventana, leer sin prisa o\n  conversar con un desconocido mientras el paisaje cambia lentamente. Además, es\n  uno de los transportes más eficientes y limpios, capaz de mover miles de\n  personal · 5h ?",
+      "timestamp": "2026-10-08T19:54:12.460Z"
+    }
+  },
+  {
+    "t": 1791489252868,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "aed0228d-e7ec-4c4a-8131-f45173d606f8",
+      "activityKind": "thinking",
+      "texto": "Moseying… (6s · ↓ 137 tokens)",
+      "timestamp": "2026-10-08T19:54:12.861Z"
+    }
+  },
+  {
+    "t": 1791489252874,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "kind": "stream_delta",
+      "sessionId": "aed0228d-e7ec-4c4a-8131-f45173d606f8",
+      "messageId": "tmux-borrador:aed0228d-e7ec-4c4a-8131-f45173d606f8",
+      "blockIndex": 0,
+      "content": "Los trenes transformaron la manera en que las personas se mueven y se\n  conectan. Desde las primeras locomotoras de vapor del siglo diecinueve hasta\n  los modernos trenes de alta velocidad, el ferrocarril ha acortado distancias,\n  impulsado economías y unido ciudades enteras. Viajar en tren ofrece algo que\n  otros medios han perdido: tiempo para mirar por la ventana, leer sin prisa o\n  conversar con un desconocido mientras el paisaje cambia lentamente. Además, es\n  uno de los transportes más eficientes y limpios, capaz de mover miles de\n  pasajeros con un consumo de energía mucho menor que el de los aviones o los\n  personal · 5h ?",
+      "timestamp": "2026-10-08T19:54:12.861Z"
+    }
+  },
+  {
+    "t": 1791489253279,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "aed0228d-e7ec-4c4a-8131-f45173d606f8",
+      "activityKind": "thinking",
+      "texto": "Moseying… (6s · ↓ 154 tokens)",
+      "timestamp": "2026-10-08T19:54:13.276Z"
+    }
+  },
+  {
+    "t": 1791489253607,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "id": "0a3b7ab4-63aa-4339-9b07-d12e013532a1_0",
+      "sessionId": "aed0228d-e7ec-4c4a-8131-f45173d606f8",
+      "timestamp": "2026-10-08T19:54:13.235Z",
+      "provider": "claude",
+      "kind": "text",
+      "role": "assistant",
+      "content": "Los trenes transformaron la manera en que las personas se mueven y se conectan. Desde las primeras locomotoras de vapor del siglo diecinueve hasta los modernos trenes de alta velocidad, el ferrocarril ha acortado distancias, impulsado economías y unido ciudades enteras. Viajar en tren ofrece algo que otros medios han perdido: tiempo para mirar por la ventana, leer sin prisa o conversar con un desconocido mientras el paisaje cambia lentamente. Además, es uno de los transportes más eficientes y limpios, capaz de mover miles de pasajeros con un consumo de energía mucho menor que el de los aviones o los automóviles. Por eso, muchos países vuelven a invertir en nuevas líneas, convencidos de que el futuro también viaja sobre rieles. 663yd4",
+      "messageId": "msg_011CfqMc5MYQqyuU7quEeAz3",
+      "blockIndex": 0
+    }
+  },
+  {
+    "t": 1791489253675,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "id": "tmux_complete_aed0228d-e7ec-4c4a-8131-f45173d606f8_1791489253616",
+      "sessionId": "aed0228d-e7ec-4c4a-8131-f45173d606f8",
+      "provider": "claude",
+      "timestamp": "2026-10-08T19:54:13.616Z",
+      "kind": "complete",
+      "success": true
+    }
+  }
+]

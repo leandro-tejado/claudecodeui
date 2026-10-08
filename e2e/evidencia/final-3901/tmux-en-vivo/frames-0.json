@@ -1,0 +1,654 @@
+[
+  {
+    "t": 1791489157929,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "type": "chat.tmux-prompts"
+    }
+  },
+  {
+    "t": 1791489157974,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "kind": "tmux_prompts",
+      "prompts": [],
+      "timestamp": "2026-10-08T19:52:37.962Z"
+    }
+  },
+  {
+    "t": 1791489159002,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "type": "chat.subscribe",
+      "sessions": [
+        {
+          "sessionId": "e9ab7eea-2e7e-4bfd-ac7f-ca0d4018ff01",
+          "lastSeq": 0
+        }
+      ]
+    }
+  },
+  {
+    "t": 1791489159040,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "kind": "chat_subscribed",
+      "sessionId": "e9ab7eea-2e7e-4bfd-ac7f-ca0d4018ff01",
+      "isProcessing": false,
+      "lastSeq": 0,
+      "pendingPermissions": [],
+      "runsInTmux": true,
+      "timestamp": "2026-10-08T19:52:39.034Z"
+    }
+  },
+  {
+    "t": 1791489159886,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "type": "chat.send-tmux",
+      "sessionId": "e9ab7eea-2e7e-4bfd-ac7f-ca0d4018ff01",
+      "content": "Escribí un párrafo de unas 150 palabras sobre faros. Terminá con en1j2a.",
+      "clientMessageId": "local_1791489159862_rsbx2z",
+      "options": {
+        "model": "default",
+        "effort": "default",
+        "permissionMode": "default",
+        "toolsSettings": {
+          "allowedTools": [],
+          "disallowedTools": [],
+          "skipPermissions": false
+        },
+        "skipPermissions": false,
+        "sessionSummary": "e2e-envivo-ejecutora-1",
+        "attachments": []
+      }
+    }
+  },
+  {
+    "t": 1791489160472,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "kind": "message_status",
+      "sessionId": "e9ab7eea-2e7e-4bfd-ac7f-ca0d4018ff01",
+      "clientMessageId": "local_1791489159862_rsbx2z",
+      "status": "sent",
+      "timestamp": "2026-10-08T19:52:40.469Z"
+    }
+  },
+  {
+    "t": 1791489160486,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "kind": "status",
+      "sessionId": "e9ab7eea-2e7e-4bfd-ac7f-ca0d4018ff01",
+      "text": null,
+      "canInterrupt": false,
+      "timestamp": "2026-10-08T19:52:40.470Z"
+    }
+  },
+  {
+    "t": 1791489160683,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "e9ab7eea-2e7e-4bfd-ac7f-ca0d4018ff01",
+      "activityKind": "thinking",
+      "texto": "Puzzling… (running SessionStart hooks… 5/6 · 0s)",
+      "timestamp": "2026-10-08T19:52:40.650Z"
+    }
+  },
+  {
+    "t": 1791489160683,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "kind": "stream_delta",
+      "sessionId": "e9ab7eea-2e7e-4bfd-ac7f-ca0d4018ff01",
+      "messageId": "tmux-borrador:e9ab7eea-2e7e-4bfd-ac7f-ca0d4018ff01",
+      "blockIndex": 0,
+      "content": "personal · 5h ?",
+      "timestamp": "2026-10-08T19:52:40.650Z"
+    }
+  },
+  {
+    "t": 1791489161056,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "e9ab7eea-2e7e-4bfd-ac7f-ca0d4018ff01",
+      "activityKind": "thinking",
+      "texto": "Puzzling… (running SessionStart hooks… 5/6 · 0s)",
+      "timestamp": "2026-10-08T19:52:41.052Z"
+    }
+  },
+  {
+    "t": 1791489161458,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "e9ab7eea-2e7e-4bfd-ac7f-ca0d4018ff01",
+      "activityKind": "thinking",
+      "texto": "Puzzling… (running SessionStart hooks… 5/6 · 1s)",
+      "timestamp": "2026-10-08T19:52:41.452Z"
+    }
+  },
+  {
+    "t": 1791489161855,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "e9ab7eea-2e7e-4bfd-ac7f-ca0d4018ff01",
+      "activityKind": "thinking",
+      "texto": "Puzzling… (running SessionStart hooks… 5/6 · 1s)",
+      "timestamp": "2026-10-08T19:52:41.853Z"
+    }
+  },
+  {
+    "t": 1791489162264,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "kind": "stream_reemplazo",
+      "sessionId": "e9ab7eea-2e7e-4bfd-ac7f-ca0d4018ff01",
+      "messageId": "tmux-borrador:e9ab7eea-2e7e-4bfd-ac7f-ca0d4018ff01",
+      "blockIndex": 0,
+      "timestamp": "2026-10-08T19:52:42.260Z"
+    }
+  },
+  {
+    "t": 1791489162271,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "e9ab7eea-2e7e-4bfd-ac7f-ca0d4018ff01",
+      "idle": true,
+      "timestamp": "2026-10-08T19:52:42.260Z"
+    }
+  },
+  {
+    "t": 1791489163859,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "e9ab7eea-2e7e-4bfd-ac7f-ca0d4018ff01",
+      "activityKind": "thinking",
+      "texto": "Billowing… (3s · thinking with high effort)",
+      "timestamp": "2026-10-08T19:52:43.857Z"
+    }
+  },
+  {
+    "t": 1791489163859,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "kind": "stream_delta",
+      "sessionId": "e9ab7eea-2e7e-4bfd-ac7f-ca0d4018ff01",
+      "messageId": "tmux-borrador:e9ab7eea-2e7e-4bfd-ac7f-ca0d4018ff01",
+      "blockIndex": 0,
+      "content": "personal · 5h ?",
+      "timestamp": "2026-10-08T19:52:43.857Z"
+    }
+  },
+  {
+    "t": 1791489164257,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "e9ab7eea-2e7e-4bfd-ac7f-ca0d4018ff01",
+      "activityKind": "thinking",
+      "texto": "Billowing… (3s · thinking with high effort)",
+      "timestamp": "2026-10-08T19:52:44.255Z"
+    }
+  },
+  {
+    "t": 1791489164659,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "e9ab7eea-2e7e-4bfd-ac7f-ca0d4018ff01",
+      "activityKind": "thinking",
+      "texto": "Billowing… (4s · ↓ 25 tokens · thinking with high effort)",
+      "timestamp": "2026-10-08T19:52:44.657Z"
+    }
+  },
+  {
+    "t": 1791489165069,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "e9ab7eea-2e7e-4bfd-ac7f-ca0d4018ff01",
+      "activityKind": "thinking",
+      "texto": "Billowing… (4s · ↓ 138 tokens · thinking with high effort)",
+      "timestamp": "2026-10-08T19:52:45.060Z"
+    }
+  },
+  {
+    "t": 1791489165069,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "kind": "stream_delta",
+      "sessionId": "e9ab7eea-2e7e-4bfd-ac7f-ca0d4018ff01",
+      "messageId": "tmux-borrador:e9ab7eea-2e7e-4bfd-ac7f-ca0d4018ff01",
+      "blockIndex": 0,
+      "content": "Los faros son torres que guardaron la costa mucho antes de que existieran los",
+      "timestamp": "2026-10-08T19:52:45.060Z"
+    }
+  },
+  {
+    "t": 1791489165459,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "e9ab7eea-2e7e-4bfd-ac7f-ca0d4018ff01",
+      "activityKind": "thinking",
+      "texto": "Billowing… (5s · ↓ 225 tokens · thinking with high effort)",
+      "timestamp": "2026-10-08T19:52:45.458Z"
+    }
+  },
+  {
+    "t": 1791489165462,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "kind": "stream_delta",
+      "sessionId": "e9ab7eea-2e7e-4bfd-ac7f-ca0d4018ff01",
+      "messageId": "tmux-borrador:e9ab7eea-2e7e-4bfd-ac7f-ca0d4018ff01",
+      "blockIndex": 0,
+      "content": "Los faros son torres que guardaron la costa mucho antes de que existieran los\n  satélites. Desde la Antigüedad, cuando el de Alejandría marcaba la entrada al\n  puerto, los marinos aprendieron a confiar en una luz que no se movía. Esa",
+      "timestamp": "2026-10-08T19:52:45.458Z"
+    }
+  },
+  {
+    "t": 1791489165859,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "e9ab7eea-2e7e-4bfd-ac7f-ca0d4018ff01",
+      "activityKind": "thinking",
+      "texto": "Billowing… (5s · ↓ 300 tokens · thought for 1s)",
+      "timestamp": "2026-10-08T19:52:45.857Z"
+    }
+  },
+  {
+    "t": 1791489165862,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "kind": "stream_delta",
+      "sessionId": "e9ab7eea-2e7e-4bfd-ac7f-ca0d4018ff01",
+      "messageId": "tmux-borrador:e9ab7eea-2e7e-4bfd-ac7f-ca0d4018ff01",
+      "blockIndex": 0,
+      "content": "Los faros son torres que guardaron la costa mucho antes de que existieran los\n  satélites. Desde la Antigüedad, cuando el de Alejandría marcaba la entrada al\n  puerto, los marinos aprendieron a confiar en una luz que no se movía. Esa\n  quietud era su valor: en medio de la noche, la niebla y el oleaje, sabían que",
+      "timestamp": "2026-10-08T19:52:45.857Z"
+    }
+  },
+  {
+    "t": 1791489166263,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "e9ab7eea-2e7e-4bfd-ac7f-ca0d4018ff01",
+      "activityKind": "thinking",
+      "texto": "Billowing… (5s · ↓ 318 tokens · thought for 1s)",
+      "timestamp": "2026-10-08T19:52:46.259Z"
+    }
+  },
+  {
+    "t": 1791489166269,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "kind": "stream_delta",
+      "sessionId": "e9ab7eea-2e7e-4bfd-ac7f-ca0d4018ff01",
+      "messageId": "tmux-borrador:e9ab7eea-2e7e-4bfd-ac7f-ca0d4018ff01",
+      "blockIndex": 0,
+      "content": "Los faros son torres que guardaron la costa mucho antes de que existieran los\n  satélites. Desde la Antigüedad, cuando el de Alejandría marcaba la entrada al\n  puerto, los marinos aprendieron a confiar en una luz que no se movía. Esa\n  quietud era su valor: en medio de la noche, la niebla y el oleaje, sabían que\n  ahí había roca, o puerto, y que la luz no mentía. Los guardianes subían cada",
+      "timestamp": "2026-10-08T19:52:46.259Z"
+    }
+  },
+  {
+    "t": 1791489166667,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "e9ab7eea-2e7e-4bfd-ac7f-ca0d4018ff01",
+      "activityKind": "thinking",
+      "texto": "Billowing… (6s · ↓ 348 tokens · thought for 1s)",
+      "timestamp": "2026-10-08T19:52:46.663Z"
+    }
+  },
+  {
+    "t": 1791489166675,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "kind": "stream_delta",
+      "sessionId": "e9ab7eea-2e7e-4bfd-ac7f-ca0d4018ff01",
+      "messageId": "tmux-borrador:e9ab7eea-2e7e-4bfd-ac7f-ca0d4018ff01",
+      "blockIndex": 0,
+      "content": "Los faros son torres que guardaron la costa mucho antes de que existieran los\n  satélites. Desde la Antigüedad, cuando el de Alejandría marcaba la entrada al\n  puerto, los marinos aprendieron a confiar en una luz que no se movía. Esa\n  quietud era su valor: en medio de la noche, la niebla y el oleaje, sabían que\n  ahí había roca, o puerto, y que la luz no mentía. Los guardianes subían cada\n  tarde la escalera de caracol para encender la lámpara, pulir las lentes y\n  vigilar el mar. Después llegó la lente de Fresnel, que concentraba la llama en",
+      "timestamp": "2026-10-08T19:52:46.663Z"
+    }
+  },
+  {
+    "t": 1791489167091,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "id": "ac9b7fd3-8d3f-4b1b-8a7e-12eb285807b2",
+      "sessionId": "e9ab7eea-2e7e-4bfd-ac7f-ca0d4018ff01",
+      "timestamp": "2026-10-08T19:52:41.983Z",
+      "provider": "claude",
+      "kind": "text",
+      "role": "user",
+      "content": "Escribí un párrafo de unas 150 palabras sobre faros. Terminá con en1j2a.",
+      "transcriptAnchorId": "ac9b7fd3-8d3f-4b1b-8a7e-12eb285807b2"
+    }
+  },
+  {
+    "t": 1791489167101,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "e9ab7eea-2e7e-4bfd-ac7f-ca0d4018ff01",
+      "activityKind": "thinking",
+      "texto": "Billowing… (6s · ↓ 383 tokens · thought for 1s)",
+      "timestamp": "2026-10-08T19:52:47.081Z"
+    }
+  },
+  {
+    "t": 1791489167101,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "kind": "stream_delta",
+      "sessionId": "e9ab7eea-2e7e-4bfd-ac7f-ca0d4018ff01",
+      "messageId": "tmux-borrador:e9ab7eea-2e7e-4bfd-ac7f-ca0d4018ff01",
+      "blockIndex": 0,
+      "content": "Los faros son torres que guardaron la costa mucho antes de que existieran los\n  satélites. Desde la Antigüedad, cuando el de Alejandría marcaba la entrada al\n  puerto, los marinos aprendieron a confiar en una luz que no se movía. Esa\n  quietud era su valor: en medio de la noche, la niebla y el oleaje, sabían que\n  ahí había roca, o puerto, y que la luz no mentía. Los guardianes subían cada\n  tarde la escalera de caracol para encender la lámpara, pulir las lentes y\n  vigilar el mar. Después llegó la lente de Fresnel, que concentraba la llama en\n  un haz capaz de cruzar kilómetros de agua. Hoy casi todos funcionan solos,",
+      "timestamp": "2026-10-08T19:52:47.081Z"
+    }
+  },
+  {
+    "t": 1791489167482,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "e9ab7eea-2e7e-4bfd-ac7f-ca0d4018ff01",
+      "activityKind": "thinking",
+      "texto": "Billowing… (7s · ↓ 411 tokens · thought for 1s)",
+      "timestamp": "2026-10-08T19:52:47.478Z"
+    }
+  },
+  {
+    "t": 1791489167500,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "kind": "stream_delta",
+      "sessionId": "e9ab7eea-2e7e-4bfd-ac7f-ca0d4018ff01",
+      "messageId": "tmux-borrador:e9ab7eea-2e7e-4bfd-ac7f-ca0d4018ff01",
+      "blockIndex": 0,
+      "content": "Los faros son torres que guardaron la costa mucho antes de que existieran los\n  satélites. Desde la Antigüedad, cuando el de Alejandría marcaba la entrada al\n  puerto, los marinos aprendieron a confiar en una luz que no se movía. Esa\n  quietud era su valor: en medio de la noche, la niebla y el oleaje, sabían que\n  ahí había roca, o puerto, y que la luz no mentía. Los guardianes subían cada\n  tarde la escalera de caracol para encender la lámpara, pulir las lentes y\n  vigilar el mar. Después llegó la lente de Fresnel, que concentraba la llama en\n  un haz capaz de cruzar kilómetros de agua. Hoy casi todos funcionan solos,\n  con sensores y energía solar, y la navegación depende de pantallas y\n  coordenadas. Aun así, siguen en pie sobre acantilados e islotes. Quizás porque",
+      "timestamp": "2026-10-08T19:52:47.478Z"
+    }
+  },
+  {
+    "t": 1791489167574,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "kind": "session_upserted",
+      "sessionId": "e9ab7eea-2e7e-4bfd-ac7f-ca0d4018ff01",
+      "providerSessionId": "e9ab7eea-2e7e-4bfd-ac7f-ca0d4018ff01",
+      "provider": "claude",
+      "session": {
+        "id": "e9ab7eea-2e7e-4bfd-ac7f-ca0d4018ff01",
+        "summary": "Párrafo sobre faros",
+        "messageCount": 0,
+        "lastActivity": "2026-10-08T19:52:43.229Z",
+        "tmux": {
+          "nombre": "e2e-envivo-ejecutora-1",
+          "vivo": true
+        },
+        "cuenta": "optimum"
+      },
+      "project": {
+        "projectId": "88c27a9c-604f-4dfd-a458-260060b27f03",
+        "path": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
+        "fullPath": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
+        "displayName": "e2e-proyecto",
+        "isStarred": false
+      },
+      "timestamp": "2026-10-08T19:52:47.572Z"
+    }
+  },
+  {
+    "t": 1791489167882,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "e9ab7eea-2e7e-4bfd-ac7f-ca0d4018ff01",
+      "activityKind": "thinking",
+      "texto": "Billowing… (7s · ↓ 431 tokens)",
+      "timestamp": "2026-10-08T19:52:47.879Z"
+    }
+  },
+  {
+    "t": 1791489167888,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "kind": "stream_delta",
+      "sessionId": "e9ab7eea-2e7e-4bfd-ac7f-ca0d4018ff01",
+      "messageId": "tmux-borrador:e9ab7eea-2e7e-4bfd-ac7f-ca0d4018ff01",
+      "blockIndex": 0,
+      "content": "Los faros son torres que guardaron la costa mucho antes de que existieran los\n  satélites. Desde la Antigüedad, cuando el de Alejandría marcaba la entrada al\n  puerto, los marinos aprendieron a confiar en una luz que no se movía. Esa\n  quietud era su valor: en medio de la noche, la niebla y el oleaje, sabían que\n  ahí había roca, o puerto, y que la luz no mentía. Los guardianes subían cada\n  tarde la escalera de caracol para encender la lámpara, pulir las lentes y\n  vigilar el mar. Después llegó la lente de Fresnel, que concentraba la llama en\n  un haz capaz de cruzar kilómetros de agua. Hoy casi todos funcionan solos,\n  con sensores y energía solar, y la navegación depende de pantallas y\n  coordenadas. Aun así, siguen en pie sobre acantilados e islotes. Quizás porque\n  no solo orientan a quien navega, sino que también recuerdan que alguien, en",
+      "timestamp": "2026-10-08T19:52:47.879Z"
+    }
+  },
+  {
+    "t": 1791489168014,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": null,
+      "sevenDay": null,
+      "cuenta": "optimum"
+    }
+  },
+  {
+    "t": 1791489168017,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": null,
+      "sevenDay": null,
+      "cuenta": "personal"
+    }
+  },
+  {
+    "t": 1791489168290,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "e9ab7eea-2e7e-4bfd-ac7f-ca0d4018ff01",
+      "activityKind": "thinking",
+      "texto": "Billowing… (7s · ↓ 436 tokens)",
+      "timestamp": "2026-10-08T19:52:48.282Z"
+    }
+  },
+  {
+    "t": 1791489168298,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "kind": "stream_delta",
+      "sessionId": "e9ab7eea-2e7e-4bfd-ac7f-ca0d4018ff01",
+      "messageId": "tmux-borrador:e9ab7eea-2e7e-4bfd-ac7f-ca0d4018ff01",
+      "blockIndex": 0,
+      "content": "Los faros son torres que guardaron la costa mucho antes de que existieran los\n  satélites. Desde la Antigüedad, cuando el de Alejandría marcaba la entrada al\n  puerto, los marinos aprendieron a confiar en una luz que no se movía. Esa\n  quietud era su valor: en medio de la noche, la niebla y el oleaje, sabían que\n  ahí había roca, o puerto, y que la luz no mentía. Los guardianes subían cada\n  tarde la escalera de caracol para encender la lámpara, pulir las lentes y\n  vigilar el mar. Después llegó la lente de Fresnel, que concentraba la llama en\n  un haz capaz de cruzar kilómetros de agua. Hoy casi todos funcionan solos,\n  con sensores y energía solar, y la navegación depende de pantallas y\n  coordenadas. Aun así, siguen en pie sobre acantilados e islotes. Quizás porque\n  no solo orientan a quien navega, sino que también recuerdan que alguien, en\n  algún lado, se ocupó de que otros llegaran a salvo. en1j2a",
+      "timestamp": "2026-10-08T19:52:48.282Z"
+    }
+  },
+  {
+    "t": 1791489168612,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "id": "2e882284-8ada-4a22-8897-3a110b674fde_0",
+      "sessionId": "e9ab7eea-2e7e-4bfd-ac7f-ca0d4018ff01",
+      "timestamp": "2026-10-08T19:52:48.230Z",
+      "provider": "claude",
+      "kind": "text",
+      "role": "assistant",
+      "content": "Los faros son torres que guardaron la costa mucho antes de que existieran los satélites. Desde la Antigüedad, cuando el de Alejandría marcaba la entrada al puerto, los marinos aprendieron a confiar en una luz que no se movía. Esa quietud era su valor: en medio de la noche, la niebla y el oleaje, sabían que ahí había roca, o puerto, y que la luz no mentía. Los guardianes subían cada tarde la escalera de caracol para encender la lámpara, pulir las lentes y vigilar el mar. Después llegó la lente de Fresnel, que concentraba la llama en un haz capaz de cruzar kilómetros de agua. Hoy casi todos funcionan solos, con sensores y energía solar, y la navegación depende de pantallas y coordenadas. Aun así, siguen en pie sobre acantilados e islotes. Quizás porque no solo orientan a quien navega, sino que también recuerdan que alguien, en algún lado, se ocupó de que otros llegaran a salvo. en1j2a",
+      "messageId": "msg_011CfqMVhqLATXGhd26UjEAv",
+      "blockIndex": 0
+    }
+  },
+  {
+    "t": 1791489168668,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "id": "tmux_complete_e9ab7eea-2e7e-4bfd-ac7f-ca0d4018ff01_1791489168613",
+      "sessionId": "e9ab7eea-2e7e-4bfd-ac7f-ca0d4018ff01",
+      "provider": "claude",
+      "timestamp": "2026-10-08T19:52:48.613Z",
+      "kind": "complete",
+      "success": true
+    }
+  },
+  {
+    "t": 1791489168706,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "kind": "stream_reemplazo",
+      "sessionId": "e9ab7eea-2e7e-4bfd-ac7f-ca0d4018ff01",
+      "messageId": "tmux-borrador:e9ab7eea-2e7e-4bfd-ac7f-ca0d4018ff01",
+      "blockIndex": 0,
+      "timestamp": "2026-10-08T19:52:48.699Z"
+    }
+  },
+  {
+    "t": 1791489168707,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "e9ab7eea-2e7e-4bfd-ac7f-ca0d4018ff01",
+      "idle": true,
+      "timestamp": "2026-10-08T19:52:48.699Z"
+    }
+  },
+  {
+    "t": 1791489173566,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "kind": "session_upserted",
+      "sessionId": "e9ab7eea-2e7e-4bfd-ac7f-ca0d4018ff01",
+      "providerSessionId": "e9ab7eea-2e7e-4bfd-ac7f-ca0d4018ff01",
+      "provider": "claude",
+      "session": {
+        "id": "e9ab7eea-2e7e-4bfd-ac7f-ca0d4018ff01",
+        "summary": "Párrafo sobre faros",
+        "messageCount": 0,
+        "lastActivity": "2026-10-08T19:52:48.425Z",
+        "tmux": {
+          "nombre": "e2e-envivo-ejecutora-1",
+          "vivo": true
+        },
+        "cuenta": "optimum"
+      },
+      "project": {
+        "projectId": "88c27a9c-604f-4dfd-a458-260060b27f03",
+        "path": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
+        "fullPath": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
+        "displayName": "e2e-proyecto",
+        "isStarred": false
+      },
+      "timestamp": "2026-10-08T19:52:53.561Z"
+    }
+  },
+  {
+    "t": 1791489174015,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": null,
+      "sevenDay": null,
+      "cuenta": "optimum"
+    }
+  },
+  {
+    "t": 1791489174017,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": null,
+      "sevenDay": null,
+      "cuenta": "personal"
+    }
+  },
+  {
+    "t": 1791489182915,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "kind": "heartbeat",
+      "timestamp": 1791489182913
+    }
+  },
+  {
+    "t": 1791489184946,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3901/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiZTJlIiwiaWF0IjoxNzkxNDg4MjUzLCJleHAiOjE4MjMwMjQyNTN9.Mn2aT1-CEUuzTrvxEspCy3QqwxyRpOB7Qlyv7pvNwOg",
+    "datos": {
+      "kind": "recursos",
+      "ram": {
+        "porcentajePct": 77.38604703326801,
+        "usadaGb": 6.001338958740234,
+        "totalGb": 7.75506591796875
+      },
+      "disco": {
+        "usadoPct": 43.39874925773803,
+        "usadoGb": 41.58555221557617,
+        "totalGb": 95.82200622558594
+      },
+      "sesionesTmux": 7,
+      "techoRam": 90
+    }
+  }
+]
