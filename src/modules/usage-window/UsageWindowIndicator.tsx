@@ -87,7 +87,9 @@ function VentanaBarra({ rotulo, estado, now }: { rotulo: string; estado: EstadoV
       <div className="flex min-w-0 flex-col leading-tight">
         <span className="whitespace-nowrap text-ds-muted" style={{ fontSize: 'var(--skin-text-xs)' }}>
           {rotulo}{' '}
-          <b className={cn('font-semibold text-ds-ink', stale && 'opacity-60')}>
+          {/* Lo viejo se apaga con el gris del rótulo y no con opacidad: `opacity-60`
+              sobre el texto bajaba el contraste de 4,5:1 (axe, 8-oct). */}
+          <b className={cn('font-semibold', stale ? 'text-ds-muted' : 'text-ds-ink')}>
             {esDato
               ? `${Math.round(estado.porcentaje)}%`
               : estado.tipo === 'ventana-nueva'

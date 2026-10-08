@@ -80,6 +80,9 @@ describe('UsageWindowIndicator — nunca "sin dato" habiendo una lectura, y la s
     expect(label()).not.toContain('Ventana de 5 horas: sin dato');
     // el número también sigue visible en el botón, no solo en el label
     expect(screen.getByText('63%')).toBeTruthy();
+    // apagado con el gris del rótulo, no con opacidad: axe la marcaba sin contraste
+    expect(screen.getByText('63%').className).toContain('text-ds-muted');
+    expect(screen.getByText('63%').className).not.toContain('opacity-');
   });
 
   it('una ventana que ya pasó su resetsAt muestra "ventana nueva", no el % de la ventana ya cerrada', () => {
