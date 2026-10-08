@@ -511,13 +511,13 @@ Las sesiones nuevas del orquestador llegan por polling de 3 s sobre `~/.cache/ao
 6. Commit, push, plan en `completado`, `Cambios realizados` y `Continuación de Sesión` al día.
 
 #### Estado (arranca todo en fail)
-- [fail] Suite completa verde en `:3901`/`:3902` | valida: `node e2e/correr.mjs todo`
-- [fail] Unitarios verdes | valida: `NODE_ENV=test npx vitest run && NODE_ENV=test npm test`
+- [pass] Suite completa verde en `:3901`/`:3902` | valida: `node e2e/correr.mjs todo` — 08-oct: 214 bien, 0 mal y 2 bloqueados (`headless/pensamiento`, sin token), `e2e/evidencia/final-3901/informe.md` (`11f057cd`)
+- [pass] Unitarios verdes | valida: `NODE_ENV=test npx vitest run && NODE_ENV=test npm test` — 08-oct: cliente 811/811; server 934 bien, 0 mal y 1 omitido
 - [fail] Suite completa verde en `:3001` | valida: `CLOUDCLI_URL=http://100.77.186.53:3001 node e2e/correr.mjs todo`
 - [fail] Ningún token ni contraseña en disco después de la corrida en `:3001` | valida: `grep -rn "$CLOUDCLI_USER" /tmp/cloudcli-e2e e2e/ || true` vacío, y sin archivos de token del 3001
 - [fail] Cero `e2e-*` vivas y el proyecto de prueba archivado | valida: `tmux ls | grep -c '^e2e-'` = 0
 - [fail] Leandro confirma los 8 puntos en el celular | valida: AskUserQuestion
-- [fail] Push hecho | valida: `git fetch && git status -sb` sin `ahead`
+- [fail] Push hecho | valida: `git fetch && git status -sb` sin `ahead` — lo de `:3901` está pusheado; falta lo de `:3001`
 
 ---
 
@@ -619,10 +619,24 @@ Fase 1 (arnés) → Fase 2 (línea base)
 
 ---
 
+**Fase 12, pasos 1 y 2 (08-oct):**
+- Arnés: `cuota.json` por puerto (`d95d0888`), `instanciaLimpia` para `cuota/sin-turnos` y `cuota/vieja` (`9e1ab308`), espera a que muera el `claude` del escenario anterior, registro de sesiones propio (`aea9e3ee`). En `workspace-leandro`, `hibernar.py` lleva `hibernadas.json` al lado del registro alternativo (`25faf16c`): sin eso `barra/orquestador` daba rojo, y las corridas del 7 y 8 de octubre habían dejado 11 entradas `e2e-*` en el archivo real (ya sacadas).
+- Escenarios nuevos para los arreglos del 7-oct: `tmux/adjunto`, `barra/estado-vivo` y `barra/nombres` (`984234b4`, `aea9e3ee`).
+- Regresión del borrador de tmux tras un AskUserQuestion (`pregunta/tmux-multi`): arreglada en `762bdc80`, merge `2e2f5d60`. Los tests nuevos fallan sin el arreglo (1 de cliente y 1 de server) y pasan con él.
+- axe encontró contraste insuficiente en el `%` de una lectura de cuota vieja (`opacity-60`). Arreglado en `d82ed6b9` y revalidado con una lectura de 20 min a la vista.
+- Tres tests de server dependían del entorno o del reloj (`6599520e`): `AOS_CUENTA` heredado, un worktree borrado como proyecto y `settle()` bajo carga.
+- 🟡 Hallazgo menor, sin arreglar: `tmux-titulo.service.ts` cachea `@titulo` por **nombre** de pane, así que un pane que reusa el nombre de otro ya muerto puede no recibir su título.
+
+---
+
 ## Continuación de Sesión
 
-**Fases completadas:** 1 a 11.
-**Fase actual:** 12.
-**Próximo paso exacto:** aislar en el arnés el `cuota.json` entre instancias y esperar a que muera el `claude` del escenario anterior en tmux (ver la deuda en Cambios realizados), y después correr `node e2e/correr.mjs todo` (paso 1 de la Fase 12).
-Después: Leandro reinicia `:3001` desde `ct` o ttyd (`npm run build && systemctl --user restart cloudcli`, más `Ctrl+Shift+R`) y se hace la pasada final.
-**Bloqueantes:** el reinicio de `:3001` lo hace Leandro, y la cuota semanal (proyecta 144 %).
+**Fases completadas:** 1 a 11. De la Fase 12, los pasos 1 y 2 (`:3901`/`:3902` y unitarios).
+**Fase actual:** 12, pasos 3 a 6.
+**Próximo paso exacto:**
+1. Leandro, desde `ct` o ttyd: `cd ~/cloudcli && npm run build && systemctl --user restart cloudcli`, y `Ctrl+Shift+R`. `:3001` sigue con el build del 7-oct 18:18, sin `762bdc80` (borrador de tmux) ni `d82ed6b9` (contraste de la cuota).
+2. Pasada contra `:3001` con su login en variables de entorno, solo para esa corrida: `CLOUDCLI_URL=http://100.77.186.53:3001 node e2e/correr.mjs todo --corrida final-3001`. Después: checks de token en disco y de `e2e-*` vivas, y archivar el proyecto de prueba.
+3. Checklist de los 8 puntos en el celular, por AskUserQuestion.
+4. Commit, push, plan en `completado`.
+
+**Bloqueantes:** el reinicio de `:3001` y la pasada con login los hace Leandro. Cuota semanal de optimum en 77 %, con proyección de 129 % al reset.
