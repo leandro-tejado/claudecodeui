@@ -4,15 +4,18 @@
 //   node e2e/correr.mjs <grupo|grupo/nombre|todo>... [--corrida nombre] [--con-cuota]
 //
 // Cada escenario vive en e2e/escenarios/<grupo>/<nombre>.mjs y exporta:
-//   export const meta = { descripcion, puerto: 3901|3902, cuota: bool }
+//   export const meta = { descripcion, puerto: 3901|3902, cuota: bool, instanciaLimpia: bool }
 //   export async function correr(ctx) { ... ctx.check(...) ... }
 // `cuota: true` = gasta turnos reales o crea sesiones de Claude: sin
 // --con-cuota, o con el gobernador en rojo, sus checks quedan "bloqueado".
+// `instanciaLimpia: true` = el escenario arranca con su instancia recién
+// reiniciada y sin cuota.json (no hereda estado del escenario anterior).
 import fs from 'node:fs';
 import path from 'node:path';
 import { EVIDENCIA, REPO, puertoDeEscenario } from './lib/config.mjs';
 import { abrir } from './lib/navegador.mjs';
 import { gobernador, teardown } from './sesiones.mjs';
+import { reiniciarLimpia } from './instancia.mjs';
 
 const DIR_ESC = path.join(REPO, 'e2e', 'escenarios');
 
@@ -97,6 +100,9 @@ for (const id of elegidos) {
     console.log(`  ⏸ bloqueado: ${bloqueo}`);
   } else {
     try {
+      if (meta.instanciaLimpia && !process.env.CLOUDCLI_URL) {
+        await reiniciarLimpia(puertoDeEscenario(meta.puerto) === puertoDeEscenario(3902) ? ['--falso'] : []);
+      }
       await mod.correr(ctx);
     } catch (e) {
       const cap = [];

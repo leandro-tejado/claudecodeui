@@ -5,7 +5,7 @@ import fs from 'node:fs';
 import { CUOTA_JSON } from '../../lib/config.mjs';
 import { abrirSesion, crearSesionFalsa } from '../../lib/chat.mjs';
 
-export const meta = { descripcion: 'una ventana con resetsAt ya pasado muestra "ventana nueva" y la hora, no el % de la ventana cerrada', puerto: 3902 };
+export const meta = { descripcion: 'una ventana con resetsAt ya pasado muestra "ventana nueva" y la hora, no el % de la ventana cerrada', puerto: 3902, instanciaLimpia: true };
 
 function escribirConResetPasado(cinco, siete) {
   const ahora = Math.floor(Date.now() / 1000);

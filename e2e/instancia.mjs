@@ -155,6 +155,20 @@ export function down(args = []) {
   return true;
 }
 
+// Instancia recién arrancada y sin cuota.json: el server se queda, por
+// ventana, con la lectura más nueva que vio (Fase 3), así que un escenario que
+// escribe una lectura vieja a propósito perdía contra la del anterior.
+export async function reiniciarLimpia(args = []) {
+  const puerto = puertoDe(args);
+  const pidFile = archivoPid(puerto);
+  const pid = fs.existsSync(pidFile) ? Number(fs.readFileSync(pidFile, 'utf8')) : null;
+  down(args);
+  const t0 = Date.now();
+  while (pid && vivo(pid) && Date.now() - t0 < 15_000) await new Promise((r) => setTimeout(r, 200));
+  fs.rmSync(path.dirname(cuotaJson(puerto)), { recursive: true, force: true });
+  return up(args);
+}
+
 function estado() {
   for (const puerto of [PUERTO_REAL, PUERTO_FALSO]) {
     const pidFile = archivoPid(puerto);

@@ -6,7 +6,7 @@ import fs from 'node:fs';
 import { CUOTA_JSON } from '../../lib/config.mjs';
 import { abrirSesion, crearSesionFalsa } from '../../lib/chat.mjs';
 
-export const meta = { descripcion: 'cuota.json con 20 min sin reescribirse sigue mostrando los dos %, con "hace N min"', puerto: 3902 };
+export const meta = { descripcion: 'cuota.json con 20 min sin reescribirse sigue mostrando los dos %, con "hace N min"', puerto: 3902, instanciaLimpia: true };
 
 function escribirVieja(cinco, siete, antiguedadMin) {
   const ahora = Math.floor(Date.now() / 1000);
