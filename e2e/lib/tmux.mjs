@@ -26,6 +26,7 @@ export async function esperarSid(nombre, topeMs = 60_000) {
 }
 
 export async function prepararTmux(ctx, base, opciones = {}) {
+  await esperarSinClaude();
   const nombre = crearTmux(base, PROYECTO);
   const sid = await esperarSid(nombre);
   const s = await ctx.abrir(opciones);
@@ -43,6 +44,19 @@ export function procesosClaudeEnProyecto() {
   let pids = [];
   try { pids = execFileSync('pgrep', ['-x', 'claude'], { encoding: 'utf8' }).split('\n').filter(Boolean); } catch { /* ninguno */ }
   return pids.filter((pid) => { try { return fs.readlinkSync(`/proc/${pid}/cwd`) === PROYECTO; } catch { return false; } });
+}
+
+// El teardown cierra la sesión de tmux, pero el `claude` del pane tarda unos
+// segundos en morir: el escenario siguiente lo contaba como un segundo
+// proceso. Se espera a que el proyecto de prueba quede sin `claude`; lo que
+// siga vivo al tope es de una sesión de prueba ya cerrada y se termina.
+export async function esperarSinClaude(topeMs = 30_000) {
+  const t0 = Date.now();
+  while (procesosClaudeEnProyecto().length && Date.now() - t0 < topeMs) await new Promise((r) => setTimeout(r, 500));
+  const restos = procesosClaudeEnProyecto();
+  for (const pid of restos) { try { process.kill(Number(pid), 'SIGTERM'); } catch { /* ya murió */ } }
+  if (restos.length) await new Promise((r) => setTimeout(r, 3000));
+  return { ms: Date.now() - t0, terminados: restos };
 }
 
 export const repeticiones = () => Number(process.env.E2E_REPETICIONES ?? 3);

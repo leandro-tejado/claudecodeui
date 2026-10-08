@@ -18,7 +18,7 @@ import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import {
-  APP, RAIZ_TMP, REPO, PROYECTO, CUOTA_JSON, PUERTO_REAL, PUERTO_FALSO, archivoToken,
+  APP, RAIZ_TMP, REPO, PROYECTO, cuotaJson, PUERTO_REAL, PUERTO_FALSO, archivoToken,
 } from './lib/config.mjs';
 
 const NODE = '/home/leantejado/.local/node22/bin/node';
@@ -115,6 +115,7 @@ export async function up(args = []) {
   const secreto = path.join(RAIZ_TMP, `jwt-${puerto}`);
   if (!fs.existsSync(secreto)) fs.writeFileSync(secreto, crypto.randomBytes(32).toString('hex'), { mode: 0o600 });
   const falso = puerto === PUERTO_FALSO;
+  fs.mkdirSync(path.dirname(cuotaJson(puerto)), { recursive: true, mode: 0o700 });
   // Sin las CLAUDE_CODE_* de la sesión que corre el arnés (salvo el token):
   // los procesos que levante la instancia se creerían hijos de esa sesión.
   const base = Object.fromEntries(Object.entries(process.env).filter(([k]) =>
@@ -129,7 +130,7 @@ export async function up(args = []) {
     LOCAL_SERVER_MARKER_PATH: path.join(RAIZ_TMP, `local-server-${puerto}.json`),
     LIMPIEZA_MODO: 'simular',
     LIMPIEZA_LOG_PATH: path.join(RAIZ_TMP, `limpieza-${puerto}.jsonl`),
-    RUTA_CUOTA_JSON: CUOTA_JSON,
+    RUTA_CUOTA_JSON: cuotaJson(puerto),
     CLAUDE_CLI_PATH: falso ? path.join(REPO, 'e2e/claude-falso.mjs') : CLAUDE_REAL,
     CLAUDE_CODE_AUTO_COMPACT_WINDOW: '278000',
     E2E_PROYECTO: PROYECTO,
