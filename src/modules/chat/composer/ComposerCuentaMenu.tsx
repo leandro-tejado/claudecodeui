@@ -32,6 +32,55 @@ type Props = {
 };
 
 /**
+ * El encabezado y las filas de cuentas, sin trigger ni superficie: lo usan este
+ * menú y el menú único del compositor (rediseño 09-oct).
+ */
+export function CuentaMenuItems({ cuenta, onElegida }: { cuenta: string; onElegida?: () => void }) {
+  const { cuentas } = useCuentas();
+  // Sin la lista del servidor todavía, igual se ofrece la cuenta por defecto.
+  const opciones: CuentaPublica[] = cuentas.length > 0
+    ? cuentas
+    : [{ id: CUENTA_POR_DEFECTO, plan: null, defecto: true, uso: null, disponible: true }];
+  return (
+    <>
+      <ComposerMenuHeading>
+        <span className="inline-flex items-center gap-1">
+          Cuenta
+          <InfoCuenta etiqueta="Cómo funciona la cuenta">
+            Optimum: trabajo del cliente. Personal: proyectos propios y servidor. Se fija al crear la sesión y no
+            cambia después. Nunca pasa sola a la otra.
+          </InfoCuenta>
+        </span>
+      </ComposerMenuHeading>
+      {opciones.map((opcion) => (
+        <ComposerMenuItem
+          key={opcion.id}
+          icon={iconoDeCuenta(opcion.id, 'h-4 w-4')}
+          label={nombreDeCuenta(opcion.id)}
+          description={
+            opcion.disponible ? (
+              <>
+                {opcion.plan ? `${opcion.plan}${opcion.defecto ? ' · por defecto' : ''}` : opcion.defecto ? 'por defecto' : null}
+                <CuotaCuenta cuenta={opcion.id} />
+              </>
+            ) : (
+              'Sin credencial en el VPS'
+            )
+          }
+          isSelected={opcion.id === cuenta}
+          className={opcion.disponible ? undefined : 'cursor-not-allowed opacity-50'}
+          onSelect={() => {
+            if (!opcion.disponible) return;
+            elegirCuentaNueva(opcion.id);
+            onElegida?.();
+          }}
+        />
+      ))}
+    </>
+  );
+}
+
+/**
  * La cuenta de IA del próximo turno, junto al modelo en el composer.
  *
  * Con sesión nueva abre un menú con las cuentas del registro y la cuota de cada
@@ -40,7 +89,6 @@ type Props = {
  * sesión la lee de ahí y el servidor la fija en la fila.
  */
 export default function ComposerCuentaMenu({ puedeElegir, cuenta }: Props) {
-  const { cuentas } = useCuentas();
   const [isOpen, setIsOpen] = useState(false);
   const close = useCallback(() => setIsOpen(false), []);
   const { triggerRef, menuRef, anchor, updateAnchor } = useComposerMenuAnchor(isOpen, close);
@@ -49,10 +97,6 @@ export default function ComposerCuentaMenu({ puedeElegir, cuenta }: Props) {
     return <AccountChip cuenta={cuenta} size="md" />;
   }
 
-  // Sin la lista del servidor todavía, igual se ofrece la cuenta por defecto.
-  const opciones: CuentaPublica[] = cuentas.length > 0
-    ? cuentas
-    : [{ id: CUENTA_POR_DEFECTO, plan: null, defecto: true, uso: null, disponible: true }];
   const ariaLabel = `Cuenta de IA: ${nombreDeCuenta(cuenta)}`;
 
   return (
@@ -76,41 +120,10 @@ export default function ComposerCuentaMenu({ puedeElegir, cuenta }: Props) {
 
       {isOpen && anchor && createPortal(
         <ComposerMenuSurface anchor={anchor} menuRef={menuRef} ariaLabel="Cuenta de IA">
-          <ComposerMenuHeading>
-            <span className="inline-flex items-center gap-1">
-              Cuenta
-              <InfoCuenta etiqueta="Cómo funciona la cuenta">
-                Optimum: trabajo del cliente. Personal: proyectos propios y servidor. Se fija al crear la sesión y no
-                cambia después. Nunca pasa sola a la otra.
-              </InfoCuenta>
-            </span>
-          </ComposerMenuHeading>
-          {opciones.map((opcion) => {
-            return (
-              <ComposerMenuItem
-                key={opcion.id}
-                icon={iconoDeCuenta(opcion.id, 'h-4 w-4')}
-                label={nombreDeCuenta(opcion.id)}
-                description={
-                  opcion.disponible ? (
-                    <>
-                      {opcion.plan ? `${opcion.plan}${opcion.defecto ? ' · por defecto' : ''}` : opcion.defecto ? 'por defecto' : null}
-                      <CuotaCuenta cuenta={opcion.id} />
-                    </>
-                  ) : (
-                    'Sin credencial en el VPS'
-                  )
-                }
-                isSelected={opcion.id === cuenta}
-                className={opcion.disponible ? undefined : 'cursor-not-allowed opacity-50'}
-                onSelect={() => {
-                  if (!opcion.disponible) return;
-                  elegirCuentaNueva(opcion.id);
-                  setIsOpen(false);
-                }}
-              />
-            );
-          })}
+          <CuentaMenuItems
+            cuenta={cuenta}
+            onElegida={() => setIsOpen(false)}
+          />
         </ComposerMenuSurface>,
         document.body,
       )}

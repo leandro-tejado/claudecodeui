@@ -27,7 +27,6 @@ import {
 } from '@/shared/context/SessionProtectionContext';
 import ChatMessagesPane from '@/modules/chat/transcript/ChatMessagesPane';
 import ChatComposer from '@/modules/chat/composer/ChatComposer';
-import ComposerCuentaMenu from '@/modules/chat/composer/ComposerCuentaMenu';
 import { cuentaDeSesion, sugerirCuentaParaProyecto, useCuentasState } from '@/modules/cuentas';
 import CommandResultModal from '@/modules/chat/modals/CommandResultModal';
 import PanelSalidas from '@/modules/chat/panel-salidas/PanelSalidas';
@@ -547,12 +546,9 @@ function ChatInterface({
           )}
 
           <ChatComposer
-          cuentaSlot={provider === 'claude' ? (
-            <ComposerCuentaMenu
-              puedeElegir={!viewedSessionId}
-              cuenta={viewedSessionId ? cuentaDeSesion(selectedSession) : cuentaNueva}
-            />
-          ) : undefined}
+          cuenta={provider === 'claude'
+            ? { puedeElegir: !viewedSessionId, cuenta: viewedSessionId ? cuentaDeSesion(selectedSession) : cuentaNueva }
+            : undefined}
           pendingPermissionRequests={pendingPermissionRequests}
           handlePermissionDecision={handlePermissionDecision}
           handleGrantToolPermission={handleGrantToolPermission}

@@ -78,6 +78,50 @@ type ComposerPermissionMenuProps = {
 };
 
 /**
+ * El encabezado y las filas de modos, sin trigger ni superficie: lo usan este
+ * menú y el menú único del compositor (rediseño 09-oct), que pliega modelo,
+ * esfuerzo, cuenta y permisos en un solo popover.
+ */
+export function PermissionMenuItems({
+  permissionMode,
+  permissionModes,
+  onSelectPermissionMode,
+  providerLabel,
+}: ComposerPermissionMenuProps) {
+  const { t } = useTranslation('chat');
+  const heading = t('composer.permissionHeading', {
+    provider: providerLabel,
+    defaultValue: 'How should {{provider}} actions be approved?',
+  });
+  return (
+    <>
+      <ComposerMenuHeading>{heading}</ComposerMenuHeading>
+      {permissionModes.map((mode) => {
+        const appearance = getAppearance(mode);
+        const ModeIcon = appearance.icon;
+        return (
+          <ComposerMenuItem
+            key={mode}
+            icon={<ModeIcon className="h-4 w-4" />}
+            label={t(`codex.modes.${mode}`, { defaultValue: mode })}
+            description={t(`codex.descriptions.${mode}`, { defaultValue: '' }) || undefined}
+            isSelected={mode === permissionMode}
+            onSelect={() => onSelectPermissionMode(mode)}
+            className={appearance.item}
+          />
+        );
+      })}
+    </>
+  );
+}
+
+/** El ícono del modo activo, para mostrarlo en el trigger del menú único. */
+export function PermissionModeIcon({ mode, className }: { mode: PermissionMode; className?: string }) {
+  const Icon = getAppearance(mode).icon;
+  return <Icon className={className} aria-hidden />;
+}
+
+/**
  * Rendered by chat's ChatComposer as the popover for choosing the permission
  * mode the active provider runs the next turn under.
  */
@@ -123,25 +167,15 @@ function ComposerPermissionMenu({
 
       {isOpen && anchor && createPortal(
         <ComposerMenuSurface anchor={anchor} menuRef={menuRef} ariaLabel={heading}>
-          <ComposerMenuHeading>{heading}</ComposerMenuHeading>
-          {permissionModes.map((mode) => {
-            const appearance = getAppearance(mode);
-            const ModeIcon = appearance.icon;
-            return (
-              <ComposerMenuItem
-                key={mode}
-                icon={<ModeIcon className="h-4 w-4" />}
-                label={t(`codex.modes.${mode}`, { defaultValue: mode })}
-                description={t(`codex.descriptions.${mode}`, { defaultValue: '' }) || undefined}
-                isSelected={mode === permissionMode}
-                onSelect={() => {
-                  onSelectPermissionMode(mode);
-                  setIsOpen(false);
-                }}
-                className={appearance.item}
-              />
-            );
-          })}
+          <PermissionMenuItems
+            permissionMode={permissionMode}
+            permissionModes={permissionModes}
+            onSelectPermissionMode={(mode) => {
+              onSelectPermissionMode(mode);
+              setIsOpen(false);
+            }}
+            providerLabel={providerLabel}
+          />
         </ComposerMenuSurface>,
         document.body,
       )}

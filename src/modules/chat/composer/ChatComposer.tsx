@@ -10,7 +10,7 @@ import type {
   RefObject,
   TouchEvent,
 } from 'react';
-import { PaperclipIcon, MessageSquareIcon, XIcon, Loader2, ArrowUpIcon, PencilIcon } from 'lucide-react';
+import { PaperclipIcon, Loader2, ArrowUpIcon, PencilIcon } from 'lucide-react';
 
 import { useVoiceInput } from '@/modules/chat/hooks/useVoiceInput';
 import { useVoiceAvailable } from '@/modules/chat/hooks/useVoiceAvailable';
@@ -37,7 +37,6 @@ import QueuedMessageCard from '@/modules/chat/composer/QueuedMessageCard';
 import { ScheduleMessagePopover } from '@/modules/chat/composer/ScheduleMessagePopover';
 import { ScheduledMessageList } from '@/modules/chat/composer/ScheduledMessageList';
 import ComposerModelMenu from '@/modules/chat/composer/ComposerModelMenu';
-import ComposerPermissionMenu from '@/modules/chat/composer/ComposerPermissionMenu';
 
 type MentionableFile = {
   name: string;
@@ -124,8 +123,8 @@ type ChatComposerProps = {
   placeholder: string;
   isTextareaExpanded: boolean;
   sendByCtrlEnter?: boolean;
-  /** Cuenta de IA del turno (selector en sesión nueva, etiqueta en una existente). Va junto al modelo. */
-  cuentaSlot?: ReactNode;
+  /** Cuenta de IA del turno: se elige dentro del menú único en sesión nueva y se muestra en su trigger. */
+  cuenta?: { puedeElegir: boolean; cuenta: string };
 };
 
 /**
@@ -134,7 +133,7 @@ type ChatComposerProps = {
  * model/permission popovers that drive the next turn.
  */
 export default function ChatComposer({
-  cuentaSlot,
+  cuenta,
   pendingPermissionRequests,
   tmuxPrompts = EMPTY_TMUX_PROMPTS,
   tmuxPromptErrors = EMPTY_TMUX_PROMPT_ERRORS,
@@ -157,10 +156,7 @@ export default function ChatComposer({
   modelsLoading,
   tokenBudget,
   onShowTokenUsage,
-  slashCommandsCount,
-  onToggleCommandMenu,
   hasInput,
-  onClearInput,
   onSubmit,
   isDragActive,
   queuedDraft,
@@ -469,41 +465,20 @@ export default function ChatComposer({
 
             <TokenUsageSummary usage={tokenBudget} onClick={onShowTokenUsage} />
 
-            <PromptInputButton
-              tooltip={{ content: t('input.showAllCommands') }}
-              onClick={onToggleCommandMenu}
-              className="relative"
-            >
-              <MessageSquareIcon />
-              {slashCommandsCount > 0 && (
-                <span
-                  className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground"
-                >
-                  {slashCommandsCount}
-                </span>
-              )}
-            </PromptInputButton>
-
-            {hasInput && (
-              <PromptInputButton
-                tooltip={{ content: t('input.clearInput', { defaultValue: 'Clear input' }) }}
-                onClick={onClearInput}
-                className="hidden sm:flex"
-              >
-                <XIcon />
-              </PromptInputButton>
-            )}
-
+            {/* Sin botón de comandos ni de borrar (rediseño 09-oct): `/` abre los
+                comandos y el compositor se queda con cuatro controles. */}
           </PromptInputTools>
 
           <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
-            <ScheduleMessagePopover
-              disabled={!input.trim()}
-              onSchedule={onScheduleMessage}
-            />
+            {/* Programar aparece recién con algo escrito: vacío no tiene qué programar. */}
+            {hasInput && (
+              <ScheduleMessagePopover
+                disabled={!input.trim()}
+                onSchedule={onScheduleMessage}
+              />
+            )}
 
-            {cuentaSlot}
-
+            {/* Un solo menú para el turno: cuenta, esfuerzo, modelo y permisos. */}
             <ComposerModelMenu
               effort={effort}
               effortOptions={availableEffortOptions}
@@ -512,13 +487,13 @@ export default function ChatComposer({
               modelOptions={availableModelOptions}
               onSelectModel={onSelectModel}
               modelsLoading={modelsLoading}
-            />
-
-            <ComposerPermissionMenu
-              permissionMode={permissionMode}
-              permissionModes={availablePermissionModes}
-              onSelectPermissionMode={onSelectPermissionMode}
-              providerLabel={providerLabel}
+              cuenta={cuenta}
+              permission={{
+                permissionMode,
+                permissionModes: availablePermissionModes,
+                onSelectPermissionMode,
+                providerLabel,
+              }}
             />
 
             <PromptInputSubmit

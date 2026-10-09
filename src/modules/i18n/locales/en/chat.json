@@ -112,7 +112,7 @@
     "loading": "Loading…"
   },
   "input": {
-    "placeholder": "Type / for commands, @ for files, or ask {{provider}} anything...",
+    "placeholder": "Type…",
     "placeholderDefault": "Type your message...",
     "disabled": "Input disabled",
     "attachFiles": "Attach files",
@@ -152,8 +152,6 @@
     }
   },
   "providerSelection": {
-    "title": "Choose Your AI Assistant",
-    "description": "Select a provider to start a new conversation",
     "selectModel": "Select Model",
     "providerInfo": {
       "anthropic": "by Anthropic",
@@ -161,14 +159,6 @@
       "cursorEditor": "AI Code Editor",
       "google": "by Google"
     },
-    "readyPrompt": {
-      "claude": "Ready to use Claude with {{model}}. Start typing your message below.",
-      "cursor": "Ready to use Cursor with {{model}}. Start typing your message below.",
-      "codex": "Ready to use Codex with {{model}}. Start typing your message below.",
-      "opencode": "Ready to use OpenCode with {{model}}. Start typing your message below.",
-      "default": "Select a provider above to begin"
-    },
-    "pressToSearch": "Press <kbd>{{shortcut}}</kbd> to search sessions, files, and commits",
     "chooseModel": "Choose a model",
     "chooseModelDescription": "Built-in and custom models in one list",
     "addModel": "Add model",
@@ -256,8 +246,7 @@
       "sendAnyway": "This session still has background work running:\n{{work}}\n\nA new message starts a new turn, which stops that work; anything it has not reported yet is lost. Send anyway?"
     },
     "controls": {
-      "stopGeneration": "Stop Generation",
-      "pressEscToStop": "Press Esc anytime to stop"
+      "stopGeneration": "Stop Generation"
     },
     "providers": {
       "assistant": "Assistant"

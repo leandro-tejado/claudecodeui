@@ -3,7 +3,10 @@ import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 
-import type { ProviderModelOption } from '@/shared/types';
+import type { PermissionMode, ProviderModelOption } from '@/shared/types';
+import { AccountChip } from '@/modules/cuentas';
+import { CuentaMenuItems } from '@/modules/chat/composer/ComposerCuentaMenu';
+import { PermissionMenuItems, PermissionModeIcon } from '@/modules/chat/composer/ComposerPermissionMenu';
 import { DEFAULT_EFFORT_VALUE } from '@/shared/constants';
 import { useComposerMenuAnchor } from '@/modules/chat/hooks/useComposerMenuAnchor';
 import {
@@ -25,6 +28,18 @@ type ComposerModelMenuProps = {
   modelOptions: ProviderModelOption[];
   onSelectModel: (model: string) => void;
   modelsLoading: boolean;
+  /**
+   * La cuenta del turno: con sesión nueva se elige acá adentro, con una ya
+   * creada solo se muestra la letra en el trigger. Sin esto, no hay cuenta.
+   */
+  cuenta?: { puedeElegir: boolean; cuenta: string };
+  /** Los permisos, plegados en el mismo menú (rediseño 09-oct). */
+  permission?: {
+    permissionMode: PermissionMode;
+    permissionModes: PermissionMode[];
+    onSelectPermissionMode: (mode: PermissionMode) => void;
+    providerLabel: string;
+  };
 };
 
 /**
@@ -39,6 +54,8 @@ function ComposerModelMenu({
   modelOptions,
   onSelectModel,
   modelsLoading,
+  cuenta,
+  permission,
 }: ComposerModelMenuProps) {
   const { t } = useTranslation('chat');
   const [isOpen, setIsOpen] = useState(false);
@@ -69,7 +86,9 @@ function ComposerModelMenu({
 
   const hasEffortSection = resolvedEffortOptions.length > 0;
   const hasModelSection = modelOptions.length > 0 || modelsLoading;
-  if (!hasEffortSection && !hasModelSection) {
+  const hasPermissionSection = Boolean(permission && permission.permissionModes.length > 0);
+  const hasCuentaSection = Boolean(cuenta?.puedeElegir);
+  if (!hasEffortSection && !hasModelSection && !hasPermissionSection && !cuenta) {
     return null;
   }
 
@@ -87,12 +106,16 @@ function ComposerModelMenu({
           updateAnchor();
           setIsOpen((current) => !current);
         }}
-        className="flex h-8 max-w-20 shrink-0 items-center gap-1 rounded-lg border border-border/60 bg-muted/40 px-2 text-xs font-medium text-foreground transition-colors hover:bg-muted sm:max-w-56"
+        className="flex h-8 max-w-32 shrink-0 items-center gap-1 rounded-full px-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:max-w-56"
         aria-haspopup="menu"
         aria-expanded={isOpen}
         aria-label={`${triggerLabel}${hasModelSection && hasEffortSection ? ` · ${effortLabel}` : ''} · ${ariaLabel}`}
         title={ariaLabel}
       >
+        {cuenta && <AccountChip cuenta={cuenta.cuenta} size="md" className="bg-transparent px-0" />}
+        {permission && permission.permissionMode !== 'default' && (
+          <PermissionModeIcon mode={permission.permissionMode} className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+        )}
         <span className="truncate">{triggerLabel}</span>
         {/* El nivel se muestra siempre, incluido el default. Ocultarlo cuando
             valia `default` hacia que el control mas caro de la app fuera
@@ -105,6 +128,12 @@ function ComposerModelMenu({
 
       {isOpen && anchor && createPortal(
         <ComposerMenuSurface anchor={anchor} menuRef={menuRef} ariaLabel={ariaLabel}>
+          {hasCuentaSection && cuenta && (
+            <>
+              <CuentaMenuItems cuenta={cuenta.cuenta} onElegida={() => setIsOpen(false)} />
+              {(hasEffortSection || hasModelSection) && <ComposerMenuSeparator />}
+            </>
+          )}
           {hasEffortSection && (
             <>
               <ComposerMenuHeading>
@@ -165,6 +194,21 @@ function ComposerModelMenu({
                   ))}
                 </>
               )}
+            </>
+          )}
+
+          {hasPermissionSection && permission && (
+            <>
+              <ComposerMenuSeparator />
+              <PermissionMenuItems
+                permissionMode={permission.permissionMode}
+                permissionModes={permission.permissionModes}
+                onSelectPermissionMode={(mode) => {
+                  permission.onSelectPermissionMode(mode);
+                  setIsOpen(false);
+                }}
+                providerLabel={permission.providerLabel}
+              />
             </>
           )}
         </ComposerMenuSurface>,

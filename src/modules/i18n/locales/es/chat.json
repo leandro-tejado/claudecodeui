@@ -105,7 +105,7 @@
     "loading": "Cargando…"
   },
   "input": {
-    "placeholder": "Escribe / para comandos, @ para archivos, o pregúntale lo que quieras a {{provider}}...",
+    "placeholder": "Escribe…",
     "placeholderDefault": "Escribe tu mensaje...",
     "disabled": "Entrada deshabilitada",
     "attachFiles": "Adjuntar archivos",
@@ -145,23 +145,13 @@
     }
   },
   "providerSelection": {
-    "title": "Elige tu asistente de IA",
-    "description": "Selecciona un proveedor para iniciar una conversación nueva",
     "selectModel": "Seleccionar modelo",
     "providerInfo": {
       "anthropic": "de Anthropic",
       "openai": "de OpenAI",
       "cursorEditor": "Editor de código con IA",
       "google": "de Google"
-    },
-    "readyPrompt": {
-      "claude": "Listo para usar Claude con {{model}}. Escribe tu mensaje abajo.",
-      "cursor": "Listo para usar Cursor con {{model}}. Escribe tu mensaje abajo.",
-      "codex": "Listo para usar Codex con {{model}}. Escribe tu mensaje abajo.",
-      "opencode": "Listo para usar OpenCode con {{model}}. Escribe tu mensaje abajo.",
-      "default": "Selecciona un proveedor arriba para empezar"
-    },
-    "pressToSearch": "Pulsa <kbd>{{shortcut}}</kbd> para buscar sesiones, archivos y commits"
+    }
   },
   "session": {
     "continue": {
@@ -233,8 +223,7 @@
     },
     "stop": "Detener",
     "controls": {
-      "stopGeneration": "Detener generación",
-      "pressEscToStop": "Pulsa Esc en cualquier momento para detener"
+      "stopGeneration": "Detener generación"
     },
     "providers": {
       "assistant": "Asistente"
