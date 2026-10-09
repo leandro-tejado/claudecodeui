@@ -84,7 +84,7 @@ describe('barra abierta', () => {
     fireEvent.click(screen.getByTestId('barra-ajustes'));
     const menu = screen.getByRole('menu', { name: 'Ajustes' });
     const rotulos = within(menu).getAllByRole('menuitem').map((item) => item.textContent?.trim());
-    expect(rotulos).toEqual(['Archivados', 'Tareas', 'Plugins', 'Tema oscuro', 'Ajustes']);
+    expect(rotulos).toEqual(['Archivados', 'Tareas', 'Plugins', 'Servicios', 'Tema oscuro', 'Ajustes']);
 
     fireEvent.click(within(menu).getByText('Tareas'));
     expect(onShowTab).toHaveBeenCalledWith('tasks');

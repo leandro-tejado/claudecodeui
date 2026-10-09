@@ -84,6 +84,16 @@ describe('filas hijas de subagentes vivos', () => {
     expect(screen.getByRole('group', { name: /Subagentes en curso/ }).children).toHaveLength(2);
   });
 
+  it('a lo sumo siete hijas a la vista; el resto se cuenta (boceto 09-oct)', () => {
+    for (let i = 0; i < 10; i++) {
+      upsertSubagent({ toolUseId: `toolu_${i}`, sessionId: 'ses-1', type: `agente-${i}`, description: 'x' });
+    }
+    renderSidebar({ sessions: [session('ses-1', 'Sesión principal')] });
+
+    expect(screen.getAllByTestId('agente-hijo')).toHaveLength(7);
+    expect(screen.getByTestId('agentes-hijos-resto').textContent).toBe('+3 más');
+  });
+
   it('la sangría las deja visiblemente por dentro de la sesión', () => {
     upsertSubagent({ toolUseId: 'toolu_a', sessionId: 'ses-1', type: 'dev', description: 'x' });
     renderSidebar({ sessions: [session('ses-1', 'Sesión principal')] });

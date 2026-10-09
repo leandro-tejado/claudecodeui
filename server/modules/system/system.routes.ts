@@ -5,6 +5,7 @@ import { validarCuenta } from '@/modules/cuentas/index.js';
 import type { createSystemUpdateService } from './system.service.js';
 import type { gobernadorService } from './services/gobernador.service.js';
 import type { recursosService } from './services/recursos.service.js';
+import { serviciosService } from './services/servicios.service.js';
 
 /** Creates thin system routes that delegate update execution to the service. */
 export function createSystemRouter(
@@ -36,6 +37,16 @@ export function createSystemRouter(
   router.get('/recursos', (_request, response, next) => {
     try {
       response.json(recursos.medir());
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  // Solo lectura: puertos que escuchan y cómo se entra a cada uno. Va detrás
+  // de `authenticateToken` como el resto de `/api/system`.
+  router.get('/servicios', (_request, response, next) => {
+    try {
+      response.json(serviciosService.listar());
     } catch (error) {
       next(error);
     }

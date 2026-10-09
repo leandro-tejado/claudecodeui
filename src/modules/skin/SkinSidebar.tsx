@@ -19,6 +19,7 @@ import {
   Plus,
   Puzzle,
   Search,
+  Server,
   Settings,
   Sun,
   Terminal,
@@ -42,6 +43,7 @@ import {
   createProjectRequest,
   getSuggestionRootPath,
 } from '@/modules/project-creation-wizard';
+import { ServiciosDialog } from '@/modules/servicios';
 import { api } from '@/shared/api';
 import { cn } from '@/shared/utils';
 import { COLOR_ESTADO_SESION, DESCRIPCION_ESTADO_SESION, ROTULO_ESTADO_SESION, estadoDeSesion } from '@/modules/sidebar';
@@ -78,6 +80,8 @@ const WIDTH_STORAGE_KEY = 'skin:sidebar-width';
 
 /** El riel de íconos de la barra plegada y los tiempos del asomo por cursor (boceto 09-oct). */
 const RIEL_ANCHO = 52;
+/** Hijas a la vista bajo su sesión madre; las demás se cuentan (boceto 09-oct, escena 7). */
+const MAX_HIJAS_VISIBLES = 7;
 const ENTRADA_MS = 150;
 const SALIDA_MS = 250;
 
@@ -217,6 +221,25 @@ const sessionTitle = (session: ProjectSession): string =>
  * que `isActive` en `sidebarProjectFormatting.ts`, calculado acá porque esta
  * sidebar no pasa por ese módulo.
  */
+/** Dos letras para el monograma del proyecto: iniciales de las dos primeras palabras, o las dos primeras letras. */
+export const monograma = (nombre: string): string => {
+  const palabras = nombre.split(/[\s\-_/.]+/).filter(Boolean);
+  if (palabras.length >= 2) return (palabras[0][0] + palabras[1][0]).toUpperCase();
+  return (palabras[0] ?? '?').slice(0, 2).toUpperCase();
+};
+
+const URGENCIA: Record<EstadoSesion, number> = { esperando: 3, pensando: 2, libre: 1, dormida: 0 };
+
+/** El estado más urgente de un grupo; `null` si no hay ninguno que pida atención (todas dormidas o vacío). */
+export const peorEstadoDe = (estados: EstadoSesion[]): EstadoSesion | null => {
+  let peor: EstadoSesion | null = null;
+  for (const estado of estados) {
+    if (estado === 'dormida') continue;
+    if (peor === null || URGENCIA[estado] > URGENCIA[peor]) peor = estado;
+  }
+  return peor;
+};
+
 const estaTocadaRecientemente = (session: ProjectSession, ahora: number): boolean => {
   const raw = session.lastActivity ?? session.updated_at ?? session.createdAt ?? session.created_at;
   if (!raw) return false;
@@ -827,6 +850,7 @@ export function SkinSidebar({
 
   /* El menú de Ajustes: lo que antes eran botones sueltos de la cabecera. */
   const [menuAjustes, setMenuAjustes] = useState<{ x: number; y: number } | null>(null);
+  const [serviciosAbierto, setServiciosAbierto] = useState(false);
   const abrirMenuAjustes = useCallback((event: ReactMouseEvent<HTMLButtonElement>) => {
     const rect = event.currentTarget.getBoundingClientRect();
     setMenuAjustes({ x: rect.left, y: rect.top - 4 });
@@ -847,10 +871,24 @@ export function SkinSidebar({
     ];
     if (onShowTab) items.push({ label: 'Tareas', icon: ClipboardCheck, onSelect: () => onShowTab('tasks') });
     if (onOpenSettingsTab) items.push({ label: 'Plugins', icon: Puzzle, onSelect: () => onOpenSettingsTab('plugins') });
+    items.push({ label: 'Servicios', icon: Server, onSelect: () => setServiciosAbierto(true) });
     if (onToggleTheme) items.push({ label: isDarkMode ? 'Tema claro' : 'Tema oscuro', icon: isDarkMode ? Sun : Moon, onSelect: onToggleTheme });
     if (onShowSettings) items.push({ label: 'Ajustes', icon: Settings, onSelect: onShowSettings });
     return items;
   }, [viewMode, loadArchived, onShowTab, onOpenSettingsTab, isDarkMode, onToggleTheme, onShowSettings]);
+
+  /* El estado de una fila, con las mismas señales que dibuja la fila. Lo usa
+     también el proyecto plegado para mostrar el más urgente de los suyos. */
+  const estadoDeFila = (session: ProjectSession): EstadoSesion => {
+    const tmux = getTmux(session);
+    return estadoDeSesion({
+      isProcessing: busySessions.has(session.id),
+      tieneTrabajoDeFondo: (liveBySession.get(session.id)?.length ?? 0) > 0,
+      necesitaAtencion: waitingPrompt.get(session.id) !== undefined || attention.has(session.id),
+      tocadaRecientemente: estaTocadaRecientemente(session, ahora),
+      procesoVivo: tmux ? tmux.vivo : null,
+    });
+  };
 
   const plegada = !isMobile && sidebarCollapsed;
   const enRiel = plegada && !asomada;
@@ -1141,6 +1179,9 @@ export function SkinSidebar({
           // línea los separa del resto en vez de un ícono en cada fila.
           const endsPinnedGroup =
             !isPinned && index > 0 && isStarred(visibleProjects[index - 1].project);
+          // Plegado, el proyecto muestra el estado más urgente de sus sesiones
+          // (boceto 09-oct, escena 7); dormidas no cuentan como señal.
+          const peorEstado = isOpen ? null : peorEstadoDe(sessions.map(estadoDeFila));
 
           return (
             <div key={project.projectId} className="mb-0.5">
@@ -1199,6 +1240,14 @@ export function SkinSidebar({
                   setContextMenu({ kind: 'project', project, x: event.clientX, y: event.clientY });
                 }}
               >
+                <span
+                  aria-hidden="true"
+                  data-testid="proyecto-monograma"
+                  className="grid h-5 w-5 flex-none place-items-center rounded-md bg-ds-surface-3 font-semibold text-ds-ink"
+                  style={{ fontSize: 'var(--skin-text-xs)' }}
+                >
+                  {monograma(projectName(project))}
+                </span>
                 <div className="min-w-0 flex-1">
                   <div className="truncate font-medium tracking-tight">{projectName(project)}</div>
                   {isOpen && (
@@ -1208,8 +1257,20 @@ export function SkinSidebar({
                   )}
                 </div>
 
+                {peorEstado && (
+                  <span
+                    data-testid="proyecto-peor-estado"
+                    data-estado={peorEstado}
+                    title={DESCRIPCION_ESTADO_SESION[peorEstado]}
+                    className={cn('h-2 w-2 flex-none rounded-full bg-current', COLOR_ESTADO_SESION[peorEstado])}
+                  />
+                )}
                 {!isOpen && total > 0 && (
-                  <span className="flex-none text-muted-foreground" style={{ fontSize: 'var(--skin-text-xs)' }}>
+                  <span
+                    data-testid="proyecto-contador"
+                    className="flex-none tabular-nums text-muted-foreground"
+                    style={{ fontSize: 'var(--skin-text-xs)' }}
+                  >
                     {total}
                   </span>
                 )}
@@ -1567,9 +1628,10 @@ export function SkinSidebar({
                           aria-label={`Subagentes en curso de ${title}`}
                           className="ml-[19px] border-l border-border pl-2"
                         >
-                          {liveRows.map((row) => (
+                          {liveRows.slice(0, MAX_HIJAS_VISIBLES).map((row) => (
                             <div
                               key={row.toolUseId}
+                              data-testid="agente-hijo"
                               title={row.description || row.type}
                               className="flex w-full items-center gap-2 rounded-md px-2 py-1 text-muted-foreground"
                               style={{ fontSize: 'var(--skin-text-xs)' }}
@@ -1583,6 +1645,15 @@ export function SkinSidebar({
                               />
                             </div>
                           ))}
+                          {liveRows.length > MAX_HIJAS_VISIBLES && (
+                            <div
+                              data-testid="agentes-hijos-resto"
+                              className="px-2 py-1 text-muted-foreground"
+                              style={{ fontSize: 'var(--skin-text-xs)' }}
+                            >
+                              +{liveRows.length - MAX_HIJAS_VISIBLES} más
+                            </div>
+                          )}
                         </div>
                       )}
                       </TreeItem>
@@ -1633,6 +1704,8 @@ export function SkinSidebar({
       </div>
       </div>
       )}
+
+      <ServiciosDialog open={serviciosAbierto} onOpenChange={setServiciosAbierto} />
 
       {menuAjustes && (
         <SkinContextMenu
