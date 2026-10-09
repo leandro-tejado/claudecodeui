@@ -179,11 +179,11 @@ Leandro ve la vista principal «fea» y recargada (9-oct, con capturas de `:8446
 6. Escribir el informe con los tres veredictos y, si algo falla, el archivo y la línea probables.
 
 #### Estado (arranca todo en fail)
-- [fail] Instancia `:3901` arriba y con el mismo build | valida: `curl -s localhost:3901/health`
-- [fail] Informe de «Nueva sesión» con ≥ 10 intentos | valida: `grep -c "intento" e2e/evidencia/09-vista-principal/01-diagnostico.md` ≥ 10
-- [fail] Tiempo de aparición de la barra medido en ≥ 10 casos | valida: `node e2e/correr.mjs barra/sin-refresh`
-- [fail] Streaming de tmux medido con n de muestras y veredicto | valida: `node e2e/correr.mjs tmux/en-vivo`
-- [fail] Veredicto final redactado | valida: `test -s e2e/evidencia/09-vista-principal/01-diagnostico.md`
+- [pass] Instancia `:3901` arriba y con el mismo build | valida: `curl -s localhost:3901/health`
+- [pass] Informe de «Nueva sesión» con ≥ 10 intentos | valida: `grep -c "intento" e2e/evidencia/09-vista-principal/01-diagnostico.md` ≥ 10
+- [pass] Tiempo de aparición de la barra medido en ≥ 10 casos | valida: `node e2e/correr.mjs barra/sin-refresh`
+- [pass] Streaming de tmux medido con n de muestras y veredicto (solo :3901; :3001 pendiente) | valida: `node e2e/correr.mjs tmux/en-vivo`
+- [pass] Veredicto final redactado | valida: `test -s e2e/evidencia/09-vista-principal/01-diagnostico.md`
 
 #### Peligros
 - Tocar sesiones de Leandro: solo se usan las `e2e-*` y se verifica en el teardown que no queda ninguna.
