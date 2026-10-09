@@ -1,11 +1,11 @@
 # Evidencia E2E — final-3001
 
-Actualizado: 2026-10-09T13:39:35.110Z · Gobernador: verde
+Actualizado: 2026-10-09T14:53:28.576Z · Gobernador: verde
 
 | Resultado | Cantidad |
 |---|---|
-| ✅ pasa | 71 |
-| ❌ falla | 4 |
+| ✅ pasa | 75 |
+| ❌ falla | 0 |
 | ⏸ bloqueado | 26 |
 
 | Escenario | Check | Resultado | Evidencia | Datos |
@@ -88,8 +88,6 @@ Actualizado: 2026-10-09T13:39:35.110Z · Gobernador: verde
 | `visual/chat` | (todo el escenario) | ⏸ bloqueado | — | usa el CLI falso de :3902; :3001 corre el Claude real |
 | `visual/cuestionario` | (todo el escenario) | ⏸ bloqueado | — | usa el CLI falso de :3902; :3001 corre el Claude real |
 | `visual/header-barra` | (todo el escenario) | ⏸ bloqueado | — | usa el CLI falso de :3902; :3001 corre el Claude real |
-| `barra/estado-vivo` | con el tmux vivo, la fila NO dice "dormida" | ❌ falla | [tmux-vivo.png](barra-estado-vivo/tmux-vivo.png) | {"rotuloConVida":null} |
-| `barra/estado-vivo` | al matar el pane, la fila pasa a "dormida" sin recargar en ≤ 25000 ms | ❌ falla | [antes-dormir.png](barra-estado-vivo/antes-dormir.png) [despues-dormir.png](barra-estado-vivo/despues-dormir.png) | {"msHastaDormida":null,"topeMs":25000,"dormidaOk":true,"nombre":"e2e-estado-ejecutora-1","sid":"e5108569-f4ce-4610-95db-5e7c0e9b6a1e"} |
 | `barra/orquestador` | orquestar.py crear aparece en la barra abierta en ≤ 3 s, 5 de 5 | ✅ pasa | [cinco-creaciones.png](barra-orquestador/cinco-creaciones.png) | {"exitos":5,"intentos":[{"intento":0,"nombre":"e2e-orq-0-ejecutora-1","sid":"26573ec4-ea9b-46f8-8bd7-267a2f52ff10","tFilaMs":1436,"tBajaMs":315},{"intento":1,"nombre":"e2e-orq-1-ejecutora-1","sid":"10a28001-c437-44f6-95b |
 | `barra/orquestador` | orquestar.py dormir cambia el estado en vivo (la fila sale de la barra sin recargar) | ✅ pasa | [antes-dormir.png](barra-orquestador/antes-dormir.png) [despues-dormir.png](barra-orquestador/despues-dormir.png) | {"antesDormir":21,"tBajaMs":324,"nombre":"e2e-orq-4-ejecutora-1","sid":"0ff49c39-a61e-4208-9ab9-b935cd7c6ccb","dormidaOk":true} |
 | `cuota/header` | 5 h coincide con ~/.cache/aos/cuota.json | ✅ pasa | [real.png](cuota-header/real.png) | {"archivo":3,"etiqueta":"Cuenta Optimum · Ventana de 5 horas: 3% real, se renueva a las 07:00 PM · Semanal: 82% real, se renueva a las 06:00 PM"} |
@@ -104,13 +102,15 @@ Actualizado: 2026-10-09T13:39:35.110Z · Gobernador: verde
 | `tmux/adjunto` | no aparece el error de "no apareció" en el DOM (dos imágenes) | ✅ pasa | [dom-2.png](tmux-adjunto/dom-2.png) | {"filasError":0} |
 | `tmux/adjunto` | el JSONL tiene la fila user con el nonce y un bloque de imagen (dos imágenes) | ✅ pasa | [frames-0.json](tmux-adjunto/frames-0.json) | {"filaUser":true,"tieneBloqueImagen":true} |
 | `tmux/adjunto` | Claude contesta (dos imágenes) | ✅ pasa | [respuesta-2.png](tmux-adjunto/respuesta-2.png) | {"finMs":2496} |
-| `tmux/recarga` | el ack de suscripción dice que está procesando | ❌ falla | [frames-0.json](tmux-recarga/frames-0.json) | {"isProcessing":false,"runsInTmux":true} |
-| `tmux/recarga` | tras recargar, el indicador sigue | ❌ falla | [tras-recargar.png](tmux-recarga/tras-recargar.png) |  |
 | `visual/salidas` | arrastrar el borde izquierdo agranda el panel de Salidas | ✅ pasa | [antes-de-arrastrar.png](visual-salidas/antes-de-arrastrar.png) [panel-agrandado.png](visual-salidas/panel-agrandado.png) | {"panelAntes":320,"panelDespues":620} |
 | `visual/salidas` | arrastrar la manija entre lista y vista previa agranda la lista | ✅ pasa | [lista-agrandada.png](visual-salidas/lista-agrandada.png) | {"listaAntes":144,"listaDespues":264} |
 | `visual/salidas` | los dos anchos sobreviven a recargar la página | ✅ pasa | [despues-de-recargar.png](visual-salidas/despues-de-recargar.png) | {"panelDespues":620,"panelRecarga":620,"listaDespues":264,"listaRecarga":264} |
 | `visual/salidas` | "Pestaña nueva" abre la salida HTML renderizada en otra pestaña | ✅ pasa | [pestana-nueva.png](visual-salidas/pestana-nueva.png) | {"url":"blob:http://127.0.0.1:3001/2d972530-49eb","titulo":"Salida de prueba tvpe4w"} |
 | `visual/salidas` | el HTML abierto en la pestaña nueva no puede leer el localStorage de la app | ✅ pasa | [pestana-nueva.png](visual-salidas/pestana-nueva.png) | {"origen":"BLOQUEADO","sandbox":"allow-scripts allow-popups"} |
+| `barra/estado-vivo` | con el tmux vivo, la fila NO dice "dormida" | ✅ pasa | [tmux-vivo.png](barra-estado-vivo/tmux-vivo.png) | {"rotuloConVida":"libre"} |
+| `barra/estado-vivo` | al matar el pane, la fila pasa a "dormida" sin recargar en ≤ 25000 ms | ✅ pasa | [antes-dormir.png](barra-estado-vivo/antes-dormir.png) [despues-dormir.png](barra-estado-vivo/despues-dormir.png) | {"msHastaDormida":326,"topeMs":25000,"dormidaOk":true,"nombre":"e2e-estado-ejecutora-1","sid":"2e9cda6e-af65-419f-a6df-5bd755baebc0"} |
+| `tmux/recarga` | el ack de suscripción dice que está procesando | ✅ pasa | [frames-0.json](tmux-recarga/frames-0.json) | {"isProcessing":true,"runsInTmux":true,"msHastaAck":null,"turnoCerradoAntesDeRecargar":false} |
+| `tmux/recarga` | tras recargar, el indicador sigue | ✅ pasa | [tras-recargar.png](tmux-recarga/tras-recargar.png) |  |
 
 ---
 

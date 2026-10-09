@@ -842,35 +842,6 @@
     "ms": 0
   },
   {
-    "escenario": "barra/estado-vivo",
-    "nombre": "con el tmux vivo, la fila NO dice \"dormida\"",
-    "resultado": "falla",
-    "evidencia": [
-      "barra-estado-vivo/tmux-vivo.png"
-    ],
-    "datos": {
-      "rotuloConVida": null
-    },
-    "ms": 49254
-  },
-  {
-    "escenario": "barra/estado-vivo",
-    "nombre": "al matar el pane, la fila pasa a \"dormida\" sin recargar en ≤ 25000 ms",
-    "resultado": "falla",
-    "evidencia": [
-      "barra-estado-vivo/antes-dormir.png",
-      "barra-estado-vivo/despues-dormir.png"
-    ],
-    "datos": {
-      "msHastaDormida": null,
-      "topeMs": 25000,
-      "dormidaOk": true,
-      "nombre": "e2e-estado-ejecutora-1",
-      "sid": "e5108569-f4ce-4610-95db-5e7c0e9b6a1e"
-    },
-    "ms": 49254
-  },
-  {
     "escenario": "barra/orquestador",
     "nombre": "orquestar.py crear aparece en la barra abierta en ≤ 3 s, 5 de 5",
     "resultado": "pasa",
@@ -1084,28 +1055,6 @@
     "ms": 61685
   },
   {
-    "escenario": "tmux/recarga",
-    "nombre": "el ack de suscripción dice que está procesando",
-    "resultado": "falla",
-    "evidencia": [
-      "tmux-recarga/frames-0.json"
-    ],
-    "datos": {
-      "isProcessing": false,
-      "runsInTmux": true
-    },
-    "ms": 190249
-  },
-  {
-    "escenario": "tmux/recarga",
-    "nombre": "tras recargar, el indicador sigue",
-    "resultado": "falla",
-    "evidencia": [
-      "tmux-recarga/tras-recargar.png"
-    ],
-    "ms": 190249
-  },
-  {
     "escenario": "visual/salidas",
     "nombre": "arrastrar el borde izquierdo agranda el panel de Salidas",
     "resultado": "pasa",
@@ -1172,5 +1121,58 @@
       "sandbox": "allow-scripts allow-popups"
     },
     "ms": 7626
+  },
+  {
+    "escenario": "barra/estado-vivo",
+    "nombre": "con el tmux vivo, la fila NO dice \"dormida\"",
+    "resultado": "pasa",
+    "evidencia": [
+      "barra-estado-vivo/tmux-vivo.png"
+    ],
+    "datos": {
+      "rotuloConVida": "libre"
+    },
+    "ms": 15349
+  },
+  {
+    "escenario": "barra/estado-vivo",
+    "nombre": "al matar el pane, la fila pasa a \"dormida\" sin recargar en ≤ 25000 ms",
+    "resultado": "pasa",
+    "evidencia": [
+      "barra-estado-vivo/antes-dormir.png",
+      "barra-estado-vivo/despues-dormir.png"
+    ],
+    "datos": {
+      "msHastaDormida": 326,
+      "topeMs": 25000,
+      "dormidaOk": true,
+      "nombre": "e2e-estado-ejecutora-1",
+      "sid": "2e9cda6e-af65-419f-a6df-5bd755baebc0"
+    },
+    "ms": 15349
+  },
+  {
+    "escenario": "tmux/recarga",
+    "nombre": "el ack de suscripción dice que está procesando",
+    "resultado": "pasa",
+    "evidencia": [
+      "tmux-recarga/frames-0.json"
+    ],
+    "datos": {
+      "isProcessing": true,
+      "runsInTmux": true,
+      "msHastaAck": null,
+      "turnoCerradoAntesDeRecargar": false
+    },
+    "ms": 33900
+  },
+  {
+    "escenario": "tmux/recarga",
+    "nombre": "tras recargar, el indicador sigue",
+    "resultado": "pasa",
+    "evidencia": [
+      "tmux-recarga/tras-recargar.png"
+    ],
+    "ms": 33900
   }
 ]

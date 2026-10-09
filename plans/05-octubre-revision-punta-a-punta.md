@@ -512,10 +512,10 @@ Las sesiones nuevas del orquestador llegan por polling de 3 s sobre `~/.cache/ao
 
 #### Estado (arranca todo en fail)
 - [pass] Suite completa verde en `:3901`/`:3902` | valida: `node e2e/correr.mjs todo` — 08-oct: 214 bien, 0 mal y 2 bloqueados (`headless/pensamiento`, sin token), `e2e/evidencia/final-3901/informe.md` (`11f057cd`)
-- [pass] Unitarios verdes | valida: `NODE_ENV=test npx vitest run && NODE_ENV=test npm test` — 08-oct: cliente 811/811; server 934 bien, 0 mal y 1 omitido
-- [fail] Suite completa verde en `:3001` | valida: `CLOUDCLI_URL=http://127.0.0.1:3001 node e2e/correr.mjs todo` (:3001 escucha solo en local) — 09-oct: 60 bien, 8 mal y 26 bloqueados (CLI falso). 4 eran del arnés (ya arreglado, falta volver a correrlos) y 3 escenarios siguen abiertos: `barra/estado-vivo`, `tmux/adjunto` con dos imágenes y `tmux/recarga`. Ver `e2e/evidencia/final-3001/lectura.md`
+- [pass] Unitarios verdes | valida: `NODE_ENV=test npx vitest run && NODE_ENV=test npm test` — 09-oct: cliente 813/813 (con `tmuxActivityPoll`); 08-oct: server 934 bien, 0 mal y 1 omitido
+- [pass] Suite completa verde en `:3001` | valida: `CLOUDCLI_URL=http://127.0.0.1:3001 node e2e/correr.mjs todo` (:3001 escucha solo en local) — 09-oct: 75 bien, 0 mal y 26 bloqueados (los del CLI falso, verdes en `:3902`), tras tres repeticiones. Las fallas eran del arnés salvo una de producto, el indicador de tmux que el sondeo sacaba a los 10 s (`fd54e6b8`). Ver `e2e/evidencia/final-3001/lectura.md`
 - [pass] Ningún token ni contraseña en disco después de la corrida en `:3001` — 09-oct: 0 JWT en `final-3001/`, ningún archivo de token del 3001 en `/tmp/cloudcli-e2e`; el arnés lee el login del entorno y lo borra al importar (`c215ade5`). Revalidado al terminar la corrida: | valida: `grep -rn "$CLOUDCLI_USER" /tmp/cloudcli-e2e e2e/ || true` vacío, y sin archivos de token del 3001
-- [fail] Cero `e2e-*` vivas y el proyecto de prueba archivado — 09-oct: 0 vivas en los dos sockets; el archivado en `:3001` no quedó verificado (el cierre solo lo imprime en la terminal de Leandro) | valida: `tmux ls | grep -c '^e2e-'` = 0
+- [fail] Cero `e2e-*` vivas y el proyecto de prueba archivado — 09-oct: 0 vivas en los dos sockets; el archivado en `:3001` NO quedaba: el server lo desarchivaba porque el `claude` del pane escribía al morir. Cierre arreglado (`1e85c167`, verificado en `:3901`); falta `--solo-cierre` en `:3001` | valida: `tmux ls | grep -c '^e2e-'` = 0
 - [fail] Leandro confirma los 8 puntos en el celular | valida: AskUserQuestion
 - [fail] Push hecho | valida: `git fetch && git status -sb` sin `ahead` — lo de `:3901` está pusheado; falta lo de `:3001`
 
@@ -631,12 +631,11 @@ Fase 1 (arnés) → Fase 2 (línea base)
 
 ## Continuación de Sesión
 
-**Fases completadas:** 1 a 11. De la Fase 12: pasos 1 a 3. El paso 4 está a medias.
-**Fase actual:** 12, paso 4 (`:3001`).
+**Fases completadas:** 1 a 11. De la Fase 12: pasos 1 a 4 (suite de `:3001` en verde el 09-oct, 75/0/26).
+**Fase actual:** 12, cierre.
 **Próximo paso exacto (sesión nueva):**
-1. ~~Repetir en `:3001` los 7 en rojo~~ hecho el 09-oct a las 15:39: 71 bien, 4 mal. Pasan los cuatro del arnés y `tmux/adjunto`, que había sido intermitente.
-2. Diagnosticar contra `:3001` los dos que fallan en las dos corridas: `barra/estado-vivo` y `tmux/recarga` (detalle en `e2e/evidencia/final-3001/lectura.md`). En `:3901` pasan. Lo que distingue a `:3001`: el registro de sesiones real, el socket por defecto, los hooks de Leandro y su base de datos.
-3. Checklist de los 8 puntos en el celular, por AskUserQuestion.
-4. Commit, push y plan en `completado`.
+1. Leandro corre en ttyd el cierre solo: `CLOUDCLI_URL=http://127.0.0.1:3001 node e2e/correr.mjs --solo-cierre` (con el login como en las pasadas). Tiene que imprimir `proyecto archivado`; confirmarlo con `isArchived = 1` en `~/.cloudcli/auth.db` (solo lectura).
+2. Checklist de los 8 puntos en el celular, por AskUserQuestion.
+3. Commit, push y plan en `completado`; `wt rm` de los worktrees mergeados.
 
-**Bloqueantes:** cada pasada en `:3001` necesita el login de Leandro. La cuota semanal de optimum está en 82 %, con tope de 85 %.
+**Bloqueantes:** cada pasada en `:3001` necesita el login de Leandro. La cuota semanal de optimum está en 83 % (09-oct, 17 h), con tope de 85 %.

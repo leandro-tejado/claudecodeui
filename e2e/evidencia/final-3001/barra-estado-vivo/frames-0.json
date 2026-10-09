@@ -1,6 +1,6 @@
 [
   {
-    "t": 1791552830143,
+    "t": 1791555555971,
     "sentido": "out",
     "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
     "datos": {
@@ -8,7 +8,7 @@
     }
   },
   {
-    "t": 1791552830143,
+    "t": 1791555556132,
     "sentido": "out",
     "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
     "datos": {
@@ -16,132 +16,70 @@
     }
   },
   {
-    "t": 1791552830203,
+    "t": 1791555556132,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "type": "chat.tmux-prompts"
+    }
+  },
+  {
+    "t": 1791555556221,
     "sentido": "in",
     "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
     "datos": {
       "kind": "tmux_prompts",
       "prompts": [],
-      "timestamp": "2026-10-09T13:33:50.186Z"
+      "timestamp": "2026-10-09T14:19:16.204Z"
     }
   },
   {
-    "t": 1791552830204,
+    "t": 1791555556221,
     "sentido": "in",
     "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
     "datos": {
       "kind": "tmux_prompts",
       "prompts": [],
-      "timestamp": "2026-10-09T13:33:50.186Z"
+      "timestamp": "2026-10-09T14:19:16.204Z"
     }
   },
   {
-    "t": 1791552831138,
+    "t": 1791555558452,
     "sentido": "out",
     "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
     "datos": {
       "type": "chat.subscribe",
       "sessions": [
         {
-          "sessionId": "e5108569-f4ce-4610-95db-5e7c0e9b6a1e",
+          "sessionId": "2e9cda6e-af65-419f-a6df-5bd755baebc0",
           "lastSeq": 0
         }
       ]
     }
   },
   {
-    "t": 1791552831170,
+    "t": 1791555558480,
     "sentido": "in",
     "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
     "datos": {
       "kind": "chat_subscribed",
-      "sessionId": "e5108569-f4ce-4610-95db-5e7c0e9b6a1e",
+      "sessionId": "2e9cda6e-af65-419f-a6df-5bd755baebc0",
       "isProcessing": false,
       "lastSeq": 0,
       "pendingPermissions": [],
-      "runsInTmux": false,
-      "timestamp": "2026-10-09T13:33:51.145Z"
+      "runsInTmux": true,
+      "timestamp": "2026-10-09T14:19:18.444Z"
     }
   },
   {
-    "t": 1791552831307,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "sidebar_archived",
-      "projectIds": [],
-      "sessionIds": [
-        "e5108569-f4ce-4610-95db-5e7c0e9b6a1e"
-      ],
-      "timestamp": "2026-10-09T13:33:51.282Z"
-    }
-  },
-  {
-    "t": 1791552831368,
-    "sentido": "out",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "type": "chat.subscribe",
-      "sessions": [
-        {
-          "sessionId": "e5108569-f4ce-4610-95db-5e7c0e9b6a1e",
-          "lastSeq": 0
-        }
-      ]
-    }
-  },
-  {
-    "t": 1791552831371,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "chat_subscribed",
-      "sessionId": "e5108569-f4ce-4610-95db-5e7c0e9b6a1e",
-      "isProcessing": false,
-      "lastSeq": 0,
-      "pendingPermissions": [],
-      "runsInTmux": false,
-      "timestamp": "2026-10-09T13:33:51.356Z"
-    }
-  },
-  {
-    "t": 1791552831882,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "session_upserted",
-      "sessionId": "08910a19-2b2a-4c1c-8d06-46b49f15cb7c",
-      "providerSessionId": "08910a19-2b2a-4c1c-8d06-46b49f15cb7c",
-      "provider": "claude",
-      "session": {
-        "id": "08910a19-2b2a-4c1c-8d06-46b49f15cb7c",
-        "summary": "e2e-estado-ejecutora-1",
-        "messageCount": 0,
-        "lastActivity": "2026-10-09T13:33:48.000Z",
-        "tmux": {
-          "nombre": "e2e-estado-ejecutora-1",
-          "vivo": true
-        }
-      },
-      "project": {
-        "projectId": "6f20624f-a0db-4b13-ace6-bddcba010843",
-        "path": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
-        "fullPath": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
-        "displayName": "e2e-proyecto",
-        "isStarred": false
-      },
-      "timestamp": "2026-10-09T13:33:51.877Z"
-    }
-  },
-  {
-    "t": 1791552833043,
+    "t": 1791555559509,
     "sentido": "out",
     "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
     "datos": {
       "type": "chat.send-tmux",
-      "sessionId": "186d21bb-5587-491c-8541-6fe39d56e4dc",
+      "sessionId": "2e9cda6e-af65-419f-a6df-5bd755baebc0",
       "content": "Respondé solo con: listo",
-      "clientMessageId": "local_1791552833008_wcj6ne",
+      "clientMessageId": "local_1791555559486_89ecz0",
       "options": {
         "model": "default",
         "effort": "default",
@@ -160,1022 +98,192 @@
           "skipPermissions": true
         },
         "skipPermissions": true,
-        "sessionSummary": "Respondé solo con: listo",
+        "sessionSummary": "e2e-estado-ejecutora-1",
         "attachments": []
       }
     }
   },
   {
-    "t": 1791552833058,
-    "sentido": "out",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "type": "chat.subscribe",
-      "sessions": [
-        {
-          "sessionId": "186d21bb-5587-491c-8541-6fe39d56e4dc",
-          "lastSeq": 0
-        }
-      ]
-    }
-  },
-  {
-    "t": 1791552833106,
+    "t": 1791555560070,
     "sentido": "in",
     "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
     "datos": {
-      "kind": "chat_subscribed",
-      "sessionId": "186d21bb-5587-491c-8541-6fe39d56e4dc",
-      "isProcessing": false,
-      "lastSeq": 0,
-      "pendingPermissions": [],
-      "runsInTmux": false,
-      "timestamp": "2026-10-09T13:33:53.105Z"
+      "kind": "activity",
+      "sessionId": "2e9cda6e-af65-419f-a6df-5bd755baebc0",
+      "activityKind": "thinking",
+      "texto": "Seasoning… (running UserPromptSubmit hooks… 1/2 · 0s)",
+      "timestamp": "2026-10-09T14:19:20.062Z"
     }
   },
   {
-    "t": 1791552834742,
+    "t": 1791555560077,
     "sentido": "in",
     "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
     "datos": {
-      "kind": "session_upserted",
-      "sessionId": "186d21bb-5587-491c-8541-6fe39d56e4dc",
-      "providerSessionId": null,
-      "provider": "claude",
-      "session": {
-        "id": "186d21bb-5587-491c-8541-6fe39d56e4dc",
-        "summary": "Respondé solo",
-        "messageCount": 0,
-        "lastActivity": "2026-10-09T13:33:53.000Z",
-        "tmux": {
-          "nombre": "cloudcli-proyecto-89983118",
-          "vivo": true
-        },
-        "cuenta": "optimum"
-      },
-      "project": {
-        "projectId": "6f20624f-a0db-4b13-ace6-bddcba010843",
-        "path": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
-        "fullPath": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
-        "displayName": "e2e-proyecto",
-        "isStarred": false
-      },
-      "timestamp": "2026-10-09T13:33:54.738Z"
+      "kind": "stream_delta",
+      "sessionId": "2e9cda6e-af65-419f-a6df-5bd755baebc0",
+      "messageId": "tmux-borrador:2e9cda6e-af65-419f-a6df-5bd755baebc0",
+      "blockIndex": 0,
+      "content": "5h ?",
+      "timestamp": "2026-10-09T14:19:20.062Z"
     }
   },
   {
-    "t": 1791552836101,
+    "t": 1791555560150,
     "sentido": "in",
     "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
     "datos": {
       "kind": "message_status",
-      "sessionId": "186d21bb-5587-491c-8541-6fe39d56e4dc",
-      "clientMessageId": "local_1791552833008_wcj6ne",
+      "sessionId": "2e9cda6e-af65-419f-a6df-5bd755baebc0",
+      "clientMessageId": "local_1791555559486_89ecz0",
       "status": "sent",
-      "timestamp": "2026-10-09T13:33:56.089Z"
+      "timestamp": "2026-10-09T14:19:20.147Z"
     }
   },
   {
-    "t": 1791552836103,
+    "t": 1791555560164,
     "sentido": "in",
     "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
     "datos": {
       "kind": "status",
-      "sessionId": "186d21bb-5587-491c-8541-6fe39d56e4dc",
+      "sessionId": "2e9cda6e-af65-419f-a6df-5bd755baebc0",
       "text": null,
       "canInterrupt": false,
-      "timestamp": "2026-10-09T13:33:56.090Z"
+      "timestamp": "2026-10-09T14:19:20.148Z"
     }
   },
   {
-    "t": 1791552838082,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "message_status",
-      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
-      "clientMessageId": "local_1791552836008_js3nik",
-      "status": "sent",
-      "timestamp": "2026-10-09T13:33:58.078Z"
-    }
-  },
-  {
-    "t": 1791552838082,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "status",
-      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
-      "text": null,
-      "canInterrupt": false,
-      "timestamp": "2026-10-09T13:33:58.079Z"
-    }
-  },
-  {
-    "t": 1791552838670,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "id": "637e8ccc-25a3-4c9e-bfa5-2fe6414c9f00",
-      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
-      "timestamp": "2026-10-09T13:33:57.884Z",
-      "provider": "claude",
-      "kind": "text",
-      "role": "user",
-      "content": "ok ahí lo comencé a ejecutar",
-      "transcriptAnchorId": "637e8ccc-25a3-4c9e-bfa5-2fe6414c9f00"
-    }
-  },
-  {
-    "t": 1791552840727,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "usage_window",
-      "fiveHour": {
-        "porcentaje": 3,
-        "resetsAt": 1791565200000,
-        "leidoEn": 1791552839000
-      },
-      "sevenDay": {
-        "porcentaje": 82,
-        "resetsAt": 1791734400000,
-        "leidoEn": 1791552839000
-      },
-      "cuenta": "optimum"
-    }
-  },
-  {
-    "t": 1791552840737,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "usage_window",
-      "fiveHour": {
-        "porcentaje": 100,
-        "resetsAt": 1791567000000,
-        "leidoEn": 1791550687000
-      },
-      "sevenDay": {
-        "porcentaje": 91,
-        "resetsAt": 1791925200000,
-        "leidoEn": 1791550687000
-      },
-      "cuenta": "personal"
-    }
-  },
-  {
-    "t": 1791552841679,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "id": "d6e1f49c-04a4-41b0-a97d-13be12644cc7",
-      "sessionId": "186d21bb-5587-491c-8541-6fe39d56e4dc",
-      "timestamp": "2026-10-09T13:33:55.866Z",
-      "provider": "claude",
-      "kind": "text",
-      "role": "user",
-      "content": "Respondé solo con: listo",
-      "transcriptAnchorId": "d6e1f49c-04a4-41b0-a97d-13be12644cc7"
-    }
-  },
-  {
-    "t": 1791552841685,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "id": "e3d8e6d9-b2bb-489b-b31b-dc76a4f4e4c1_0",
-      "sessionId": "186d21bb-5587-491c-8541-6fe39d56e4dc",
-      "timestamp": "2026-10-09T13:33:59.000Z",
-      "provider": "claude",
-      "kind": "text",
-      "role": "assistant",
-      "content": "listo",
-      "messageId": "msg_011CfrkRP14udziZWf9Ch7Gm",
-      "blockIndex": 0
-    }
-  },
-  {
-    "t": 1791552841755,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "id": "tmux_complete_186d21bb-5587-491c-8541-6fe39d56e4dc_1791552841681",
-      "sessionId": "186d21bb-5587-491c-8541-6fe39d56e4dc",
-      "provider": "claude",
-      "timestamp": "2026-10-09T13:34:01.681Z",
-      "kind": "complete",
-      "success": true
-    }
-  },
-  {
-    "t": 1791552842192,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "session_upserted",
-      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
-      "providerSessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
-      "provider": "claude",
-      "session": {
-        "id": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
-        "summary": "Verificación final de CloudCLI (Fase 12)",
-        "messageCount": 0,
-        "lastActivity": "2026-10-09T13:33:58.278Z",
-        "tmux": {
-          "nombre": "cloudcli-verificacion-final-guia-1",
-          "vivo": true
-        },
-        "cuenta": "personal"
-      },
-      "project": {
-        "projectId": "05c9a038-c5f4-47e0-b258-93565226b54d",
-        "path": "/home/leantejado/cloudcli",
-        "fullPath": "/home/leantejado/cloudcli",
-        "displayName": "cloudcli",
-        "isStarred": false
-      },
-      "timestamp": "2026-10-09T13:34:02.179Z"
-    }
-  },
-  {
-    "t": 1791552842207,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "session_upserted",
-      "sessionId": "186d21bb-5587-491c-8541-6fe39d56e4dc",
-      "providerSessionId": "186d21bb-5587-491c-8541-6fe39d56e4dc",
-      "provider": "claude",
-      "session": {
-        "id": "186d21bb-5587-491c-8541-6fe39d56e4dc",
-        "summary": "Respuesta simple: listo",
-        "messageCount": 0,
-        "lastActivity": "2026-10-09T13:33:59.190Z",
-        "tmux": {
-          "nombre": "cloudcli-proyecto-89983118",
-          "vivo": true
-        },
-        "cuenta": "optimum"
-      },
-      "project": {
-        "projectId": "6f20624f-a0db-4b13-ace6-bddcba010843",
-        "path": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
-        "fullPath": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
-        "displayName": "e2e-proyecto",
-        "isStarred": false
-      },
-      "timestamp": "2026-10-09T13:34:02.180Z"
-    }
-  },
-  {
-    "t": 1791552842444,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "usage_window",
-      "fiveHour": {
-        "porcentaje": 3,
-        "resetsAt": 1791565200000,
-        "leidoEn": 1791552839000
-      },
-      "sevenDay": {
-        "porcentaje": 82,
-        "resetsAt": 1791734400000,
-        "leidoEn": 1791552839000
-      },
-      "cuenta": "optimum"
-    }
-  },
-  {
-    "t": 1791552842449,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "usage_window",
-      "fiveHour": {
-        "porcentaje": 100,
-        "resetsAt": 1791567000000,
-        "leidoEn": 1791550687000
-      },
-      "sevenDay": {
-        "porcentaje": 91,
-        "resetsAt": 1791925200000,
-        "leidoEn": 1791550687000
-      },
-      "cuenta": "personal"
-    }
-  },
-  {
-    "t": 1791552848773,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "activity",
-      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
-      "activityKind": "thinking",
-      "texto": "Tomfoolering… (10s · thinking with high effort)",
-      "timestamp": "2026-10-09T13:34:08.769Z"
-    }
-  },
-  {
-    "t": 1791552848778,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "stream_delta",
-      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
-      "messageId": "tmux-borrador:378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
-      "blockIndex": 0,
-      "content": "⎿  Tip: Use /voice to enable push-to-talk dictation\n                                                         5% until auto-compact\n  ⚠ personal 5h 100% · resetea 19:30 · a mano: --cuenta optimum · personal · …\n  ● main\n  ◯ general-purpose  Committing the tmux-borrador f… 22m 13s · ↓ 227.6k tokens",
-      "timestamp": "2026-10-09T13:34:08.769Z"
-    }
-  },
-  {
-    "t": 1791552849172,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "activity",
-      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
-      "activityKind": "thinking",
-      "texto": "Tomfoolering… (11s · thinking with high effort)",
-      "timestamp": "2026-10-09T13:34:09.170Z"
-    }
-  },
-  {
-    "t": 1791552849602,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "activity",
-      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
-      "activityKind": "thinking",
-      "texto": "Tomfoolering… (11s · ↓ 113 tokens · thinking with high effort)",
-      "timestamp": "2026-10-09T13:34:09.600Z"
-    }
-  },
-  {
-    "t": 1791552849979,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "activity",
-      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
-      "activityKind": "thinking",
-      "texto": "Tomfoolering… (12s · ↓ 188 tokens · thinking with high effort)",
-      "timestamp": "2026-10-09T13:34:09.975Z"
-    }
-  },
-  {
-    "t": 1791552849979,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "stream_delta",
-      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
-      "messageId": "tmux-borrador:378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
-      "blockIndex": 0,
-      "content": "Espero a que termine sin gastar contexto mientras tanto: dejo un vigía que me\n  avisa cuando la corrida ya no está.\n  ⎿  Tip: Use /voice to enable push-to-talk dictation\n                                                         5% until auto-compact\n  ⚠ personal 5h 100% · resetea 19:30 · a mano: --cuenta optimum · personal · …\n  ● main\n  ◯ general-purpose  Committing the tmux-borrador f… 22m 13s · ↓ 227.6k tokens",
-      "timestamp": "2026-10-09T13:34:09.975Z"
-    }
-  },
-  {
-    "t": 1791552850378,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "activity",
-      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
-      "activityKind": "thinking",
-      "texto": "Tomfoolering… (12s · ↓ 259 tokens · thinking with high effort)",
-      "timestamp": "2026-10-09T13:34:10.376Z"
-    }
-  },
-  {
-    "t": 1791552850784,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "activity",
-      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
-      "activityKind": "tool",
-      "toolName": "Running 1 shell command…",
-      "texto": "Tomfoolering… (12s · ↓ 277 tokens · thought for 1s)",
-      "timestamp": "2026-10-09T13:34:10.779Z"
-    }
-  },
-  {
-    "t": 1791552850855,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "usage_window",
-      "fiveHour": {
-        "porcentaje": 3,
-        "resetsAt": 1791565200000,
-        "leidoEn": 1791552839000
-      },
-      "sevenDay": {
-        "porcentaje": 82,
-        "resetsAt": 1791734400000,
-        "leidoEn": 1791552839000
-      },
-      "cuenta": "optimum"
-    }
-  },
-  {
-    "t": 1791552850860,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "usage_window",
-      "fiveHour": {
-        "porcentaje": 100,
-        "resetsAt": 1791567000000,
-        "leidoEn": 1791552850000
-      },
-      "sevenDay": {
-        "porcentaje": 91,
-        "resetsAt": 1791925200000,
-        "leidoEn": 1791552850000
-      },
-      "cuenta": "personal"
-    }
-  },
-  {
-    "t": 1791552851154,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "recursos",
-      "ram": {
-        "porcentajePct": 68.97159980796323,
-        "usadaGb": 5.348793029785156,
-        "totalGb": 7.75506591796875
-      },
-      "disco": {
-        "usadoPct": 43.19610716343904,
-        "usadoGb": 41.39137649536133,
-        "totalGb": 95.82200622558594
-      },
-      "sesionesTmux": 5,
-      "techoRam": 90
-    }
-  },
-  {
-    "t": 1791552851192,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "activity",
-      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
-      "activityKind": "tool",
-      "toolName": "Running 1 shell command…",
-      "texto": "Tomfoolering… (13s · ↓ 306 tokens · thought for 1s)",
-      "timestamp": "2026-10-09T13:34:11.190Z"
-    }
-  },
-  {
-    "t": 1791552851615,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "activity",
-      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
-      "activityKind": "tool",
-      "toolName": "Running 1 shell command…",
-      "texto": "Tomfoolering… (13s · ↓ 335 tokens · thought for 1s)",
-      "timestamp": "2026-10-09T13:34:11.611Z"
-    }
-  },
-  {
-    "t": 1791552852020,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "activity",
-      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
-      "activityKind": "thinking",
-      "texto": "Tomfoolering… (14s · ↓ 345 tokens · thought for 1s)",
-      "timestamp": "2026-10-09T13:34:12.013Z"
-    }
-  },
-  {
-    "t": 1791552852020,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "stream_delta",
-      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
-      "messageId": "tmux-borrador:378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
-      "blockIndex": 0,
-      "content": "Espero a que termine sin gastar contexto mientras tanto: dejo un vigía que me\n  avisa cuando la corrida ya no está.\n     20; done; cd /home/leantejado/cloudcli && sed -n 3,9p\n     e2e/evidencia/final-3001/informe.md; grep '❌ falla |'\n     e2e/evidencia/final-3001/informe.md | grep -v '^| ❌' | cut -c1-230\n  ⎿  Tip: Use /voice to enable push-to-talk dictation\n                                                         5% until auto-compact\n  ⚠ personal 5h 100% · resetea 19:30 · a mano: --cuenta optimum · personal · …\n  ● main\n  ◯ general-purpose  Committing the tmux-borrador f… 22m 13s · ↓ 227.6k tokens",
-      "timestamp": "2026-10-09T13:34:12.013Z"
-    }
-  },
-  {
-    "t": 1791552852392,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "activity",
-      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
-      "activityKind": "thinking",
-      "texto": "Tomfoolering… (14s · ↓ 350 tokens · thought for 1s)",
-      "timestamp": "2026-10-09T13:34:12.388Z"
-    }
-  },
-  {
-    "t": 1791552852538,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "sidebar_archived",
-      "projectIds": [],
-      "sessionIds": [
-        "08910a19-2b2a-4c1c-8d06-46b49f15cb7c"
-      ],
-      "timestamp": "2026-10-09T13:34:12.533Z"
-    }
-  },
-  {
-    "t": 1791552852797,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "activity",
-      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
-      "activityKind": "thinking",
-      "texto": "Tomfoolering… (14s · ↓ 357 tokens)",
-      "timestamp": "2026-10-09T13:34:12.794Z"
-    }
-  },
-  {
-    "t": 1791552852865,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "id": "ad16b3f1-0479-43cf-9589-0660a2e76030_0",
-      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
-      "timestamp": "2026-10-09T13:34:09.820Z",
-      "provider": "claude",
-      "kind": "text",
-      "role": "assistant",
-      "content": "Espero a que termine sin gastar contexto mientras tanto: dejo un vigía que me avisa cuando la corrida ya no está.",
-      "messageId": "msg_011CfrkRa36GUJRi4D6j2UV5",
-      "blockIndex": 0
-    }
-  },
-  {
-    "t": 1791552852865,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "id": "5de8cb17-8f6f-4527-b599-672c15cdf038_0",
-      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
-      "timestamp": "2026-10-09T13:34:11.563Z",
-      "provider": "claude",
-      "kind": "tool_use",
-      "toolName": "Bash",
-      "toolInput": {
-        "command": "sleep 5; while pgrep -f \"correr.mjs .*final-3001\" >/dev/null; do sleep 20; done; cd /home/leantejado/cloudcli && sed -n 3,9p e2e/evidencia/final-3001/informe.md; grep '❌ falla |' e2e/evidencia/final-3001/informe.md | grep -v '^| ❌' | cut -c1-230",
-        "description": "Wait for the :3001 rerun to finish, then summarize",
-        "run_in_background": true
-      },
-      "toolId": "toolu_01P3jhrg8PZGnHepZDWRV7rf",
-      "messageId": "msg_011CfrkRa36GUJRi4D6j2UV5",
-      "blockIndex": 0,
-      "toolResult": {
-        "content": "Command running in background with ID: b7hwxxxc5. Output is being written to: /tmp/claude-1001/-home-leantejado-cloudcli/378a6a34-72e0-4e36-8cb2-05a66f5d32f3/tasks/b7hwxxxc5.output. You will be notified when it completes. To check interim output, use Read on that file path.\nSession cwd remains /home/leantejado/cloudcli; directory changes made by the backgrounded command do not apply to subsequent commands.",
-        "isError": false,
-        "toolUseResult": {
-          "stdout": "",
-          "stderr": "",
-          "interrupted": false,
-          "isImage": false,
-          "noOutputExpected": false,
-          "backgroundTaskId": "b7hwxxxc5",
-          "backgroundCwdHint": "Session cwd remains /home/leantejado/cloudcli; directory changes made by the backgrounded command do not apply to subsequent commands."
-        }
-      }
-    }
-  },
-  {
-    "t": 1791552853186,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "activity",
-      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
-      "activityKind": "thinking",
-      "texto": "Tomfoolering… (15s · ↓ 357 tokens)",
-      "timestamp": "2026-10-09T13:34:13.184Z"
-    }
-  },
-  {
-    "t": 1791552853268,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "usage_window",
-      "fiveHour": {
-        "porcentaje": 3,
-        "resetsAt": 1791565200000,
-        "leidoEn": 1791552839000
-      },
-      "sevenDay": {
-        "porcentaje": 82,
-        "resetsAt": 1791734400000,
-        "leidoEn": 1791552839000
-      },
-      "cuenta": "optimum"
-    }
-  },
-  {
-    "t": 1791552853271,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "usage_window",
-      "fiveHour": {
-        "porcentaje": 100,
-        "resetsAt": 1791567000000,
-        "leidoEn": 1791552852000
-      },
-      "sevenDay": {
-        "porcentaje": 91,
-        "resetsAt": 1791925200000,
-        "leidoEn": 1791552852000
-      },
-      "cuenta": "personal"
-    }
-  },
-  {
-    "t": 1791552853615,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "activity",
-      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
-      "activityKind": "thinking",
-      "texto": "Tomfoolering… (15s · ↓ 357 tokens)",
-      "timestamp": "2026-10-09T13:34:13.613Z"
-    }
-  },
-  {
-    "t": 1791552853961,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "session_upserted",
-      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
-      "providerSessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
-      "provider": "claude",
-      "session": {
-        "id": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
-        "summary": "Verificación final de CloudCLI (Fase 12)",
-        "messageCount": 0,
-        "lastActivity": "2026-10-09T13:34:12.497Z",
-        "tmux": {
-          "nombre": "cloudcli-verificacion-final-guia-1",
-          "vivo": true
-        },
-        "cuenta": "personal"
-      },
-      "project": {
-        "projectId": "05c9a038-c5f4-47e0-b258-93565226b54d",
-        "path": "/home/leantejado/cloudcli",
-        "fullPath": "/home/leantejado/cloudcli",
-        "displayName": "cloudcli",
-        "isStarred": false
-      },
-      "timestamp": "2026-10-09T13:34:13.959Z"
-    }
-  },
-  {
-    "t": 1791552853996,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "activity",
-      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
-      "activityKind": "thinking",
-      "texto": "Tomfoolering… (16s · ↓ 357 tokens)",
-      "timestamp": "2026-10-09T13:34:13.993Z"
-    }
-  },
-  {
-    "t": 1791552854399,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "activity",
-      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
-      "activityKind": "thinking",
-      "texto": "Tomfoolering… (16s · ↓ 357 tokens)",
-      "timestamp": "2026-10-09T13:34:14.396Z"
-    }
-  },
-  {
-    "t": 1791552854428,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "usage_window",
-      "fiveHour": {
-        "porcentaje": 3,
-        "resetsAt": 1791565200000,
-        "leidoEn": 1791552839000
-      },
-      "sevenDay": {
-        "porcentaje": 82,
-        "resetsAt": 1791734400000,
-        "leidoEn": 1791552839000
-      },
-      "cuenta": "optimum"
-    }
-  },
-  {
-    "t": 1791552854430,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "usage_window",
-      "fiveHour": {
-        "porcentaje": 100,
-        "resetsAt": 1791567000000,
-        "leidoEn": 1791552852000
-      },
-      "sevenDay": {
-        "porcentaje": 91,
-        "resetsAt": 1791925200000,
-        "leidoEn": 1791552852000
-      },
-      "cuenta": "personal"
-    }
-  },
-  {
-    "t": 1791552854793,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "activity",
-      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
-      "activityKind": "thinking",
-      "texto": "Tomfoolering… (16s · ↓ 357 tokens)",
-      "timestamp": "2026-10-09T13:34:14.791Z"
-    }
-  },
-  {
-    "t": 1791552855132,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "heartbeat",
-      "timestamp": 1791552855129
-    }
-  },
-  {
-    "t": 1791552855194,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "activity",
-      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
-      "activityKind": "thinking",
-      "texto": "Tomfoolering… (17s · ↓ 357 tokens)",
-      "timestamp": "2026-10-09T13:34:15.192Z"
-    }
-  },
-  {
-    "t": 1791552855627,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "activity",
-      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
-      "activityKind": "thinking",
-      "texto": "Tomfoolering… (17s · ↓ 357 tokens)",
-      "timestamp": "2026-10-09T13:34:15.624Z"
-    }
-  },
-  {
-    "t": 1791552856012,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "activity",
-      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
-      "activityKind": "thinking",
-      "texto": "Tomfoolering… (18s · ↓ 357 tokens)",
-      "timestamp": "2026-10-09T13:34:16.004Z"
-    }
-  },
-  {
-    "t": 1791552856406,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "activity",
-      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
-      "activityKind": "thinking",
-      "texto": "Tomfoolering… (18s · ↓ 357 tokens)",
-      "timestamp": "2026-10-09T13:34:16.405Z"
-    }
-  },
-  {
-    "t": 1791552856810,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "activity",
-      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
-      "activityKind": "thinking",
-      "texto": "Tomfoolering… (18s · ↓ 357 tokens)",
-      "timestamp": "2026-10-09T13:34:16.806Z"
-    }
-  },
-  {
-    "t": 1791552857207,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "activity",
-      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
-      "activityKind": "thinking",
-      "texto": "Tomfoolering… (19s · ↓ 357 tokens)",
-      "timestamp": "2026-10-09T13:34:17.204Z"
-    }
-  },
-  {
-    "t": 1791552857638,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "activity",
-      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
-      "activityKind": "thinking",
-      "texto": "Tomfoolering… (19s · ↓ 357 tokens)",
-      "timestamp": "2026-10-09T13:34:17.635Z"
-    }
-  },
-  {
-    "t": 1791552858061,
+    "t": 1791555560465,
     "sentido": "in",
     "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
     "datos": {
       "kind": "stream_reemplazo",
-      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
-      "messageId": "tmux-borrador:378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "sessionId": "2e9cda6e-af65-419f-a6df-5bd755baebc0",
+      "messageId": "tmux-borrador:2e9cda6e-af65-419f-a6df-5bd755baebc0",
       "blockIndex": 0,
-      "timestamp": "2026-10-09T13:34:18.044Z"
+      "timestamp": "2026-10-09T14:19:20.460Z"
     }
   },
   {
-    "t": 1791552858061,
+    "t": 1791555560470,
     "sentido": "in",
     "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
     "datos": {
       "kind": "activity",
-      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "sessionId": "2e9cda6e-af65-419f-a6df-5bd755baebc0",
       "idle": true,
-      "timestamp": "2026-10-09T13:34:18.044Z"
+      "timestamp": "2026-10-09T14:19:20.460Z"
     }
   },
   {
-    "t": 1791552858252,
+    "t": 1791555563701,
     "sentido": "in",
     "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
     "datos": {
-      "id": "9c91da88-a908-4e5c-b06b-2bb84bde0854_0",
-      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
-      "timestamp": "2026-10-09T13:34:17.707Z",
+      "kind": "usage_window",
+      "fiveHour": {
+        "porcentaje": 5,
+        "resetsAt": 1791565200000,
+        "leidoEn": 1791555562000
+      },
+      "sevenDay": {
+        "porcentaje": 83,
+        "resetsAt": 1791734400000,
+        "leidoEn": 1791555562000
+      },
+      "cuenta": "optimum"
+    }
+  },
+  {
+    "t": 1791555563701,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": {
+        "porcentaje": 3,
+        "resetsAt": 1791567000000,
+        "leidoEn": 1791554684000
+      },
+      "sevenDay": {
+        "porcentaje": 92,
+        "resetsAt": 1791925200000,
+        "leidoEn": 1791554684000
+      },
+      "cuenta": "personal"
+    }
+  },
+  {
+    "t": 1791555566105,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "id": "71ce8260-e652-49b7-be1e-106452b34ca2",
+      "sessionId": "2e9cda6e-af65-419f-a6df-5bd755baebc0",
+      "timestamp": "2026-10-09T14:19:19.925Z",
+      "provider": "claude",
+      "kind": "text",
+      "role": "user",
+      "content": "Respondé solo con: listo",
+      "transcriptAnchorId": "71ce8260-e652-49b7-be1e-106452b34ca2"
+    }
+  },
+  {
+    "t": 1791555566114,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "id": "edbbef89-d554-4d38-8ac1-843919d654e0_0",
+      "sessionId": "2e9cda6e-af65-419f-a6df-5bd755baebc0",
+      "timestamp": "2026-10-09T14:19:21.986Z",
       "provider": "claude",
       "kind": "text",
       "role": "assistant",
-      "content": "Dejé un vigía que me avisa cuando termina la corrida y miro el resultado; no hace falta que me avises vos. Mientras corre, dejá la terminal de ttyd abierta.\n\nEsta sesión ya va por unos 232k de contexto. Cuando veamos este resultado, cerrala con `/aos-core:wrapup` y seguí en una nueva: el plan ya tiene anotado dónde retomar.",
-      "messageId": "msg_011CfrkSbpGoHn2MqYtXsFSV",
+      "content": "listo",
+      "messageId": "msg_011CfrotBi25wHspqb1vohQ7",
       "blockIndex": 0
     }
   },
   {
-    "t": 1791552858342,
+    "t": 1791555566179,
     "sentido": "in",
     "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
     "datos": {
-      "id": "tmux_complete_378a6a34-72e0-4e36-8cb2-05a66f5d32f3_1791552858338",
-      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "id": "tmux_complete_2e9cda6e-af65-419f-a6df-5bd755baebc0_1791555566106",
+      "sessionId": "2e9cda6e-af65-419f-a6df-5bd755baebc0",
       "provider": "claude",
-      "timestamp": "2026-10-09T13:34:18.338Z",
+      "timestamp": "2026-10-09T14:19:26.106Z",
       "kind": "complete",
       "success": true
     }
   },
   {
-    "t": 1791552859382,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "usage_window",
-      "fiveHour": {
-        "porcentaje": 3,
-        "resetsAt": 1791565200000,
-        "leidoEn": 1791552839000
-      },
-      "sevenDay": {
-        "porcentaje": 82,
-        "resetsAt": 1791734400000,
-        "leidoEn": 1791552839000
-      },
-      "cuenta": "optimum"
-    }
-  },
-  {
-    "t": 1791552859383,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "usage_window",
-      "fiveHour": {
-        "porcentaje": 100,
-        "resetsAt": 1791567000000,
-        "leidoEn": 1791552858000
-      },
-      "sevenDay": {
-        "porcentaje": 91,
-        "resetsAt": 1791925200000,
-        "leidoEn": 1791552858000
-      },
-      "cuenta": "personal"
-    }
-  },
-  {
-    "t": 1791552859964,
+    "t": 1791555566568,
     "sentido": "in",
     "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
     "datos": {
       "kind": "session_upserted",
-      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
-      "providerSessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "sessionId": "2e9cda6e-af65-419f-a6df-5bd755baebc0",
+      "providerSessionId": "2e9cda6e-af65-419f-a6df-5bd755baebc0",
       "provider": "claude",
       "session": {
-        "id": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
-        "summary": "Verificación final de CloudCLI (Fase 12)",
+        "id": "2e9cda6e-af65-419f-a6df-5bd755baebc0",
+        "summary": "Respuesta de una palabra",
         "messageCount": 0,
-        "lastActivity": "2026-10-09T13:34:17.842Z",
+        "lastActivity": "2026-10-09T14:19:22.169Z",
         "tmux": {
-          "nombre": "cloudcli-verificacion-final-guia-1",
-          "vivo": true
-        },
-        "cuenta": "personal"
+          "nombre": "e2e-estado-ejecutora-1",
+          "vivo": false
+        }
       },
       "project": {
-        "projectId": "05c9a038-c5f4-47e0-b258-93565226b54d",
-        "path": "/home/leantejado/cloudcli",
-        "fullPath": "/home/leantejado/cloudcli",
-        "displayName": "cloudcli",
+        "projectId": "6f20624f-a0db-4b13-ace6-bddcba010843",
+        "path": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
+        "fullPath": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
+        "displayName": "e2e-proyecto",
         "isStarred": false
       },
-      "timestamp": "2026-10-09T13:34:19.961Z"
-    }
-  },
-  {
-    "t": 1791552860439,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "usage_window",
-      "fiveHour": {
-        "porcentaje": 3,
-        "resetsAt": 1791565200000,
-        "leidoEn": 1791552839000
-      },
-      "sevenDay": {
-        "porcentaje": 82,
-        "resetsAt": 1791734400000,
-        "leidoEn": 1791552839000
-      },
-      "cuenta": "optimum"
-    }
-  },
-  {
-    "t": 1791552860443,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "usage_window",
-      "fiveHour": {
-        "porcentaje": 100,
-        "resetsAt": 1791567000000,
-        "leidoEn": 1791552858000
-      },
-      "sevenDay": {
-        "porcentaje": 91,
-        "resetsAt": 1791925200000,
-        "leidoEn": 1791552858000
-      },
-      "cuenta": "personal"
+      "timestamp": "2026-10-09T14:19:26.564Z"
     }
   }
 ]

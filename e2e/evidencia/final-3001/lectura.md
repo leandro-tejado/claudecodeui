@@ -37,3 +37,18 @@ Siguen en rojo, y fallan en las dos corridas:
 Los dos pasan en `:3901`. Lo que cambia en `:3001` es el registro de sesiones real, el socket por defecto y los hooks de Leandro. Hay que diagnosticarlos en una sesión nueva.
 
 Limpieza: 0 `e2e-*` vivas, 0 JWT en la carpeta.
+
+### Las dos últimas en rojo (9-oct, 16:20 y 16:53)
+
+**Resultado final en `:3001`: 75 bien, 0 mal y 26 bloqueados** (los del CLI falso, en verde en `:3902`).
+
+| Escenario | Causa | Arreglo |
+|---|---|---|
+| `barra/estado-vivo` | Arnés: el registro real tenía una entrada `e2e-estado-ejecutora-1` de una corrida vieja; `esperarSid` devolvía ese `session_id` y se abría otra sesión | Solo vale la entrada con la misma `creada` que la sesión de tmux (`c69a4a07`). El cierre saca las `e2e-*` muertas de `sesiones.json` |
+| `tmux/recarga`, ack | Arnés: el párrafo terminaba en 7 s y la recarga con `networkidle` tardaba ~30 s | Turno largo y recarga apenas aparece el Stop (`c69a4a07`) |
+| `tmux/recarga`, indicador | Arnés: con la UI en español el botón dice "Detener" y el check buscaba "Stop" | Se busca por el atajo `esc` (`f2c8bef9`) |
+| (encontrado en el camino) | **Producto:** el sondeo de `/running-sessions` sacaba a los 10 s el indicador de un turno de tmux vivo; volvía con el reloj en cero | La gracia cuenta desde la última señal (`fd54e6b8`). Sonda en `:3901`: Stop fijo de +0,75 s al `complete`. Publicado en `:3001` con `npm run build` (bundle `index-B1RBkCzO.js`) |
+
+**Archivado del proyecto:** no quedaba. El server desarchiva un proyecto cuando su transcript se escribe después de archivarlo, y el `claude` de un pane recién cerrado todavía escribe al morir. El cierre ahora espera a que no quede `claude`, archiva y lo comprueba (`1e85c167`, probado contra `:3901`). En `:3001` falta correr `--solo-cierre`.
+
+Limpieza tras la corrida: 0 `e2e-*` vivas, 0 entradas `e2e-*` en `sesiones.json` ni en `hibernadas.json`, 0 JWT en la carpeta.
