@@ -9,8 +9,10 @@ export const meta = {
 };
 
 // El botón Stop con el atajo `esc` es la señal estable del indicador: el
-// rótulo "Thinking" se oculta mientras llega texto (Fase 5, paso 7).
-const stop = (s) => s.pagina.locator('button:has(kbd)', { hasText: 'Stop' }).first();
+// rótulo "Thinking" se oculta mientras llega texto (Fase 5, paso 7). Se busca
+// por el atajo y no por el texto: con la UI en español dice "Detener", y en
+// :3001 (9-oct) el check no lo encontraba aunque estuviera a la vista.
+const stop = (s) => s.pagina.locator('button:has(kbd:text-is("esc"))').first();
 
 export async function correr(ctx) {
   const { s, sid } = await prepararTmux(ctx, 'e2e-recarga');

@@ -12,7 +12,8 @@ export async function correr(ctx) {
   const capR = await ctx.captura(s, 'tras-recargar');
   // Mientras llega texto la etiqueta del indicador se calla (Fase 5, paso 7): lo que
   // prueba que el indicador sigue es su Stop, el único botón Stop con atajo `esc`.
-  const stopDelIndicador = s.pagina.locator('button:has(kbd)', { hasText: 'Stop' });
+  // Por el atajo y no por el texto: con la UI en español el botón dice "Detener".
+  const stopDelIndicador = s.pagina.locator('button:has(kbd:text-is("esc"))');
   const indicador = await stopDelIndicador.first().isVisible().catch(() => false);
   ctx.check('tras recargar a mitad, el indicador de actividad sigue', indicador, { evidencia: capR });
   await esperarFin(s, t, 30_000);
