@@ -432,6 +432,6 @@ Cuota: 3 fases en paralelo es el máximo razonable (REGLA 7/9). Si `7d >= 60%` n
 
 **Boceto aprobado (9-oct):** Leandro aprobó el boceto «tal cual», con las escenas 1-9. Cuota: **variante A (anillo)**, la que usan las escenas 1, 2, 4, 6, 7 y 9; no eligió otra. La barra empuja el chat; Tareas, Plugins, Archivados y Tema viven en Ajustes; Servicios y el medidor completo se agregan como Fase 8.
 
-**Pausa por cuota (9-oct):** la cuenta personal está en **99 % semanal** (`~/.cache/aos/cuota/personal.json`); resetea el **13-oct ~22:40 hora local**. Leandro eligió pausar hasta el reset.
+**Pausa por cuota (9-oct):** la cuenta personal está en **99 % semanal** (`~/.cache/aos/cuota/personal.json`); resetea el **martes 13-oct ~23:00 (CEST)**. Leandro eligió pausar hasta el reset.
 **Reparto acordado para cuando se retome** (`/ejecutar-plan`): Grupo 1 = Fases 2, 3 y 4 en paralelo, cada una en su worktree; ojo con la colisión de `Tocar`: `project-workspace/` lo tocan la 2 y la 3, y `ProjectSidebarRegion.tsx` es solo de la 3; i18n por archivo (2: header/usage, 3: sidebar.json, 4: chat.json). Después, secuencial: 5 (Fase 1 dijo «en vivo» en :3901, queda como verificación contra :3001 tras rebuild), 7, 8 y 6. Si `7d >= 60 %` al retomar, todo secuencial.
 **Cerradas:** Fase 0 (boceto aprobado) y Fase 1 (`e2e/evidencia/09-vista-principal/01-diagnostico.md`). Hallazgo que baja a la Fase 3: «Nueva sesión» falla con 409 por techo de RAM y la vista oculta el mensaje del servidor.
