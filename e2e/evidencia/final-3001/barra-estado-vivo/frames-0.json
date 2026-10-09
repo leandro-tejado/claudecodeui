@@ -1,0 +1,2064 @@
+[
+  {
+    "t": 1791549786963,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "type": "chat.tmux-prompts"
+    }
+  },
+  {
+    "t": 1791549787040,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "session_upserted",
+      "sessionId": "e5108569-f4ce-4610-95db-5e7c0e9b6a1e",
+      "providerSessionId": "e5108569-f4ce-4610-95db-5e7c0e9b6a1e",
+      "provider": "claude",
+      "session": {
+        "id": "e5108569-f4ce-4610-95db-5e7c0e9b6a1e",
+        "summary": "e2e-estado-ejecutora-1",
+        "messageCount": 0,
+        "lastActivity": "2026-10-09T12:43:05.000Z",
+        "tmux": {
+          "nombre": "e2e-estado-ejecutora-1",
+          "vivo": true
+        },
+        "cuenta": "optimum"
+      },
+      "project": {
+        "projectId": "6f20624f-a0db-4b13-ace6-bddcba010843",
+        "path": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
+        "fullPath": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
+        "displayName": "proyecto",
+        "isStarred": false
+      },
+      "timestamp": "2026-10-09T12:43:07.024Z"
+    }
+  },
+  {
+    "t": 1791549787116,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "tmux_prompts",
+      "prompts": [],
+      "timestamp": "2026-10-09T12:43:07.093Z"
+    }
+  },
+  {
+    "t": 1791549787329,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "type": "chat.tmux-prompts"
+    }
+  },
+  {
+    "t": 1791549787329,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "type": "chat.tmux-prompts"
+    }
+  },
+  {
+    "t": 1791549787400,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "tmux_prompts",
+      "prompts": [],
+      "timestamp": "2026-10-09T12:43:07.397Z"
+    }
+  },
+  {
+    "t": 1791549787401,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "tmux_prompts",
+      "prompts": [],
+      "timestamp": "2026-10-09T12:43:07.398Z"
+    }
+  },
+  {
+    "t": 1791549788477,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "type": "chat.subscribe",
+      "sessions": [
+        {
+          "sessionId": "8aeefa3f-3df7-4b42-b08e-89b801610d0a",
+          "lastSeq": 0
+        }
+      ]
+    }
+  },
+  {
+    "t": 1791549788492,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "chat_subscribed",
+      "sessionId": "8aeefa3f-3df7-4b42-b08e-89b801610d0a",
+      "isProcessing": false,
+      "lastSeq": 0,
+      "pendingPermissions": [],
+      "runsInTmux": false,
+      "timestamp": "2026-10-09T12:43:08.474Z"
+    }
+  },
+  {
+    "t": 1791549790989,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "recursos",
+      "ram": {
+        "porcentajePct": 66.24752083677662,
+        "usadaGb": 5.137538909912109,
+        "totalGb": 7.75506591796875
+      },
+      "disco": {
+        "usadoPct": 43.1895862457843,
+        "usadoGb": 41.385128021240234,
+        "totalGb": 95.82200622558594
+      },
+      "sesionesTmux": 4,
+      "techoRam": 90
+    }
+  },
+  {
+    "t": 1791549800608,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "message_status",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "clientMessageId": "local_1791549798586_7ui4l6",
+      "status": "sent",
+      "timestamp": "2026-10-09T12:43:20.599Z"
+    }
+  },
+  {
+    "t": 1791549800612,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "status",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "text": null,
+      "canInterrupt": false,
+      "timestamp": "2026-10-09T12:43:20.600Z"
+    }
+  },
+  {
+    "t": 1791549800991,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "id": "2f2ec707-8c4a-4dc2-878c-12adab093506",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "timestamp": "2026-10-09T12:43:20.383Z",
+      "provider": "claude",
+      "kind": "text",
+      "role": "user",
+      "content": "en teoría ya lo ejecuté",
+      "transcriptAnchorId": "2f2ec707-8c4a-4dc2-878c-12adab093506"
+    }
+  },
+  {
+    "t": 1791549805409,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "session_upserted",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "providerSessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "provider": "claude",
+      "session": {
+        "id": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+        "summary": "Verificación final de CloudCLI (Fase 12)",
+        "messageCount": 0,
+        "lastActivity": "2026-10-09T12:43:20.617Z",
+        "tmux": {
+          "nombre": "cloudcli-verificacion-final-guia-1",
+          "vivo": true
+        },
+        "cuenta": "personal"
+      },
+      "project": {
+        "projectId": "05c9a038-c5f4-47e0-b258-93565226b54d",
+        "path": "/home/leantejado/cloudcli",
+        "fullPath": "/home/leantejado/cloudcli",
+        "displayName": "cloudcli",
+        "isStarred": false
+      },
+      "timestamp": "2026-10-09T12:43:25.406Z"
+    }
+  },
+  {
+    "t": 1791549805868,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": {
+        "porcentaje": 2,
+        "resetsAt": 1791565200000,
+        "leidoEn": 1791549651000
+      },
+      "sevenDay": {
+        "porcentaje": 82,
+        "resetsAt": 1791734400000,
+        "leidoEn": 1791549651000
+      },
+      "cuenta": "optimum"
+    }
+  },
+  {
+    "t": 1791549805870,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": {
+        "porcentaje": 0,
+        "resetsAt": 1791567000000,
+        "leidoEn": 1791549724000
+      },
+      "sevenDay": {
+        "porcentaje": 91,
+        "resetsAt": 1791925200000,
+        "leidoEn": 1791549724000
+      },
+      "cuenta": "personal"
+    }
+  },
+  {
+    "t": 1791549808408,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "activityKind": "tool",
+      "toolName": "Running 1 shell command…",
+      "texto": "Manifesting… (7s · ↓ 14 tokens)",
+      "timestamp": "2026-10-09T12:43:28.405Z"
+    }
+  },
+  {
+    "t": 1791549808410,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "stream_delta",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "messageId": "tmux-borrador:378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "blockIndex": 0,
+      "content": "⎿  Tip: Use /config to change your default permission mode (including Plan\n     Mode)\n                                        ✔ Update installed · Restart to update\n  ● main\n  ◯ general-purpose  Committing the tmux-borrador f… 22m 13s · ↓ 227.6k tokens",
+      "timestamp": "2026-10-09T12:43:28.405Z"
+    }
+  },
+  {
+    "t": 1791549808844,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "activityKind": "thinking",
+      "texto": "Manifesting… (running PreToolUse hook · 8s · ↓ 39 tokens)",
+      "timestamp": "2026-10-09T12:43:28.835Z"
+    }
+  },
+  {
+    "t": 1791549808844,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "stream_delta",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "messageId": "tmux-borrador:378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "blockIndex": 0,
+      "content": "-c1-200; env -u TMUX tmux ls 2>/dev/null | grep -c '^e2e-'\n  ⎿  Tip: Use /config to change your default permission mode (including Plan\n     Mode)\n                                        ✔ Update installed · Restart to update\n  ● main\n  ◯ general-purpose  Committing the tmux-borrador f… 22m 13s · ↓ 227.6k tokens",
+      "timestamp": "2026-10-09T12:43:28.835Z"
+    }
+  },
+  {
+    "t": 1791549809219,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "activityKind": "thinking",
+      "texto": "Manifesting… (8s · ↓ 73 tokens)",
+      "timestamp": "2026-10-09T12:43:29.217Z"
+    }
+  },
+  {
+    "t": 1791549809224,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "stream_delta",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "messageId": "tmux-borrador:378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "blockIndex": 0,
+      "content": "Look for final-3001 evidence or a running pass\n     -c1-200; env -u TMUX tmux ls 2>/dev/null | grep -c '^e2e-'\n  ⎿  Tip: Use /config to change your default permission mode (including Plan\n     Mode)\n                                        ✔ Update installed · Restart to update\n  ● main\n  ◯ general-purpose  Committing the tmux-borrador f… 22m 13s · ↓ 227.6k tokens",
+      "timestamp": "2026-10-09T12:43:29.217Z"
+    }
+  },
+  {
+    "t": 1791549809603,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "id": "12c29f2a-6df4-47d0-8e26-804b03225645_0",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "timestamp": "2026-10-09T12:43:28.739Z",
+      "provider": "claude",
+      "kind": "tool_use",
+      "toolName": "Bash",
+      "toolInput": {
+        "command": "ls -la e2e/evidencia/ | grep -i 3001; ps aux | grep \"[c]orrer.mjs\" | cut -c1-200; env -u TMUX tmux ls 2>/dev/null | grep -c '^e2e-'",
+        "description": "Look for final-3001 evidence or a running pass"
+      },
+      "toolId": "toolu_01QgFqZu4AKE8Hg5Pj1Wc79q",
+      "messageId": "msg_011CfrgZdvkKcTqmHVL2WucT",
+      "blockIndex": 0,
+      "toolResult": {
+        "content": "drwx------  6 leantejado leantejado 4096 Oct  9 14:43 final-3001\nleantej+ 3993093  6.1  1.6 11659912 131724 pts/5 Sl+  14:43   0:01 node e2e/correr.mjs todo --con-cuota --corrida final-3001\n1",
+        "isError": false,
+        "toolUseResult": {
+          "stdout": "drwx------  6 leantejado leantejado 4096 Oct  9 14:43 final-3001\nleantej+ 3993093  6.1  1.6 11659912 131724 pts/5 Sl+  14:43   0:01 node e2e/correr.mjs todo --con-cuota --corrida final-3001\n1",
+          "stderr": "",
+          "interrupted": false,
+          "isImage": false,
+          "noOutputExpected": false
+        }
+      }
+    }
+  },
+  {
+    "t": 1791549809627,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "activityKind": "thinking",
+      "texto": "Manifesting… (9s · ↓ 149 tokens)",
+      "timestamp": "2026-10-09T12:43:29.619Z"
+    }
+  },
+  {
+    "t": 1791549810019,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "activityKind": "thinking",
+      "texto": "Manifesting… (9s · ↓ 168 tokens)",
+      "timestamp": "2026-10-09T12:43:30.017Z"
+    }
+  },
+  {
+    "t": 1791549810420,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "activityKind": "thinking",
+      "texto": "Manifesting… (9s · ↓ 173 tokens)",
+      "timestamp": "2026-10-09T12:43:30.417Z"
+    }
+  },
+  {
+    "t": 1791549810424,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": {
+        "porcentaje": 2,
+        "resetsAt": 1791565200000,
+        "leidoEn": 1791549651000
+      },
+      "sevenDay": {
+        "porcentaje": 82,
+        "resetsAt": 1791734400000,
+        "leidoEn": 1791549651000
+      },
+      "cuenta": "optimum"
+    }
+  },
+  {
+    "t": 1791549810426,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": {
+        "porcentaje": 0,
+        "resetsAt": 1791567000000,
+        "leidoEn": 1791549809000
+      },
+      "sevenDay": {
+        "porcentaje": 91,
+        "resetsAt": 1791925200000,
+        "leidoEn": 1791549809000
+      },
+      "cuenta": "personal"
+    }
+  },
+  {
+    "t": 1791549810851,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "activityKind": "thinking",
+      "texto": "Manifesting… (10s · ↓ 180 tokens)",
+      "timestamp": "2026-10-09T12:43:30.848Z"
+    }
+  },
+  {
+    "t": 1791549811229,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "activityKind": "thinking",
+      "texto": "Manifesting… (10s · ↓ 181 tokens)",
+      "timestamp": "2026-10-09T12:43:31.226Z"
+    }
+  },
+  {
+    "t": 1791549811417,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "session_upserted",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "providerSessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "provider": "claude",
+      "session": {
+        "id": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+        "summary": "Verificación final de CloudCLI (Fase 12)",
+        "messageCount": 0,
+        "lastActivity": "2026-10-09T12:43:29.493Z",
+        "tmux": {
+          "nombre": "cloudcli-verificacion-final-guia-1",
+          "vivo": true
+        },
+        "cuenta": "personal"
+      },
+      "project": {
+        "projectId": "05c9a038-c5f4-47e0-b258-93565226b54d",
+        "path": "/home/leantejado/cloudcli",
+        "fullPath": "/home/leantejado/cloudcli",
+        "displayName": "cloudcli",
+        "isStarred": false
+      },
+      "timestamp": "2026-10-09T12:43:31.414Z"
+    }
+  },
+  {
+    "t": 1791549811632,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "activityKind": "thinking",
+      "texto": "Manifesting… (11s · ↓ 181 tokens)",
+      "timestamp": "2026-10-09T12:43:31.629Z"
+    }
+  },
+  {
+    "t": 1791549811870,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": {
+        "porcentaje": 2,
+        "resetsAt": 1791565200000,
+        "leidoEn": 1791549651000
+      },
+      "sevenDay": {
+        "porcentaje": 82,
+        "resetsAt": 1791734400000,
+        "leidoEn": 1791549651000
+      },
+      "cuenta": "optimum"
+    }
+  },
+  {
+    "t": 1791549811873,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": {
+        "porcentaje": 0,
+        "resetsAt": 1791567000000,
+        "leidoEn": 1791549809000
+      },
+      "sevenDay": {
+        "porcentaje": 91,
+        "resetsAt": 1791925200000,
+        "leidoEn": 1791549809000
+      },
+      "cuenta": "personal"
+    }
+  },
+  {
+    "t": 1791549812029,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "activityKind": "thinking",
+      "texto": "Manifesting… (11s · ↓ 181 tokens)",
+      "timestamp": "2026-10-09T12:43:32.026Z"
+    }
+  },
+  {
+    "t": 1791549812252,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "heartbeat",
+      "timestamp": 1791549812250
+    }
+  },
+  {
+    "t": 1791549812431,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "activityKind": "thinking",
+      "texto": "Manifesting… (11s · ↓ 181 tokens)",
+      "timestamp": "2026-10-09T12:43:32.426Z"
+    }
+  },
+  {
+    "t": 1791549812857,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "activityKind": "thinking",
+      "texto": "Manifesting… (12s · ↓ 181 tokens)",
+      "timestamp": "2026-10-09T12:43:32.854Z"
+    }
+  },
+  {
+    "t": 1791549813236,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "activityKind": "thinking",
+      "texto": "Manifesting… (12s · ↓ 181 tokens · thinking with high effort)",
+      "timestamp": "2026-10-09T12:43:33.234Z"
+    }
+  },
+  {
+    "t": 1791549813637,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "activityKind": "thinking",
+      "texto": "Manifesting… (13s · ↓ 244 tokens · thinking with high effort)",
+      "timestamp": "2026-10-09T12:43:33.634Z"
+    }
+  },
+  {
+    "t": 1791549813637,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "stream_delta",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "messageId": "tmux-borrador:378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "blockIndex": 0,
+      "content": "Sí, está corriendo: arrancó a las 14:43. Veo cómo va:\n  ⎿  Tip: Use /config to change your default permission mode (including Plan\n     Mode)\n                                        ✔ Update installed · Restart to update\n  ● main\n  ◯ general-purpose  Committing the tmux-borrador f… 22m 13s · ↓ 227.6k tokens",
+      "timestamp": "2026-10-09T12:43:33.634Z"
+    }
+  },
+  {
+    "t": 1791549814039,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "activityKind": "thinking",
+      "texto": "Manifesting… (13s · ↓ 350 tokens · thinking with high effort)",
+      "timestamp": "2026-10-09T12:43:34.036Z"
+    }
+  },
+  {
+    "t": 1791549814438,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "activityKind": "thinking",
+      "texto": "Manifesting… (14s · ↓ 384 tokens · thinking with high effort)",
+      "timestamp": "2026-10-09T12:43:34.435Z"
+    }
+  },
+  {
+    "t": 1791549814438,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "stream_delta",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "messageId": "tmux-borrador:378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "blockIndex": 0,
+      "content": "Sí, está corriendo: arrancó a las 14:43. Veo cómo va:\n     ls -t */ 2>/dev/null | head -3\n  ⎿  Tip: Use /config to change your default permission mode (including Plan\n     Mode)\n                                        ✔ Update installed · Restart to update\n  ● main\n  ◯ general-purpose  Committing the tmux-borrador f… 22m 13s · ↓ 227.6k tokens",
+      "timestamp": "2026-10-09T12:43:34.435Z"
+    }
+  },
+  {
+    "t": 1791549814893,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "activityKind": "thinking",
+      "texto": "Manifesting… (14s · ↓ 390 tokens · thinking with high effort)",
+      "timestamp": "2026-10-09T12:43:34.889Z"
+    }
+  },
+  {
+    "t": 1791549814898,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "stream_delta",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "messageId": "tmux-borrador:378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "blockIndex": 0,
+      "content": "Sí, está corriendo: arrancó a las 14:43. Veo cómo va:\nChecking progress of the :3001 pass\n     ls -t */ 2>/dev/null | head -3\n  ⎿  Tip: Use /config to change your default permission mode (including Plan\n     Mode)\n                                        ✔ Update installed · Restart to update\n  ● main\n  ◯ general-purpose  Committing the tmux-borrador f… 22m 13s · ↓ 227.6k tokens",
+      "timestamp": "2026-10-09T12:43:34.889Z"
+    }
+  },
+  {
+    "t": 1791549815054,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": {
+        "porcentaje": 2,
+        "resetsAt": 1791565200000,
+        "leidoEn": 1791549651000
+      },
+      "sevenDay": {
+        "porcentaje": 82,
+        "resetsAt": 1791734400000,
+        "leidoEn": 1791549651000
+      },
+      "cuenta": "optimum"
+    }
+  },
+  {
+    "t": 1791549815057,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": {
+        "porcentaje": 0,
+        "resetsAt": 1791567000000,
+        "leidoEn": 1791549814000
+      },
+      "sevenDay": {
+        "porcentaje": 91,
+        "resetsAt": 1791925200000,
+        "leidoEn": 1791549814000
+      },
+      "cuenta": "personal"
+    }
+  },
+  {
+    "t": 1791549815249,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "activityKind": "thinking",
+      "texto": "Manifesting… (14s · ↓ 395 tokens · thought for 1s)",
+      "timestamp": "2026-10-09T12:43:35.246Z"
+    }
+  },
+  {
+    "t": 1791549815336,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "id": "fb9d01e8-26d9-4f34-bd45-a5a4cd2da508_0",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "timestamp": "2026-10-09T12:43:33.369Z",
+      "provider": "claude",
+      "kind": "text",
+      "role": "assistant",
+      "content": "Sí, está corriendo: arrancó a las 14:43. Veo cómo va:",
+      "messageId": "msg_011CfrgaH69vBBniBYFJop3P",
+      "blockIndex": 0
+    }
+  },
+  {
+    "t": 1791549815336,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "id": "3deb3ed1-c418-449a-bd7d-9546a0a33dd3_0",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "timestamp": "2026-10-09T12:43:34.181Z",
+      "provider": "claude",
+      "kind": "tool_use",
+      "toolName": "Bash",
+      "toolInput": {
+        "command": "cd /home/leantejado/cloudcli/e2e/evidencia/final-3001 && date +%H:%M; ls; ls -t */ 2>/dev/null | head -3",
+        "description": "Check progress of the :3001 pass"
+      },
+      "toolId": "toolu_01GxAZ6iLT6yqJ4YapAvFMuz",
+      "messageId": "msg_011CfrgaH69vBBniBYFJop3P",
+      "blockIndex": 0,
+      "toolResult": {
+        "content": "14:43\na11y-chat\nbarra-archivar\nbarra-componentes\nbarra-estado-vivo\nbarra-estado-vivo/:\n\nbarra-componentes/:",
+        "isError": false,
+        "toolUseResult": {
+          "stdout": "14:43\na11y-chat\nbarra-archivar\nbarra-componentes\nbarra-estado-vivo\nbarra-estado-vivo/:\n\nbarra-componentes/:",
+          "stderr": "",
+          "interrupted": false,
+          "isImage": false,
+          "noOutputExpected": false
+        }
+      }
+    }
+  },
+  {
+    "t": 1791549815652,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "activityKind": "thinking",
+      "texto": "Manifesting… (15s · ↓ 400 tokens · thought for 1s)",
+      "timestamp": "2026-10-09T12:43:35.650Z"
+    }
+  },
+  {
+    "t": 1791549815652,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "stream_delta",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "messageId": "tmux-borrador:378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "blockIndex": 0,
+      "content": "Sí, está corriendo: arrancó a las 14:43. Veo cómo va:\n  Checking progress of the :3001 pass\n     ls -t */ 2>/dev/null | head -3\n  ⎿  Tip: Use /config to change your default permission mode (including Plan\n     Mode)\n                                        ✔ Update installed · Restart to update\n  ● main\n  ◯ general-purpose  Committing the tmux-borrador f… 22m 13s · ↓ 227.6k tokens",
+      "timestamp": "2026-10-09T12:43:35.650Z"
+    }
+  },
+  {
+    "t": 1791549816050,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "activityKind": "thinking",
+      "texto": "Manifesting… (15s · ↓ 400 tokens · thought for 1s)",
+      "timestamp": "2026-10-09T12:43:36.048Z"
+    }
+  },
+  {
+    "t": 1791549816052,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "stream_delta",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "messageId": "tmux-borrador:378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "blockIndex": 0,
+      "content": "Sí, está corriendo: arrancó a las 14:43. Veo cómo va:\nChecking progress of the :3001 pass\n     ls -t */ 2>/dev/null | head -3\n  ⎿  Tip: Use /config to change your default permission mode (including Plan\n     Mode)\n                                        ✔ Update installed · Restart to update\n  ● main\n  ◯ general-purpose  Committing the tmux-borrador f… 22m 13s · ↓ 227.6k tokens",
+      "timestamp": "2026-10-09T12:43:36.048Z"
+    }
+  },
+  {
+    "t": 1791549816390,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": {
+        "porcentaje": 2,
+        "resetsAt": 1791565200000,
+        "leidoEn": 1791549651000
+      },
+      "sevenDay": {
+        "porcentaje": 82,
+        "resetsAt": 1791734400000,
+        "leidoEn": 1791549651000
+      },
+      "cuenta": "optimum"
+    }
+  },
+  {
+    "t": 1791549816396,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": {
+        "porcentaje": 0,
+        "resetsAt": 1791567000000,
+        "leidoEn": 1791549815000
+      },
+      "sevenDay": {
+        "porcentaje": 91,
+        "resetsAt": 1791925200000,
+        "leidoEn": 1791549815000
+      },
+      "cuenta": "personal"
+    }
+  },
+  {
+    "t": 1791549816449,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "activityKind": "thinking",
+      "texto": "Manifesting… (16s · ↓ 400 tokens · thought for 1s)",
+      "timestamp": "2026-10-09T12:43:36.446Z"
+    }
+  },
+  {
+    "t": 1791549816877,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "activityKind": "thinking",
+      "texto": "Manifesting… (16s · ↓ 400 tokens · thought for 1s)",
+      "timestamp": "2026-10-09T12:43:36.875Z"
+    }
+  },
+  {
+    "t": 1791549816880,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "stream_delta",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "messageId": "tmux-borrador:378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "blockIndex": 0,
+      "content": "Sí, está corriendo: arrancó a las 14:43. Veo cómo va:\n  Checking progress of the :3001 pass\n     ls -t */ 2>/dev/null | head -3\n  ⎿  Tip: Use /config to change your default permission mode (including Plan\n     Mode)\n                                        ✔ Update installed · Restart to update\n  ● main\n  ◯ general-purpose  Committing the tmux-borrador f… 22m 13s · ↓ 227.6k tokens",
+      "timestamp": "2026-10-09T12:43:36.875Z"
+    }
+  },
+  {
+    "t": 1791549817274,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "activityKind": "thinking",
+      "texto": "Manifesting… (16s · ↓ 400 tokens)",
+      "timestamp": "2026-10-09T12:43:37.269Z"
+    }
+  },
+  {
+    "t": 1791549817276,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "stream_delta",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "messageId": "tmux-borrador:378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "blockIndex": 0,
+      "content": "Sí, está corriendo: arrancó a las 14:43. Veo cómo va:\nChecking progress of the :3001 pass\n     ls -t */ 2>/dev/null | head -3\n  ⎿  Tip: Use /config to change your default permission mode (including Plan\n     Mode)\n                                        ✔ Update installed · Restart to update\n  ● main\n  ◯ general-purpose  Committing the tmux-borrador f… 22m 13s · ↓ 227.6k tokens",
+      "timestamp": "2026-10-09T12:43:37.269Z"
+    }
+  },
+  {
+    "t": 1791549817449,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "session_upserted",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "providerSessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "provider": "claude",
+      "session": {
+        "id": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+        "summary": "Verificación final de CloudCLI (Fase 12)",
+        "messageCount": 0,
+        "lastActivity": "2026-10-09T12:43:35.004Z",
+        "tmux": {
+          "nombre": "cloudcli-verificacion-final-guia-1",
+          "vivo": true
+        },
+        "cuenta": "personal"
+      },
+      "project": {
+        "projectId": "05c9a038-c5f4-47e0-b258-93565226b54d",
+        "path": "/home/leantejado/cloudcli",
+        "fullPath": "/home/leantejado/cloudcli",
+        "displayName": "cloudcli",
+        "isStarred": false
+      },
+      "timestamp": "2026-10-09T12:43:37.444Z"
+    }
+  },
+  {
+    "t": 1791549817661,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "activityKind": "thinking",
+      "texto": "Manifesting… (17s · ↓ 400 tokens)",
+      "timestamp": "2026-10-09T12:43:37.657Z"
+    }
+  },
+  {
+    "t": 1791549817895,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": {
+        "porcentaje": 2,
+        "resetsAt": 1791565200000,
+        "leidoEn": 1791549651000
+      },
+      "sevenDay": {
+        "porcentaje": 82,
+        "resetsAt": 1791734400000,
+        "leidoEn": 1791549651000
+      },
+      "cuenta": "optimum"
+    }
+  },
+  {
+    "t": 1791549817899,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": {
+        "porcentaje": 0,
+        "resetsAt": 1791567000000,
+        "leidoEn": 1791549815000
+      },
+      "sevenDay": {
+        "porcentaje": 91,
+        "resetsAt": 1791925200000,
+        "leidoEn": 1791549815000
+      },
+      "cuenta": "personal"
+    }
+  },
+  {
+    "t": 1791549818059,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "activityKind": "thinking",
+      "texto": "Manifesting… (17s · ↓ 400 tokens)",
+      "timestamp": "2026-10-09T12:43:38.057Z"
+    }
+  },
+  {
+    "t": 1791549818060,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "stream_delta",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "messageId": "tmux-borrador:378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "blockIndex": 0,
+      "content": "Sí, está corriendo: arrancó a las 14:43. Veo cómo va:\n  Checking progress of the :3001 pass\n     ls -t */ 2>/dev/null | head -3\n  ⎿  Tip: Use /config to change your default permission mode (including Plan\n     Mode)\n                                        ✔ Update installed · Restart to update\n  ● main\n  ◯ general-purpose  Committing the tmux-borrador f… 22m 13s · ↓ 227.6k tokens",
+      "timestamp": "2026-10-09T12:43:38.057Z"
+    }
+  },
+  {
+    "t": 1791549818470,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "activityKind": "thinking",
+      "texto": "Manifesting… (18s · ↓ 400 tokens)",
+      "timestamp": "2026-10-09T12:43:38.466Z"
+    }
+  },
+  {
+    "t": 1791549818883,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "activityKind": "thinking",
+      "texto": "Manifesting… (18s · ↓ 400 tokens)",
+      "timestamp": "2026-10-09T12:43:38.880Z"
+    }
+  },
+  {
+    "t": 1791549818884,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "stream_delta",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "messageId": "tmux-borrador:378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "blockIndex": 0,
+      "content": "Sí, está corriendo: arrancó a las 14:43. Veo cómo va:\nChecking progress of the :3001 pass\n     ls -t */ 2>/dev/null | head -3\n  ⎿  Tip: Use /config to change your default permission mode (including Plan\n     Mode)\n                                        ✔ Update installed · Restart to update\n  ● main\n  ◯ general-purpose  Committing the tmux-borrador f… 22m 13s · ↓ 227.6k tokens",
+      "timestamp": "2026-10-09T12:43:38.880Z"
+    }
+  },
+  {
+    "t": 1791549819265,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "activityKind": "thinking",
+      "texto": "Manifesting… (18s · ↓ 400 tokens)",
+      "timestamp": "2026-10-09T12:43:39.262Z"
+    }
+  },
+  {
+    "t": 1791549819267,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "stream_delta",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "messageId": "tmux-borrador:378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "blockIndex": 0,
+      "content": "Sí, está corriendo: arrancó a las 14:43. Veo cómo va:\n  Checking progress of the :3001 pass\n     ls -t */ 2>/dev/null | head -3\n  ⎿  Tip: Use /config to change your default permission mode (including Plan\n     Mode)\n                                        ✔ Update installed · Restart to update\n  ● main\n  ◯ general-purpose  Committing the tmux-borrador f… 22m 13s · ↓ 227.6k tokens",
+      "timestamp": "2026-10-09T12:43:39.262Z"
+    }
+  },
+  {
+    "t": 1791549819664,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "activityKind": "thinking",
+      "texto": "Manifesting… (19s · ↓ 400 tokens)",
+      "timestamp": "2026-10-09T12:43:39.662Z"
+    }
+  },
+  {
+    "t": 1791549820031,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "type": "chat.send",
+      "sessionId": "8aeefa3f-3df7-4b42-b08e-89b801610d0a",
+      "content": "Respondé solo con: listo",
+      "clientMessageId": "local_1791549820015_zlt88k",
+      "options": {
+        "model": "claude-sonnet-5-5",
+        "effort": "default",
+        "permissionMode": "default",
+        "toolsSettings": {
+          "allowedTools": [
+            "Edit",
+            "Bash(cd:*)",
+            "Bash(echo:*)",
+            "Bash(export:*)",
+            "Bash(which:*)",
+            "Bash(ps:*)",
+            "Bash(tmux:*)"
+          ],
+          "disallowedTools": [],
+          "skipPermissions": true
+        },
+        "skipPermissions": true,
+        "sessionSummary": "Respuesta simple: listo",
+        "attachments": []
+      }
+    }
+  },
+  {
+    "t": 1791549820055,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "message_status",
+      "sessionId": "8aeefa3f-3df7-4b42-b08e-89b801610d0a",
+      "clientMessageId": "local_1791549820015_zlt88k",
+      "status": "sent",
+      "timestamp": "2026-10-09T12:43:40.031Z"
+    }
+  },
+  {
+    "t": 1791549820106,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "activityKind": "thinking",
+      "texto": "Manifesting… (19s · ↓ 400 tokens)",
+      "timestamp": "2026-10-09T12:43:40.098Z"
+    }
+  },
+  {
+    "t": 1791549820106,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "stream_delta",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "messageId": "tmux-borrador:378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "blockIndex": 0,
+      "content": "Sí, está corriendo: arrancó a las 14:43. Veo cómo va:\nChecking progress of the :3001 pass\n     ls -t */ 2>/dev/null | head -3\n  ⎿  Tip: Use /config to change your default permission mode (including Plan\n     Mode)\n                                        ✔ Update installed · Restart to update\n  ● main\n  ◯ general-purpose  Committing the tmux-borrador f… 22m 13s · ↓ 227.6k tokens",
+      "timestamp": "2026-10-09T12:43:40.098Z"
+    }
+  },
+  {
+    "t": 1791549820503,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "activityKind": "thinking",
+      "texto": "Manifesting… (20s · ↓ 400 tokens)",
+      "timestamp": "2026-10-09T12:43:40.499Z"
+    }
+  },
+  {
+    "t": 1791549820985,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "activityKind": "thinking",
+      "texto": "Manifesting… (20s · ↓ 400 tokens)",
+      "timestamp": "2026-10-09T12:43:40.980Z"
+    }
+  },
+  {
+    "t": 1791549821000,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "stream_delta",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "messageId": "tmux-borrador:378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "blockIndex": 0,
+      "content": "Sí, está corriendo: arrancó a las 14:43. Veo cómo va:\n  Checking progress of the :3001 pass\n     ls -t */ 2>/dev/null | head -3\n  ⎿  Tip: Use /config to change your default permission mode (including Plan\n     Mode)\n                                        ✔ Update installed · Restart to update\n  ● main\n  ◯ general-purpose  Committing the tmux-borrador f… 22m 13s · ↓ 227.6k tokens",
+      "timestamp": "2026-10-09T12:43:40.980Z"
+    }
+  },
+  {
+    "t": 1791549821007,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "recursos",
+      "ram": {
+        "porcentajePct": 68.70366325880103,
+        "usadaGb": 5.328014373779297,
+        "totalGb": 7.75506591796875
+      },
+      "disco": {
+        "usadoPct": 43.187352891202906,
+        "usadoGb": 41.38298797607422,
+        "totalGb": 95.82200622558594
+      },
+      "sesionesTmux": 4,
+      "techoRam": 90
+    }
+  },
+  {
+    "t": 1791549821302,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "activityKind": "thinking",
+      "texto": "Manifesting… (20s · ↓ 400 tokens)",
+      "timestamp": "2026-10-09T12:43:41.299Z"
+    }
+  },
+  {
+    "t": 1791549821415,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": {
+        "porcentaje": 2,
+        "resetsAt": 1791565200000,
+        "leidoEn": 1791549651000
+      },
+      "sevenDay": {
+        "porcentaje": 82,
+        "resetsAt": 1791734400000,
+        "leidoEn": 1791549651000
+      },
+      "cuenta": "optimum"
+    }
+  },
+  {
+    "t": 1791549821418,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": {
+        "porcentaje": 0,
+        "resetsAt": 1791567000000,
+        "leidoEn": 1791549815000
+      },
+      "sevenDay": {
+        "porcentaje": 91,
+        "resetsAt": 1791925200000,
+        "leidoEn": 1791549815000
+      },
+      "cuenta": "personal"
+    }
+  },
+  {
+    "t": 1791549821700,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "activityKind": "thinking",
+      "texto": "Manifesting… (21s · ↓ 400 tokens)",
+      "timestamp": "2026-10-09T12:43:41.698Z"
+    }
+  },
+  {
+    "t": 1791549821700,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "stream_delta",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "messageId": "tmux-borrador:378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "blockIndex": 0,
+      "content": "Sí, está corriendo: arrancó a las 14:43. Veo cómo va:\nChecking progress of the :3001 pass\n     ls -t */ 2>/dev/null | head -3\n  ⎿  Tip: Use /config to change your default permission mode (including Plan\n     Mode)\n                                        ✔ Update installed · Restart to update\n  ● main\n  ◯ general-purpose  Committing the tmux-borrador f… 22m 13s · ↓ 227.6k tokens",
+      "timestamp": "2026-10-09T12:43:41.698Z"
+    }
+  },
+  {
+    "t": 1791549822100,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "activityKind": "thinking",
+      "texto": "Manifesting… (21s · ↓ 400 tokens)",
+      "timestamp": "2026-10-09T12:43:42.098Z"
+    }
+  },
+  {
+    "t": 1791549822505,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "activityKind": "thinking",
+      "texto": "Manifesting… (22s · ↓ 400 tokens)",
+      "timestamp": "2026-10-09T12:43:42.502Z"
+    }
+  },
+  {
+    "t": 1791549822509,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "stream_delta",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "messageId": "tmux-borrador:378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "blockIndex": 0,
+      "content": "Sí, está corriendo: arrancó a las 14:43. Veo cómo va:\n  Checking progress of the :3001 pass\n     ls -t */ 2>/dev/null | head -3\n  ⎿  Tip: Use /config to change your default permission mode (including Plan\n     Mode)\n                                        ✔ Update installed · Restart to update\n  ● main\n  ◯ general-purpose  Committing the tmux-borrador f… 22m 13s · ↓ 227.6k tokens",
+      "timestamp": "2026-10-09T12:43:42.502Z"
+    }
+  },
+  {
+    "t": 1791549822949,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "activityKind": "thinking",
+      "texto": "Manifesting… (22s · ↓ 400 tokens)",
+      "timestamp": "2026-10-09T12:43:42.945Z"
+    }
+  },
+  {
+    "t": 1791549822950,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "stream_delta",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "messageId": "tmux-borrador:378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "blockIndex": 0,
+      "content": "Sí, está corriendo: arrancó a las 14:43. Veo cómo va:\nChecking progress of the :3001 pass\n     ls -t */ 2>/dev/null | head -3\n  ⎿  Tip: Use /config to change your default permission mode (including Plan\n     Mode)\n                                        ✔ Update installed · Restart to update\n  ● main\n  ◯ general-purpose  Committing the tmux-borrador f… 22m 13s · ↓ 227.6k tokens",
+      "timestamp": "2026-10-09T12:43:42.945Z"
+    }
+  },
+  {
+    "t": 1791549823346,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "activityKind": "thinking",
+      "texto": "Manifesting… (22s · ↓ 400 tokens)",
+      "timestamp": "2026-10-09T12:43:43.340Z"
+    }
+  },
+  {
+    "t": 1791549823745,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "activityKind": "thinking",
+      "texto": "Manifesting… (23s · ↓ 400 tokens)",
+      "timestamp": "2026-10-09T12:43:43.742Z"
+    }
+  },
+  {
+    "t": 1791549823745,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "stream_delta",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "messageId": "tmux-borrador:378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "blockIndex": 0,
+      "content": "Sí, está corriendo: arrancó a las 14:43. Veo cómo va:\n  Checking progress of the :3001 pass\n     ls -t */ 2>/dev/null | head -3\n  ⎿  Tip: Use /config to change your default permission mode (including Plan\n     Mode)\n                                        ✔ Update installed · Restart to update\n  ● main\n  ◯ general-purpose  Committing the tmux-borrador f… 22m 13s · ↓ 227.6k tokens",
+      "timestamp": "2026-10-09T12:43:43.742Z"
+    }
+  },
+  {
+    "t": 1791549824143,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "activityKind": "thinking",
+      "texto": "Manifesting… (23s · ↓ 400 tokens)",
+      "timestamp": "2026-10-09T12:43:44.140Z"
+    }
+  },
+  {
+    "t": 1791549824144,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "stream_delta",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "messageId": "tmux-borrador:378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "blockIndex": 0,
+      "content": "Sí, está corriendo: arrancó a las 14:43. Veo cómo va:\nChecking progress of the :3001 pass\n     ls -t */ 2>/dev/null | head -3\n  ⎿  Tip: Use /config to change your default permission mode (including Plan\n     Mode)\n                                        ✔ Update installed · Restart to update\n  ● main\n  ◯ general-purpose  Committing the tmux-borrador f… 22m 13s · ↓ 227.6k tokens",
+      "timestamp": "2026-10-09T12:43:44.140Z"
+    }
+  },
+  {
+    "t": 1791549824544,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "activityKind": "thinking",
+      "texto": "Manifesting… (24s · ↓ 400 tokens)",
+      "timestamp": "2026-10-09T12:43:44.542Z"
+    }
+  },
+  {
+    "t": 1791549824953,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "activityKind": "thinking",
+      "texto": "Manifesting… (24s · ↓ 400 tokens)",
+      "timestamp": "2026-10-09T12:43:44.948Z"
+    }
+  },
+  {
+    "t": 1791549824954,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "stream_delta",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "messageId": "tmux-borrador:378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "blockIndex": 0,
+      "content": "Sí, está corriendo: arrancó a las 14:43. Veo cómo va:\n  Checking progress of the :3001 pass\n     ls -t */ 2>/dev/null | head -3\n  ⎿  Tip: Use /config to change your default permission mode (including Plan\n     Mode)\n                                        ✔ Update installed · Restart to update\n  ● main\n  ◯ general-purpose  Committing the tmux-borrador f… 22m 13s · ↓ 227.6k tokens",
+      "timestamp": "2026-10-09T12:43:44.948Z"
+    }
+  },
+  {
+    "t": 1791549825353,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "activityKind": "thinking",
+      "texto": "Manifesting… (24s · ↓ 400 tokens)",
+      "timestamp": "2026-10-09T12:43:45.351Z"
+    }
+  },
+  {
+    "t": 1791549825356,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "stream_delta",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "messageId": "tmux-borrador:378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "blockIndex": 0,
+      "content": "Sí, está corriendo: arrancó a las 14:43. Veo cómo va:\nChecking progress of the :3001 pass\n     ls -t */ 2>/dev/null | head -3\n  ⎿  Tip: Use /config to change your default permission mode (including Plan\n     Mode)\n                                        ✔ Update installed · Restart to update\n  ● main\n  ◯ general-purpose  Committing the tmux-borrador f… 22m 13s · ↓ 227.6k tokens",
+      "timestamp": "2026-10-09T12:43:45.351Z"
+    }
+  },
+  {
+    "t": 1791549825746,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "activityKind": "thinking",
+      "texto": "Manifesting… (25s · ↓ 400 tokens)",
+      "timestamp": "2026-10-09T12:43:45.741Z"
+    }
+  },
+  {
+    "t": 1791549826164,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "activityKind": "thinking",
+      "texto": "Manifesting… (25s · ↓ 400 tokens)",
+      "timestamp": "2026-10-09T12:43:46.155Z"
+    }
+  },
+  {
+    "t": 1791549826164,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "stream_delta",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "messageId": "tmux-borrador:378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "blockIndex": 0,
+      "content": "Sí, está corriendo: arrancó a las 14:43. Veo cómo va:\n  Checking progress of the :3001 pass\n     ls -t */ 2>/dev/null | head -3\n  ⎿  Tip: Use /config to change your default permission mode (including Plan\n     Mode)\n                                        ✔ Update installed · Restart to update\n  ● main\n  ◯ general-purpose  Committing the tmux-borrador f… 22m 13s · ↓ 227.6k tokens",
+      "timestamp": "2026-10-09T12:43:46.155Z"
+    }
+  },
+  {
+    "t": 1791549826556,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "activityKind": "thinking",
+      "texto": "Manifesting… (26s · ↓ 400 tokens)",
+      "timestamp": "2026-10-09T12:43:46.554Z"
+    }
+  },
+  {
+    "t": 1791549826558,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "stream_delta",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "messageId": "tmux-borrador:378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "blockIndex": 0,
+      "content": "Sí, está corriendo: arrancó a las 14:43. Veo cómo va:\nChecking progress of the :3001 pass\n     ls -t */ 2>/dev/null | head -3\n  ⎿  Tip: Use /config to change your default permission mode (including Plan\n     Mode)\n                                        ✔ Update installed · Restart to update\n  ● main\n  ◯ general-purpose  Committing the tmux-borrador f… 22m 13s · ↓ 227.6k tokens",
+      "timestamp": "2026-10-09T12:43:46.554Z"
+    }
+  },
+  {
+    "t": 1791549826944,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "activityKind": "thinking",
+      "texto": "Manifesting… (26s · ↓ 400 tokens)",
+      "timestamp": "2026-10-09T12:43:46.941Z"
+    }
+  },
+  {
+    "t": 1791549827354,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "activityKind": "thinking",
+      "texto": "Manifesting… (26s · ↓ 400 tokens)",
+      "timestamp": "2026-10-09T12:43:47.351Z"
+    }
+  },
+  {
+    "t": 1791549827354,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "stream_delta",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "messageId": "tmux-borrador:378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "blockIndex": 0,
+      "content": "Sí, está corriendo: arrancó a las 14:43. Veo cómo va:\n  Checking progress of the :3001 pass\n     ls -t */ 2>/dev/null | head -3\n  ⎿  Tip: Use /config to change your default permission mode (including Plan\n     Mode)\n                                        ✔ Update installed · Restart to update\n  ● main\n  ◯ general-purpose  Committing the tmux-borrador f… 22m 13s · ↓ 227.6k tokens",
+      "timestamp": "2026-10-09T12:43:47.351Z"
+    }
+  },
+  {
+    "t": 1791549827577,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "stream_delta",
+      "content": "listo",
+      "sessionId": "8aeefa3f-3df7-4b42-b08e-89b801610d0a",
+      "provider": "claude",
+      "messageId": "msg_011CfrgbWKfCvBV3ojBXSJ5b",
+      "blockIndex": 0,
+      "id": "stream_delta_3688a625-3859-41b5-9191-d36be2ca148a",
+      "timestamp": "2026-10-09T12:43:47.573Z",
+      "seq": 1
+    }
+  },
+  {
+    "t": 1791549827604,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "stream_delta",
+      "content": "\n\nCuota: 7d en",
+      "sessionId": "8aeefa3f-3df7-4b42-b08e-89b801610d0a",
+      "provider": "claude",
+      "messageId": "msg_011CfrgbWKfCvBV3ojBXSJ5b",
+      "blockIndex": 0,
+      "id": "stream_delta_bbbf7932-3866-41ea-ac94-6712bf9c1682",
+      "timestamp": "2026-10-09T12:43:47.602Z",
+      "seq": 2
+    }
+  },
+  {
+    "t": 1791549827747,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "activityKind": "thinking",
+      "texto": "Manifesting… (27s · ↓ 400 tokens)",
+      "timestamp": "2026-10-09T12:43:47.742Z"
+    }
+  },
+  {
+    "t": 1791549827747,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "stream_delta",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "messageId": "tmux-borrador:378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "blockIndex": 0,
+      "content": "Sí, está corriendo: arrancó a las 14:43. Veo cómo va:\nChecking progress of the :3001 pass\n     ls -t */ 2>/dev/null | head -3\n  ⎿  Tip: Use /config to change your default permission mode (including Plan\n     Mode)\n                                        ✔ Update installed · Restart to update\n  ● main\n  ◯ general-purpose  Committing the tmux-borrador f… 22m 13s · ↓ 227.6k tokens",
+      "timestamp": "2026-10-09T12:43:47.742Z"
+    }
+  },
+  {
+    "t": 1791549828155,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "activityKind": "thinking",
+      "texto": "Manifesting… (27s · ↓ 400 tokens)",
+      "timestamp": "2026-10-09T12:43:48.152Z"
+    }
+  },
+  {
+    "t": 1791549828160,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "stream_delta",
+      "content": " 82% con 69% de",
+      "sessionId": "8aeefa3f-3df7-4b42-b08e-89b801610d0a",
+      "provider": "claude",
+      "messageId": "msg_011CfrgbWKfCvBV3ojBXSJ5b",
+      "blockIndex": 0,
+      "id": "stream_delta_f60df1b8-5b31-4392-9d20-6aeb55fb9dde",
+      "timestamp": "2026-10-09T12:43:48.153Z",
+      "seq": 3
+    }
+  },
+  {
+    "t": 1791549828160,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "stream_delta",
+      "content": " la semana transcurrida",
+      "sessionId": "8aeefa3f-3df7-4b42-b08e-89b801610d0a",
+      "provider": "claude",
+      "messageId": "msg_011CfrgbWKfCvBV3ojBXSJ5b",
+      "blockIndex": 0,
+      "id": "stream_delta_e78040db-57c7-40e8-9e6a-6b7f0176388d",
+      "timestamp": "2026-10-09T12:43:48.153Z",
+      "seq": 4
+    }
+  },
+  {
+    "t": 1791549828160,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "stream_delta",
+      "content": "; proyecta 118%",
+      "sessionId": "8aeefa3f-3df7-4b42-b08e-89b801610d0a",
+      "provider": "claude",
+      "messageId": "msg_011CfrgbWKfCvBV3ojBXSJ5b",
+      "blockIndex": 0,
+      "id": "stream_delta_35120a8b-7b26-4c8d-9f53-78235e706257",
+      "timestamp": "2026-10-09T12:43:48.153Z",
+      "seq": 5
+    }
+  },
+  {
+    "t": 1791549828160,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "stream_delta",
+      "content": " al reset (",
+      "sessionId": "8aeefa3f-3df7-4b42-b08e-89b801610d0a",
+      "provider": "claude",
+      "messageId": "msg_011CfrgbWKfCvBV3ojBXSJ5b",
+      "blockIndex": 0,
+      "id": "stream_delta_a8b4d3e6-9ee3-4a10-bef9-abac0d5cb0df",
+      "timestamp": "2026-10-09T12:43:48.153Z",
+      "seq": 6
+    }
+  },
+  {
+    "t": 1791549828160,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "stream_delta",
+      "content": "en 51 h).",
+      "sessionId": "8aeefa3f-3df7-4b42-b08e-89b801610d0a",
+      "provider": "claude",
+      "messageId": "msg_011CfrgbWKfCvBV3ojBXSJ5b",
+      "blockIndex": 0,
+      "id": "stream_delta_4bbfb35a-3ac4-4ee2-acc6-a18d9aafcd9c",
+      "timestamp": "2026-10-09T12:43:48.153Z",
+      "seq": 7
+    }
+  },
+  {
+    "t": 1791549828164,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "id": "a7655539-a75c-464a-9f78-deb0cbb4e260_0",
+      "sessionId": "8aeefa3f-3df7-4b42-b08e-89b801610d0a",
+      "timestamp": "2026-10-09T12:43:48.157Z",
+      "provider": "claude",
+      "kind": "text",
+      "role": "assistant",
+      "content": "listo\n\nCuota: 7d en 82% con 69% de la semana transcurrida; proyecta 118% al reset (en 51 h).",
+      "messageId": "msg_011CfrgbWKfCvBV3ojBXSJ5b",
+      "blockIndex": 0,
+      "seq": 8
+    }
+  },
+  {
+    "t": 1791549828174,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "status",
+      "text": "token_budget",
+      "tokenBudget": {
+        "used": 49084,
+        "total": 200000,
+        "inputTokens": 49080,
+        "outputTokens": 4,
+        "cacheReadTokens": 25792,
+        "cacheCreationTokens": 23286,
+        "cacheTokens": 49078,
+        "breakdown": {
+          "input": 49080,
+          "output": 4
+        },
+        "compactAt": 245000
+      },
+      "sessionId": "8aeefa3f-3df7-4b42-b08e-89b801610d0a",
+      "provider": "claude",
+      "id": "status_380f46db-0ebb-4d5a-a07d-79c2176a9165",
+      "timestamp": "2026-10-09T12:43:48.162Z",
+      "seq": 9
+    }
+  },
+  {
+    "t": 1791549828177,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "stream_end",
+      "sessionId": "8aeefa3f-3df7-4b42-b08e-89b801610d0a",
+      "provider": "claude",
+      "messageId": "msg_011CfrgbWKfCvBV3ojBXSJ5b",
+      "blockIndex": 0,
+      "id": "stream_end_0df028c3-b733-4ace-9078-601e4dae988f",
+      "timestamp": "2026-10-09T12:43:48.163Z",
+      "seq": 10
+    }
+  },
+  {
+    "t": 1791549828290,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "complete",
+      "provider": "claude",
+      "sessionId": "8aeefa3f-3df7-4b42-b08e-89b801610d0a",
+      "actualSessionId": "8aeefa3f-3df7-4b42-b08e-89b801610d0a",
+      "exitCode": 0,
+      "success": true,
+      "aborted": false,
+      "id": "complete_bdce5447-3334-4164-99c0-ef60017a6992",
+      "timestamp": "2026-10-09T12:43:48.197Z",
+      "seq": 11
+    }
+  },
+  {
+    "t": 1791549828571,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "stream_reemplazo",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "messageId": "tmux-borrador:378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "blockIndex": 0,
+      "timestamp": "2026-10-09T12:43:48.568Z"
+    }
+  },
+  {
+    "t": 1791549828573,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "idle": true,
+      "timestamp": "2026-10-09T12:43:48.568Z"
+    }
+  },
+  {
+    "t": 1791549828736,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "id": "70d108c6-8fa2-4497-86aa-b98935801263_0",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "timestamp": "2026-10-09T12:43:48.199Z",
+      "provider": "claude",
+      "kind": "text",
+      "role": "assistant",
+      "content": "Sí, lo ejecutaste y está corriendo ahora mismo: arrancó a las 14:43. Los escenarios del CLI falso salieron bloqueados al instante, como corresponde, y ya va por `barra/estado-vivo`, el primero de verdad contra tu :3001.\n\nMientras corre:\n- Dejá abierta la terminal de ttyd y no la cierres.\n- Las sesiones `e2e-*` que veas en la barra son de la prueba y se cierran solas.\n- Tarda unos 20 minutos. Vos lo ves terminar cuando aparece `informe: e2e/evidencia/final-3001/informe.md`.\n\nCuando termine, avisame y reviso la evidencia: que no haya tokens en disco, que no queden `e2e-*` y que el proyecto haya quedado archivado. Después lo commiteo y te paso los 8 puntos para el celular.",
+      "messageId": "msg_011Cfrgah72WzehyKQ1mPtBB",
+      "blockIndex": 0
+    }
+  },
+  {
+    "t": 1791549828825,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "id": "tmux_complete_378a6a34-72e0-4e36-8cb2-05a66f5d32f3_1791549828822",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "provider": "claude",
+      "timestamp": "2026-10-09T12:43:48.822Z",
+      "kind": "complete",
+      "success": true
+    }
+  },
+  {
+    "t": 1791549829182,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": {
+        "porcentaje": 2,
+        "resetsAt": 1791565200000,
+        "leidoEn": 1791549828177
+      },
+      "sevenDay": {
+        "porcentaje": 82,
+        "resetsAt": 1791734400000,
+        "leidoEn": 1791549828177
+      },
+      "cuenta": "optimum"
+    }
+  },
+  {
+    "t": 1791549829185,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": {
+        "porcentaje": 0,
+        "resetsAt": 1791567000000,
+        "leidoEn": 1791549828000
+      },
+      "sevenDay": {
+        "porcentaje": 91,
+        "resetsAt": 1791925200000,
+        "leidoEn": 1791549828000
+      },
+      "cuenta": "personal"
+    }
+  },
+  {
+    "t": 1791549829466,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "session_upserted",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "providerSessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "provider": "claude",
+      "session": {
+        "id": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+        "summary": "Verificación final de CloudCLI (Fase 12)",
+        "messageCount": 0,
+        "lastActivity": "2026-10-09T12:43:48.386Z",
+        "tmux": {
+          "nombre": "cloudcli-verificacion-final-guia-1",
+          "vivo": true
+        },
+        "cuenta": "personal"
+      },
+      "project": {
+        "projectId": "05c9a038-c5f4-47e0-b258-93565226b54d",
+        "path": "/home/leantejado/cloudcli",
+        "fullPath": "/home/leantejado/cloudcli",
+        "displayName": "cloudcli",
+        "isStarred": false
+      },
+      "timestamp": "2026-10-09T12:43:49.462Z"
+    }
+  },
+  {
+    "t": 1791549829468,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "session_upserted",
+      "sessionId": "8aeefa3f-3df7-4b42-b08e-89b801610d0a",
+      "providerSessionId": "8aeefa3f-3df7-4b42-b08e-89b801610d0a",
+      "provider": "claude",
+      "session": {
+        "id": "8aeefa3f-3df7-4b42-b08e-89b801610d0a",
+        "summary": "Respuesta simple: listo",
+        "messageCount": 0,
+        "lastActivity": "2026-10-09T12:43:48.308Z",
+        "tmux": null
+      },
+      "project": {
+        "projectId": "6f20624f-a0db-4b13-ace6-bddcba010843",
+        "path": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
+        "fullPath": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
+        "displayName": "proyecto",
+        "isStarred": false
+      },
+      "timestamp": "2026-10-09T12:43:49.462Z"
+    }
+  },
+  {
+    "t": 1791549830087,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "sidebar_archived",
+      "projectIds": [],
+      "sessionIds": [
+        "e5108569-f4ce-4610-95db-5e7c0e9b6a1e"
+      ],
+      "timestamp": "2026-10-09T12:43:50.083Z"
+    }
+  },
+  {
+    "t": 1791549835427,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "session_upserted",
+      "sessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "providerSessionId": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+      "provider": "claude",
+      "session": {
+        "id": "378a6a34-72e0-4e36-8cb2-05a66f5d32f3",
+        "summary": "Verificación final de CloudCLI (Fase 12)",
+        "messageCount": 0,
+        "lastActivity": "2026-10-09T12:43:52.489Z",
+        "tmux": {
+          "nombre": "cloudcli-verificacion-final-guia-1",
+          "vivo": true
+        },
+        "cuenta": "personal"
+      },
+      "project": {
+        "projectId": "05c9a038-c5f4-47e0-b258-93565226b54d",
+        "path": "/home/leantejado/cloudcli",
+        "fullPath": "/home/leantejado/cloudcli",
+        "displayName": "cloudcli",
+        "isStarred": false
+      },
+      "timestamp": "2026-10-09T12:43:55.425Z"
+    }
+  },
+  {
+    "t": 1791549835885,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": {
+        "porcentaje": 2,
+        "resetsAt": 1791565200000,
+        "leidoEn": 1791549828177
+      },
+      "sevenDay": {
+        "porcentaje": 82,
+        "resetsAt": 1791734400000,
+        "leidoEn": 1791549828177
+      },
+      "cuenta": "optimum"
+    }
+  },
+  {
+    "t": 1791549835888,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": {
+        "porcentaje": 0,
+        "resetsAt": 1791567000000,
+        "leidoEn": 1791549828000
+      },
+      "sevenDay": {
+        "porcentaje": 91,
+        "resetsAt": 1791925200000,
+        "leidoEn": 1791549828000
+      },
+      "cuenta": "personal"
+    }
+  },
+  {
+    "t": 1791549837253,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "heartbeat",
+      "timestamp": 1791549837250
+    }
+  },
+  {
+    "t": 1791549850996,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "recursos",
+      "ram": {
+        "porcentajePct": 64.89475361839774,
+        "usadaGb": 5.032630920410156,
+        "totalGb": 7.75506591796875
+      },
+      "disco": {
+        "usadoPct": 43.18273092209598,
+        "usadoGb": 41.37855911254883,
+        "totalGb": 95.82200622558594
+      },
+      "sesionesTmux": 4,
+      "techoRam": 90
+    }
+  }
+]

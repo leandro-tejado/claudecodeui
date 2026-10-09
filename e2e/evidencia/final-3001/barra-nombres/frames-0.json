@@ -1,0 +1,803 @@
+[
+  {
+    "t": 1791549857542,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "type": "chat.tmux-prompts"
+    }
+  },
+  {
+    "t": 1791549857719,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "tmux_prompts",
+      "prompts": [],
+      "timestamp": "2026-10-09T12:44:17.706Z"
+    }
+  },
+  {
+    "t": 1791549857897,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "type": "chat.tmux-prompts"
+    }
+  },
+  {
+    "t": 1791549857897,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "type": "chat.tmux-prompts"
+    }
+  },
+  {
+    "t": 1791549857979,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "tmux_prompts",
+      "prompts": [],
+      "timestamp": "2026-10-09T12:44:17.963Z"
+    }
+  },
+  {
+    "t": 1791549857979,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "tmux_prompts",
+      "prompts": [],
+      "timestamp": "2026-10-09T12:44:17.963Z"
+    }
+  },
+  {
+    "t": 1791549859061,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "type": "chat.subscribe",
+      "sessions": [
+        {
+          "sessionId": "9ca5cd07-d3a2-4251-bca3-a4f01176a089",
+          "lastSeq": 0
+        }
+      ]
+    }
+  },
+  {
+    "t": 1791549859076,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "chat_subscribed",
+      "sessionId": "9ca5cd07-d3a2-4251-bca3-a4f01176a089",
+      "isProcessing": false,
+      "lastSeq": 0,
+      "pendingPermissions": [],
+      "runsInTmux": true,
+      "timestamp": "2026-10-09T12:44:19.058Z"
+    }
+  },
+  {
+    "t": 1791549859871,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "type": "chat.send-tmux",
+      "sessionId": "9ca5cd07-d3a2-4251-bca3-a4f01176a089",
+      "content": "Explicame en una frase qué es un psicrómetro.",
+      "clientMessageId": "local_1791549859852_1gh47n",
+      "options": {
+        "model": "default",
+        "effort": "default",
+        "permissionMode": "default",
+        "toolsSettings": {
+          "allowedTools": [
+            "Edit",
+            "Bash(cd:*)",
+            "Bash(echo:*)",
+            "Bash(export:*)",
+            "Bash(which:*)",
+            "Bash(ps:*)",
+            "Bash(tmux:*)"
+          ],
+          "disallowedTools": [],
+          "skipPermissions": true
+        },
+        "skipPermissions": true,
+        "sessionSummary": "e2e-nombre-prosa-ejecutora-1",
+        "attachments": []
+      }
+    }
+  },
+  {
+    "t": 1791549860335,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "9ca5cd07-d3a2-4251-bca3-a4f01176a089",
+      "activityKind": "thinking",
+      "texto": "Imagining… (running SessionStart hooks… 5/6 · 0s)",
+      "timestamp": "2026-10-09T12:44:20.332Z"
+    }
+  },
+  {
+    "t": 1791549860345,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "stream_delta",
+      "sessionId": "9ca5cd07-d3a2-4251-bca3-a4f01176a089",
+      "messageId": "tmux-borrador:9ca5cd07-d3a2-4251-bca3-a4f01176a089",
+      "blockIndex": 0,
+      "content": "5h ?",
+      "timestamp": "2026-10-09T12:44:20.332Z"
+    }
+  },
+  {
+    "t": 1791549860505,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "message_status",
+      "sessionId": "9ca5cd07-d3a2-4251-bca3-a4f01176a089",
+      "clientMessageId": "local_1791549859852_1gh47n",
+      "status": "sent",
+      "timestamp": "2026-10-09T12:44:20.501Z"
+    }
+  },
+  {
+    "t": 1791549860517,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "status",
+      "sessionId": "9ca5cd07-d3a2-4251-bca3-a4f01176a089",
+      "text": null,
+      "canInterrupt": false,
+      "timestamp": "2026-10-09T12:44:20.503Z"
+    }
+  },
+  {
+    "t": 1791549860738,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "9ca5cd07-d3a2-4251-bca3-a4f01176a089",
+      "activityKind": "thinking",
+      "texto": "Imagining… (running SessionStart hooks… 5/6 · 0s)",
+      "timestamp": "2026-10-09T12:44:20.734Z"
+    }
+  },
+  {
+    "t": 1791549861140,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "9ca5cd07-d3a2-4251-bca3-a4f01176a089",
+      "activityKind": "thinking",
+      "texto": "Imagining… (running SessionStart hooks… 5/6 · 0s)",
+      "timestamp": "2026-10-09T12:44:21.135Z"
+    }
+  },
+  {
+    "t": 1791549861560,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "9ca5cd07-d3a2-4251-bca3-a4f01176a089",
+      "activityKind": "thinking",
+      "texto": "Imagining… (running SessionStart hooks… 5/6 · 1s)",
+      "timestamp": "2026-10-09T12:44:21.548Z"
+    }
+  },
+  {
+    "t": 1791549861944,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "stream_reemplazo",
+      "sessionId": "9ca5cd07-d3a2-4251-bca3-a4f01176a089",
+      "messageId": "tmux-borrador:9ca5cd07-d3a2-4251-bca3-a4f01176a089",
+      "blockIndex": 0,
+      "timestamp": "2026-10-09T12:44:21.936Z"
+    }
+  },
+  {
+    "t": 1791549861944,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "9ca5cd07-d3a2-4251-bca3-a4f01176a089",
+      "idle": true,
+      "timestamp": "2026-10-09T12:44:21.936Z"
+    }
+  },
+  {
+    "t": 1791549864967,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "id": "6fc9431d-18d3-48a9-b80b-5e293ffe623d",
+      "sessionId": "9ca5cd07-d3a2-4251-bca3-a4f01176a089",
+      "timestamp": "2026-10-09T12:44:21.521Z",
+      "provider": "claude",
+      "kind": "text",
+      "role": "user",
+      "content": "Explicame en una frase qué es un psicrómetro.",
+      "transcriptAnchorId": "6fc9431d-18d3-48a9-b80b-5e293ffe623d"
+    }
+  },
+  {
+    "t": 1791549865467,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "session_upserted",
+      "sessionId": "9ca5cd07-d3a2-4251-bca3-a4f01176a089",
+      "providerSessionId": "9ca5cd07-d3a2-4251-bca3-a4f01176a089",
+      "provider": "claude",
+      "session": {
+        "id": "9ca5cd07-d3a2-4251-bca3-a4f01176a089",
+        "summary": "Psicrómetro: definición",
+        "messageCount": 0,
+        "lastActivity": "2026-10-09T12:44:22.820Z",
+        "tmux": {
+          "nombre": "e2e-nombre-prosa-ejecutora-1",
+          "vivo": true
+        },
+        "cuenta": "optimum"
+      },
+      "project": {
+        "projectId": "6f20624f-a0db-4b13-ace6-bddcba010843",
+        "path": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
+        "fullPath": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
+        "displayName": "proyecto",
+        "isStarred": false
+      },
+      "timestamp": "2026-10-09T12:44:25.461Z"
+    }
+  },
+  {
+    "t": 1791549865907,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": {
+        "porcentaje": 2,
+        "resetsAt": 1791565200000,
+        "leidoEn": 1791549828177
+      },
+      "sevenDay": {
+        "porcentaje": 82,
+        "resetsAt": 1791734400000,
+        "leidoEn": 1791549828177
+      },
+      "cuenta": "optimum"
+    }
+  },
+  {
+    "t": 1791549865916,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": {
+        "porcentaje": 0,
+        "resetsAt": 1791567000000,
+        "leidoEn": 1791549828000
+      },
+      "sevenDay": {
+        "porcentaje": 91,
+        "resetsAt": 1791925200000,
+        "leidoEn": 1791549828000
+      },
+      "cuenta": "personal"
+    }
+  },
+  {
+    "t": 1791549866547,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "session_upserted",
+      "sessionId": "9ca5cd07-d3a2-4251-bca3-a4f01176a089",
+      "providerSessionId": "9ca5cd07-d3a2-4251-bca3-a4f01176a089",
+      "provider": "claude",
+      "session": {
+        "id": "9ca5cd07-d3a2-4251-bca3-a4f01176a089",
+        "summary": "Psicrómetro: definición",
+        "messageCount": 0,
+        "lastActivity": "2026-10-09T12:44:22.820Z",
+        "tmux": null
+      },
+      "project": {
+        "projectId": "6f20624f-a0db-4b13-ace6-bddcba010843",
+        "path": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
+        "fullPath": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
+        "displayName": "proyecto",
+        "isStarred": false
+      },
+      "timestamp": "2026-10-09T12:44:26.545Z"
+    }
+  },
+  {
+    "t": 1791549868750,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": {
+        "porcentaje": 2,
+        "resetsAt": 1791565200000,
+        "leidoEn": 1791549867000
+      },
+      "sevenDay": {
+        "porcentaje": 82,
+        "resetsAt": 1791734400000,
+        "leidoEn": 1791549867000
+      },
+      "cuenta": "optimum"
+    }
+  },
+  {
+    "t": 1791549868755,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": {
+        "porcentaje": 0,
+        "resetsAt": 1791567000000,
+        "leidoEn": 1791549828000
+      },
+      "sevenDay": {
+        "porcentaje": 91,
+        "resetsAt": 1791925200000,
+        "leidoEn": 1791549828000
+      },
+      "cuenta": "personal"
+    }
+  },
+  {
+    "t": 1791549871426,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "session_upserted",
+      "sessionId": "9ca5cd07-d3a2-4251-bca3-a4f01176a089",
+      "providerSessionId": "9ca5cd07-d3a2-4251-bca3-a4f01176a089",
+      "provider": "claude",
+      "session": {
+        "id": "9ca5cd07-d3a2-4251-bca3-a4f01176a089",
+        "summary": "Psicrómetro: definición",
+        "messageCount": 0,
+        "lastActivity": "2026-10-09T12:44:27.217Z",
+        "tmux": null
+      },
+      "project": {
+        "projectId": "6f20624f-a0db-4b13-ace6-bddcba010843",
+        "path": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
+        "fullPath": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
+        "displayName": "proyecto",
+        "isStarred": false
+      },
+      "timestamp": "2026-10-09T12:44:31.424Z"
+    }
+  },
+  {
+    "t": 1791549871902,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": {
+        "porcentaje": 2,
+        "resetsAt": 1791565200000,
+        "leidoEn": 1791549867000
+      },
+      "sevenDay": {
+        "porcentaje": 82,
+        "resetsAt": 1791734400000,
+        "leidoEn": 1791549867000
+      },
+      "cuenta": "optimum"
+    }
+  },
+  {
+    "t": 1791549871905,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": {
+        "porcentaje": 0,
+        "resetsAt": 1791567000000,
+        "leidoEn": 1791549828000
+      },
+      "sevenDay": {
+        "porcentaje": 91,
+        "resetsAt": 1791925200000,
+        "leidoEn": 1791549828000
+      },
+      "cuenta": "personal"
+    }
+  },
+  {
+    "t": 1791549875295,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "session_upserted",
+      "sessionId": "56d53720-60cd-4477-b6b8-4f0ac7483e35",
+      "providerSessionId": "56d53720-60cd-4477-b6b8-4f0ac7483e35",
+      "provider": "claude",
+      "session": {
+        "id": "56d53720-60cd-4477-b6b8-4f0ac7483e35",
+        "summary": "e2e-nombre-bash-ejecutora-1",
+        "messageCount": 0,
+        "lastActivity": "2026-10-09T12:44:33.000Z",
+        "tmux": {
+          "nombre": "e2e-nombre-bash-ejecutora-1",
+          "vivo": true
+        },
+        "cuenta": "optimum"
+      },
+      "project": {
+        "projectId": "6f20624f-a0db-4b13-ace6-bddcba010843",
+        "path": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
+        "fullPath": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
+        "displayName": "proyecto",
+        "isStarred": false
+      },
+      "timestamp": "2026-10-09T12:44:35.287Z"
+    }
+  },
+  {
+    "t": 1791549878647,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "message_status",
+      "sessionId": "56d53720-60cd-4477-b6b8-4f0ac7483e35",
+      "clientMessageId": "local_1791549878005_9rnofs",
+      "status": "sent",
+      "timestamp": "2026-10-09T12:44:38.645Z"
+    }
+  },
+  {
+    "t": 1791549878647,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "status",
+      "sessionId": "56d53720-60cd-4477-b6b8-4f0ac7483e35",
+      "text": null,
+      "canInterrupt": false,
+      "timestamp": "2026-10-09T12:44:38.646Z"
+    }
+  },
+  {
+    "t": 1791549878813,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "56d53720-60cd-4477-b6b8-4f0ac7483e35",
+      "activityKind": "thinking",
+      "texto": "Burrowing… (running SessionStart hooks… 5/6 · 0s)",
+      "timestamp": "2026-10-09T12:44:38.807Z"
+    }
+  },
+  {
+    "t": 1791549879238,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "56d53720-60cd-4477-b6b8-4f0ac7483e35",
+      "activityKind": "thinking",
+      "texto": "Burrowing… (running SessionStart hooks… 5/6 · 0s)",
+      "timestamp": "2026-10-09T12:44:39.232Z"
+    }
+  },
+  {
+    "t": 1791549879611,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "56d53720-60cd-4477-b6b8-4f0ac7483e35",
+      "idle": true,
+      "timestamp": "2026-10-09T12:44:39.609Z"
+    }
+  },
+  {
+    "t": 1791549879812,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": {
+        "porcentaje": 2,
+        "resetsAt": 1791565200000,
+        "leidoEn": 1791549878000
+      },
+      "sevenDay": {
+        "porcentaje": 82,
+        "resetsAt": 1791734400000,
+        "leidoEn": 1791549878000
+      },
+      "cuenta": "optimum"
+    }
+  },
+  {
+    "t": 1791549879814,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": {
+        "porcentaje": 0,
+        "resetsAt": 1791567000000,
+        "leidoEn": 1791549828000
+      },
+      "sevenDay": {
+        "porcentaje": 91,
+        "resetsAt": 1791925200000,
+        "leidoEn": 1791549828000
+      },
+      "cuenta": "personal"
+    }
+  },
+  {
+    "t": 1791549881011,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "recursos",
+      "ram": {
+        "porcentajePct": 68.51393840656704,
+        "usadaGb": 5.313301086425781,
+        "totalGb": 7.75506591796875
+      },
+      "disco": {
+        "usadoPct": 43.202683815432714,
+        "usadoGb": 41.39767837524414,
+        "totalGb": 95.82200622558594
+      },
+      "sesionesTmux": 5,
+      "techoRam": 90
+    }
+  },
+  {
+    "t": 1791549881415,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": {
+        "porcentaje": 2,
+        "resetsAt": 1791565200000,
+        "leidoEn": 1791549878000
+      },
+      "sevenDay": {
+        "porcentaje": 82,
+        "resetsAt": 1791734400000,
+        "leidoEn": 1791549878000
+      },
+      "cuenta": "optimum"
+    }
+  },
+  {
+    "t": 1791549881417,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": {
+        "porcentaje": 0,
+        "resetsAt": 1791567000000,
+        "leidoEn": 1791549828000
+      },
+      "sevenDay": {
+        "porcentaje": 91,
+        "resetsAt": 1791925200000,
+        "leidoEn": 1791549828000
+      },
+      "cuenta": "personal"
+    }
+  },
+  {
+    "t": 1791549881615,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "56d53720-60cd-4477-b6b8-4f0ac7483e35",
+      "activityKind": "thinking",
+      "texto": "Moseying… (3s · thinking with high effort)",
+      "timestamp": "2026-10-09T12:44:41.613Z"
+    }
+  },
+  {
+    "t": 1791549882017,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "56d53720-60cd-4477-b6b8-4f0ac7483e35",
+      "activityKind": "thinking",
+      "texto": "Moseying… (3s · ↓ 63 tokens · thinking with high effort)",
+      "timestamp": "2026-10-09T12:44:42.015Z"
+    }
+  },
+  {
+    "t": 1791549882416,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "56d53720-60cd-4477-b6b8-4f0ac7483e35",
+      "activityKind": "thinking",
+      "texto": "Moseying… (4s · ↓ 157 tokens · thinking with high effort)",
+      "timestamp": "2026-10-09T12:44:42.414Z"
+    }
+  },
+  {
+    "t": 1791549882816,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "56d53720-60cd-4477-b6b8-4f0ac7483e35",
+      "idle": true,
+      "timestamp": "2026-10-09T12:44:42.815Z"
+    }
+  },
+  {
+    "t": 1791549882899,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "heartbeat",
+      "timestamp": 1791549882898
+    }
+  },
+  {
+    "t": 1791549882957,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "id": "563a333b-9c35-473a-b703-1b16147e57f4",
+      "sessionId": "56d53720-60cd-4477-b6b8-4f0ac7483e35",
+      "timestamp": "2026-10-09T12:44:38.394Z",
+      "provider": "claude",
+      "kind": "text",
+      "role": "user",
+      "content": "<bash-input>echo hola-57a7gb</bash-input>",
+      "transcriptAnchorId": "563a333b-9c35-473a-b703-1b16147e57f4"
+    }
+  },
+  {
+    "t": 1791549882957,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "id": "ae6dfae7-ab2c-47cb-9890-7585e38e7dbd",
+      "sessionId": "56d53720-60cd-4477-b6b8-4f0ac7483e35",
+      "timestamp": "2026-10-09T12:44:38.539Z",
+      "provider": "claude",
+      "kind": "text",
+      "role": "user",
+      "content": "<bash-stdout>hola-57a7gb</bash-stdout><bash-stderr></bash-stderr>",
+      "transcriptAnchorId": "ae6dfae7-ab2c-47cb-9890-7585e38e7dbd"
+    }
+  },
+  {
+    "t": 1791549883460,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": {
+        "porcentaje": 2,
+        "resetsAt": 1791565200000,
+        "leidoEn": 1791549882000
+      },
+      "sevenDay": {
+        "porcentaje": 82,
+        "resetsAt": 1791734400000,
+        "leidoEn": 1791549882000
+      },
+      "cuenta": "optimum"
+    }
+  },
+  {
+    "t": 1791549883462,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": {
+        "porcentaje": 0,
+        "resetsAt": 1791567000000,
+        "leidoEn": 1791549828000
+      },
+      "sevenDay": {
+        "porcentaje": 91,
+        "resetsAt": 1791925200000,
+        "leidoEn": 1791549828000
+      },
+      "cuenta": "personal"
+    }
+  },
+  {
+    "t": 1791549883467,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "session_upserted",
+      "sessionId": "56d53720-60cd-4477-b6b8-4f0ac7483e35",
+      "providerSessionId": "56d53720-60cd-4477-b6b8-4f0ac7483e35",
+      "provider": "claude",
+      "session": {
+        "id": "56d53720-60cd-4477-b6b8-4f0ac7483e35",
+        "summary": "Comando: echo hola-57a7gb",
+        "messageCount": 0,
+        "lastActivity": "2026-10-09T12:44:39.650Z",
+        "tmux": {
+          "nombre": "e2e-nombre-bash-ejecutora-1",
+          "vivo": true
+        },
+        "cuenta": "optimum"
+      },
+      "project": {
+        "projectId": "6f20624f-a0db-4b13-ace6-bddcba010843",
+        "path": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
+        "fullPath": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
+        "displayName": "proyecto",
+        "isStarred": false
+      },
+      "timestamp": "2026-10-09T12:44:43.454Z"
+    }
+  },
+  {
+    "t": 1791549883663,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "id": "8e05dd69-9672-44d8-ab74-dd232e13d9ac_0",
+      "sessionId": "56d53720-60cd-4477-b6b8-4f0ac7483e35",
+      "timestamp": "2026-10-09T12:44:43.276Z",
+      "provider": "claude",
+      "kind": "text",
+      "role": "assistant",
+      "content": "El comando corrió y devolvió `hola-57a7gb`. No hay nada más que hacer con él. ¿Qué querés que haga?\n\nAl abrir la sesión el sync de repos informó dos errores. `app-optimum-main` (ajeno, solo lectura) y `app-contentless` fallaron el fast-forward. Si vas a tocar `app-contentless`, conviene revisarlo antes.",
+      "messageId": "msg_011CfrgfSY4jWNaNRoDTCTp4",
+      "blockIndex": 0
+    }
+  },
+  {
+    "t": 1791549883730,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "id": "tmux_complete_56d53720-60cd-4477-b6b8-4f0ac7483e35_1791549883671",
+      "sessionId": "56d53720-60cd-4477-b6b8-4f0ac7483e35",
+      "provider": "claude",
+      "timestamp": "2026-10-09T12:44:43.671Z",
+      "kind": "complete",
+      "success": true
+    }
+  }
+]

@@ -64,10 +64,21 @@ async function apiReal(ruta, init = {}) {
   });
   return r;
 }
+async function proyectoReal() {
+  const lista = await (await apiReal('/projects?skipSynchronization=1')).json().catch(() => null);
+  const proyectos = Array.isArray(lista) ? lista : (lista?.projects ?? lista?.data ?? []);
+  return proyectos.find((p) => [p.fullPath, p.path, p.project_path].includes(PROYECTO)) ?? null;
+}
 if (contraReal) {
   fs.mkdirSync(PROYECTO, { recursive: true });
   const r = await apiReal('/projects/create-project', { method: 'POST', body: JSON.stringify({ path: PROYECTO, customName: 'e2e-proyecto' }) });
   if (!r.ok && r.status !== 409) throw new Error(`create-project en :3001: HTTP ${r.status}`);
+  // 409: ya estaba activo, y con el nombre de la carpeta ("proyecto"): los
+  // escenarios lo buscan como e2e-proyecto (9-oct, tres escenarios en rojo).
+  const nuestro = await proyectoReal();
+  if (nuestro && nuestro.displayName !== 'e2e-proyecto') {
+    await apiReal(`/projects/${encodeURIComponent(nuestro.projectId ?? nuestro.id)}/rename`, { method: 'PUT', body: JSON.stringify({ displayName: 'e2e-proyecto' }) });
+  }
 }
 
 for (const id of elegidos) {
@@ -192,9 +203,7 @@ console.log(`\ninforme: ${path.relative(REPO, informe)}`);
 // dormir` no deja entradas e2e-* en el hibernadas.json real (ahí sí escribe:
 // el vigía de :3001 escucha ~/.cache/aos).
 if (contraReal) {
-  const lista = await (await apiReal('/projects?skipSynchronization=1')).json().catch(() => null);
-  const proyectos = Array.isArray(lista) ? lista : (lista?.projects ?? lista?.data ?? []);
-  const nuestro = proyectos.find((p) => [p.fullPath, p.path, p.project_path].includes(PROYECTO));
+  const nuestro = await proyectoReal();
   const archivado = nuestro ? (await apiReal(`/projects/${encodeURIComponent(nuestro.projectId ?? nuestro.id)}`, { method: 'DELETE' })).ok : false;
   const rutaHib = path.join(os.homedir(), '.cache/aos/hibernadas.json');
   let sacadas = 0;

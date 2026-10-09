@@ -1,0 +1,1177 @@
+[
+  {
+    "t": 1791550320470,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "type": "chat.tmux-prompts"
+    }
+  },
+  {
+    "t": 1791550320564,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "tmux_prompts",
+      "prompts": [],
+      "timestamp": "2026-10-09T12:52:00.557Z"
+    }
+  },
+  {
+    "t": 1791550320624,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "type": "chat.tmux-prompts"
+    }
+  },
+  {
+    "t": 1791550320624,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "type": "chat.tmux-prompts"
+    }
+  },
+  {
+    "t": 1791550320717,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "tmux_prompts",
+      "prompts": [],
+      "timestamp": "2026-10-09T12:52:00.701Z"
+    }
+  },
+  {
+    "t": 1791550320717,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "tmux_prompts",
+      "prompts": [],
+      "timestamp": "2026-10-09T12:52:00.702Z"
+    }
+  },
+  {
+    "t": 1791550322744,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "type": "chat.subscribe",
+      "sessions": [
+        {
+          "sessionId": "8315bbb4-57d2-46ed-abf5-e90a27a7a1ee",
+          "lastSeq": 0
+        }
+      ]
+    }
+  },
+  {
+    "t": 1791550322780,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "chat_subscribed",
+      "sessionId": "8315bbb4-57d2-46ed-abf5-e90a27a7a1ee",
+      "isProcessing": false,
+      "lastSeq": 0,
+      "pendingPermissions": [],
+      "runsInTmux": true,
+      "timestamp": "2026-10-09T12:52:02.774Z"
+    }
+  },
+  {
+    "t": 1791550323573,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "type": "chat.send-tmux",
+      "sessionId": "8315bbb4-57d2-46ed-abf5-e90a27a7a1ee",
+      "content": "Contá del 1 al 40 en palabras, separadas por comas. Al final escribí behrfs.",
+      "clientMessageId": "local_1791550323551_0wo24i",
+      "options": {
+        "model": "default",
+        "effort": "default",
+        "permissionMode": "default",
+        "toolsSettings": {
+          "allowedTools": [
+            "Edit",
+            "Bash(cd:*)",
+            "Bash(echo:*)",
+            "Bash(export:*)",
+            "Bash(which:*)",
+            "Bash(ps:*)",
+            "Bash(tmux:*)"
+          ],
+          "disallowedTools": [],
+          "skipPermissions": true
+        },
+        "skipPermissions": true,
+        "sessionSummary": "e2e-rafaga-ejecutora-1",
+        "attachments": []
+      }
+    }
+  },
+  {
+    "t": 1791550324018,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "8315bbb4-57d2-46ed-abf5-e90a27a7a1ee",
+      "activityKind": "thinking",
+      "texto": "Baking… (running SessionStart hooks… 5/6 · 0s)",
+      "timestamp": "2026-10-09T12:52:04.016Z"
+    }
+  },
+  {
+    "t": 1791550324025,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "stream_delta",
+      "sessionId": "8315bbb4-57d2-46ed-abf5-e90a27a7a1ee",
+      "messageId": "tmux-borrador:8315bbb4-57d2-46ed-abf5-e90a27a7a1ee",
+      "blockIndex": 0,
+      "content": "5h ?",
+      "timestamp": "2026-10-09T12:52:04.016Z"
+    }
+  },
+  {
+    "t": 1791550324201,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "message_status",
+      "sessionId": "8315bbb4-57d2-46ed-abf5-e90a27a7a1ee",
+      "clientMessageId": "local_1791550323551_0wo24i",
+      "status": "sent",
+      "timestamp": "2026-10-09T12:52:04.199Z"
+    }
+  },
+  {
+    "t": 1791550324211,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "status",
+      "sessionId": "8315bbb4-57d2-46ed-abf5-e90a27a7a1ee",
+      "text": null,
+      "canInterrupt": false,
+      "timestamp": "2026-10-09T12:52:04.199Z"
+    }
+  },
+  {
+    "t": 1791550324427,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "8315bbb4-57d2-46ed-abf5-e90a27a7a1ee",
+      "activityKind": "thinking",
+      "texto": "Baking… (running SessionStart hooks… 5/6 · 0s)",
+      "timestamp": "2026-10-09T12:52:04.421Z"
+    }
+  },
+  {
+    "t": 1791550324818,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "8315bbb4-57d2-46ed-abf5-e90a27a7a1ee",
+      "activityKind": "thinking",
+      "texto": "Baking… (running SessionStart hooks… 5/6 · 0s)",
+      "timestamp": "2026-10-09T12:52:04.816Z"
+    }
+  },
+  {
+    "t": 1791550325176,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "type": "chat.send-tmux",
+      "sessionId": "8315bbb4-57d2-46ed-abf5-e90a27a7a1ee",
+      "content": "Después respondé solo: hnsb2y",
+      "clientMessageId": "local_1791550325163_he52j9",
+      "options": {
+        "model": "default",
+        "effort": "default",
+        "permissionMode": "default",
+        "toolsSettings": {
+          "allowedTools": [
+            "Edit",
+            "Bash(cd:*)",
+            "Bash(echo:*)",
+            "Bash(export:*)",
+            "Bash(which:*)",
+            "Bash(ps:*)",
+            "Bash(tmux:*)"
+          ],
+          "disallowedTools": [],
+          "skipPermissions": true
+        },
+        "skipPermissions": true,
+        "sessionSummary": "e2e-rafaga-ejecutora-1",
+        "attachments": []
+      }
+    }
+  },
+  {
+    "t": 1791550325259,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "8315bbb4-57d2-46ed-abf5-e90a27a7a1ee",
+      "activityKind": "thinking",
+      "texto": "Baking… (running UserPromptSubmit hooks… 0/2 · 1s)",
+      "timestamp": "2026-10-09T12:52:05.256Z"
+    }
+  },
+  {
+    "t": 1791550325639,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "8315bbb4-57d2-46ed-abf5-e90a27a7a1ee",
+      "activityKind": "thinking",
+      "texto": "Baking… (running UserPromptSubmit hooks… 1/2 · 1s)",
+      "timestamp": "2026-10-09T12:52:05.636Z"
+    }
+  },
+  {
+    "t": 1791550325826,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "message_status",
+      "sessionId": "8315bbb4-57d2-46ed-abf5-e90a27a7a1ee",
+      "clientMessageId": "local_1791550325163_he52j9",
+      "status": "sent",
+      "timestamp": "2026-10-09T12:52:05.821Z"
+    }
+  },
+  {
+    "t": 1791550325828,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "status",
+      "sessionId": "8315bbb4-57d2-46ed-abf5-e90a27a7a1ee",
+      "text": null,
+      "canInterrupt": false,
+      "timestamp": "2026-10-09T12:52:05.823Z"
+    }
+  },
+  {
+    "t": 1791550326047,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "stream_reemplazo",
+      "sessionId": "8315bbb4-57d2-46ed-abf5-e90a27a7a1ee",
+      "messageId": "tmux-borrador:8315bbb4-57d2-46ed-abf5-e90a27a7a1ee",
+      "blockIndex": 0,
+      "timestamp": "2026-10-09T12:52:06.039Z"
+    }
+  },
+  {
+    "t": 1791550326058,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "8315bbb4-57d2-46ed-abf5-e90a27a7a1ee",
+      "idle": true,
+      "timestamp": "2026-10-09T12:52:06.039Z"
+    }
+  },
+  {
+    "t": 1791550326101,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "type": "chat.send-tmux",
+      "sessionId": "8315bbb4-57d2-46ed-abf5-e90a27a7a1ee",
+      "content": "Y después respondé solo: 8th39x",
+      "clientMessageId": "local_1791550326094_h6vkx3",
+      "options": {
+        "model": "default",
+        "effort": "default",
+        "permissionMode": "default",
+        "toolsSettings": {
+          "allowedTools": [
+            "Edit",
+            "Bash(cd:*)",
+            "Bash(echo:*)",
+            "Bash(export:*)",
+            "Bash(which:*)",
+            "Bash(ps:*)",
+            "Bash(tmux:*)"
+          ],
+          "disallowedTools": [],
+          "skipPermissions": true
+        },
+        "skipPermissions": true,
+        "sessionSummary": "e2e-rafaga-ejecutora-1",
+        "attachments": []
+      }
+    }
+  },
+  {
+    "t": 1791550326712,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "message_status",
+      "sessionId": "8315bbb4-57d2-46ed-abf5-e90a27a7a1ee",
+      "clientMessageId": "local_1791550326094_h6vkx3",
+      "status": "sent",
+      "timestamp": "2026-10-09T12:52:06.711Z"
+    }
+  },
+  {
+    "t": 1791550326715,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "status",
+      "sessionId": "8315bbb4-57d2-46ed-abf5-e90a27a7a1ee",
+      "text": null,
+      "canInterrupt": false,
+      "timestamp": "2026-10-09T12:52:06.711Z"
+    }
+  },
+  {
+    "t": 1791550327048,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "id": "9deecae4-4460-4795-ab3a-926be5a5fea9",
+      "sessionId": "8315bbb4-57d2-46ed-abf5-e90a27a7a1ee",
+      "timestamp": "2026-10-09T12:52:05.208Z",
+      "provider": "claude",
+      "kind": "text",
+      "role": "user",
+      "content": "Contá del 1 al 40 en palabras, separadas por comas. Al final escribí behrfs.",
+      "transcriptAnchorId": "9deecae4-4460-4795-ab3a-926be5a5fea9"
+    }
+  },
+  {
+    "t": 1791550327542,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "session_upserted",
+      "sessionId": "8315bbb4-57d2-46ed-abf5-e90a27a7a1ee",
+      "providerSessionId": "8315bbb4-57d2-46ed-abf5-e90a27a7a1ee",
+      "provider": "claude",
+      "session": {
+        "id": "8315bbb4-57d2-46ed-abf5-e90a27a7a1ee",
+        "summary": "Contá del 1 al 40 en palabras",
+        "messageCount": 0,
+        "lastActivity": "2026-10-09T12:52:06.640Z",
+        "tmux": {
+          "nombre": "e2e-rafaga-ejecutora-1",
+          "vivo": true
+        },
+        "cuenta": "optimum"
+      },
+      "project": {
+        "projectId": "6f20624f-a0db-4b13-ace6-bddcba010843",
+        "path": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
+        "fullPath": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
+        "displayName": "proyecto",
+        "isStarred": false
+      },
+      "timestamp": "2026-10-09T12:52:07.539Z"
+    }
+  },
+  {
+    "t": 1791550327647,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "8315bbb4-57d2-46ed-abf5-e90a27a7a1ee",
+      "activityKind": "thinking",
+      "texto": "Incubating… (3s · ↓ 2 tokens)",
+      "timestamp": "2026-10-09T12:52:07.644Z"
+    }
+  },
+  {
+    "t": 1791550327989,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": {
+        "porcentaje": 3,
+        "resetsAt": 1791565200000,
+        "leidoEn": 1791550311000
+      },
+      "sevenDay": {
+        "porcentaje": 82,
+        "resetsAt": 1791734400000,
+        "leidoEn": 1791550311000
+      },
+      "cuenta": "optimum"
+    }
+  },
+  {
+    "t": 1791550327993,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": {
+        "porcentaje": 0,
+        "resetsAt": 1791567000000,
+        "leidoEn": 1791549828000
+      },
+      "sevenDay": {
+        "porcentaje": 91,
+        "resetsAt": 1791925200000,
+        "leidoEn": 1791549828000
+      },
+      "cuenta": "personal"
+    }
+  },
+  {
+    "t": 1791550328047,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "8315bbb4-57d2-46ed-abf5-e90a27a7a1ee",
+      "activityKind": "thinking",
+      "texto": "Incubating… (4s · ↓ 2 tokens)",
+      "timestamp": "2026-10-09T12:52:08.045Z"
+    }
+  },
+  {
+    "t": 1791550328447,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "8315bbb4-57d2-46ed-abf5-e90a27a7a1ee",
+      "activityKind": "thinking",
+      "texto": "Incubating… (4s · ↓ 2 tokens)",
+      "timestamp": "2026-10-09T12:52:08.446Z"
+    }
+  },
+  {
+    "t": 1791550328872,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "8315bbb4-57d2-46ed-abf5-e90a27a7a1ee",
+      "idle": true,
+      "timestamp": "2026-10-09T12:52:08.870Z"
+    }
+  },
+  {
+    "t": 1791550328879,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "id": "8d4f9d78-3771-4f6a-accf-1d2a9ce260aa_0",
+      "sessionId": "8315bbb4-57d2-46ed-abf5-e90a27a7a1ee",
+      "timestamp": "2026-10-09T12:52:08.501Z",
+      "provider": "claude",
+      "kind": "text",
+      "role": "assistant",
+      "content": "uno, dos, tres, cuatro, cinco, seis, siete, ocho, nueve, diez, once, doce, trece, catorce, quince, dieciséis, diecisiete, dieciocho, diecinueve, veinte, veintiuno, veintidós, veintitrés, veinticuatro, veinticinco, veintiséis, veintisiete, veintiocho, veintinueve, treinta, treinta y uno, treinta y dos, treinta y tres, treinta y cuatro, treinta y cinco, treinta y seis, treinta y siete, treinta y ocho, treinta y nueve, cuarenta, behrfs.",
+      "messageId": "msg_011CfrhEJoepxV6ue7buz6u1",
+      "blockIndex": 0
+    }
+  },
+  {
+    "t": 1791550328883,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "id": "c88a3753-a6e8-469a-b772-6a4b35dd40ba",
+      "sessionId": "8315bbb4-57d2-46ed-abf5-e90a27a7a1ee",
+      "timestamp": "2026-10-09T12:52:08.613Z",
+      "provider": "claude",
+      "kind": "text",
+      "role": "user",
+      "content": "Después respondé solo: hnsb2y",
+      "transcriptAnchorId": "c88a3753-a6e8-469a-b772-6a4b35dd40ba"
+    }
+  },
+  {
+    "t": 1791550328884,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "id": "c3163727-5152-4762-b3f7-7aad4acbd84a",
+      "sessionId": "8315bbb4-57d2-46ed-abf5-e90a27a7a1ee",
+      "timestamp": "2026-10-09T12:52:08.616Z",
+      "provider": "claude",
+      "kind": "text",
+      "role": "user",
+      "content": "Y después respondé solo: 8th39x",
+      "transcriptAnchorId": "c3163727-5152-4762-b3f7-7aad4acbd84a"
+    }
+  },
+  {
+    "t": 1791550330224,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": {
+        "porcentaje": 3,
+        "resetsAt": 1791565200000,
+        "leidoEn": 1791550328000
+      },
+      "sevenDay": {
+        "porcentaje": 82,
+        "resetsAt": 1791734400000,
+        "leidoEn": 1791550328000
+      },
+      "cuenta": "optimum"
+    }
+  },
+  {
+    "t": 1791550330227,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": {
+        "porcentaje": 0,
+        "resetsAt": 1791567000000,
+        "leidoEn": 1791549828000
+      },
+      "sevenDay": {
+        "porcentaje": 91,
+        "resetsAt": 1791925200000,
+        "leidoEn": 1791549828000
+      },
+      "cuenta": "personal"
+    }
+  },
+  {
+    "t": 1791550331073,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "recursos",
+      "ram": {
+        "porcentajePct": 66.59686641638923,
+        "usadaGb": 5.164630889892578,
+        "totalGb": 7.75506591796875
+      },
+      "disco": {
+        "usadoPct": 43.19672820321568,
+        "usadoGb": 41.391971588134766,
+        "totalGb": 95.82200622558594
+      },
+      "sesionesTmux": 5,
+      "techoRam": 90
+    }
+  },
+  {
+    "t": 1791550332101,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "id": "26e7bfd3-d304-451d-8b1d-0bbe507be40e_0",
+      "sessionId": "8315bbb4-57d2-46ed-abf5-e90a27a7a1ee",
+      "timestamp": "2026-10-09T12:52:11.761Z",
+      "provider": "claude",
+      "kind": "text",
+      "role": "assistant",
+      "content": "hnsb2y\n\n8th39x",
+      "messageId": "msg_011CfrhEYgKhRgUG3ewn32eh",
+      "blockIndex": 0
+    }
+  },
+  {
+    "t": 1791550332146,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "id": "tmux_complete_8315bbb4-57d2-46ed-abf5-e90a27a7a1ee_1791550332102",
+      "sessionId": "8315bbb4-57d2-46ed-abf5-e90a27a7a1ee",
+      "provider": "claude",
+      "timestamp": "2026-10-09T12:52:12.102Z",
+      "kind": "complete",
+      "success": true
+    }
+  },
+  {
+    "t": 1791550332284,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "type": "chat.send-tmux",
+      "sessionId": "8315bbb4-57d2-46ed-abf5-e90a27a7a1ee",
+      "content": "Respondé solo: dy0kmw",
+      "clientMessageId": "local_1791550332271_suw8mj",
+      "options": {
+        "model": "default",
+        "effort": "default",
+        "permissionMode": "default",
+        "toolsSettings": {
+          "allowedTools": [
+            "Edit",
+            "Bash(cd:*)",
+            "Bash(echo:*)",
+            "Bash(export:*)",
+            "Bash(which:*)",
+            "Bash(ps:*)",
+            "Bash(tmux:*)"
+          ],
+          "disallowedTools": [],
+          "skipPermissions": true
+        },
+        "skipPermissions": true,
+        "sessionSummary": "e2e-rafaga-ejecutora-1",
+        "attachments": []
+      }
+    }
+  },
+  {
+    "t": 1791550332773,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "type": "chat.send-tmux",
+      "sessionId": "8315bbb4-57d2-46ed-abf5-e90a27a7a1ee",
+      "content": "Respondé solo: vpyxli",
+      "clientMessageId": "local_1791550332764_is6ehz",
+      "options": {
+        "model": "default",
+        "effort": "default",
+        "permissionMode": "default",
+        "toolsSettings": {
+          "allowedTools": [
+            "Edit",
+            "Bash(cd:*)",
+            "Bash(echo:*)",
+            "Bash(export:*)",
+            "Bash(which:*)",
+            "Bash(ps:*)",
+            "Bash(tmux:*)"
+          ],
+          "disallowedTools": [],
+          "skipPermissions": true
+        },
+        "skipPermissions": true,
+        "sessionSummary": "e2e-rafaga-ejecutora-1",
+        "attachments": []
+      }
+    }
+  },
+  {
+    "t": 1791550332900,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "message_status",
+      "sessionId": "8315bbb4-57d2-46ed-abf5-e90a27a7a1ee",
+      "clientMessageId": "local_1791550332271_suw8mj",
+      "status": "sent",
+      "timestamp": "2026-10-09T12:52:12.898Z"
+    }
+  },
+  {
+    "t": 1791550332909,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "status",
+      "sessionId": "8315bbb4-57d2-46ed-abf5-e90a27a7a1ee",
+      "text": null,
+      "canInterrupt": false,
+      "timestamp": "2026-10-09T12:52:12.898Z"
+    }
+  },
+  {
+    "t": 1791550333027,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "id": "97f846db-a47b-4438-b707-9169f8c3605a",
+      "sessionId": "8315bbb4-57d2-46ed-abf5-e90a27a7a1ee",
+      "timestamp": "2026-10-09T12:52:12.647Z",
+      "provider": "claude",
+      "kind": "text",
+      "role": "user",
+      "content": "Respondé solo: dy0kmw",
+      "transcriptAnchorId": "97f846db-a47b-4438-b707-9169f8c3605a"
+    }
+  },
+  {
+    "t": 1791550333260,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "8315bbb4-57d2-46ed-abf5-e90a27a7a1ee",
+      "activityKind": "thinking",
+      "texto": "Osmosing… (running UserPromptSubmit hooks… 0/2 · 0s)",
+      "timestamp": "2026-10-09T12:52:13.257Z"
+    }
+  },
+  {
+    "t": 1791550333473,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": {
+        "porcentaje": 3,
+        "resetsAt": 1791565200000,
+        "leidoEn": 1791550332000
+      },
+      "sevenDay": {
+        "porcentaje": 82,
+        "resetsAt": 1791734400000,
+        "leidoEn": 1791550332000
+      },
+      "cuenta": "optimum"
+    }
+  },
+  {
+    "t": 1791550333475,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": {
+        "porcentaje": 0,
+        "resetsAt": 1791567000000,
+        "leidoEn": 1791549828000
+      },
+      "sevenDay": {
+        "porcentaje": 91,
+        "resetsAt": 1791925200000,
+        "leidoEn": 1791549828000
+      },
+      "cuenta": "personal"
+    }
+  },
+  {
+    "t": 1791550333477,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "message_status",
+      "sessionId": "8315bbb4-57d2-46ed-abf5-e90a27a7a1ee",
+      "clientMessageId": "local_1791550332764_is6ehz",
+      "status": "sent",
+      "timestamp": "2026-10-09T12:52:13.476Z"
+    }
+  },
+  {
+    "t": 1791550333480,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "status",
+      "sessionId": "8315bbb4-57d2-46ed-abf5-e90a27a7a1ee",
+      "text": null,
+      "canInterrupt": false,
+      "timestamp": "2026-10-09T12:52:13.477Z"
+    }
+  },
+  {
+    "t": 1791550333604,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "session_upserted",
+      "sessionId": "8315bbb4-57d2-46ed-abf5-e90a27a7a1ee",
+      "providerSessionId": "8315bbb4-57d2-46ed-abf5-e90a27a7a1ee",
+      "provider": "claude",
+      "session": {
+        "id": "8315bbb4-57d2-46ed-abf5-e90a27a7a1ee",
+        "summary": "Conteo 1-40 en palabras",
+        "messageCount": 0,
+        "lastActivity": "2026-10-09T12:52:12.831Z",
+        "tmux": {
+          "nombre": "e2e-rafaga-ejecutora-1",
+          "vivo": true
+        },
+        "cuenta": "optimum"
+      },
+      "project": {
+        "projectId": "6f20624f-a0db-4b13-ace6-bddcba010843",
+        "path": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
+        "fullPath": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
+        "displayName": "proyecto",
+        "isStarred": false
+      },
+      "timestamp": "2026-10-09T12:52:13.599Z"
+    }
+  },
+  {
+    "t": 1791550333649,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "8315bbb4-57d2-46ed-abf5-e90a27a7a1ee",
+      "idle": true,
+      "timestamp": "2026-10-09T12:52:13.647Z"
+    }
+  },
+  {
+    "t": 1791550334050,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "8315bbb4-57d2-46ed-abf5-e90a27a7a1ee",
+      "activityKind": "thinking",
+      "texto": "Osmosing… (1s · thinking with high effort)",
+      "timestamp": "2026-10-09T12:52:14.047Z"
+    }
+  },
+  {
+    "t": 1791550334452,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "8315bbb4-57d2-46ed-abf5-e90a27a7a1ee",
+      "activityKind": "thinking",
+      "texto": "Osmosing… (1s · thinking with high effort)",
+      "timestamp": "2026-10-09T12:52:14.449Z"
+    }
+  },
+  {
+    "t": 1791550334849,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "8315bbb4-57d2-46ed-abf5-e90a27a7a1ee",
+      "activityKind": "thinking",
+      "texto": "Osmosing… (2s · thinking with high effort)",
+      "timestamp": "2026-10-09T12:52:14.847Z"
+    }
+  },
+  {
+    "t": 1791550335249,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "8315bbb4-57d2-46ed-abf5-e90a27a7a1ee",
+      "activityKind": "thinking",
+      "texto": "Osmosing… (2s · thinking with high effort)",
+      "timestamp": "2026-10-09T12:52:15.247Z"
+    }
+  },
+  {
+    "t": 1791550335648,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "8315bbb4-57d2-46ed-abf5-e90a27a7a1ee",
+      "activityKind": "thinking",
+      "texto": "Osmosing… (2s · thinking with high effort)",
+      "timestamp": "2026-10-09T12:52:15.646Z"
+    }
+  },
+  {
+    "t": 1791550336009,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "id": "9d73979a-ca2f-4ef7-a69a-6acddaa43630_0",
+      "sessionId": "8315bbb4-57d2-46ed-abf5-e90a27a7a1ee",
+      "timestamp": "2026-10-09T12:52:15.668Z",
+      "provider": "claude",
+      "kind": "text",
+      "role": "assistant",
+      "content": "dy0kmw\n\nCuota: 7d en 82% con 70% de la semana transcurrida, proyecta 118% al reset (en 51 h). Conviene bajar el ritmo o decidir el uso extra.",
+      "messageId": "msg_011CfrhErGFENfUtHzeNhYkK",
+      "blockIndex": 0
+    }
+  },
+  {
+    "t": 1791550336014,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "id": "40b116a9-7ad2-4eb1-9bb1-9169bec62f01",
+      "sessionId": "8315bbb4-57d2-46ed-abf5-e90a27a7a1ee",
+      "timestamp": "2026-10-09T12:52:15.751Z",
+      "provider": "claude",
+      "kind": "text",
+      "role": "user",
+      "content": "Respondé solo: vpyxli",
+      "transcriptAnchorId": "40b116a9-7ad2-4eb1-9bb1-9169bec62f01"
+    }
+  },
+  {
+    "t": 1791550336053,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "8315bbb4-57d2-46ed-abf5-e90a27a7a1ee",
+      "activityKind": "thinking",
+      "texto": "Cascading… (0s · thought for 2s)",
+      "timestamp": "2026-10-09T12:52:16.049Z"
+    }
+  },
+  {
+    "t": 1791550336053,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "stream_delta",
+      "sessionId": "8315bbb4-57d2-46ed-abf5-e90a27a7a1ee",
+      "messageId": "tmux-borrador:8315bbb4-57d2-46ed-abf5-e90a27a7a1ee",
+      "blockIndex": 0,
+      "content": "⎿  Tip: Just want the answer? Run /focus now to hide the steps along the way",
+      "timestamp": "2026-10-09T12:52:16.049Z"
+    }
+  },
+  {
+    "t": 1791550336453,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "8315bbb4-57d2-46ed-abf5-e90a27a7a1ee",
+      "activityKind": "thinking",
+      "texto": "Cascading… (0s · thought for 2s)",
+      "timestamp": "2026-10-09T12:52:16.450Z"
+    }
+  },
+  {
+    "t": 1791550336853,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "8315bbb4-57d2-46ed-abf5-e90a27a7a1ee",
+      "activityKind": "thinking",
+      "texto": "Cascading… (1s · thought for 2s)",
+      "timestamp": "2026-10-09T12:52:16.851Z"
+    }
+  },
+  {
+    "t": 1791550337256,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "8315bbb4-57d2-46ed-abf5-e90a27a7a1ee",
+      "activityKind": "thinking",
+      "texto": "Cascading… (1s · thought for 2s)",
+      "timestamp": "2026-10-09T12:52:17.253Z"
+    }
+  },
+  {
+    "t": 1791550337375,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": {
+        "porcentaje": 3,
+        "resetsAt": 1791565200000,
+        "leidoEn": 1791550336000
+      },
+      "sevenDay": {
+        "porcentaje": 82,
+        "resetsAt": 1791734400000,
+        "leidoEn": 1791550336000
+      },
+      "cuenta": "optimum"
+    }
+  },
+  {
+    "t": 1791550337375,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": {
+        "porcentaje": 0,
+        "resetsAt": 1791567000000,
+        "leidoEn": 1791549828000
+      },
+      "sevenDay": {
+        "porcentaje": 91,
+        "resetsAt": 1791925200000,
+        "leidoEn": 1791549828000
+      },
+      "cuenta": "personal"
+    }
+  },
+  {
+    "t": 1791550337670,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "id": "8657855d-5b5e-4478-b361-2651011f4538_0",
+      "sessionId": "8315bbb4-57d2-46ed-abf5-e90a27a7a1ee",
+      "timestamp": "2026-10-09T12:52:17.310Z",
+      "provider": "claude",
+      "kind": "text",
+      "role": "assistant",
+      "content": "vpyxli",
+      "messageId": "msg_011CfrhF5BddUiDen7NUNCGc",
+      "blockIndex": 0
+    }
+  },
+  {
+    "t": 1791550337673,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "stream_reemplazo",
+      "sessionId": "8315bbb4-57d2-46ed-abf5-e90a27a7a1ee",
+      "messageId": "tmux-borrador:8315bbb4-57d2-46ed-abf5-e90a27a7a1ee",
+      "blockIndex": 0,
+      "timestamp": "2026-10-09T12:52:17.666Z"
+    }
+  },
+  {
+    "t": 1791550337674,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "8315bbb4-57d2-46ed-abf5-e90a27a7a1ee",
+      "idle": true,
+      "timestamp": "2026-10-09T12:52:17.666Z"
+    }
+  },
+  {
+    "t": 1791550337704,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "id": "tmux_complete_8315bbb4-57d2-46ed-abf5-e90a27a7a1ee_1791550337684",
+      "sessionId": "8315bbb4-57d2-46ed-abf5-e90a27a7a1ee",
+      "provider": "claude",
+      "timestamp": "2026-10-09T12:52:17.684Z",
+      "kind": "complete",
+      "success": true
+    }
+  },
+  {
+    "t": 1791550338973,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": {
+        "porcentaje": 3,
+        "resetsAt": 1791565200000,
+        "leidoEn": 1791550337000
+      },
+      "sevenDay": {
+        "porcentaje": 82,
+        "resetsAt": 1791734400000,
+        "leidoEn": 1791550337000
+      },
+      "cuenta": "optimum"
+    }
+  },
+  {
+    "t": 1791550338976,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": {
+        "porcentaje": 0,
+        "resetsAt": 1791567000000,
+        "leidoEn": 1791549828000
+      },
+      "sevenDay": {
+        "porcentaje": 91,
+        "resetsAt": 1791925200000,
+        "leidoEn": 1791549828000
+      },
+      "cuenta": "personal"
+    }
+  },
+  {
+    "t": 1791550339561,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "session_upserted",
+      "sessionId": "8315bbb4-57d2-46ed-abf5-e90a27a7a1ee",
+      "providerSessionId": "8315bbb4-57d2-46ed-abf5-e90a27a7a1ee",
+      "provider": "claude",
+      "session": {
+        "id": "8315bbb4-57d2-46ed-abf5-e90a27a7a1ee",
+        "summary": "Conteo 1-40 en palabras",
+        "messageCount": 0,
+        "lastActivity": "2026-10-09T12:52:17.467Z",
+        "tmux": {
+          "nombre": "e2e-rafaga-ejecutora-1",
+          "vivo": true
+        },
+        "cuenta": "optimum"
+      },
+      "project": {
+        "projectId": "6f20624f-a0db-4b13-ace6-bddcba010843",
+        "path": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
+        "fullPath": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
+        "displayName": "proyecto",
+        "isStarred": false
+      },
+      "timestamp": "2026-10-09T12:52:19.558Z"
+    }
+  },
+  {
+    "t": 1791550340017,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": {
+        "porcentaje": 3,
+        "resetsAt": 1791565200000,
+        "leidoEn": 1791550337000
+      },
+      "sevenDay": {
+        "porcentaje": 82,
+        "resetsAt": 1791734400000,
+        "leidoEn": 1791550337000
+      },
+      "cuenta": "optimum"
+    }
+  },
+  {
+    "t": 1791550340019,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": {
+        "porcentaje": 0,
+        "resetsAt": 1791567000000,
+        "leidoEn": 1791549828000
+      },
+      "sevenDay": {
+        "porcentaje": 91,
+        "resetsAt": 1791925200000,
+        "leidoEn": 1791549828000
+      },
+      "cuenta": "personal"
+    }
+  }
+]

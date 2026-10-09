@@ -1,0 +1,169 @@
+[
+  {
+    "t": 1791549884943,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "type": "chat.tmux-prompts"
+    }
+  },
+  {
+    "t": 1791549884943,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "type": "chat.tmux-prompts"
+    }
+  },
+  {
+    "t": 1791549884999,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "tmux_prompts",
+      "prompts": [],
+      "timestamp": "2026-10-09T12:44:44.996Z"
+    }
+  },
+  {
+    "t": 1791549885041,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "tmux_prompts",
+      "prompts": [],
+      "timestamp": "2026-10-09T12:44:44.996Z"
+    }
+  },
+  {
+    "t": 1791549885041,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": {
+        "porcentaje": 2,
+        "resetsAt": 1791565200000,
+        "leidoEn": 1791549883000
+      },
+      "sevenDay": {
+        "porcentaje": 82,
+        "resetsAt": 1791734400000,
+        "leidoEn": 1791549883000
+      },
+      "cuenta": "optimum"
+    }
+  },
+  {
+    "t": 1791549885041,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": {
+        "porcentaje": 0,
+        "resetsAt": 1791567000000,
+        "leidoEn": 1791549828000
+      },
+      "sevenDay": {
+        "porcentaje": 91,
+        "resetsAt": 1791925200000,
+        "leidoEn": 1791549828000
+      },
+      "cuenta": "personal"
+    }
+  },
+  {
+    "t": 1791549889441,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "session_upserted",
+      "sessionId": "56d53720-60cd-4477-b6b8-4f0ac7483e35",
+      "providerSessionId": "56d53720-60cd-4477-b6b8-4f0ac7483e35",
+      "provider": "claude",
+      "session": {
+        "id": "56d53720-60cd-4477-b6b8-4f0ac7483e35",
+        "summary": "Comando: echo hola-57a7gb",
+        "messageCount": 0,
+        "lastActivity": "2026-10-09T12:44:44.068Z",
+        "tmux": null
+      },
+      "project": {
+        "projectId": "6f20624f-a0db-4b13-ace6-bddcba010843",
+        "path": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
+        "fullPath": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
+        "displayName": "proyecto",
+        "isStarred": false
+      },
+      "timestamp": "2026-10-09T12:44:49.439Z"
+    }
+  },
+  {
+    "t": 1791549889907,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": {
+        "porcentaje": 2,
+        "resetsAt": 1791565200000,
+        "leidoEn": 1791549883000
+      },
+      "sevenDay": {
+        "porcentaje": 82,
+        "resetsAt": 1791734400000,
+        "leidoEn": 1791549883000
+      },
+      "cuenta": "optimum"
+    }
+  },
+  {
+    "t": 1791549889908,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": {
+        "porcentaje": 0,
+        "resetsAt": 1791567000000,
+        "leidoEn": 1791549828000
+      },
+      "sevenDay": {
+        "porcentaje": 91,
+        "resetsAt": 1791925200000,
+        "leidoEn": 1791549828000
+      },
+      "cuenta": "personal"
+    }
+  },
+  {
+    "t": 1791549909935,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "heartbeat",
+      "timestamp": 1791549909934
+    }
+  },
+  {
+    "t": 1791549910998,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "recursos",
+      "ram": {
+        "porcentajePct": 63.61955863024264,
+        "usadaGb": 4.933738708496094,
+        "totalGb": 7.75506591796875
+      },
+      "disco": {
+        "usadoPct": 43.173813427867266,
+        "usadoGb": 41.37001419067383,
+        "totalGb": 95.82200622558594
+      },
+      "sesionesTmux": 4,
+      "techoRam": 90
+    }
+  }
+]

@@ -1,0 +1,658 @@
+[
+  {
+    "t": 1791550013559,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "type": "chat.tmux-prompts"
+    }
+  },
+  {
+    "t": 1791550013662,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "tmux_prompts",
+      "prompts": [],
+      "timestamp": "2026-10-09T12:46:53.658Z"
+    }
+  },
+  {
+    "t": 1791550013803,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "type": "chat.tmux-prompts"
+    }
+  },
+  {
+    "t": 1791550013803,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "type": "chat.tmux-prompts"
+    }
+  },
+  {
+    "t": 1791550013831,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "tmux_prompts",
+      "prompts": [],
+      "timestamp": "2026-10-09T12:46:53.825Z"
+    }
+  },
+  {
+    "t": 1791550013836,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "tmux_prompts",
+      "prompts": [],
+      "timestamp": "2026-10-09T12:46:53.825Z"
+    }
+  },
+  {
+    "t": 1791550015193,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "type": "chat.subscribe",
+      "sessions": [
+        {
+          "sessionId": "af0f59b3-702a-4fc2-b41c-ec0c9cb839ab",
+          "lastSeq": 0
+        }
+      ]
+    }
+  },
+  {
+    "t": 1791550015208,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "chat_subscribed",
+      "sessionId": "af0f59b3-702a-4fc2-b41c-ec0c9cb839ab",
+      "isProcessing": false,
+      "lastSeq": 0,
+      "pendingPermissions": [],
+      "runsInTmux": true,
+      "timestamp": "2026-10-09T12:46:55.191Z"
+    }
+  },
+  {
+    "t": 1791550015975,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "type": "chat.send-tmux",
+      "sessionId": "af0f59b3-702a-4fc2-b41c-ec0c9cb839ab",
+      "content": "Usá AskUserQuestion con multiSelect para preguntarme \"¿Qué colores te gustan?\" con opciones Rojo, Azul, Verde y Negro. Después respondé solo: COLORES <lista>.",
+      "clientMessageId": "local_1791550015954_ah6vtm",
+      "options": {
+        "model": "default",
+        "effort": "default",
+        "permissionMode": "default",
+        "toolsSettings": {
+          "allowedTools": [
+            "Edit",
+            "Bash(cd:*)",
+            "Bash(echo:*)",
+            "Bash(export:*)",
+            "Bash(which:*)",
+            "Bash(ps:*)",
+            "Bash(tmux:*)"
+          ],
+          "disallowedTools": [],
+          "skipPermissions": true
+        },
+        "skipPermissions": true,
+        "sessionSummary": "e2e-tmux-multi-ejecutora-1",
+        "attachments": []
+      }
+    }
+  },
+  {
+    "t": 1791550016423,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "af0f59b3-702a-4fc2-b41c-ec0c9cb839ab",
+      "activityKind": "thinking",
+      "texto": "Lollygagging… (running SessionStart hooks… 5/6 · 0s)",
+      "timestamp": "2026-10-09T12:46:56.419Z"
+    }
+  },
+  {
+    "t": 1791550016430,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "stream_delta",
+      "sessionId": "af0f59b3-702a-4fc2-b41c-ec0c9cb839ab",
+      "messageId": "tmux-borrador:af0f59b3-702a-4fc2-b41c-ec0c9cb839ab",
+      "blockIndex": 0,
+      "content": "5h ?",
+      "timestamp": "2026-10-09T12:46:56.419Z"
+    }
+  },
+  {
+    "t": 1791550016594,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "message_status",
+      "sessionId": "af0f59b3-702a-4fc2-b41c-ec0c9cb839ab",
+      "clientMessageId": "local_1791550015954_ah6vtm",
+      "status": "sent",
+      "timestamp": "2026-10-09T12:46:56.592Z"
+    }
+  },
+  {
+    "t": 1791550016603,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "status",
+      "sessionId": "af0f59b3-702a-4fc2-b41c-ec0c9cb839ab",
+      "text": null,
+      "canInterrupt": false,
+      "timestamp": "2026-10-09T12:46:56.593Z"
+    }
+  },
+  {
+    "t": 1791550016826,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "af0f59b3-702a-4fc2-b41c-ec0c9cb839ab",
+      "activityKind": "thinking",
+      "texto": "Lollygagging… (running SessionStart hooks… 5/6 · 0s)",
+      "timestamp": "2026-10-09T12:46:56.822Z"
+    }
+  },
+  {
+    "t": 1791550017219,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "af0f59b3-702a-4fc2-b41c-ec0c9cb839ab",
+      "activityKind": "thinking",
+      "texto": "Lollygagging… (running SessionStart hooks… 5/6 · 0s)",
+      "timestamp": "2026-10-09T12:46:57.217Z"
+    }
+  },
+  {
+    "t": 1791550017622,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "af0f59b3-702a-4fc2-b41c-ec0c9cb839ab",
+      "activityKind": "thinking",
+      "texto": "Lollygagging… (running UserPromptSubmit hooks… 1/2 · 1s)",
+      "timestamp": "2026-10-09T12:46:57.618Z"
+    }
+  },
+  {
+    "t": 1791550018018,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "stream_reemplazo",
+      "sessionId": "af0f59b3-702a-4fc2-b41c-ec0c9cb839ab",
+      "messageId": "tmux-borrador:af0f59b3-702a-4fc2-b41c-ec0c9cb839ab",
+      "blockIndex": 0,
+      "timestamp": "2026-10-09T12:46:58.015Z"
+    }
+  },
+  {
+    "t": 1791550018021,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "af0f59b3-702a-4fc2-b41c-ec0c9cb839ab",
+      "idle": true,
+      "timestamp": "2026-10-09T12:46:58.015Z"
+    }
+  },
+  {
+    "t": 1791550019834,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "tmux_prompts",
+      "prompts": [
+        {
+          "id": "a6d1a0948e036c85",
+          "pregunta": "¿Qué colores te gustan?",
+          "detalle": "",
+          "opciones": [
+            {
+              "indice": 0,
+              "numero": 1,
+              "etiqueta": "Rojo\nRojo",
+              "casilla": true,
+              "marcada": false
+            },
+            {
+              "indice": 1,
+              "numero": 2,
+              "etiqueta": "Azul\nAzul",
+              "casilla": true,
+              "marcada": false
+            },
+            {
+              "indice": 2,
+              "numero": 3,
+              "etiqueta": "Verde\nVerde",
+              "casilla": true,
+              "marcada": false
+            },
+            {
+              "indice": 3,
+              "numero": 4,
+              "etiqueta": "Negro\nNegro",
+              "casilla": true,
+              "marcada": false
+            },
+            {
+              "indice": 4,
+              "numero": 5,
+              "etiqueta": "Type something",
+              "libre": true,
+              "casilla": true,
+              "marcada": false
+            },
+            {
+              "indice": 5,
+              "numero": null,
+              "etiqueta": "Submit",
+              "avance": true
+            },
+            {
+              "indice": 6,
+              "numero": 6,
+              "etiqueta": "Chat about this"
+            }
+          ],
+          "seleccionada": 0,
+          "teclas": [
+            {
+              "tecla": "Right",
+              "accion": "review"
+            },
+            {
+              "tecla": "Escape",
+              "accion": "cancel"
+            }
+          ],
+          "multiple": true,
+          "pestanas": [
+            {
+              "etiqueta": "Colores",
+              "estado": "pendiente",
+              "activa": true
+            },
+            {
+              "etiqueta": "Submit",
+              "estado": "enviar",
+              "activa": false
+            }
+          ],
+          "sessionId": "af0f59b3-702a-4fc2-b41c-ec0c9cb839ab",
+          "pane": "e2e-tmux-multi-ejecutora-1",
+          "desde": "2026-10-09T12:46:59.804Z"
+        }
+      ],
+      "timestamp": "2026-10-09T12:46:59.816Z"
+    }
+  },
+  {
+    "t": 1791550020597,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "type": "chat.tmux-prompt-response",
+      "sessionId": "af0f59b3-702a-4fc2-b41c-ec0c9cb839ab",
+      "pane": "e2e-tmux-multi-ejecutora-1",
+      "promptId": "a6d1a0948e036c85",
+      "seleccion": [
+        0,
+        1,
+        3
+      ]
+    }
+  },
+  {
+    "t": 1791550020828,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "af0f59b3-702a-4fc2-b41c-ec0c9cb839ab",
+      "activityKind": "thinking",
+      "texto": "Working… (3s · ↓ 163 tokens)",
+      "timestamp": "2026-10-09T12:47:00.825Z"
+    }
+  },
+  {
+    "t": 1791550020828,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "stream_delta",
+      "sessionId": "af0f59b3-702a-4fc2-b41c-ec0c9cb839ab",
+      "messageId": "tmux-borrador:af0f59b3-702a-4fc2-b41c-ec0c9cb839ab",
+      "blockIndex": 0,
+      "content": "User answered Claude's questions:\n  5h ?",
+      "timestamp": "2026-10-09T12:47:00.825Z"
+    }
+  },
+  {
+    "t": 1791550021019,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "tmux_prompts",
+      "prompts": [],
+      "timestamp": "2026-10-09T12:47:01.010Z"
+    }
+  },
+  {
+    "t": 1791550021071,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "id": "35e012d6-eaac-4e71-85fa-5b36f807ccfc",
+      "sessionId": "af0f59b3-702a-4fc2-b41c-ec0c9cb839ab",
+      "timestamp": "2026-10-09T12:46:57.451Z",
+      "provider": "claude",
+      "kind": "text",
+      "role": "user",
+      "content": "Usá AskUserQuestion con multiSelect para preguntarme \"¿Qué colores te gustan?\" con opciones Rojo, Azul, Verde y Negro. Después respondé solo: COLORES <lista>.",
+      "transcriptAnchorId": "35e012d6-eaac-4e71-85fa-5b36f807ccfc"
+    }
+  },
+  {
+    "t": 1791550021078,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "id": "ceeef51d-b1c1-439e-94a3-b0374d3df09b_0",
+      "sessionId": "af0f59b3-702a-4fc2-b41c-ec0c9cb839ab",
+      "timestamp": "2026-10-09T12:46:59.715Z",
+      "provider": "claude",
+      "kind": "tool_use",
+      "toolName": "AskUserQuestion",
+      "toolInput": {
+        "questions": [
+          {
+            "question": "¿Qué colores te gustan?",
+            "header": "Colores",
+            "multiSelect": true,
+            "options": [
+              {
+                "label": "Rojo",
+                "description": "Rojo"
+              },
+              {
+                "label": "Azul",
+                "description": "Azul"
+              },
+              {
+                "label": "Verde",
+                "description": "Verde"
+              },
+              {
+                "label": "Negro",
+                "description": "Negro"
+              }
+            ]
+          }
+        ],
+        "answers": {
+          "¿Qué colores te gustan?": "Rojo, Azul, Negro"
+        }
+      },
+      "toolId": "toolu_01CWDTx3WjxfPLL5ySDwT6zc",
+      "messageId": "msg_011Cfrgqd7aoooJnRburkERy",
+      "blockIndex": 0,
+      "toolResult": {
+        "content": "Your questions have been answered: \"¿Qué colores te gustan?\"=\"Rojo, Azul, Negro\". You can now continue with these answers in mind.",
+        "isError": false,
+        "toolUseResult": {
+          "questions": [
+            {
+              "question": "¿Qué colores te gustan?",
+              "header": "Colores",
+              "options": [
+                {
+                  "label": "Rojo",
+                  "description": "Rojo"
+                },
+                {
+                  "label": "Azul",
+                  "description": "Azul"
+                },
+                {
+                  "label": "Verde",
+                  "description": "Verde"
+                },
+                {
+                  "label": "Negro",
+                  "description": "Negro"
+                }
+              ],
+              "multiSelect": true
+            }
+          ],
+          "answers": {
+            "¿Qué colores te gustan?": "Rojo, Azul, Negro"
+          },
+          "annotations": {}
+        }
+      }
+    }
+  },
+  {
+    "t": 1791550021228,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "af0f59b3-702a-4fc2-b41c-ec0c9cb839ab",
+      "activityKind": "thinking",
+      "texto": "Working… (3s · ↓ 163 tokens)",
+      "timestamp": "2026-10-09T12:47:01.224Z"
+    }
+  },
+  {
+    "t": 1791550021235,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "stream_delta",
+      "sessionId": "af0f59b3-702a-4fc2-b41c-ec0c9cb839ab",
+      "messageId": "tmux-borrador:af0f59b3-702a-4fc2-b41c-ec0c9cb839ab",
+      "blockIndex": 0,
+      "content": "User answered Claude's questions:",
+      "timestamp": "2026-10-09T12:47:01.224Z"
+    }
+  },
+  {
+    "t": 1791550021577,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "session_upserted",
+      "sessionId": "af0f59b3-702a-4fc2-b41c-ec0c9cb839ab",
+      "providerSessionId": "af0f59b3-702a-4fc2-b41c-ec0c9cb839ab",
+      "provider": "claude",
+      "session": {
+        "id": "af0f59b3-702a-4fc2-b41c-ec0c9cb839ab",
+        "summary": "Colores favoritos con AskUserQuestion",
+        "messageCount": 0,
+        "lastActivity": "2026-10-09T12:47:00.914Z",
+        "tmux": {
+          "nombre": "e2e-tmux-multi-ejecutora-1",
+          "vivo": true
+        },
+        "cuenta": "optimum"
+      },
+      "project": {
+        "projectId": "6f20624f-a0db-4b13-ace6-bddcba010843",
+        "path": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
+        "fullPath": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
+        "displayName": "proyecto",
+        "isStarred": false
+      },
+      "timestamp": "2026-10-09T12:47:01.559Z"
+    }
+  },
+  {
+    "t": 1791550021625,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "af0f59b3-702a-4fc2-b41c-ec0c9cb839ab",
+      "activityKind": "thinking",
+      "texto": "Working… (4s · ↓ 163 tokens)",
+      "timestamp": "2026-10-09T12:47:01.623Z"
+    }
+  },
+  {
+    "t": 1791550021946,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "id": "6654ec18-0b27-445f-b742-e676484c771a_0",
+      "sessionId": "af0f59b3-702a-4fc2-b41c-ec0c9cb839ab",
+      "timestamp": "2026-10-09T12:47:01.554Z",
+      "provider": "claude",
+      "kind": "text",
+      "role": "assistant",
+      "content": "COLORES Rojo, Azul, Negro",
+      "messageId": "msg_011CfrgqrVzr6y83buvX7RSK",
+      "blockIndex": 0
+    }
+  },
+  {
+    "t": 1791550021961,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": {
+        "porcentaje": 2,
+        "resetsAt": 1791565200000,
+        "leidoEn": 1791550020000
+      },
+      "sevenDay": {
+        "porcentaje": 82,
+        "resetsAt": 1791734400000,
+        "leidoEn": 1791550020000
+      },
+      "cuenta": "optimum"
+    }
+  },
+  {
+    "t": 1791550021969,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": {
+        "porcentaje": 0,
+        "resetsAt": 1791567000000,
+        "leidoEn": 1791549828000
+      },
+      "sevenDay": {
+        "porcentaje": 91,
+        "resetsAt": 1791925200000,
+        "leidoEn": 1791549828000
+      },
+      "cuenta": "personal"
+    }
+  },
+  {
+    "t": 1791550022023,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "id": "tmux_complete_af0f59b3-702a-4fc2-b41c-ec0c9cb839ab_1791550021963",
+      "sessionId": "af0f59b3-702a-4fc2-b41c-ec0c9cb839ab",
+      "provider": "claude",
+      "timestamp": "2026-10-09T12:47:01.963Z",
+      "kind": "complete",
+      "success": true
+    }
+  },
+  {
+    "t": 1791550022048,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "stream_reemplazo",
+      "sessionId": "af0f59b3-702a-4fc2-b41c-ec0c9cb839ab",
+      "messageId": "tmux-borrador:af0f59b3-702a-4fc2-b41c-ec0c9cb839ab",
+      "blockIndex": 0,
+      "timestamp": "2026-10-09T12:47:02.032Z"
+    }
+  },
+  {
+    "t": 1791550022056,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "af0f59b3-702a-4fc2-b41c-ec0c9cb839ab",
+      "idle": true,
+      "timestamp": "2026-10-09T12:47:02.032Z"
+    }
+  },
+  {
+    "t": 1791550023296,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": {
+        "porcentaje": 2,
+        "resetsAt": 1791565200000,
+        "leidoEn": 1791550021000
+      },
+      "sevenDay": {
+        "porcentaje": 82,
+        "resetsAt": 1791734400000,
+        "leidoEn": 1791550021000
+      },
+      "cuenta": "optimum"
+    }
+  },
+  {
+    "t": 1791550023301,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": {
+        "porcentaje": 0,
+        "resetsAt": 1791567000000,
+        "leidoEn": 1791549828000
+      },
+      "sevenDay": {
+        "porcentaje": 91,
+        "resetsAt": 1791925200000,
+        "leidoEn": 1791549828000
+      },
+      "cuenta": "personal"
+    }
+  }
+]

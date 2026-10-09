@@ -1,0 +1,1031 @@
+[
+  {
+    "escenario": "a11y/chat",
+    "nombre": "(todo el escenario)",
+    "resultado": "bloqueado",
+    "evidencia": [],
+    "datos": "usa el CLI falso de :3902; :3001 corre el Claude real",
+    "ms": 1
+  },
+  {
+    "escenario": "barra/archivar",
+    "nombre": "(todo el escenario)",
+    "resultado": "bloqueado",
+    "evidencia": [],
+    "datos": "usa el CLI falso de :3902; :3001 corre el Claude real",
+    "ms": 0
+  },
+  {
+    "escenario": "barra/componentes",
+    "nombre": "(todo el escenario)",
+    "resultado": "bloqueado",
+    "evidencia": [],
+    "datos": "usa el CLI falso de :3902; :3001 corre el Claude real",
+    "ms": 0
+  },
+  {
+    "escenario": "barra/estado-vivo",
+    "nombre": "con el tmux vivo, la fila NO dice \"dormida\"",
+    "resultado": "pasa",
+    "evidencia": [
+      "barra-estado-vivo/tmux-vivo.png"
+    ],
+    "datos": {
+      "rotuloConVida": "libre"
+    },
+    "ms": 70606
+  },
+  {
+    "escenario": "barra/estado-vivo",
+    "nombre": "al matar el pane, la fila pasa a \"dormida\" sin recargar en ≤ 25000 ms",
+    "resultado": "falla",
+    "evidencia": [
+      "barra-estado-vivo/antes-dormir.png",
+      "barra-estado-vivo/despues-dormir.png"
+    ],
+    "datos": {
+      "msHastaDormida": null,
+      "topeMs": 25000,
+      "dormidaOk": true,
+      "nombre": "e2e-estado-ejecutora-1",
+      "sid": "8aeefa3f-3df7-4b42-b08e-89b801610d0a"
+    },
+    "ms": 70606
+  },
+  {
+    "escenario": "barra/nombres",
+    "nombre": "la fila de la barra muestra el título humano, no el prompt crudo ni un id",
+    "resultado": "pasa",
+    "evidencia": [
+      "barra-nombres/barra-prosa.png"
+    ],
+    "datos": {
+      "tituloProsa": "Psicrómetro: definición",
+      "derivado": "Explicame en una frase qué es un psicrómetro",
+      "aiTitles": [
+        "Psicrómetro: definición"
+      ],
+      "mensaje": "Explicame en una frase qué es un psicrómetro."
+    },
+    "ms": 28866
+  },
+  {
+    "escenario": "barra/nombres",
+    "nombre": "tmux show-options -v @titulo devuelve ese mismo título",
+    "resultado": "pasa",
+    "evidencia": [
+      "barra-nombres/frames-0.json"
+    ],
+    "datos": {
+      "tituloTmuxProsa": "Psicrómetro: definición",
+      "enLaBarra": "Psicrómetro: definición",
+      "nombre": "e2e-nombre-prosa-ejecutora-1"
+    },
+    "ms": 28866
+  },
+  {
+    "escenario": "barra/nombres",
+    "nombre": "un mensaje en modo bash (<bash-input>) no deja un título crudo con etiquetas en la barra",
+    "resultado": "pasa",
+    "evidencia": [
+      "barra-nombres/barra-bash.png"
+    ],
+    "datos": {
+      "tituloBash": "Comando: echo hola-57a7gb",
+      "esperado": "Comando: echo hola-57a7gb",
+      "sinEtiquetasCrudas": true
+    },
+    "ms": 28866
+  },
+  {
+    "escenario": "barra/nombres",
+    "nombre": "tmux show-options -v @titulo del modo bash tampoco queda crudo",
+    "resultado": "pasa",
+    "evidencia": [
+      "barra-nombres/frames-0.json"
+    ],
+    "datos": {
+      "tituloTmuxBash": "Comando: echo hola-57a7gb",
+      "esperado": "Comando: echo hola-57a7gb",
+      "nombre": "e2e-nombre-bash-ejecutora-1"
+    },
+    "ms": 28866
+  },
+  {
+    "escenario": "barra/orquestador",
+    "nombre": "el escenario corre sin excepción: locator.click: Timeout 30000ms exceeded.",
+    "resultado": "falla",
+    "evidencia": [
+      "barra-orquestador/error-0.png"
+    ],
+    "datos": "locator.click: Timeout 30000ms exceeded. | Call log: | \u001b[2m  - waiting for locator('[data-testid=\"sidebar-project-row\"]').filter({ hasText: 'e2e-proyecto' }).first()\u001b[22m | ",
+    "ms": 32569
+  },
+  {
+    "escenario": "barra/pestana-oculta",
+    "nombre": "(todo el escenario)",
+    "resultado": "bloqueado",
+    "evidencia": [],
+    "datos": "usa el CLI falso de :3902; :3001 corre el Claude real",
+    "ms": 0
+  },
+  {
+    "escenario": "cola/headless",
+    "nombre": "(todo el escenario)",
+    "resultado": "bloqueado",
+    "evidencia": [],
+    "datos": "usa el CLI falso de :3902; :3001 corre el Claude real",
+    "ms": 0
+  },
+  {
+    "escenario": "cuota/en-vivo",
+    "nombre": "(todo el escenario)",
+    "resultado": "bloqueado",
+    "evidencia": [],
+    "datos": "usa el CLI falso de :3902; :3001 corre el Claude real",
+    "ms": 1
+  },
+  {
+    "escenario": "cuota/header",
+    "nombre": "el escenario corre sin excepción: locator.click: Timeout 30000ms exceeded.",
+    "resultado": "falla",
+    "evidencia": [
+      "cuota-header/error-0.png"
+    ],
+    "datos": "locator.click: Timeout 30000ms exceeded. | Call log: | \u001b[2m  - waiting for getByText('e2e-proyecto', { exact: true }).first()\u001b[22m | ",
+    "ms": 33739
+  },
+  {
+    "escenario": "cuota/sin-turnos",
+    "nombre": "(todo el escenario)",
+    "resultado": "bloqueado",
+    "evidencia": [],
+    "datos": "usa el CLI falso de :3902; :3001 corre el Claude real",
+    "ms": 0
+  },
+  {
+    "escenario": "cuota/vieja",
+    "nombre": "(todo el escenario)",
+    "resultado": "bloqueado",
+    "evidencia": [],
+    "datos": "usa el CLI falso de :3902; :3001 corre el Claude real",
+    "ms": 1
+  },
+  {
+    "escenario": "diseno/capturas",
+    "nombre": "(todo el escenario)",
+    "resultado": "bloqueado",
+    "evidencia": [],
+    "datos": "usa el CLI falso de :3902; :3001 corre el Claude real",
+    "ms": 0
+  },
+  {
+    "escenario": "falso/6000-deltas",
+    "nombre": "(todo el escenario)",
+    "resultado": "bloqueado",
+    "evidencia": [],
+    "datos": "usa el CLI falso de :3902; :3001 corre el Claude real",
+    "ms": 0
+  },
+  {
+    "escenario": "falso/humo",
+    "nombre": "(todo el escenario)",
+    "resultado": "bloqueado",
+    "evidencia": [],
+    "datos": "usa el CLI falso de :3902; :3001 corre el Claude real",
+    "ms": 0
+  },
+  {
+    "escenario": "falso/intercalados",
+    "nombre": "(todo el escenario)",
+    "resultado": "bloqueado",
+    "evidencia": [],
+    "datos": "usa el CLI falso de :3902; :3001 corre el Claude real",
+    "ms": 0
+  },
+  {
+    "escenario": "headless/actividad",
+    "nombre": "(todo el escenario)",
+    "resultado": "bloqueado",
+    "evidencia": [],
+    "datos": "usa el CLI falso de :3902; :3001 corre el Claude real",
+    "ms": 0
+  },
+  {
+    "escenario": "headless/pensamiento",
+    "nombre": "el escenario corre sin excepción: ENOENT: no such file or directory, open '/tmp/cloudcli-e2e/pid-3901'",
+    "resultado": "falla",
+    "evidencia": [],
+    "datos": "Error: ENOENT: no such file or directory, open '/tmp/cloudcli-e2e/pid-3901' |     at Object.readFileSync (node:fs:440:20) |     at Module.correr (file:///home/leantejado/cloudcli/e2e/escenarios/headless/pensamiento.mjs:16:18) |     at file:///home/leantejado/cloudcli/e2e/correr.mjs:127:17",
+    "ms": 41
+  },
+  {
+    "escenario": "headless/recarga",
+    "nombre": "(todo el escenario)",
+    "resultado": "bloqueado",
+    "evidencia": [],
+    "datos": "usa el CLI falso de :3902; :3001 corre el Claude real",
+    "ms": 1
+  },
+  {
+    "escenario": "headless/subagente",
+    "nombre": "(todo el escenario)",
+    "resultado": "bloqueado",
+    "evidencia": [],
+    "datos": "usa el CLI falso de :3902; :3001 corre el Claude real",
+    "ms": 0
+  },
+  {
+    "escenario": "headless/tipeo",
+    "nombre": "(todo el escenario)",
+    "resultado": "bloqueado",
+    "evidencia": [],
+    "datos": "usa el CLI falso de :3902; :3001 corre el Claude real",
+    "ms": 0
+  },
+  {
+    "escenario": "linea-base/4158e887",
+    "nombre": "simple: la pregunta llega a la tarjeta",
+    "resultado": "pasa",
+    "evidencia": [
+      "linea-base-4158e887/simple-pregunta.png"
+    ],
+    "ms": 54451
+  },
+  {
+    "escenario": "linea-base/4158e887",
+    "nombre": "simple: llega la elegida",
+    "resultado": "pasa",
+    "evidencia": [
+      "linea-base-4158e887/frames-0.json"
+    ],
+    "datos": {
+      "ultima": "ELEGISTE Pera\nMD"
+    },
+    "ms": 54451
+  },
+  {
+    "escenario": "linea-base/4158e887",
+    "nombre": "múltiple: llegan las 3 tildadas",
+    "resultado": "pasa",
+    "evidencia": [
+      "linea-base-4158e887/multi-pregunta.png"
+    ],
+    "datos": {
+      "ultima": "COLORES Rojo, Azul, Negro\nAviso de cuota: la ventana de 7 días va en 82% con el 70% de la semana transcurrida, y proyect"
+    },
+    "ms": 54451
+  },
+  {
+    "escenario": "linea-base/4158e887",
+    "nombre": "la pregunta y la respuesta se ven una vez",
+    "resultado": "pasa",
+    "evidencia": [
+      "linea-base-4158e887/final.png"
+    ],
+    "datos": {
+      "pregunta": 1
+    },
+    "ms": 54451
+  },
+  {
+    "escenario": "pregunta/headless",
+    "nombre": "(todo el escenario)",
+    "resultado": "bloqueado",
+    "evidencia": [],
+    "datos": "usa el CLI falso de :3902; :3001 corre el Claude real",
+    "ms": 0
+  },
+  {
+    "escenario": "pregunta/modos",
+    "nombre": "default: la pregunta llega y Claude repite lo elegido",
+    "resultado": "bloqueado",
+    "evidencia": [],
+    "datos": "usa el CLI falso de :3902; :3001 corre el Claude real",
+    "ms": 0
+  },
+  {
+    "escenario": "pregunta/modos",
+    "nombre": "auto: la pregunta llega y Claude repite lo elegido",
+    "resultado": "bloqueado",
+    "evidencia": [],
+    "datos": "usa el CLI falso de :3902; :3001 corre el Claude real",
+    "ms": 0
+  },
+  {
+    "escenario": "pregunta/modos",
+    "nombre": "bypassPermissions: la pregunta llega y Claude repite lo elegido",
+    "resultado": "bloqueado",
+    "evidencia": [],
+    "datos": "usa el CLI falso de :3902; :3001 corre el Claude real",
+    "ms": 0
+  },
+  {
+    "escenario": "pregunta/otra",
+    "nombre": "el texto libre de \"Otra\" llega literal, sin romperse",
+    "resultado": "bloqueado",
+    "evidencia": [],
+    "datos": "usa el CLI falso de :3902; :3001 corre el Claude real",
+    "ms": 0
+  },
+  {
+    "escenario": "pregunta/recarga",
+    "nombre": "(todo el escenario)",
+    "resultado": "bloqueado",
+    "evidencia": [],
+    "datos": "usa el CLI falso de :3902; :3001 corre el Claude real",
+    "ms": 0
+  },
+  {
+    "escenario": "pregunta/sin-repetidos",
+    "nombre": "(todo el escenario)",
+    "resultado": "bloqueado",
+    "evidencia": [],
+    "datos": "usa el CLI falso de :3902; :3001 corre el Claude real",
+    "ms": 0
+  },
+  {
+    "escenario": "pregunta/tmux-multi",
+    "nombre": "llegan las 3 tildadas",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-tmux-multi/pregunta.png"
+    ],
+    "datos": {
+      "ultima": "COLORES Rojo, Azul, Negro\nMD"
+    },
+    "ms": 19570
+  },
+  {
+    "escenario": "pregunta/tmux-multi",
+    "nombre": "la pregunta y la respuesta se ven una vez",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-tmux-multi/final.png"
+    ],
+    "datos": {
+      "pregunta": 1
+    },
+    "ms": 19570
+  },
+  {
+    "escenario": "pregunta/tmux-simple",
+    "nombre": "la pregunta llega a la tarjeta",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-tmux-simple/pregunta.png"
+    ],
+    "ms": 48123
+  },
+  {
+    "escenario": "pregunta/tmux-simple",
+    "nombre": "llega la elegida",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-tmux-simple/final.png"
+    ],
+    "datos": {
+      "ultima": "ELEGISTE Pera\nMD"
+    },
+    "ms": 48123
+  },
+  {
+    "escenario": "pregunta/tmux",
+    "nombre": "simple: la pregunta llega a la tarjeta",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-tmux/simple-pregunta.png"
+    ],
+    "ms": 60316
+  },
+  {
+    "escenario": "pregunta/tmux",
+    "nombre": "simple: llega la elegida",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-tmux/frames-0.json"
+    ],
+    "datos": {
+      "ultima": "ELEGISTE Pera\nMD"
+    },
+    "ms": 60316
+  },
+  {
+    "escenario": "pregunta/tmux",
+    "nombre": "múltiple: llegan las 3 tildadas",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-tmux/multi-pregunta.png"
+    ],
+    "datos": {
+      "ultima": "COLORES Rojo, Azul, Negro\nCuota: 7d va en 82% con 70% de la semana transcurrida, así que proyecta 118% al reset (en 51 h"
+    },
+    "ms": 60316
+  },
+  {
+    "escenario": "pregunta/tmux",
+    "nombre": "la pregunta y la respuesta se ven una vez",
+    "resultado": "pasa",
+    "evidencia": [
+      "pregunta-tmux/final.png"
+    ],
+    "datos": {
+      "pregunta": 1
+    },
+    "ms": 60316
+  },
+  {
+    "escenario": "tmux/adjunto",
+    "nombre": "el mensaje del usuario aparece una vez en el DOM (una imagen)",
+    "resultado": "pasa",
+    "evidencia": [
+      "tmux-adjunto/dom-1.png"
+    ],
+    "datos": {
+      "filasUser": 1
+    },
+    "ms": 96200
+  },
+  {
+    "escenario": "tmux/adjunto",
+    "nombre": "no aparece el error de \"no apareció\" en el DOM (una imagen)",
+    "resultado": "pasa",
+    "evidencia": [
+      "tmux-adjunto/dom-1.png"
+    ],
+    "datos": {
+      "filasError": 0
+    },
+    "ms": 96200
+  },
+  {
+    "escenario": "tmux/adjunto",
+    "nombre": "el JSONL tiene la fila user con el nonce y un bloque de imagen (una imagen)",
+    "resultado": "pasa",
+    "evidencia": [
+      "tmux-adjunto/frames-0.json"
+    ],
+    "datos": {
+      "filaUser": true,
+      "tieneBloqueImagen": true
+    },
+    "ms": 96200
+  },
+  {
+    "escenario": "tmux/adjunto",
+    "nombre": "Claude contesta (una imagen)",
+    "resultado": "pasa",
+    "evidencia": [
+      "tmux-adjunto/respuesta-1.png"
+    ],
+    "datos": {
+      "finMs": 3691
+    },
+    "ms": 96200
+  },
+  {
+    "escenario": "tmux/adjunto",
+    "nombre": "el mensaje del usuario aparece una vez en el DOM (dos imágenes)",
+    "resultado": "falla",
+    "evidencia": [
+      "tmux-adjunto/dom-2.png"
+    ],
+    "datos": {
+      "filasUser": 0
+    },
+    "ms": 96200
+  },
+  {
+    "escenario": "tmux/adjunto",
+    "nombre": "no aparece el error de \"no apareció\" en el DOM (dos imágenes)",
+    "resultado": "pasa",
+    "evidencia": [
+      "tmux-adjunto/dom-2.png"
+    ],
+    "datos": {
+      "filasError": 0
+    },
+    "ms": 96200
+  },
+  {
+    "escenario": "tmux/adjunto",
+    "nombre": "el JSONL tiene la fila user con el nonce y un bloque de imagen (dos imágenes)",
+    "resultado": "falla",
+    "evidencia": [
+      "tmux-adjunto/frames-0.json"
+    ],
+    "datos": {
+      "filaUser": false,
+      "tieneBloqueImagen": false
+    },
+    "ms": 96200
+  },
+  {
+    "escenario": "tmux/adjunto",
+    "nombre": "Claude contesta (dos imágenes)",
+    "resultado": "pasa",
+    "evidencia": [
+      "tmux-adjunto/respuesta-2.png"
+    ],
+    "datos": {
+      "finMs": 8788
+    },
+    "ms": 96200
+  },
+  {
+    "escenario": "tmux/commits",
+    "nombre": "8267cbe1: el mensaje muestra \"Enviado\" una vez que el pane lo recibió",
+    "resultado": "pasa",
+    "evidencia": [
+      "tmux-commits/enviado.png"
+    ],
+    "datos": {
+      "enviadoMs": 847
+    },
+    "ms": 27117
+  },
+  {
+    "escenario": "tmux/commits",
+    "nombre": "62d63c69: con la sugerencia visible, el mensaje sale y se contesta",
+    "resultado": "pasa",
+    "evidencia": [
+      "tmux-commits/final.png"
+    ],
+    "datos": {
+      "sugerencia": "Respondé solo: p9u4ax",
+      "finMs": 2319,
+      "respuestaVisible": true
+    },
+    "ms": 27117
+  },
+  {
+    "escenario": "tmux/en-vivo",
+    "nombre": "\"pensando\" visible ≤ 2 s después de enviar",
+    "resultado": "pasa",
+    "evidencia": [
+      "tmux-en-vivo/indicador.png"
+    ],
+    "datos": {
+      "tInd": 735
+    },
+    "ms": 39673
+  },
+  {
+    "escenario": "tmux/en-vivo",
+    "nombre": "el texto crece en ≥ 3 muestras",
+    "resultado": "pasa",
+    "evidencia": [
+      "tmux-en-vivo/frames-0.json"
+    ],
+    "datos": {
+      "distintas": 7,
+      "largos": "16,16,16,16,16,16,190,224,400,608,815,884,884,884,884,884,884,884,884,884,884,884,884,884,884,884,884,884,884,884,884,884,884,884,884,884,884,884,884,884,884,884,884,884,884,884,884,884,884,884,884,884,884,884,884,884,884,884,884,884"
+    },
+    "ms": 39673
+  },
+  {
+    "escenario": "tmux/en-vivo",
+    "nombre": "al final, una sola fila de respuesta",
+    "resultado": "pasa",
+    "evidencia": [
+      "tmux-en-vivo/final.png"
+    ],
+    "datos": {
+      "filas": 1
+    },
+    "ms": 39673
+  },
+  {
+    "escenario": "tmux/latencia",
+    "nombre": "la primera fila de Claude aparece ≤ 1,5 s después de escribirse en el JSONL",
+    "resultado": "pasa",
+    "evidencia": [
+      "tmux-latencia/final.png"
+    ],
+    "datos": {
+      "jsonlMs": 4754,
+      "domMs": 5042,
+      "latenciaMs": 288
+    },
+    "ms": 15837
+  },
+  {
+    "escenario": "tmux/rafaga",
+    "nombre": "cada mensaje 1 vez en el JSONL",
+    "resultado": "pasa",
+    "evidencia": [
+      "tmux-rafaga/frames-0.json"
+    ],
+    "datos": {
+      "enJsonl": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    "ms": 30357
+  },
+  {
+    "escenario": "tmux/rafaga",
+    "nombre": "cada mensaje 1 vez en el DOM",
+    "resultado": "pasa",
+    "evidencia": [
+      "tmux-rafaga/final.png"
+    ],
+    "datos": {
+      "enDom": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    "ms": 30357
+  },
+  {
+    "escenario": "tmux/rafaga",
+    "nombre": "un solo proceso claude en el proyecto",
+    "resultado": "pasa",
+    "evidencia": [
+      "tmux-rafaga/frames-0.json"
+    ],
+    "datos": {
+      "durante": [
+        "4012822"
+      ],
+      "despues": [
+        "4012822"
+      ]
+    },
+    "ms": 30357
+  },
+  {
+    "escenario": "tmux/rafaga",
+    "nombre": "todos contestados",
+    "resultado": "pasa",
+    "evidencia": [
+      "tmux-rafaga/frames-0.json"
+    ],
+    "datos": {
+      "respondidos": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    "ms": 30357
+  },
+  {
+    "escenario": "tmux/recarga",
+    "nombre": "el ack de suscripción dice que está procesando",
+    "resultado": "pasa",
+    "evidencia": [
+      "tmux-recarga/frames-0.json"
+    ],
+    "datos": {
+      "isProcessing": true,
+      "runsInTmux": true
+    },
+    "ms": 16622
+  },
+  {
+    "escenario": "tmux/recarga",
+    "nombre": "tras recargar, el indicador sigue",
+    "resultado": "falla",
+    "evidencia": [
+      "tmux-recarga/tras-recargar.png"
+    ],
+    "ms": 16622
+  },
+  {
+    "escenario": "tmux/turno-corto",
+    "nombre": "cada turno pasa a libre ≤ 3 s después de que se ve la respuesta",
+    "resultado": "pasa",
+    "evidencia": [
+      "tmux-turno-corto/final.png"
+    ],
+    "datos": [
+      -34,
+      -91,
+      -132
+    ],
+    "ms": 25458
+  },
+  {
+    "escenario": "tmux/turno-corto",
+    "nombre": "cada respuesta aparece una vez",
+    "resultado": "pasa",
+    "evidencia": [
+      "tmux-turno-corto/frames-0.json"
+    ],
+    "datos": [
+      1,
+      1,
+      1
+    ],
+    "ms": 25458
+  },
+  {
+    "escenario": "visual/bocetos",
+    "nombre": "chat: movil/light sin scroll horizontal",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-bocetos/chat-movil-light.png"
+    ],
+    "datos": {
+      "desborde": 0
+    },
+    "ms": 4099
+  },
+  {
+    "escenario": "visual/bocetos",
+    "nombre": "chat: movil/light consola sin errores",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-bocetos/chat-movil-light.png"
+    ],
+    "datos": [],
+    "ms": 4099
+  },
+  {
+    "escenario": "visual/bocetos",
+    "nombre": "chat: movil/dark sin scroll horizontal",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-bocetos/chat-movil-dark.png"
+    ],
+    "datos": {
+      "desborde": 0
+    },
+    "ms": 4099
+  },
+  {
+    "escenario": "visual/bocetos",
+    "nombre": "chat: movil/dark consola sin errores",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-bocetos/chat-movil-dark.png"
+    ],
+    "datos": [],
+    "ms": 4099
+  },
+  {
+    "escenario": "visual/bocetos",
+    "nombre": "chat: escritorio/light sin scroll horizontal",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-bocetos/chat-escritorio-light.png"
+    ],
+    "datos": {
+      "desborde": 0
+    },
+    "ms": 4099
+  },
+  {
+    "escenario": "visual/bocetos",
+    "nombre": "chat: escritorio/light consola sin errores",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-bocetos/chat-escritorio-light.png"
+    ],
+    "datos": [],
+    "ms": 4099
+  },
+  {
+    "escenario": "visual/bocetos",
+    "nombre": "chat: escritorio/dark sin scroll horizontal",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-bocetos/chat-escritorio-dark.png"
+    ],
+    "datos": {
+      "desborde": 0
+    },
+    "ms": 4099
+  },
+  {
+    "escenario": "visual/bocetos",
+    "nombre": "chat: escritorio/dark consola sin errores",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-bocetos/chat-escritorio-dark.png"
+    ],
+    "datos": [],
+    "ms": 4099
+  },
+  {
+    "escenario": "visual/bocetos",
+    "nombre": "header-barra: movil/light sin scroll horizontal",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-bocetos/header-barra-movil-light.png"
+    ],
+    "datos": {
+      "desborde": 0
+    },
+    "ms": 4099
+  },
+  {
+    "escenario": "visual/bocetos",
+    "nombre": "header-barra: movil/light consola sin errores",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-bocetos/header-barra-movil-light.png"
+    ],
+    "datos": [],
+    "ms": 4099
+  },
+  {
+    "escenario": "visual/bocetos",
+    "nombre": "header-barra: movil/dark sin scroll horizontal",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-bocetos/header-barra-movil-dark.png"
+    ],
+    "datos": {
+      "desborde": 0
+    },
+    "ms": 4099
+  },
+  {
+    "escenario": "visual/bocetos",
+    "nombre": "header-barra: movil/dark consola sin errores",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-bocetos/header-barra-movil-dark.png"
+    ],
+    "datos": [],
+    "ms": 4099
+  },
+  {
+    "escenario": "visual/bocetos",
+    "nombre": "header-barra: escritorio/light sin scroll horizontal",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-bocetos/header-barra-escritorio-light.png"
+    ],
+    "datos": {
+      "desborde": 0
+    },
+    "ms": 4099
+  },
+  {
+    "escenario": "visual/bocetos",
+    "nombre": "header-barra: escritorio/light consola sin errores",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-bocetos/header-barra-escritorio-light.png"
+    ],
+    "datos": [],
+    "ms": 4099
+  },
+  {
+    "escenario": "visual/bocetos",
+    "nombre": "header-barra: escritorio/dark sin scroll horizontal",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-bocetos/header-barra-escritorio-dark.png"
+    ],
+    "datos": {
+      "desborde": 0
+    },
+    "ms": 4099
+  },
+  {
+    "escenario": "visual/bocetos",
+    "nombre": "header-barra: escritorio/dark consola sin errores",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-bocetos/header-barra-escritorio-dark.png"
+    ],
+    "datos": [],
+    "ms": 4099
+  },
+  {
+    "escenario": "visual/bocetos",
+    "nombre": "cuestionario: movil/light sin scroll horizontal",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-bocetos/cuestionario-movil-light.png"
+    ],
+    "datos": {
+      "desborde": 0
+    },
+    "ms": 4099
+  },
+  {
+    "escenario": "visual/bocetos",
+    "nombre": "cuestionario: movil/light consola sin errores",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-bocetos/cuestionario-movil-light.png"
+    ],
+    "datos": [],
+    "ms": 4099
+  },
+  {
+    "escenario": "visual/bocetos",
+    "nombre": "cuestionario: movil/dark sin scroll horizontal",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-bocetos/cuestionario-movil-dark.png"
+    ],
+    "datos": {
+      "desborde": 0
+    },
+    "ms": 4099
+  },
+  {
+    "escenario": "visual/bocetos",
+    "nombre": "cuestionario: movil/dark consola sin errores",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-bocetos/cuestionario-movil-dark.png"
+    ],
+    "datos": [],
+    "ms": 4099
+  },
+  {
+    "escenario": "visual/bocetos",
+    "nombre": "cuestionario: escritorio/light sin scroll horizontal",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-bocetos/cuestionario-escritorio-light.png"
+    ],
+    "datos": {
+      "desborde": 0
+    },
+    "ms": 4099
+  },
+  {
+    "escenario": "visual/bocetos",
+    "nombre": "cuestionario: escritorio/light consola sin errores",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-bocetos/cuestionario-escritorio-light.png"
+    ],
+    "datos": [],
+    "ms": 4099
+  },
+  {
+    "escenario": "visual/bocetos",
+    "nombre": "cuestionario: escritorio/dark sin scroll horizontal",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-bocetos/cuestionario-escritorio-dark.png"
+    ],
+    "datos": {
+      "desborde": 0
+    },
+    "ms": 4099
+  },
+  {
+    "escenario": "visual/bocetos",
+    "nombre": "cuestionario: escritorio/dark consola sin errores",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-bocetos/cuestionario-escritorio-dark.png"
+    ],
+    "datos": [],
+    "ms": 4099
+  },
+  {
+    "escenario": "visual/chat",
+    "nombre": "(todo el escenario)",
+    "resultado": "bloqueado",
+    "evidencia": [],
+    "datos": "usa el CLI falso de :3902; :3001 corre el Claude real",
+    "ms": 0
+  },
+  {
+    "escenario": "visual/cuestionario",
+    "nombre": "(todo el escenario)",
+    "resultado": "bloqueado",
+    "evidencia": [],
+    "datos": "usa el CLI falso de :3902; :3001 corre el Claude real",
+    "ms": 0
+  },
+  {
+    "escenario": "visual/header-barra",
+    "nombre": "(todo el escenario)",
+    "resultado": "bloqueado",
+    "evidencia": [],
+    "datos": "usa el CLI falso de :3902; :3001 corre el Claude real",
+    "ms": 0
+  },
+  {
+    "escenario": "visual/salidas",
+    "nombre": "el escenario corre sin excepción: locator.click: Timeout 30000ms exceeded.",
+    "resultado": "falla",
+    "evidencia": [
+      "visual-salidas/error-0.png"
+    ],
+    "datos": "locator.click: Timeout 30000ms exceeded. | Call log: | \u001b[2m  - waiting for getByText('e2e-proyecto', { exact: true }).first()\u001b[22m | ",
+    "ms": 33520
+  }
+]

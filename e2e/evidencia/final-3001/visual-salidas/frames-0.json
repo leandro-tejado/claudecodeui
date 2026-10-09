@@ -1,0 +1,161 @@
+[
+  {
+    "t": 1791550388832,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "type": "chat.tmux-prompts"
+    }
+  },
+  {
+    "t": 1791550388896,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "tmux_prompts",
+      "prompts": [],
+      "timestamp": "2026-10-09T12:53:08.890Z"
+    }
+  },
+  {
+    "t": 1791550388966,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "type": "chat.tmux-prompts"
+    }
+  },
+  {
+    "t": 1791550388966,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "type": "chat.tmux-prompts"
+    }
+  },
+  {
+    "t": 1791550389045,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "tmux_prompts",
+      "prompts": [],
+      "timestamp": "2026-10-09T12:53:09.020Z"
+    }
+  },
+  {
+    "t": 1791550389046,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "tmux_prompts",
+      "prompts": [],
+      "timestamp": "2026-10-09T12:53:09.020Z"
+    }
+  },
+  {
+    "t": 1791550390910,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "type": "chat.tmux-prompts"
+    }
+  },
+  {
+    "t": 1791550390978,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "tmux_prompts",
+      "prompts": [],
+      "timestamp": "2026-10-09T12:53:10.965Z"
+    }
+  },
+  {
+    "t": 1791550391072,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "recursos",
+      "ram": {
+        "porcentajePct": 63.695999496297,
+        "usadaGb": 4.939666748046875,
+        "totalGb": 7.75506591796875
+      },
+      "disco": {
+        "usadoPct": 43.194849159788916,
+        "usadoGb": 41.39017105102539,
+        "totalGb": 95.82200622558594
+      },
+      "sesionesTmux": 4,
+      "techoRam": 90
+    }
+  },
+  {
+    "t": 1791550415906,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "heartbeat",
+      "timestamp": 1791550415904
+    }
+  },
+  {
+    "t": 1791550421079,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "recursos",
+      "ram": {
+        "porcentajePct": 63.39446635027822,
+        "usadaGb": 4.916282653808594,
+        "totalGb": 7.75506591796875
+      },
+      "disco": {
+        "usadoPct": 43.18208201514987,
+        "usadoGb": 41.37793731689453,
+        "totalGb": 95.82200622558594
+      },
+      "sesionesTmux": 4,
+      "techoRam": 90
+    }
+  },
+  {
+    "t": 1791550421421,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": {
+        "porcentaje": 3,
+        "resetsAt": 1791565200000,
+        "leidoEn": 1791550383000
+      },
+      "sevenDay": {
+        "porcentaje": 82,
+        "resetsAt": 1791734400000,
+        "leidoEn": 1791550383000
+      },
+      "cuenta": "optimum"
+    }
+  },
+  {
+    "t": 1791550421421,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": {
+        "porcentaje": 0,
+        "resetsAt": 1791567000000,
+        "leidoEn": 1791549828000
+      },
+      "sevenDay": {
+        "porcentaje": 91,
+        "resetsAt": 1791925200000,
+        "leidoEn": 1791549828000
+      },
+      "cuenta": "personal"
+    }
+  }
+]

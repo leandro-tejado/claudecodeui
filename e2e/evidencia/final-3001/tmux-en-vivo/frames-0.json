@@ -1,0 +1,637 @@
+[
+  {
+    "t": 1791550265292,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "type": "chat.tmux-prompts"
+    }
+  },
+  {
+    "t": 1791550265292,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "type": "chat.tmux-prompts"
+    }
+  },
+  {
+    "t": 1791550265398,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "tmux_prompts",
+      "prompts": [],
+      "timestamp": "2026-10-09T12:51:05.384Z"
+    }
+  },
+  {
+    "t": 1791550265401,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "tmux_prompts",
+      "prompts": [],
+      "timestamp": "2026-10-09T12:51:05.384Z"
+    }
+  },
+  {
+    "t": 1791550266179,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "type": "chat.subscribe",
+      "sessions": [
+        {
+          "sessionId": "18c84c9c-cde3-4b9f-8a90-8f2aee481400",
+          "lastSeq": 0
+        }
+      ]
+    }
+  },
+  {
+    "t": 1791550266206,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "chat_subscribed",
+      "sessionId": "18c84c9c-cde3-4b9f-8a90-8f2aee481400",
+      "isProcessing": false,
+      "lastSeq": 0,
+      "pendingPermissions": [],
+      "runsInTmux": true,
+      "timestamp": "2026-10-09T12:51:06.192Z"
+    }
+  },
+  {
+    "t": 1791550267031,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "type": "chat.send-tmux",
+      "sessionId": "18c84c9c-cde3-4b9f-8a90-8f2aee481400",
+      "content": "Escribí un párrafo de unas 150 palabras sobre faros. Terminá con ux6s51.",
+      "clientMessageId": "local_1791550267011_63vxm2",
+      "options": {
+        "model": "default",
+        "effort": "default",
+        "permissionMode": "default",
+        "toolsSettings": {
+          "allowedTools": [
+            "Edit",
+            "Bash(cd:*)",
+            "Bash(echo:*)",
+            "Bash(export:*)",
+            "Bash(which:*)",
+            "Bash(ps:*)",
+            "Bash(tmux:*)"
+          ],
+          "disallowedTools": [],
+          "skipPermissions": true
+        },
+        "skipPermissions": true,
+        "sessionSummary": "e2e-envivo-ejecutora-1",
+        "attachments": []
+      }
+    }
+  },
+  {
+    "t": 1791550267664,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "message_status",
+      "sessionId": "18c84c9c-cde3-4b9f-8a90-8f2aee481400",
+      "clientMessageId": "local_1791550267011_63vxm2",
+      "status": "sent",
+      "timestamp": "2026-10-09T12:51:07.657Z"
+    }
+  },
+  {
+    "t": 1791550267670,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "status",
+      "sessionId": "18c84c9c-cde3-4b9f-8a90-8f2aee481400",
+      "text": null,
+      "canInterrupt": false,
+      "timestamp": "2026-10-09T12:51:07.658Z"
+    }
+  },
+  {
+    "t": 1791550267830,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "18c84c9c-cde3-4b9f-8a90-8f2aee481400",
+      "activityKind": "thinking",
+      "texto": "Blanching… (running SessionStart hooks… 5/6 · 0s)",
+      "timestamp": "2026-10-09T12:51:07.815Z"
+    }
+  },
+  {
+    "t": 1791550267830,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "stream_delta",
+      "sessionId": "18c84c9c-cde3-4b9f-8a90-8f2aee481400",
+      "messageId": "tmux-borrador:18c84c9c-cde3-4b9f-8a90-8f2aee481400",
+      "blockIndex": 0,
+      "content": "5h ?",
+      "timestamp": "2026-10-09T12:51:07.815Z"
+    }
+  },
+  {
+    "t": 1791550268210,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "18c84c9c-cde3-4b9f-8a90-8f2aee481400",
+      "activityKind": "thinking",
+      "texto": "Blanching… (running SessionStart hooks… 5/6 · 0s)",
+      "timestamp": "2026-10-09T12:51:08.208Z"
+    }
+  },
+  {
+    "t": 1791550268609,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "18c84c9c-cde3-4b9f-8a90-8f2aee481400",
+      "activityKind": "thinking",
+      "texto": "Blanching… (running SessionStart hooks… 5/6 · 1s)",
+      "timestamp": "2026-10-09T12:51:08.607Z"
+    }
+  },
+  {
+    "t": 1791550269012,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "18c84c9c-cde3-4b9f-8a90-8f2aee481400",
+      "activityKind": "thinking",
+      "texto": "Blanching… (running SessionStart hooks… 5/6 · 1s)",
+      "timestamp": "2026-10-09T12:51:09.009Z"
+    }
+  },
+  {
+    "t": 1791550269408,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "stream_reemplazo",
+      "sessionId": "18c84c9c-cde3-4b9f-8a90-8f2aee481400",
+      "messageId": "tmux-borrador:18c84c9c-cde3-4b9f-8a90-8f2aee481400",
+      "blockIndex": 0,
+      "timestamp": "2026-10-09T12:51:09.406Z"
+    }
+  },
+  {
+    "t": 1791550269413,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "18c84c9c-cde3-4b9f-8a90-8f2aee481400",
+      "idle": true,
+      "timestamp": "2026-10-09T12:51:09.406Z"
+    }
+  },
+  {
+    "t": 1791550271076,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "recursos",
+      "ram": {
+        "porcentajePct": 66.54521718256873,
+        "usadaGb": 5.160625457763672,
+        "totalGb": 7.75506591796875
+      },
+      "disco": {
+        "usadoPct": 43.19408082211653,
+        "usadoGb": 41.389434814453125,
+        "totalGb": 95.82200622558594
+      },
+      "sesionesTmux": 5,
+      "techoRam": 90
+    }
+  },
+  {
+    "t": 1791550272212,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "18c84c9c-cde3-4b9f-8a90-8f2aee481400",
+      "activityKind": "thinking",
+      "texto": "Proofing… (4s · ↓ 3 tokens)",
+      "timestamp": "2026-10-09T12:51:12.207Z"
+    }
+  },
+  {
+    "t": 1791550272214,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "stream_delta",
+      "sessionId": "18c84c9c-cde3-4b9f-8a90-8f2aee481400",
+      "messageId": "tmux-borrador:18c84c9c-cde3-4b9f-8a90-8f2aee481400",
+      "blockIndex": 0,
+      "content": "5h ?",
+      "timestamp": "2026-10-09T12:51:12.207Z"
+    }
+  },
+  {
+    "t": 1791550272612,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "18c84c9c-cde3-4b9f-8a90-8f2aee481400",
+      "activityKind": "thinking",
+      "texto": "Proofing… (5s · ↓ 3 tokens)",
+      "timestamp": "2026-10-09T12:51:12.609Z"
+    }
+  },
+  {
+    "t": 1791550273026,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "18c84c9c-cde3-4b9f-8a90-8f2aee481400",
+      "activityKind": "thinking",
+      "texto": "Proofing… (5s · ↓ 23 tokens)",
+      "timestamp": "2026-10-09T12:51:13.022Z"
+    }
+  },
+  {
+    "t": 1791550273026,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "stream_delta",
+      "sessionId": "18c84c9c-cde3-4b9f-8a90-8f2aee481400",
+      "messageId": "tmux-borrador:18c84c9c-cde3-4b9f-8a90-8f2aee481400",
+      "blockIndex": 0,
+      "content": "Los faros son torres solitarias que, durante siglos, guiaron a los navegantes a través de la oscuridad y las tormentas. Levantados sobre acantilados, islotes o costas peligrosas, su luz giratoria advertía de\n  5h ?",
+      "timestamp": "2026-10-09T12:51:13.022Z"
+    }
+  },
+  {
+    "t": 1791550273026,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "id": "f3c7be81-2ba5-4c18-a28c-346c2ba1d347",
+      "sessionId": "18c84c9c-cde3-4b9f-8a90-8f2aee481400",
+      "timestamp": "2026-10-09T12:51:09.054Z",
+      "provider": "claude",
+      "kind": "text",
+      "role": "user",
+      "content": "Escribí un párrafo de unas 150 palabras sobre faros. Terminá con ux6s51.",
+      "transcriptAnchorId": "f3c7be81-2ba5-4c18-a28c-346c2ba1d347"
+    }
+  },
+  {
+    "t": 1791550273420,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "18c84c9c-cde3-4b9f-8a90-8f2aee481400",
+      "activityKind": "thinking",
+      "texto": "Proofing… (5s · ↓ 27 tokens)",
+      "timestamp": "2026-10-09T12:51:13.418Z"
+    }
+  },
+  {
+    "t": 1791550273509,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "session_upserted",
+      "sessionId": "18c84c9c-cde3-4b9f-8a90-8f2aee481400",
+      "providerSessionId": "18c84c9c-cde3-4b9f-8a90-8f2aee481400",
+      "provider": "claude",
+      "session": {
+        "id": "18c84c9c-cde3-4b9f-8a90-8f2aee481400",
+        "summary": "Párrafo sobre faros",
+        "messageCount": 0,
+        "lastActivity": "2026-10-09T12:51:10.084Z",
+        "tmux": {
+          "nombre": "e2e-envivo-ejecutora-1",
+          "vivo": true
+        },
+        "cuenta": "optimum"
+      },
+      "project": {
+        "projectId": "6f20624f-a0db-4b13-ace6-bddcba010843",
+        "path": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
+        "fullPath": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
+        "displayName": "proyecto",
+        "isStarred": false
+      },
+      "timestamp": "2026-10-09T12:51:13.504Z"
+    }
+  },
+  {
+    "t": 1791550273823,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "18c84c9c-cde3-4b9f-8a90-8f2aee481400",
+      "activityKind": "thinking",
+      "texto": "Proofing… (6s · ↓ 79 tokens)",
+      "timestamp": "2026-10-09T12:51:13.820Z"
+    }
+  },
+  {
+    "t": 1791550273823,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "stream_delta",
+      "sessionId": "18c84c9c-cde3-4b9f-8a90-8f2aee481400",
+      "messageId": "tmux-borrador:18c84c9c-cde3-4b9f-8a90-8f2aee481400",
+      "blockIndex": 0,
+      "content": "Los faros son torres solitarias que, durante siglos, guiaron a los navegantes a través de la oscuridad y las tormentas. Levantados sobre acantilados, islotes o costas peligrosas, su luz giratoria advertía de\n  arrecifes escondidos y señalaba la entrada segura a los puertos. Antes de la electricidad, se alimentaban con fuego de leña, velas o lámparas de aceite, y un farero vivía allí para mantener la llama\n  5h ?",
+      "timestamp": "2026-10-09T12:51:13.820Z"
+    }
+  },
+  {
+    "t": 1791550273958,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": {
+        "porcentaje": 2,
+        "resetsAt": 1791565200000,
+        "leidoEn": 1791550255000
+      },
+      "sevenDay": {
+        "porcentaje": 82,
+        "resetsAt": 1791734400000,
+        "leidoEn": 1791550255000
+      },
+      "cuenta": "optimum"
+    }
+  },
+  {
+    "t": 1791550273961,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": {
+        "porcentaje": 0,
+        "resetsAt": 1791567000000,
+        "leidoEn": 1791549828000
+      },
+      "sevenDay": {
+        "porcentaje": 91,
+        "resetsAt": 1791925200000,
+        "leidoEn": 1791549828000
+      },
+      "cuenta": "personal"
+    }
+  },
+  {
+    "t": 1791550274223,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "18c84c9c-cde3-4b9f-8a90-8f2aee481400",
+      "activityKind": "thinking",
+      "texto": "Proofing… (6s · ↓ 132 tokens)",
+      "timestamp": "2026-10-09T12:51:14.220Z"
+    }
+  },
+  {
+    "t": 1791550274228,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "stream_delta",
+      "sessionId": "18c84c9c-cde3-4b9f-8a90-8f2aee481400",
+      "messageId": "tmux-borrador:18c84c9c-cde3-4b9f-8a90-8f2aee481400",
+      "blockIndex": 0,
+      "content": "Los faros son torres solitarias que, durante siglos, guiaron a los navegantes a través de la oscuridad y las tormentas. Levantados sobre acantilados, islotes o costas peligrosas, su luz giratoria advertía de\n  arrecifes escondidos y señalaba la entrada segura a los puertos. Antes de la electricidad, se alimentaban con fuego de leña, velas o lámparas de aceite, y un farero vivía allí para mantener la llama\n  encendida noche tras noche. Con el tiempo llegaron las lentes de Fresnel, capaces de concentrar la luz y proyectarla a decenas de kilómetros. Hoy el GPS y los sistemas automáticos han reducido su función\n  5h ?",
+      "timestamp": "2026-10-09T12:51:14.220Z"
+    }
+  },
+  {
+    "t": 1791550274621,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "18c84c9c-cde3-4b9f-8a90-8f2aee481400",
+      "activityKind": "thinking",
+      "texto": "Proofing… (7s · ↓ 165 tokens)",
+      "timestamp": "2026-10-09T12:51:14.619Z"
+    }
+  },
+  {
+    "t": 1791550274626,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "stream_delta",
+      "sessionId": "18c84c9c-cde3-4b9f-8a90-8f2aee481400",
+      "messageId": "tmux-borrador:18c84c9c-cde3-4b9f-8a90-8f2aee481400",
+      "blockIndex": 0,
+      "content": "Los faros son torres solitarias que, durante siglos, guiaron a los navegantes a través de la oscuridad y las tormentas. Levantados sobre acantilados, islotes o costas peligrosas, su luz giratoria advertía de\n  arrecifes escondidos y señalaba la entrada segura a los puertos. Antes de la electricidad, se alimentaban con fuego de leña, velas o lámparas de aceite, y un farero vivía allí para mantener la llama\n  encendida noche tras noche. Con el tiempo llegaron las lentes de Fresnel, capaces de concentrar la luz y proyectarla a decenas de kilómetros. Hoy el GPS y los sistemas automáticos han reducido su función\n  práctica, pero los faros siguen en pie como símbolos de resistencia, orientación y esperanza. Su silueta blanca y rayada, golpeada por el viento y el oleaje, recuerda que siempre hay una luz esperando al\n  5h ?",
+      "timestamp": "2026-10-09T12:51:14.619Z"
+    }
+  },
+  {
+    "t": 1791550275029,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "18c84c9c-cde3-4b9f-8a90-8f2aee481400",
+      "activityKind": "thinking",
+      "texto": "Proofing… (7s · ↓ 174 tokens)",
+      "timestamp": "2026-10-09T12:51:15.024Z"
+    }
+  },
+  {
+    "t": 1791550275373,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "id": "904dc716-34de-45c3-86ee-f7fe257ac759_0",
+      "sessionId": "18c84c9c-cde3-4b9f-8a90-8f2aee481400",
+      "timestamp": "2026-10-09T12:51:15.011Z",
+      "provider": "claude",
+      "kind": "text",
+      "role": "assistant",
+      "content": "Los faros son torres solitarias que, durante siglos, guiaron a los navegantes a través de la oscuridad y las tormentas. Levantados sobre acantilados, islotes o costas peligrosas, su luz giratoria advertía de arrecifes escondidos y señalaba la entrada segura a los puertos. Antes de la electricidad, se alimentaban con fuego de leña, velas o lámparas de aceite, y un farero vivía allí para mantener la llama encendida noche tras noche. Con el tiempo llegaron las lentes de Fresnel, capaces de concentrar la luz y proyectarla a decenas de kilómetros. Hoy el GPS y los sistemas automáticos han reducido su función práctica, pero los faros siguen en pie como símbolos de resistencia, orientación y esperanza. Su silueta blanca y rayada, golpeada por el viento y el oleaje, recuerda que siempre hay una luz esperando al final del camino, incluso en la noche más cerrada. ux6s51",
+      "messageId": "msg_011CfrhAAn62vxeRTgfKZBcZ",
+      "blockIndex": 0
+    }
+  },
+  {
+    "t": 1791550275427,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "id": "tmux_complete_18c84c9c-cde3-4b9f-8a90-8f2aee481400_1791550275377",
+      "sessionId": "18c84c9c-cde3-4b9f-8a90-8f2aee481400",
+      "provider": "claude",
+      "timestamp": "2026-10-09T12:51:15.377Z",
+      "kind": "complete",
+      "success": true
+    }
+  },
+  {
+    "t": 1791550275445,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "stream_reemplazo",
+      "sessionId": "18c84c9c-cde3-4b9f-8a90-8f2aee481400",
+      "messageId": "tmux-borrador:18c84c9c-cde3-4b9f-8a90-8f2aee481400",
+      "blockIndex": 0,
+      "timestamp": "2026-10-09T12:51:15.429Z"
+    }
+  },
+  {
+    "t": 1791550275447,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "18c84c9c-cde3-4b9f-8a90-8f2aee481400",
+      "idle": true,
+      "timestamp": "2026-10-09T12:51:15.429Z"
+    }
+  },
+  {
+    "t": 1791550276725,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": {
+        "porcentaje": 2,
+        "resetsAt": 1791565200000,
+        "leidoEn": 1791550275000
+      },
+      "sevenDay": {
+        "porcentaje": 82,
+        "resetsAt": 1791734400000,
+        "leidoEn": 1791550275000
+      },
+      "cuenta": "optimum"
+    }
+  },
+  {
+    "t": 1791550276728,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": {
+        "porcentaje": 0,
+        "resetsAt": 1791567000000,
+        "leidoEn": 1791549828000
+      },
+      "sevenDay": {
+        "porcentaje": 91,
+        "resetsAt": 1791925200000,
+        "leidoEn": 1791549828000
+      },
+      "cuenta": "personal"
+    }
+  },
+  {
+    "t": 1791550279487,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "session_upserted",
+      "sessionId": "18c84c9c-cde3-4b9f-8a90-8f2aee481400",
+      "providerSessionId": "18c84c9c-cde3-4b9f-8a90-8f2aee481400",
+      "provider": "claude",
+      "session": {
+        "id": "18c84c9c-cde3-4b9f-8a90-8f2aee481400",
+        "summary": "Párrafo sobre faros",
+        "messageCount": 0,
+        "lastActivity": "2026-10-09T12:51:15.190Z",
+        "tmux": {
+          "nombre": "e2e-envivo-ejecutora-1",
+          "vivo": true
+        },
+        "cuenta": "optimum"
+      },
+      "project": {
+        "projectId": "6f20624f-a0db-4b13-ace6-bddcba010843",
+        "path": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
+        "fullPath": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
+        "displayName": "proyecto",
+        "isStarred": false
+      },
+      "timestamp": "2026-10-09T12:51:19.485Z"
+    }
+  },
+  {
+    "t": 1791550279958,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": {
+        "porcentaje": 2,
+        "resetsAt": 1791565200000,
+        "leidoEn": 1791550275000
+      },
+      "sevenDay": {
+        "porcentaje": 82,
+        "resetsAt": 1791734400000,
+        "leidoEn": 1791550275000
+      },
+      "cuenta": "optimum"
+    }
+  },
+  {
+    "t": 1791550279960,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": {
+        "porcentaje": 0,
+        "resetsAt": 1791567000000,
+        "leidoEn": 1791549828000
+      },
+      "sevenDay": {
+        "porcentaje": 91,
+        "resetsAt": 1791925200000,
+        "leidoEn": 1791549828000
+      },
+      "cuenta": "personal"
+    }
+  },
+  {
+    "t": 1791550290290,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "heartbeat",
+      "timestamp": 1791550290288
+    }
+  }
+]
