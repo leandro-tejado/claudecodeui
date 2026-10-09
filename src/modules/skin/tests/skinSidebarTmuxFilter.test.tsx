@@ -67,32 +67,17 @@ describe('badge de tmux en la fila', () => {
 });
 
 describe('filtro "solo tmux"', () => {
-  it('arranca prendido: oculta las sesiones sin tmux vivo', () => {
+  it('ya no existe (rediseño 09-oct): se ven todas, sin interruptor ni contador', () => {
     renderSidebar([
       session('ses-1', 'Con tmux', { nombre: 'cloudcli-proj-abc', vivo: true }),
       session('ses-2', 'Sin tmux', null),
       session('ses-3', 'Tmux caído', { nombre: 'cloudcli-proj-def', vivo: false }),
     ]);
-
-    expect(screen.getByText('Con tmux')).toBeTruthy();
-    expect(screen.queryByText('Sin tmux')).toBeNull();
-    expect(screen.queryByText('Tmux caído')).toBeNull();
-  });
-
-  it('el interruptor revela el resto y el contador de ocultas coincide', () => {
-    renderSidebar([
-      session('ses-1', 'Con tmux', { nombre: 'cloudcli-proj-abc', vivo: true }),
-      session('ses-2', 'Sin tmux', null),
-      session('ses-3', 'Tmux caído', { nombre: 'cloudcli-proj-def', vivo: false }),
-    ]);
-
-    expect(screen.getByText('2 ocultas')).toBeTruthy();
-
-    fireEvent.click(screen.getByTitle(/Mostrando solo sesiones con tmux vivo/));
 
     expect(screen.getByText('Con tmux')).toBeTruthy();
     expect(screen.getByText('Sin tmux')).toBeTruthy();
     expect(screen.getByText('Tmux caído')).toBeTruthy();
+    expect(screen.queryByTitle(/sesiones con tmux vivo|filtrar solo tmux/)).toBeNull();
     expect(screen.queryByText(/ocultas/)).toBeNull();
   });
 

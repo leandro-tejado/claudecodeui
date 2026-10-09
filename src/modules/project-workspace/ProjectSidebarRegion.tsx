@@ -5,8 +5,9 @@ import type {
 } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { useProjectSidebarState } from '@/modules/project-workspace/context/ProjectsStateContext';
+import { useProjectCommandState, useProjectSidebarState } from '@/modules/project-workspace/context/ProjectsStateContext';
 import { SkinSidebar as Sidebar, useTmuxPromptsFeed } from '@/modules/skin';
+import { useTheme } from '@/shared/context/ThemeContext';
 import { useBusySessionIdSet } from '@/shared/context/SessionProtectionContext';
 import type { ProjectWorkspaceShellProps } from '@/shared/types';
 
@@ -19,6 +20,9 @@ function ProjectSidebarRegion({
   // Las sesiones con una corrida en vuelo. El hook vive acá, donde el provider
   // ya está montado; el sidebar las recibe como dato, no como dependencia.
   const activeSessions = useBusySessionIdSet();
+  // El menú de Ajustes de la barra abre Tareas y la pestaña de plugins.
+  const { setActiveTab, openSettings } = useProjectCommandState();
+  const { isDarkMode, toggleDarkMode } = useTheme();
   // Las preguntas de permiso de los panes de tmux: el sidebar y el chat las
   // leen del mismo store, que se alimenta una sola vez, acá.
   useTmuxPromptsFeed();
@@ -37,7 +41,7 @@ function ProjectSidebarRegion({
   if (!isMobile) {
     return (
       <div className="h-full flex-shrink-0 border-r border-border/50">
-        <Sidebar {...sidebarSharedProps} activeSessions={activeSessions} />
+        <Sidebar {...sidebarSharedProps} activeSessions={activeSessions} onShowTab={setActiveTab} onOpenSettingsTab={openSettings} isDarkMode={isDarkMode} onToggleTheme={toggleDarkMode} />
       </div>
     );
   }
@@ -61,7 +65,7 @@ function ProjectSidebarRegion({
         onClick={(event) => event.stopPropagation()}
         onTouchStart={(event) => event.stopPropagation()}
       >
-        <Sidebar {...sidebarSharedProps} activeSessions={activeSessions} />
+        <Sidebar {...sidebarSharedProps} activeSessions={activeSessions} onShowTab={setActiveTab} onOpenSettingsTab={openSettings} isDarkMode={isDarkMode} onToggleTheme={toggleDarkMode} />
       </div>
     </div>
   );

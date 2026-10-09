@@ -32,6 +32,7 @@ import { describeBackgroundTask, ownBackgroundTasks } from '@/modules/chat/utils
 import { useFileMentions } from '@/modules/chat/hooks/useFileMentions';
 import { useInputHistory } from '@/modules/chat/hooks/useInputHistory';
 import { useSlashCommands } from '@/modules/chat/hooks/useSlashCommands';
+import { mensajeDeErrorDeCreacion } from '@/modules/chat/hooks/errorDeCreacion';
 import type { SessionStore } from '@/modules/chat/hooks/useSessionStore';
 import { chatMessageToNormalized } from '@/modules/chat/hooks/useChatSessionState';
 
@@ -1011,7 +1012,7 @@ export function useChatComposerState({
               ...(cuentaElegida !== CUENTA_POR_DEFECTO && { cuenta: cuentaElegida }),
             });
             if (!response.ok) {
-              throw new Error(`Failed to create session (${response.status})`);
+              throw new Error(await mensajeDeErrorDeCreacion(response));
             }
             const body = await response.json();
             targetSessionId = body?.data?.sessionId || null;

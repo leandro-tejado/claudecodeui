@@ -5,6 +5,7 @@ import {
   Archive,
   ArchiveRestore,
   Bot,
+  ClipboardCheck,
   Check,
   CircleDot,
   ExternalLink,
@@ -16,9 +17,10 @@ import {
   Pin,
   PinOff,
   Plus,
-  RefreshCw,
+  Puzzle,
   Search,
   Settings,
+  Sun,
   Terminal,
   Trash2,
   Workflow,
@@ -28,14 +30,13 @@ import {
 import SkinContextMenu from '@/modules/skin/SkinContextMenu';
 import type { SkinContextMenuItem } from '@/modules/skin/SkinContextMenu';
 import { useTabTitle } from '@/modules/skin/hooks/useTabTitle';
-import { useSkinUi } from '@/modules/skin/skinUiStore';
+import { toggleSidebarCollapsed, useSkinUi } from '@/modules/skin/skinUiStore';
 import { useSubagents } from '@/modules/skin/subagentStore';
 import type { SubagentRow, SubagentStatus } from '@/modules/skin/subagentStore';
 import { AccountChip, cuentaDeSesion } from '@/modules/cuentas';
 import { useSessionBudgets } from '@/modules/skin/sessionBudgetStore';
 import { useTmuxPrompts } from '@/modules/skin/tmuxPromptStore';
 import { AMBER_AT, RED_AT } from '@/modules/skin/compactBarThresholds';
-import { useSetUiPreference, useUiPreferences } from '@/shared/context/UiPreferencesContext';
 import {
   browseFilesystemFolders,
   createProjectRequest,
@@ -74,6 +75,11 @@ import type {
  */
 
 const WIDTH_STORAGE_KEY = 'skin:sidebar-width';
+
+/** El riel de íconos de la barra plegada y los tiempos del asomo por cursor (boceto 09-oct). */
+const RIEL_ANCHO = 52;
+const ENTRADA_MS = 150;
+const SALIDA_MS = 250;
 
 /** Lo que el usuario pidió archivar y todavía no confirmó. */
 type PendingArchive = { kind: 'project' | 'session'; id: string; name: string };
@@ -167,6 +173,13 @@ type SkinSidebarProps = {
   isLoading?: boolean;
   onRefresh?: () => void;
   onShowSettings?: () => void;
+  /** Abre una vista del área principal (`tasks`): el menú de Ajustes la usa. */
+  onShowTab?: (tab: 'tasks') => void;
+  /** Abre Ajustes en una pestaña concreta (`plugins`). */
+  onOpenSettingsTab?: (tab: string) => void;
+  /** El tema llega de afuera para que la barra no dependa del ThemeProvider. */
+  isDarkMode?: boolean;
+  onToggleTheme?: () => void;
   isMobile?: boolean;
 };
 
@@ -267,9 +280,12 @@ export function SkinSidebar({
   onSessionDelete,
   onProjectDelete,
   onLoadMoreSessions,
-  isLoading,
   onRefresh,
   onShowSettings,
+  onShowTab,
+  onOpenSettingsTab,
+  isDarkMode = false,
+  onToggleTheme,
   isMobile,
 }: SkinSidebarProps) {
   const [query, setQuery] = useState('');
@@ -278,8 +294,6 @@ export function SkinSidebar({
   const [starOverride, setStarOverride] = useState<Map<string, boolean>>(new Map());
   const dragStateRef = useRef<{ startX: number; startWidth: number } | null>(null);
   const { sidebarCollapsed } = useSkinUi();
-  const { sidebarOnlyTmux } = useUiPreferences();
-  const setUiPreference = useSetUiPreference();
 
   /* Renombrar una sesión, en el lugar. `titleOverride` evita esperar a que el
      backend reindexe para ver el nombre nuevo en la fila. */
@@ -498,29 +512,7 @@ export function SkinSidebar({
     return grouped;
   }, [liveSubagents]);
 
-  /*
-   * Cuántas sesiones tienen tmux vivo, sobre el total. `conocido` distingue
-   * "el registro dice que no hay tmux" (todas en null porque la Fase 1 no
-   * corrió en esta máquina) de "hay 0 vivas": sin ese distingo, el filtro por
-   * defecto dejaría el sidebar vacío ante un registro ausente.
-   */
-  const tmuxStats = useMemo(() => {
-    let total = 0;
-    let vivas = 0;
-    let conocido = false;
-    for (const project of projects) {
-      for (const session of project.sessions ?? []) {
-        total += 1;
-        const tmux = getTmux(session);
-        if (tmux !== null) conocido = true;
-        if (tmux?.vivo) vivas += 1;
-      }
-    }
-    return { total, vivas, conocido };
-  }, [projects]);
-
-  const tmuxFilterActive = sidebarOnlyTmux && tmuxStats.conocido;
-  const ocultasPorTmux = tmuxFilterActive ? tmuxStats.total - tmuxStats.vivas : 0;
+  // Sin filtro de tmux desde el rediseño del 9-oct: se ven todas y el estado de cada fila ya dice si tiene tmux vivo.
 
   /*
    * Qué sesiones ya se dibujaron, para la entrada animada de una nueva
@@ -572,9 +564,7 @@ export function SkinSidebar({
 
     const matched = projects
       .map((project) => {
-        const filtered = tmuxFilterActive
-          ? (project.sessions ?? []).filter((session) => getTmux(session)?.vivo)
-          : project.sessions ?? [];
+        const filtered = project.sessions ?? [];
         // La sesión orquestadora fija (`tmux.fija`) siempre arriba de su
         // proyecto — es una sola por máquina, no hace falta un sort estable
         // más fino que "fija primero, el resto en su orden de siempre".
@@ -598,7 +588,7 @@ export function SkinSidebar({
       if (starDelta !== 0) return starDelta;
       return projectName(a.project).localeCompare(projectName(b.project));
     });
-  }, [projects, query, isStarred, projectName, tmuxFilterActive]);
+  }, [projects, query, isStarred, projectName]);
 
   const toggleExpanded = useCallback((projectId: string, isOpenNow: boolean) => {
     setOpenOverride((previous) => new Map(previous).set(projectId, !isOpenNow));
@@ -820,23 +810,150 @@ export function SkinSidebar({
     fontSize: 'var(--skin-text-sm)',
   };
 
-  const isCollapsed = !isMobile && sidebarCollapsed;
+  /* Plegada, la barra se asoma con el cursor. Cada dirección tiene su retardo
+     y el último gesto cancela al anterior: eso es la histéresis. */
+  const [asomada, setAsomada] = useState(false);
+  const asomoTimer = useRef<number | null>(null);
+  const programarAsomo = useCallback((valor: boolean, demora: number) => {
+    if (asomoTimer.current !== null) window.clearTimeout(asomoTimer.current);
+    asomoTimer.current = window.setTimeout(() => {
+      asomoTimer.current = null;
+      setAsomada(valor);
+    }, demora);
+  }, []);
+  useEffect(() => () => {
+    if (asomoTimer.current !== null) window.clearTimeout(asomoTimer.current);
+  }, []);
+
+  /* El menú de Ajustes: lo que antes eran botones sueltos de la cabecera. */
+  const [menuAjustes, setMenuAjustes] = useState<{ x: number; y: number } | null>(null);
+  const abrirMenuAjustes = useCallback((event: ReactMouseEvent<HTMLButtonElement>) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    setMenuAjustes({ x: rect.left, y: rect.top - 4 });
+  }, []);
+  const itemsAjustes = useMemo<SkinContextMenuItem[]>(() => {
+    const items: SkinContextMenuItem[] = [
+      viewMode === 'archived'
+        ? { label: 'Volver a la lista', icon: Archive, onSelect: () => setViewMode('active') }
+        : {
+            label: 'Archivados',
+            icon: Archive,
+            onSelect: () => {
+              setViewMode('archived');
+              // Se pide al entrar, atado al gesto: así no hace falta un «Actualizar».
+              void loadArchived();
+            },
+          },
+    ];
+    if (onShowTab) items.push({ label: 'Tareas', icon: ClipboardCheck, onSelect: () => onShowTab('tasks') });
+    if (onOpenSettingsTab) items.push({ label: 'Plugins', icon: Puzzle, onSelect: () => onOpenSettingsTab('plugins') });
+    if (onToggleTheme) items.push({ label: isDarkMode ? 'Tema claro' : 'Tema oscuro', icon: isDarkMode ? Sun : Moon, onSelect: onToggleTheme });
+    if (onShowSettings) items.push({ label: 'Ajustes', icon: Settings, onSelect: onShowSettings });
+    return items;
+  }, [viewMode, loadArchived, onShowTab, onOpenSettingsTab, isDarkMode, onToggleTheme, onShowSettings]);
+
+  const plegada = !isMobile && sidebarCollapsed;
+  const enRiel = plegada && !asomada;
+
+  const botonIcono =
+    'grid h-8 w-8 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground';
+
+  const logo = (
+    <button
+      type="button"
+      data-testid="barra-logo"
+      onClick={() => {
+        if (isMobile) return;
+        toggleSidebarCollapsed();
+        setAsomada(false);
+      }}
+      title={plegada ? 'Dejar la barra abierta' : 'Plegar la barra'}
+      aria-label={plegada ? 'Dejar la barra abierta' : 'Plegar la barra'}
+      aria-pressed={!plegada}
+      className="grid h-7 w-7 flex-none place-items-center rounded-md bg-foreground text-[11px] font-semibold text-background transition-opacity hover:opacity-80"
+    >
+      LT
+    </button>
+  );
 
   return (
-    /* Dos capas a propósito: la de afuera anima el ancho (y lo lleva a 0 al
-       colapsar), la de adentro conserva el ancho real. Sin esa separación el
-       contenido se comprimiría durante la animación en vez de deslizarse. */
+    /* Dos capas a propósito: la de afuera anima el ancho (al riel de 52 px
+       al plegar), la de adentro conserva el ancho real. Sin esa separación el
+       contenido se comprimiría durante la animación en vez de deslizarse.
+       Plegada, el cursor la asoma entera y empuja el chat (decisión del boceto
+       09-oct): entra en 150 ms y sale en 250, con su retardo cada una para
+       que pasar el mouse de camino a otra cosa no la mueva. */
     <div
-      className="relative h-full flex-none overflow-hidden bg-card transition-[width] duration-200 ease-out"
-      style={{ width: isMobile ? '100%' : isCollapsed ? 0 : width, fontSize: 'var(--skin-text)' }}
+      className="relative h-full flex-none overflow-hidden bg-card transition-[width] ease-out"
+      style={{
+        width: isMobile ? '100%' : enRiel ? RIEL_ANCHO : width,
+        transitionDuration: `${enRiel ? SALIDA_MS : ENTRADA_MS}ms`,
+        fontSize: 'var(--skin-text)',
+      }}
+      data-testid="barra-lateral"
+      data-plegada={plegada ? 'true' : 'false'}
+      data-asomada={asomada ? 'true' : 'false'}
+      onMouseEnter={() => {
+        if (!plegada) return;
+        programarAsomo(true, ENTRADA_MS);
+      }}
+      onMouseLeave={() => {
+        if (!plegada) return;
+        programarAsomo(false, SALIDA_MS);
+      }}
     >
+      {enRiel ? (
+        <nav
+          aria-label="Barra plegada"
+          data-testid="barra-riel"
+          className="flex h-full flex-col items-center gap-1 py-2.5"
+          style={{ width: RIEL_ANCHO }}
+        >
+          {logo}
+          <button
+            type="button"
+            onClick={() => {
+              setSearchOpen(true);
+              setAsomada(true);
+            }}
+            title="Buscar"
+            aria-label="Buscar"
+            className={cn(botonIcono, 'mt-2')}
+          >
+            <Search className="h-4 w-4" />
+          </button>
+          <button
+            type="button"
+            onClick={() => setAsomada(true)}
+            title="Proyectos"
+            aria-label="Proyectos"
+            className={botonIcono}
+          >
+            <Folder className="h-4 w-4" />
+          </button>
+          <div className="mt-auto flex flex-col items-center gap-1">
+            <button type="button" onClick={openAdd} title="Nuevo proyecto" aria-label="Nuevo proyecto" className={botonIcono}>
+              <FolderPlus className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              onClick={abrirMenuAjustes}
+              title="Ajustes"
+              aria-label="Ajustes"
+              aria-haspopup="menu"
+              className={botonIcono}
+            >
+              <Settings className="h-4 w-4" />
+            </button>
+          </div>
+        </nav>
+      ) : (
       <div
         className="flex h-full flex-col"
         style={{ width: isMobile ? '100%' : width }}
-        aria-hidden={isCollapsed}
       >
       {/* Manija de ancho. En mobile el sidebar es un cajón: no aplica. */}
-      {!isMobile && !isCollapsed && (
+      {!isMobile && !plegada && (
         <div
           onMouseDown={handleDragStart}
           className="group absolute right-0 top-0 z-20 h-full w-1.5 cursor-col-resize"
@@ -848,12 +965,9 @@ export function SkinSidebar({
         </div>
       )}
 
-      {/* --- Cabecera --- */}
+      {/* --- Cabecera: el logo pliega o fija la barra; nada de título ni botones de mantenimiento. --- */}
       <div className="flex items-center gap-2 border-b border-border px-3 py-2.5">
-        <div className="grid h-6 w-6 flex-none place-items-center rounded-md bg-foreground text-[11px] font-semibold text-background">
-          LT
-        </div>
-        <span className="truncate font-semibold tracking-tight">Consola</span>
+        {logo}
 
         <div className="ml-auto flex items-center gap-0.5">
           <button
@@ -863,74 +977,19 @@ export function SkinSidebar({
               if (searchOpen) setQuery('');
             }}
             title="Buscar"
+            aria-label="Buscar"
+            aria-pressed={searchOpen}
             className={`grid h-7 w-7 place-items-center rounded-md transition-colors hover:bg-accent hover:text-foreground ${
               searchOpen ? 'bg-accent text-foreground' : 'text-muted-foreground'
             }`}
           >
             <Search className="h-4 w-4" />
           </button>
-          {tmuxFilterActive && ocultasPorTmux > 0 && (
-            <span
-              className="flex-none px-0.5 text-muted-foreground"
-              style={{ fontSize: 'var(--skin-text-xs)' }}
-            >
-              {ocultasPorTmux} ocultas
-            </span>
-          )}
-          <button
-            type="button"
-            onClick={() => setUiPreference('sidebarOnlyTmux', !sidebarOnlyTmux)}
-            title={
-              sidebarOnlyTmux
-                ? 'Mostrando solo sesiones con tmux vivo — click para ver todas'
-                : 'Mostrando todas las sesiones — click para filtrar solo tmux'
-            }
-            aria-pressed={sidebarOnlyTmux}
-            className={`grid h-7 w-7 place-items-center rounded-md transition-colors hover:bg-accent hover:text-foreground ${
-              sidebarOnlyTmux ? 'bg-accent text-foreground' : 'text-muted-foreground'
-            }`}
-          >
-            <Terminal className="h-4 w-4" />
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              const next = viewMode === 'archived' ? 'active' : 'archived';
-              setViewMode(next);
-              // Se pide al entrar, no en un efecto: así el fetch queda atado al
-              // gesto que lo causa y no hay render extra por el estado de carga.
-              if (next === 'archived') void loadArchived();
-            }}
-            title={viewMode === 'archived' ? 'Volver a la lista' : 'Ver archivados'}
-            className={`grid h-7 w-7 place-items-center rounded-md transition-colors hover:bg-accent hover:text-foreground ${
-              viewMode === 'archived' ? 'bg-accent text-foreground' : 'text-muted-foreground'
-            }`}
-          >
-            <Archive className="h-4 w-4" />
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              if (viewMode === 'archived') void loadArchived();
-              else onRefresh?.();
-            }}
-            title="Actualizar"
-            className="grid h-7 w-7 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-          >
-            <RefreshCw className={`h-4 w-4 ${isLoading || archivedLoading ? 'animate-spin' : ''}`} />
-          </button>
-          <button
-            type="button"
-            onClick={openAdd}
-            title="Agregar proyecto"
-            className="grid h-7 w-7 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-          >
-            <FolderPlus className="h-4 w-4" />
-          </button>
           <button
             type="button"
             onClick={() => selectedProject && onNewSession(selectedProject)}
             title="Nueva sesión"
+            aria-label="Nueva sesión"
             className="grid h-7 w-7 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
           >
             <Plus className="h-4 w-4" />
@@ -1548,12 +1607,24 @@ export function SkinSidebar({
       </div>
       )}
 
-      {/* --- Pie: sólo Ajustes. Sin GitHub, sin comunidad, sin reportar issues. --- */}
+      {/* --- Pie: Nuevo proyecto y Ajustes. Lo de mantenimiento (archivados, tema) vive en el menú de Ajustes. --- */}
       <div className="flex items-center gap-2 border-t border-border px-3 py-2">
         <button
           type="button"
-          onClick={onShowSettings}
+          data-testid="barra-nuevo-proyecto"
+          onClick={openAdd}
           className="flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+          style={{ fontSize: 'var(--skin-text-sm)' }}
+        >
+          <FolderPlus className="h-3.5 w-3.5" />
+          Nuevo proyecto
+        </button>
+        <button
+          type="button"
+          data-testid="barra-ajustes"
+          onClick={abrirMenuAjustes}
+          aria-haspopup="menu"
+          className="ml-auto flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
           style={{ fontSize: 'var(--skin-text-sm)' }}
         >
           <Settings className="h-3.5 w-3.5" />
@@ -1561,6 +1632,17 @@ export function SkinSidebar({
         </button>
       </div>
       </div>
+      )}
+
+      {menuAjustes && (
+        <SkinContextMenu
+          x={menuAjustes.x}
+          y={menuAjustes.y}
+          onClose={() => setMenuAjustes(null)}
+          label="Ajustes"
+          items={itemsAjustes}
+        />
+      )}
 
       {/* --- Clic derecho sobre un proyecto o una sesión. --- */}
       {contextMenu && (

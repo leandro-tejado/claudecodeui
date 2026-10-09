@@ -128,13 +128,10 @@ describe('SkinSidebar — estado con tmux (bug 07-oct, "dormida" con el tmux viv
     const { rerender } = render(renderProyecto([viva]));
     expect(screen.getByTitle(/^libre: /)).toBeTruthy();
 
-    // Con el filtro "solo tmux vivo" (el de por defecto), la fila sale.
+    // Sin filtro de tmux (rediseño 09-oct) la fila se queda y pasa a "dormida"
+    // aunque se haya tocado recién.
     const muerta = buildSession('ses-tmux', AHORA, { nombre: 'proj-chat-1', vivo: false });
     rerender(renderProyecto([muerta]));
-    expect(screen.queryByText('Sesión ses-tmux')).toBeNull();
-
-    // Mostrando todas, queda "dormida" aunque se haya tocado recién.
-    fireEvent.click(screen.getByTitle(/click para ver todas/));
     expect(screen.getByText('Sesión ses-tmux')).toBeTruthy();
     expect(screen.getByTitle(/^dormida: /)).toBeTruthy();
   });

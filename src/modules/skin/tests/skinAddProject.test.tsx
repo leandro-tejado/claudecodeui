@@ -54,7 +54,7 @@ describe('SkinSidebar add project', () => {
     const onRefresh = vi.fn();
     renderSidebar(onRefresh);
 
-    fireEvent.click(screen.getByTitle('Agregar proyecto'));
+    fireEvent.click(screen.getByTestId('barra-nuevo-proyecto'));
 
     const input = await screen.findByPlaceholderText(/mi-proyecto/);
     fireEvent.change(input, { target: { value: '/home/leantejado/workspace-leandro/desarrollo/app-norte' } });
