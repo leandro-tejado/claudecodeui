@@ -1,15 +1,13 @@
-import { Folder, GitBranch, Menu, MessageSquare, ClipboardCheck, MonitorPlay, Moon, PanelLeft, Sun, type LucideIcon } from 'lucide-react';
+import { ArrowLeft, Menu, PanelRight } from 'lucide-react';
 import { useCallback, useEffect, useRef, type Dispatch, type MouseEvent, type SetStateAction, type TouchEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { AccountChip, InfoCuenta, TopeAviso, cuentaDeSesion, reiniciarCuentaNueva, useCuentasState } from '@/modules/cuentas';
-import { usePlugins, PluginIcon } from '@/modules/plugins';
-import SkinCompactBar from '@/modules/skin/SkinCompactBar';
-import SkinContextRing from '@/modules/skin/SkinContextRing';
+import { AccountChip, TopeAviso, cuentaDeSesion, reiniciarCuentaNueva, useCuentas } from '@/modules/cuentas';
+import { usePlugins } from '@/modules/plugins';
+import SkinMedidorExtra from '@/modules/skin/SkinMedidorExtra';
 import SkinRecursos from '@/modules/skin/SkinRecursos';
-import { toggleFilesPanel, toggleSidebarCollapsed, useSkinUi } from '@/modules/skin/skinUiStore';
+import { toggleFilesPanel, useSkinUi } from '@/modules/skin/skinUiStore';
 import { UsageWindowIndicator } from '@/modules/usage-window';
-import { useTheme } from '@/shared/context/ThemeContext';
 import { Tooltip } from '@/shared/ui';
 import type { AppTab, Project, ProjectSession } from '@/shared/types';
 import { getSessionTitle } from '@/shared/utils';
@@ -19,13 +17,14 @@ import { getSessionTitle } from '@/shared/utils';
  *
  * Sustituye a WorkspaceHeader desde un injerto de una línea en WorkspaceMain.
  *
- * Qué cambia:
- * - Sin el logo del proveedor al lado del título: el nombre de la sesión solo.
- * - Las pestañas son sólo íconos, con tooltip. Ocupaban una franja entera para
- *   repetir en texto lo que el ícono ya decía.
- * - Sin la pestaña Shell: no se usa. El terminal sigue existiendo en el VPS
- *   (ttyd, por su propio puerto) — acá sólo se saca de la vista.
- * - Botón para colapsar el sidebar.
+ * Qué cambia (boceto `design-system/visual-refs/09-octubre-vista-principal.html`,
+ * aprobado el 9-oct):
+ * - Una sola fila: título con el proyecto al lado, chip de cuenta, el anillo de
+ *   cuota y el ícono de Archivos. Nada más a la vista.
+ * - Sin pestañas. Terminal, Git y Navegador se sacaron (no se usan; el código
+ *   sigue en su módulo). Tareas, Plugins y Tema se abren desde Ajustes.
+ * - Los medidores de contexto, compactación, RAM y disco viven dentro del
+ *   anillo: un clic abre el medidor completo.
  */
 
 type SkinHeaderProps = {
@@ -43,8 +42,6 @@ type SkinHeaderProps = {
    */
   onNewSessionWithCuenta?: (cuentaId: string) => void;
 };
-
-type BuiltInTab = { id: AppTab; labelKey: string; icon: LucideIcon };
 
 /*
  * Botón de menú en mobile. Es propio y no el de upstream porque las reglas de
@@ -103,39 +100,38 @@ function SkinMenuButton({ onMenuClick }: { onMenuClick: () => void }) {
   );
 }
 
-/* `shell` no está en la lista a propósito: es la forma de ocultar la pestaña
-   sin tocar el enum de upstream ni el componente que la renderiza.
-
-   `files` tampoco está, y por otro motivo: dejó de ser una pestaña. El botón de
-   archivos abre la columna lateral —está abajo, fuera del `nav`— en vez de
-   reemplazar el chat, que era lo que lo volvía inútil mientras el agente
-   trabajaba. */
-const BASE_TABS: BuiltInTab[] = [
-  { id: 'chat', labelKey: 'tabs.chat', icon: MessageSquare },
-  { id: 'git', labelKey: 'tabs.git', icon: GitBranch },
-];
+/* Los nombres de las vistas que no son el chat. Ya no tienen pestaña en la
+   cabecera (boceto 09-oct): Tareas y Plugins se abren desde Ajustes, y Git,
+   Navegador y Terminal se sacaron de la vista. Si una sesión vuelve con una de
+   esas vistas guardada, el título la nombra y la flecha regresa al chat. */
+function tituloDeVista(activeTab: AppTab, t: (key: string) => string, pluginName?: string): string {
+  if (activeTab.startsWith('plugin:')) return pluginName ?? activeTab.replace('plugin:', '');
+  if (activeTab === 'git') return t('tabs.git');
+  if (activeTab === 'tasks') return 'TaskMaster';
+  if (activeTab === 'browser') return t('tabs.browser');
+  if (activeTab === 'files') return t('tabs.files');
+  return t('misc.projectFallback');
+}
 
 export default function SkinHeader({
   activeTab,
   setActiveTab,
   selectedProject,
   selectedSession,
-  shouldShowTasksTab,
-  shouldShowBrowserTab,
   isMobile,
   onMenuClick,
   onNewSessionWithCuenta,
 }: SkinHeaderProps) {
   const { t } = useTranslation();
   const { plugins } = usePlugins();
-  const { isDarkMode, toggleDarkMode } = useTheme();
   const { filesPanelOpen } = useSkinUi();
 
   /* La cuenta de lo que se está mirando: la de la sesión abierta o, si todavía
      no hay sesión, la que se eligió para la nueva. El anillo de cuota y el chip
      leen de acá, así que los dos hablan siempre de la misma cuenta. */
-  const { nuevaCuenta } = useCuentasState();
+  const { nuevaCuenta, cuentas } = useCuentas();
   const cuentaActiva = selectedSession ? cuentaDeSesion(selectedSession) : nuevaCuenta;
+  const idsCuentas = cuentas.map((cuenta) => cuenta.id);
 
   /* La elección de cuenta de una sesión nueva vale hasta que esa sesión existe:
      al quedar seleccionada una sesión, la siguiente nueva vuelve a Optimum. */
@@ -144,180 +140,93 @@ export default function SkinHeader({
     if (selectedSessionId) reiniciarCuentaNueva();
   }, [selectedSessionId]);
 
-  const tabs: BuiltInTab[] = [
-    ...BASE_TABS,
-    ...(shouldShowBrowserTab ? [{ id: 'browser' as AppTab, labelKey: 'tabs.browser', icon: MonitorPlay }] : []),
-    ...(shouldShowTasksTab ? [{ id: 'tasks' as AppTab, labelKey: 'tabs.tasks', icon: ClipboardCheck }] : []),
-  ];
+  /* Ctrl/⌘+B abre y cierra Archivos (escena 4 del boceto). En el teléfono no
+     hay panel al costado: ahí Archivos sigue siendo una vista entera. */
+  useEffect(() => {
+    if (isMobile) return undefined;
+    const onKey = (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && !event.shiftKey && !event.altKey && event.key.toLowerCase() === 'b') {
+        event.preventDefault();
+        toggleFilesPanel();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [isMobile]);
 
-  const enabledPlugins = plugins.filter((plugin) => plugin.enabled);
-
-  const title =
-    activeTab === 'chat'
-      ? selectedSession
-        ? getSessionTitle(selectedSession)
-        : t('mainContent.newSession')
-      : activeTab === 'git'
-        ? t('tabs.git')
-        : activeTab === 'tasks'
-          ? 'TaskMaster'
-          : activeTab === 'browser'
-            ? t('tabs.browser')
-              : t('misc.projectFallback');
+  const enChat = activeTab === 'chat';
+  const pluginName = activeTab.startsWith('plugin:')
+    ? plugins.find((plugin) => `plugin:${plugin.name}` === activeTab)?.displayName
+    : undefined;
+  const title = enChat
+    ? selectedSession
+      ? getSessionTitle(selectedSession)
+      : t('mainContent.newSession')
+    : tituloDeVista(activeTab, t, pluginName);
 
   return (
-    // `ds-material-chrome`: material translúcido de la Fase 10 (design-system/tokens.md,
-    // "Materiales"), que cae a `--ds-surface-2` opaco con `prefers-reduced-transparency`
-    // (Fase 11, paso 4 — boceto `05-octubre-header-barra.html`).
-    <header className="ds-material-chrome flex-shrink-0 border-b border-border/60 px-3 py-1.5">
-      {/* A 390 px la fila parte en dos, como el boceto (05-octubre-header-barra):
-          título y acciones arriba, medidores abajo a lo ancho. En una sola fila
-          el título quedaba en 0 px y el chip de cuenta se montaba sobre el anillo. */}
-      <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 sm:flex-nowrap">
+    // `ds-material-chrome`: material translúcido (design-system/tokens.md,
+    // "Materiales"), que cae a `--ds-surface-2` opaco con `prefers-reduced-transparency`.
+    // Una sola fila de 48 px, como el boceto 09-octubre-vista-principal.html.
+    <header className="ds-material-chrome flex-shrink-0 border-b border-border/60">
+      <div className="flex h-12 min-w-0 items-center gap-2 px-3 sm:gap-2.5 sm:px-3.5">
         {isMobile && <SkinMenuButton onMenuClick={onMenuClick} />}
 
-        {!isMobile && (
-          <Tooltip content="Mostrar u ocultar el panel" position="bottom">
+        {!enChat && (
+          <Tooltip content="Volver al chat" position="bottom">
             <button
               type="button"
-              onClick={toggleSidebarCollapsed}
-              aria-label="Mostrar u ocultar el panel"
-              className="grid h-7 w-7 flex-none place-items-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+              onClick={() => setActiveTab('chat')}
+              aria-label="Volver al chat"
+              className="grid h-8 w-8 flex-none place-items-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
             >
-              <PanelLeft className="h-4 w-4" />
+              <ArrowLeft className="h-4 w-4" />
             </button>
           </Tooltip>
         )}
 
-        {/* Título: sin logo de proveedor, el nombre de la sesión y nada más. */}
-        <div className="min-w-0 flex-1">
-          <h2
-            title={title}
-            className="truncate font-semibold leading-tight text-foreground"
-            style={{ fontSize: 'var(--skin-text)' }}
-          >
-            {title}
-          </h2>
-          <div
-            className="flex min-w-0 items-center gap-1.5 leading-tight text-muted-foreground"
-            style={{ fontSize: 'var(--skin-text-xs)' }}
-          >
-            <span className="truncate">{selectedProject.displayName}</span>
-            {activeTab === 'chat' && (
-              <>
-                <AccountChip cuenta={cuentaActiva} size="md" />
-                <InfoCuenta etiqueta="Qué es la cuenta de la sesión">
-                  Cuenta de IA con la que corre esta sesión. El anillo muestra la cuota de esa cuenta, no de la máquina.
-                </InfoCuenta>
-              </>
-            )}
-          </div>
-        </div>
+        {/* Título y proyecto en la misma línea: el proyecto, chico y gris. */}
+        <h2
+          title={`${title} · ${selectedProject.displayName}`}
+          className="min-w-0 flex-1 truncate font-semibold tracking-[-0.01em] text-foreground"
+          style={{ fontSize: 'var(--skin-text-sm)' }}
+        >
+          {title}
+          {!isMobile && (
+            <small className="ml-2 font-normal text-ds-faint" style={{ fontSize: 'var(--skin-text-xs)' }}>
+              {selectedProject.displayName}
+            </small>
+          )}
+        </h2>
 
-        {/* Los tres medidores, juntos: cuánto queda del contexto de esta
-            sesión, cuánto falta para que se compacte sola, y cuánto queda de la
-            ventana de 5 horas de la suscripción. Van acá, al lado del nombre,
-            porque son contexto y no acciones: se miran de reojo, no se usan. El
-            de contexto va primero porque es el que se agota varias veces dentro
-            de una misma ventana de cinco horas.
+        {enChat && <AccountChip cuenta={cuentaActiva} size="md" />}
 
-            La compactación es barra y no anillo a propósito: divide por otra
-            cosa (245K de entrada, no la ventana del modelo), y en una sesión de
-            1M el anillo está en 24% —verde— justo cuando esta barra está llena.
-            Si se parecieran, se leerían como si midieran lo mismo. */}
-        <div className="order-last flex w-full flex-none items-center justify-between gap-1.5 sm:order-none sm:justify-start sm:gap-2 sm:w-auto">
-          <SkinContextRing />
-          <SkinCompactBar />
-          <UsageWindowIndicator cuenta={cuentaActiva} />
-          <SkinRecursos />
-        </div>
+        {/* RAM y disco solo aparecen acá si pasan el 85 %; si no, viven en el medidor. */}
+        <SkinRecursos soloSiAlto />
 
-        {/* Tema: un clic, sin entrar a Ajustes. El control de tres estados
-            (con "Sistema") sigue estando en Ajustes → Apariencia; acá alcanza
-            con alternar, que es lo que se hace todos los días. */}
-        <Tooltip content={isDarkMode ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro'} position="bottom">
-          <button
-            type="button"
-            onClick={toggleDarkMode}
-            aria-label={isDarkMode ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro'}
-            className="grid h-7 w-7 flex-none place-items-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-          >
-            {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-          </button>
-        </Tooltip>
+        <UsageWindowIndicator cuenta={cuentaActiva} cuentas={idsCuentas} extra={<SkinMedidorExtra />} />
 
-        {/* Archivos no es una pestaña: es una columna que se abre al lado del
-            chat. Va separado del grupo de pestañas justo para que no parezca
-            que reemplaza lo que estás mirando. El botón refleja la preferencia
-            guardada; si la ventana es angosta el panel puede estar replegado
-            igual. */}
-        <Tooltip content="Archivos del proyecto" position="bottom">
-          <button
-            type="button"
-            onClick={toggleFilesPanel}
-            aria-pressed={filesPanelOpen}
-            aria-label="Archivos del proyecto"
-            title="Archivos del proyecto"
-            className={`grid h-7 w-8 flex-none place-items-center rounded-md transition-colors ${
-              filesPanelOpen
-                ? 'bg-muted text-foreground shadow-sm'
-                : 'text-muted-foreground hover:text-foreground'
-            }`}
-          >
-            <Folder className="h-4 w-4" />
-          </button>
-        </Tooltip>
-
-        {/* Pestañas: sólo íconos. El tooltip carga el nombre. */}
-        <nav className="flex flex-none items-center gap-0.5 rounded-lg bg-muted p-0.5" role="tablist">
-          {tabs.map(({ id, labelKey, icon: Icon }) => {
-            const isActive = activeTab === id;
-            return (
-              <Tooltip key={id} content={t(labelKey)} position="bottom">
-                <button
-                  type="button"
-                  role="tab"
-                  aria-selected={isActive}
-                  aria-label={t(labelKey)}
-                  onClick={() => setActiveTab(id)}
-                  className={`grid h-7 w-8 place-items-center rounded-md transition-colors ${
-                    isActive
-                      ? 'bg-card text-foreground shadow-sm'
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  <Icon className="h-4 w-4" />
-                </button>
-              </Tooltip>
-            );
-          })}
-
-          {enabledPlugins.map((plugin) => {
-            const id = `plugin:${plugin.name}` as AppTab;
-            const isActive = activeTab === id;
-            return (
-              <Tooltip key={id} content={plugin.displayName || plugin.name} position="bottom">
-                <button
-                  type="button"
-                  role="tab"
-                  aria-selected={isActive}
-                  aria-label={plugin.displayName || plugin.name}
-                  onClick={() => setActiveTab(id)}
-                  className={`grid h-7 w-8 place-items-center rounded-md transition-colors ${
-                    isActive
-                      ? 'bg-card text-foreground shadow-sm'
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  <PluginIcon pluginName={plugin.name} iconFile={plugin.icon} className="h-4 w-4" />
-                </button>
-              </Tooltip>
-            );
-          })}
-        </nav>
+        {!isMobile && (
+          <Tooltip content="Archivos (Ctrl+B)" position="bottom">
+            <button
+              type="button"
+              onClick={toggleFilesPanel}
+              aria-pressed={filesPanelOpen}
+              aria-label="Archivos del proyecto"
+              aria-keyshortcuts="Control+B"
+              className={`grid h-8 w-8 flex-none place-items-center rounded-md transition-colors ${
+                filesPanelOpen
+                  ? 'text-primary'
+                  : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+              }`}
+            >
+              <PanelRight className="h-4 w-4" />
+            </button>
+          </Tooltip>
+        )}
       </div>
 
-      {activeTab === 'chat' && (
+      {enChat && (
         <TopeAviso cuenta={cuentaActiva} onAbrirConCuenta={onNewSessionWithCuenta} />
       )}
     </header>

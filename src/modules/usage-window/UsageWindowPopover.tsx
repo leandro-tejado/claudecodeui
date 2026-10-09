@@ -1,10 +1,19 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 
 import { cn } from '@/shared/utils';
 import { useUsageDetalle } from '@/modules/usage-window/useUsageDetalle';
+import { useUsageWindow } from '@/modules/usage-window/useUsageWindow';
 import type { GobernadorEstado, UsageDetalle, UsageWindowSnapshot } from '@/modules/usage-window/types';
 import { evaluarVentana, formatResetTime, type EstadoVentana } from '@/modules/usage-window/estadoVentana';
+
+/*
+ * El medidor completo (escena 9 del boceto 09-oct): todo lo que se mide vive
+ * acá adentro y la cabecera se queda con un solo anillo. Una sección por
+ * cuenta —la activa primero—, después lo que mande quien lo monta (`extra`:
+ * contexto de la sesión y servidor, que son del skin) y al final el gobernador
+ * y lo que está contribuyendo al consumo.
+ */
 
 const COLOR_SEMAFORO: Record<GobernadorEstado['color'], string> = {
   verde: 'text-emerald-500',
@@ -17,33 +26,101 @@ function nombreSesion(cwd: string): string {
   return partes[partes.length - 1] ?? cwd;
 }
 
-function remaining(resetsAt: number, now: number): string {
-  const ms = resetsAt - now;
-  if (ms <= 0) return 'ya';
-  const mins = Math.round(ms / 60000);
-  if (mins < 60) return `en ${mins} min`;
-  return `en ${Math.floor(mins / 60)} h ${mins % 60} min`;
+function nombreCuenta(id: string): string {
+  return id ? id.charAt(0).toUpperCase() + id.slice(1) : id;
 }
 
-/** "~42%" con datos, "ventana nueva" pasado el reset, "sin dato" sin ninguna lectura — nunca "sin dato" habiendo una. */
-function textoPorcentaje(estado: EstadoVentana): string {
-  if (estado.tipo === 'dato') return `~${Math.round(estado.porcentaje)}%`;
-  if (estado.tipo === 'ventana-nueva') return 'ventana nueva';
-  return 'sin dato';
+/** "06:00" si es hoy, "lun 06:00" si es otro día: la semanal resetea días después. */
+export function cuandoResetea(resetsAt: number, now: number): string {
+  const hora = formatResetTime(resetsAt);
+  const mismoDia = new Date(resetsAt).toDateString() === new Date(now).toDateString();
+  if (mismoDia) return hora;
+  const dia = new Date(resetsAt).toLocaleDateString('es', { weekday: 'short' }).replace('.', '');
+  return `${dia} ${hora}`;
 }
 
-/** "real (hh:mm)" fresca, "hace N min (hh:mm)" vieja pero con dato, "ventana nueva..." pasado el reset, "sin dato" sin lectura. */
-function textoAntiguedad(estado: EstadoVentana): string {
-  if (estado.tipo === 'sin-dato') return 'sin dato';
-  if (estado.tipo === 'ventana-nueva') return `ventana nueva, se renovó a las ${formatResetTime(estado.resetsAt)}`;
-  const hora = formatResetTime(estado.leidoEn);
-  return estado.fresca ? `real (${hora})` : `hace ${estado.minutosAntiguedad} min (${hora})`;
+/** La línea chica de una ventana: antigüedad del dato y cuándo se renueva. */
+function detalle(estado: EstadoVentana, now: number): string {
+  if (estado.tipo === 'sin-dato') return 'sin leer aún';
+  if (estado.tipo === 'ventana-nueva') return `se renovó a las ${formatResetTime(estado.resetsAt)}`;
+  const antiguedad = estado.fresca ? 'dato real' : `hace ${estado.minutosAntiguedad} min`;
+  if (estado.resetsAt === null) return antiguedad;
+  return `${antiguedad} · resetea ${cuandoResetea(estado.resetsAt, now)}`;
+}
+
+function colorBarra(pct: number): string {
+  if (pct >= 90) return 'bg-ds-signal-bad';
+  if (pct >= 60) return 'bg-ds-signal-warn';
+  return 'bg-ds-signal-good';
+}
+
+/** Una fila del medidor: rótulo, barra y valor. La exportan también las secciones del skin. */
+export function FilaMedidor({
+  rotulo,
+  pct,
+  valor,
+  nota,
+}: {
+  rotulo: string;
+  pct: number | null;
+  valor: string;
+  nota?: string;
+}) {
+  const ancho = pct === null ? 0 : Math.max(0, Math.min(100, pct));
+  return (
+    <div className="py-0.5">
+      <div className="grid grid-cols-[72px_1fr_64px] items-center gap-2.5 text-xs text-muted-foreground">
+        <span>{rotulo}</span>
+        <span className="h-[5px] overflow-hidden rounded-full bg-ds-surface-3" aria-hidden="true">
+          {pct !== null && <span className={cn('block h-full rounded-full', colorBarra(ancho))} style={{ width: `${ancho}%` }} />}
+        </span>
+        <b className="whitespace-nowrap text-right font-semibold tabular-nums text-foreground">{valor}</b>
+      </div>
+      {nota && <p className="ml-[82px] text-[11px] leading-tight text-ds-faint">{nota}</p>}
+    </div>
+  );
+}
+
+export function TituloMedidor({ children }: { children: ReactNode }) {
+  return (
+    <h4 className="mb-1 mt-3 text-[11px] font-bold uppercase tracking-[0.07em] text-muted-foreground first:mt-0">
+      {children}
+    </h4>
+  );
+}
+
+function valorVentana(estado: EstadoVentana): { pct: number | null; valor: string } {
+  if (estado.tipo === 'dato') return { pct: estado.porcentaje, valor: `${Math.round(estado.porcentaje)} %` };
+  if (estado.tipo === 'ventana-nueva') return { pct: 0, valor: 'nueva' };
+  return { pct: null, valor: '—' };
+}
+
+function SeccionCuenta({ titulo, snapshot, now }: { titulo: string; snapshot: UsageWindowSnapshot | null; now: number }) {
+  const cinco = evaluarVentana(snapshot?.fiveHour ?? null, now);
+  const semanal = evaluarVentana(snapshot?.sevenDay ?? null, now);
+  const v5 = valorVentana(cinco);
+  const v7 = valorVentana(semanal);
+  return (
+    <section>
+      <TituloMedidor>{titulo}</TituloMedidor>
+      <FilaMedidor rotulo="5 horas" pct={v5.pct} valor={v5.valor} nota={detalle(cinco, now)} />
+      <FilaMedidor rotulo="Semanal" pct={v7.pct} valor={v7.valor} nota={detalle(semanal, now)} />
+    </section>
+  );
+}
+
+/** Otra cuenta: lee su propia ventana, así cada sección habla de la suya. */
+function SeccionOtraCuenta({ cuenta, now }: { cuenta: string; now: number }) {
+  const snapshot = useUsageWindow(cuenta);
+  return <SeccionCuenta titulo={`Cuenta ${nombreCuenta(cuenta)}`} snapshot={snapshot} now={now} />;
 }
 
 type Props = {
   snapshot: UsageWindowSnapshot | null;
-  /** Cuenta de IA a la que pertenece esta cuota; sin ella, la de siempre (optimum) y el título no la nombra. */
+  /** Cuenta de IA a la que pertenece esta cuota; sin ella, la de siempre (optimum). */
   cuenta?: string;
+  /** Todas las cuentas: las que no son `cuenta` se muestran debajo, con su propia lectura. */
+  cuentas?: string[];
   /** Reloj del indicador: así el popover no necesita su propio timer para revisar frescura. */
   now: number;
   onClose: () => void;
@@ -51,11 +128,13 @@ type Props = {
   anchor: DOMRect | null;
   /** El botón mismo, para no cerrar y reabrir en el mismo gesto. */
   anchorEl: HTMLElement | null;
+  /** Secciones que no son de cuota: contexto de la sesión, servidor. */
+  extra?: ReactNode;
 };
 
-export default function UsageWindowPopover({ snapshot, cuenta, now, onClose, anchor, anchorEl }: Props) {
+export default function UsageWindowPopover({ snapshot, cuenta, cuentas, now, onClose, anchor, anchorEl, extra }: Props) {
   const ref = useRef<HTMLDivElement>(null);
-  const { detalle, gobernador } = useUsageDetalle(true, cuenta);
+  const { detalle: consumo, gobernador } = useUsageDetalle(true, cuenta);
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -69,8 +148,6 @@ export default function UsageWindowPopover({ snapshot, cuenta, now, onClose, anc
       if (ref.current && !ref.current.contains(target)) onClose();
     };
     document.addEventListener('keydown', onKey);
-    // `mousedown` rather than `click`, so the toggle button's own click does not
-    // reopen what this just closed.
     document.addEventListener('mousedown', onPointer);
     return () => {
       document.removeEventListener('keydown', onKey);
@@ -78,20 +155,16 @@ export default function UsageWindowPopover({ snapshot, cuenta, now, onClose, anc
     };
   }, [onClose, anchorEl]);
 
-  const estadoCinco = evaluarVentana(snapshot?.fiveHour ?? null, now);
-  const estadoSemanal = evaluarVentana(snapshot?.sevenDay ?? null, now);
+  const activa = cuenta ?? 'optimum';
+  const otras = (cuentas ?? []).filter((id) => id !== activa);
 
   /*
-   * Va en un portal, no como hijo del botón.
-   *
-   * La cabecera lleva `backdrop-blur-sm`, y eso abre un stacking context
-   * propio: dentro de él un `z-50` sólo compite con sus hermanos, así que el
-   * panel quedaba entreverado con el texto del chat en vez de encima. Sacarlo
-   * a `body` lo devuelve al contexto raíz; a cambio hay que anclarlo a mano
-   * contra el rect del botón, y con `right` en vez de `left` para que no se
-   * salga por el borde derecho en pantallas angostas.
+   * Va en un portal, no como hijo del botón: la cabecera es translúcida
+   * (`backdrop-filter`) y eso abre un stacking context propio, donde el panel
+   * quedaba entreverado con el chat. Se ancla a mano contra el rect del botón,
+   * con `right` para no salirse por el borde en pantallas angostas.
    */
-  const width = Math.min(352, window.innerWidth - 24);
+  const width = Math.min(340, window.innerWidth - 24);
   const top = (anchor?.bottom ?? 0) + 8;
   const right = Math.max(12, window.innerWidth - (anchor?.right ?? window.innerWidth));
 
@@ -99,69 +172,32 @@ export default function UsageWindowPopover({ snapshot, cuenta, now, onClose, anc
     <div
       ref={ref}
       role="dialog"
-      aria-label="Detalle de la ventana de 5 horas"
+      aria-label="Medidor de cuota y recursos"
+      data-testid="medidor"
       style={{ position: 'fixed', top, right, width }}
-      className="z-[100] max-h-[70vh] overflow-y-auto rounded-lg border border-border bg-popover p-3 text-popover-foreground shadow-xl"
+      className="ds-material-chrome z-[100] max-h-[75vh] overflow-y-auto rounded-ds-lg border border-border px-4 py-3.5 text-popover-foreground shadow-ds-float"
     >
-      <div className="flex items-baseline justify-between gap-2">
-        <span className="text-sm font-semibold">
-          Ventana de 5 horas
-          {cuenta && (
-            <span className="ml-1.5 font-normal text-muted-foreground">
-              · cuenta {cuenta.charAt(0).toUpperCase() + cuenta.slice(1)}
-            </span>
-          )}
-        </span>
-        <span
-          className={cn(
-            'text-sm font-semibold',
-            estadoCinco.tipo === 'dato' && estadoCinco.porcentaje >= 90 && 'text-red-500',
-          )}
-        >
-          {textoPorcentaje(estadoCinco)}
-        </span>
-      </div>
+      <SeccionCuenta titulo={`Cuenta ${nombreCuenta(activa)}`} snapshot={snapshot} now={now} />
+      {otras.map((id) => (
+        <SeccionOtraCuenta key={id} cuenta={id} now={now} />
+      ))}
 
-      <p className="mt-1 text-xs text-muted-foreground">{textoAntiguedad(estadoCinco)}</p>
-
-      {estadoCinco.tipo === 'dato' && estadoCinco.resetsAt !== null && (
-        <p className="mt-0.5 text-xs text-muted-foreground">
-          Se renueva a las {formatResetTime(estadoCinco.resetsAt)} ({remaining(estadoCinco.resetsAt, now)})
-        </p>
-      )}
-
-      <div className="mt-3 border-t border-border/60 pt-2">
-        <div className="flex items-baseline justify-between gap-2">
-          <span className="text-xs font-medium text-muted-foreground">Ventana semanal (7 d)</span>
-          <span className="text-xs font-semibold">{textoPorcentaje(estadoSemanal)}</span>
-        </div>
-        <p className="mt-0.5 text-xs text-muted-foreground">
-          {textoAntiguedad(estadoSemanal)}
-          {estadoSemanal.tipo === 'dato' && estadoSemanal.resetsAt !== null
-            ? ` · se renueva a las ${formatResetTime(estadoSemanal.resetsAt)} (${remaining(estadoSemanal.resetsAt, now)})`
-            : ''}
-        </p>
-      </div>
+      {extra}
 
       {gobernador && (
-        <div className="mt-3 border-t border-border/60 pt-2">
-          <div className="flex items-baseline justify-between gap-2">
-            <span className="text-xs font-medium text-muted-foreground">Ritmo del gobernador</span>
-            <span className={cn('text-xs font-semibold', COLOR_SEMAFORO[gobernador.color])}>
+        <section>
+          <TituloMedidor>Ritmo</TituloMedidor>
+          <div className="flex items-baseline justify-between gap-2 text-xs">
+            <span className="text-muted-foreground">{gobernador.motivo}</span>
+            <span className={cn('font-semibold', COLOR_SEMAFORO[gobernador.color])}>
               {gobernador.color}
               {gobernador.pace !== null ? ` · ${Math.round(gobernador.pace)}%` : ''}
             </span>
           </div>
-          <p className="mt-0.5 text-xs text-muted-foreground">{gobernador.motivo}</p>
-        </div>
+        </section>
       )}
 
-      <Contribuyendo detalle={detalle} />
-
-      <p className="mt-3 border-t border-border/60 pt-2 text-[11px] leading-snug text-muted-foreground">
-        Porcentaje real que reporta el SDK de Claude en cada turno, sin estimación local. "Sin dato" es
-        no tener ninguna lectura todavía: una lectura vieja se sigue mostrando, con su antigüedad.
-      </p>
+      <Contribuyendo detalle={consumo} />
     </div>,
     document.body,
   );
@@ -172,14 +208,16 @@ function Contribuyendo({ detalle }: { detalle: UsageDetalle | null }) {
   if (!detalle) return null;
 
   return (
-    <div className="mt-3 border-t border-border/60 pt-2">
-      <div className="flex items-baseline justify-between gap-2">
-        <span className="text-xs font-medium text-muted-foreground">Qué está contribuyendo</span>
-        <span className="text-xs font-semibold">${detalle.usdTotal.toFixed(2)}</span>
-      </div>
+    <section>
+      <TituloMedidor>
+        <span className="flex items-baseline justify-between gap-2">
+          <span>Qué está contribuyendo</span>
+          <span className="tabular-nums text-foreground">${detalle.usdTotal.toFixed(2)}</span>
+        </span>
+      </TituloMedidor>
 
       {detalle.topSesiones.length > 0 && (
-        <ul className="mt-1 space-y-0.5">
+        <ul className="space-y-0.5">
           {detalle.topSesiones.map((sesion) => (
             <li key={sesion.sid} className="flex items-baseline justify-between gap-2 text-xs">
               <span className="truncate text-muted-foreground" title={sesion.cwd}>
@@ -207,6 +245,6 @@ function Contribuyendo({ detalle }: { detalle: UsageDetalle | null }) {
           ))}
         </ul>
       )}
-    </div>
+    </section>
   );
 }

@@ -89,3 +89,46 @@ describe('UsageWindowPopover — qué está contribuyendo y gobernador', () => {
     expect(screen.queryByText('Ritmo del gobernador')).toBeNull();
   });
 });
+
+describe('UsageWindowPopover — el medidor completo (escena 9 del boceto 09-oct)', () => {
+  it('trae las dos ventanas de la cuenta, con la antigüedad y el reset en la línea chica', () => {
+    useUsageDetalleMock.mockReturnValue({ detalle: null, gobernador: null });
+    const resetsAt = Date.now() + 2 * 3600_000;
+    render(
+      <UsageWindowPopover
+        snapshot={{
+          kind: 'usage_window',
+          fiveHour: { porcentaje: 12, resetsAt, leidoEn: Date.now() },
+          sevenDay: { porcentaje: 83, resetsAt: null, leidoEn: Date.now() },
+        }}
+        cuenta="personal"
+        now={Date.now()}
+        onClose={() => {}}
+        anchor={null}
+        anchorEl={null}
+      />,
+    );
+
+    expect(screen.getByText('Cuenta Personal')).toBeTruthy();
+    expect(screen.getByText('5 horas')).toBeTruthy();
+    expect(screen.getByText('12 %')).toBeTruthy();
+    expect(screen.getByText('83 %')).toBeTruthy();
+    expect(screen.getByText(/dato real · resetea/)).toBeTruthy();
+  });
+
+  it('las secciones que no son de cuota entran por `extra`', () => {
+    useUsageDetalleMock.mockReturnValue({ detalle: null, gobernador: null });
+    render(
+      <UsageWindowPopover
+        snapshot={snapshot}
+        now={Date.now()}
+        onClose={() => {}}
+        anchor={null}
+        anchorEl={null}
+        extra={<section>Servidor de prueba</section>}
+      />,
+    );
+
+    expect(screen.getByText('Servidor de prueba')).toBeTruthy();
+  });
+});

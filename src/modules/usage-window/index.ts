@@ -1,4 +1,6 @@
-export { default as UsageWindowIndicator } from '@/modules/usage-window/UsageWindowIndicator';
+export { default as UsageWindowIndicator, Anillo, nivelDePorcentaje } from '@/modules/usage-window/UsageWindowIndicator';
+// Las filas del medidor: el skin arma con ellas sus secciones (sesión, servidor).
+export { FilaMedidor, TituloMedidor } from '@/modules/usage-window/UsageWindowPopover';
 // Exportado para el anillo de contexto del skin: las reglas del repo obligan a
 // cruzar módulos por el barril, y los dos anillos tienen que ser el mismo.
 export { CircleProgress } from '@/modules/usage-window/CircleProgress';

@@ -58,7 +58,7 @@ export async function correr(ctx) {
   await boton.click().catch(() => {});
   await s.pagina.waitForTimeout(400);
   const pop = await s.pagina.locator('body').innerText();
-  ctx.check('el detalle no dice "sin dato" en ninguna ventana', /Ventana de 5 horas/.test(pop) && !/Ventana de 5 horas[\s\S]{0,40}sin dato|Semanal[\s\S]{0,40}sin dato/.test(pop), { evidencia: await ctx.captura(s, 'detalle') });
+  ctx.check('el detalle no dice "sin dato" en ninguna ventana', /5 horas/.test(pop) && !/5 horas[\s\S]{0,40}sin leer|Semanal[\s\S]{0,40}sin leer/.test(pop), { evidencia: await ctx.captura(s, 'detalle') });
   for (const vp of ['movil']) {
     const m = await ctx.abrir({ viewport: vp });
     await abrirSesion(m, id);

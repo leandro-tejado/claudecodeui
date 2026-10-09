@@ -60,7 +60,10 @@ function ChipContent({ pct, colorClass }: { pct: number | null; colorClass: stri
   );
 }
 
-export default function SkinRecursos() {
+/** Desde acá RAM o disco suben a la cabecera; por debajo viven solo en el medidor (boceto 09-oct, escena 9). */
+export const UMBRAL_CABECERA = 85;
+
+export default function SkinRecursos({ soloSiAlto = false }: { soloSiAlto?: boolean } = {}) {
   const snapshot = useRecursos();
   const [open, setOpen] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -95,6 +98,8 @@ export default function SkinRecursos() {
   const discoPct = snapshot?.disco.usadoPct ?? null;
   const ramColor = colorRam(ramPct, techo);
   const discoColor = colorDisco(discoPct);
+
+  if (soloSiAlto && Math.max(ramPct ?? 0, discoPct ?? 0) < UMBRAL_CABECERA) return null;
 
   // El chip combinado muestra el número del más severo, no un promedio ni el
   // % más alto sin más: RAM=91/Disco=50 tiene que leerse rojo (RAM sobre su

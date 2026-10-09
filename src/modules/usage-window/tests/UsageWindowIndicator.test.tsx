@@ -78,11 +78,8 @@ describe('UsageWindowIndicator — nunca "sin dato" habiendo una lectura, y la s
 
     expect(label()).toContain('Ventana de 5 horas: 63% hace 20 min');
     expect(label()).not.toContain('Ventana de 5 horas: sin dato');
-    // el número también sigue visible en el botón, no solo en el label
-    expect(screen.getByText('63%')).toBeTruthy();
-    // apagado con el gris del rótulo, no con opacidad: axe la marcaba sin contraste
-    expect(screen.getByText('63%').className).toContain('text-ds-muted');
-    expect(screen.getByText('63%').className).not.toContain('opacity-');
+    // el número que manda (63 > 55) sigue visible en el botón, no solo en el label
+    expect(screen.getByText('63')).toBeTruthy();
   });
 
   it('una ventana que ya pasó su resetsAt muestra "ventana nueva", no el % de la ventana ya cerrada', () => {
@@ -98,22 +95,48 @@ describe('UsageWindowIndicator — nunca "sin dato" habiendo una lectura, y la s
   });
 });
 
-describe('UsageWindowIndicator — barras del header según el boceto (Fase 11, paso 4)', () => {
-  it('la ventana semanal muestra su barra y su % directo en el header, sin abrir el popover', () => {
+describe('UsageWindowIndicator — variante A del boceto 09-oct: un anillo con el valor más alto', () => {
+  it('a la vista quedan dos cosas: el número que manda y el anillo', () => {
     useUsageWindowMock.mockReturnValue(snapshot());
     render(<UsageWindowIndicator />);
 
-    // 55% es la ventana semanal del fixture: antes solo se veía al abrir el
-    // popover (click). El boceto pide las dos ventanas siempre visibles.
-    expect(screen.getByText('55%')).toBeTruthy();
+    const boton = screen.getByRole('button');
+    // 55 (semanal) manda sobre 40 (5 h): se ve el peor de los dos, nada más.
+    expect(boton.textContent).toBe('55');
+    expect(boton.children.length).toBeLessThanOrEqual(2);
+    expect(boton.querySelector('[data-nivel]')?.getAttribute('data-nivel')).toBe('ok');
   });
 
-  it('sin ninguna lectura, dice "sin leer aún" en vez de un 0% fantasma', () => {
+  it('ni «dato real» ni «resetea en» a la vista: eso va en el medidor', () => {
+    useUsageWindowMock.mockReturnValue(snapshot());
+    render(<UsageWindowIndicator />);
+
+    const visible = screen.getByRole('button').textContent ?? '';
+    expect(visible).not.toMatch(/dato real|resetea|Semanal|Ventana/);
+  });
+
+  it('el color sigue los cortes del boceto: ámbar desde 60, rojo desde 90', () => {
+    useUsageWindowMock.mockReturnValue(
+      snapshot({ sevenDay: { porcentaje: 83, resetsAt: null, leidoEn: Date.now() } }),
+    );
+    const { unmount } = render(<UsageWindowIndicator />);
+    expect(screen.getByRole('button').querySelector('[data-nivel]')?.getAttribute('data-nivel')).toBe('alto');
+    unmount();
+
+    useUsageWindowMock.mockReturnValue(
+      snapshot({ fiveHour: { porcentaje: 95, resetsAt: null, leidoEn: Date.now() } }),
+    );
+    render(<UsageWindowIndicator />);
+    expect(screen.getByRole('button').querySelector('[data-nivel]')?.getAttribute('data-nivel')).toBe('corte');
+  });
+
+  it('sin ninguna lectura muestra un guion y el anillo vacío, nunca un 0 fantasma', () => {
     useUsageWindowMock.mockReturnValue(null);
     render(<UsageWindowIndicator />);
 
-    expect(screen.getAllByText('sin leer aún').length).toBeGreaterThan(0);
-    expect(screen.queryByText('0%')).toBeNull();
+    expect(screen.getByRole('button').textContent).toBe('—');
+    expect(screen.queryByText('0')).toBeNull();
+    expect(screen.getByRole('button').querySelector('[data-nivel]')?.getAttribute('data-nivel')).toBe('vacio');
   });
 });
 
