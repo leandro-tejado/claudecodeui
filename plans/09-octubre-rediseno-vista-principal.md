@@ -1,7 +1,7 @@
 # Rediseño de la vista principal de CloudCLI: cabecera, barra lateral y compositor
 
 **Fecha:** 09 de Octubre 2026
-**Estado:** borrador
+**Estado:** borrador (boceto de Fase 0 hecho, esperando aprobación; incluye Fase 8 agregada el 9-oct)
 
 Se rediseña la vista principal de CloudCLI (cabecera, barra de cuota, barra lateral, estado vacío y compositor) para que se parezca al chat `/claude` de Optimum: minimalista, sin botones que no se usan y con casi nada de texto. **La Fase 0 es un boceto HTML que Leandro aprueba antes de tocar una línea de código.**
 
@@ -86,6 +86,10 @@ Leandro ve la vista principal «fea» y recargada (9-oct, con capturas de `:8446
 - [ ] Reproducir cómo se llega al compositor vacío de un proyecto creyéndose en la orquestadora — acepta: causa o «no reproducido» con n ≥ 10 | valida: `test -s e2e/evidencia/09-vista-principal/07-destino-mensaje.md`
 - [ ] Mostrar «Sesión nueva en <proyecto>» con carpeta y cuenta en el compositor vacío — acepta: visible antes de enviar | valida: `node e2e/correr.mjs vista/destino-mensaje`
 - [ ] Devolver al cuadro el texto de un envío rechazado por `protocol_error` — acepta: test rojo sin el arreglo, verde con él | valida: `NODE_ENV=test npx vitest run src/modules/chat`
+- [ ] Agrupar la barra por proyecto (monograma, contador, peor estado al plegar) — acepta: cada sesión cuelga de su proyecto | valida: `NODE_ENV=test npx vitest run src/modules/sidebar`
+- [ ] Mostrar bajo la sesión madre los agentes que lanzó (línea de árbol, estado propio) — acepta: 3 agentes en paralelo aparecen bajo su madre y desaparecen al terminar | valida: `node e2e/correr.mjs vista/agentes-hijos`
+- [ ] Vista «Servicios»: puertos, app, exposición (Funnel/tailnet/local), RAM y disco — acepta: coincide con `ss -tlnH` y `tailscale serve status` | valida: `node e2e/correr.mjs vista/servicios`
+- [ ] Medidor completo en el popover de cuota (5 h, semanal, por cuenta, contexto, RAM, disco) — acepta: la cabecera muestra un solo anillo | valida: `NODE_ENV=test npx vitest run src/modules/usage-window`
 - [ ] Pasada final: `typecheck`, `lint`, tests de cliente y de servidor, `build` — acepta: todo en verde | valida: `npm run typecheck && npm run lint:client && NODE_ENV=test npx vitest run && npm run build`
 - [ ] Capturas «después» (1280 y 390, claro/oscuro, `prefers-reduced-motion`) y comparación con el boceto — acepta: 8 PNG y informe lado a lado | valida: `ls e2e/evidencia/09-vista-principal/99-despues/*.png | wc -l` da 8
 
@@ -363,6 +367,31 @@ Leandro ve la vista principal «fea» y recargada (9-oct, con capturas de `:8446
 
 ---
 
+### Fase 8 - Proyectos, agentes hijos, servicios y medidor
+**Goal (done-criterion):** La barra agrupa sesiones por proyecto Y las sesiones que lanzan agentes los muestran debajo Y existe la vista «Servicios» con los puertos reales del VPS Y el popover de cuota trae el medidor completo Y los tests de `sidebar` y `usage-window` pasan.
+**Alcance:** Tocar: `src/modules/sidebar/`, `src/modules/usage-window/`, una vista nueva `src/modules/servicios/`, y un endpoint de solo lectura en `server/` (puertos, RAM, disco). Ignorar: logica de archivado y transporte.
+**Paralelizable:** No - comparte la barra con la Fase 3; va despues de ella.
+
+#### Pasos
+1. Averiguar de donde sale la relacion madre-hija (transcripts de subagentes, `orquestar.py`, registro de sesiones) y dejarlo escrito antes de dibujar nada.
+2. Agrupar por proyecto: monograma, contador y estado mas urgente al plegar.
+3. Arbol de hijas bajo la madre, con estado propio y limite visual de 7.
+4. Endpoint de solo lectura: `ss -tlnH`, `tailscale serve status`, `free`, `df`. Sin acciones de escritura en esta fase.
+5. Vista «Servicios» agrupada por exposicion; el puerto sin servicio se marca «sin nombre».
+6. Medidor: lo que hoy esta en la cabecera pasa al popover; RAM y disco suben a la cabecera solo sobre 85 %.
+
+#### Estado (arranca todo en fail)
+- [fail] Sesiones agrupadas por proyecto | valida: `NODE_ENV=test npx vitest run src/modules/sidebar`
+- [fail] Hijas visibles bajo la madre | valida: `node e2e/correr.mjs vista/agentes-hijos`
+- [fail] Servicios coincide con el sistema | valida: `node e2e/correr.mjs vista/servicios`
+- [fail] Medidor completo y un solo anillo en cabecera | valida: `NODE_ENV=test npx vitest run src/modules/usage-window`
+
+#### Peligros
+- La relacion madre-hija puede no estar registrada hoy: si no existe, el paso 1 abre un pendiente y el arbol espera.
+- Mostrar el endpoint de servicios fuera del tailnet: queda detras del login de CloudCLI.
+
+---
+
 ## Orden de ejecución
 
 1. **Fases 0 y 1 en paralelo** (una dibuja, otra mide; no tocan los mismos archivos).
@@ -396,7 +425,7 @@ Cuota: 3 fases en paralelo es el máximo razonable (REGLA 7/9). Si `7d >= 60%` n
 
 **Fases completadas:** ninguna
 **Fase actual:** pendiente inicio (Fase 0, a la espera de que Leandro apruebe el plan)
-**Proximo paso exacto:** crear el worktree (`wt new rediseno-vista-principal`), invocar `apple-design` y `aos-dev:ui-ux-pro-max`, y dibujar `design-system/visual-refs/09-octubre-vista-principal.html`
+**Proximo paso exacto:** Leandro revisa el boceto (artifact `Hbw493oqfRef3sTM1UZGGe`, worktree `~/worktrees/cloudcli/rediseno-vista-principal`), elige variante de cuota y aprueba; luego Fase 1 en paralelo y Fases 2-4
 **Bloqueantes:** ninguno
-**Micro-tasks pendientes:** 24 de 24
+**Micro-tasks pendientes:** 24 de 28 (boceto de las escenas 1-9 listo; falta la aprobación)
 **Decisiones de Leandro (9-oct):** la barra **empuja** el chat al desplegarse; el streaming que falla es el de **tmux**; el resto del pedido está en `## Contexto`. La Fase 7 se agregó a pedido suyo el mismo día: el pedido de este plan llegó a una sesión nueva de optimum en vez de a la orquestadora.
