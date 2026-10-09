@@ -2,6 +2,7 @@
 // Corre escenarios E2E y deja la evidencia en e2e/evidencia/<corrida>/.
 //
 //   node e2e/correr.mjs <grupo|grupo/nombre|todo>... [--corrida nombre] [--con-cuota]
+//   CLOUDCLI_URL=... node e2e/correr.mjs --solo-cierre   solo el cierre contra :3001
 //
 // Cada escenario vive en e2e/escenarios/<grupo>/<nombre>.mjs y exporta:
 //   export const meta = { descripcion, puerto: 3901|3902, cuota: bool, instanciaLimpia: bool }
@@ -17,6 +18,7 @@ import { spawnSync } from 'node:child_process';
 import { EVIDENCIA, PREFIJO, PROYECTO, REPO, puertoDeEscenario, taparTokens, tokenDe } from './lib/config.mjs';
 import { abrir } from './lib/navegador.mjs';
 import { gobernador, teardown } from './sesiones.mjs';
+import { esperarSinClaude } from './lib/tmux.mjs';
 import { reiniciarLimpia } from './instancia.mjs';
 
 const DIR_ESC = path.join(REPO, 'e2e', 'escenarios');
@@ -44,14 +46,15 @@ const opt = (n) => { const i = args.indexOf(n); return i >= 0 ? args.splice(i, 2
 const corrida = opt('--corrida') ?? `corrida-${new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-')}`;
 const conCuota = args.includes('--con-cuota');
 const filtros = args.filter((a) => !a.startsWith('--'));
+const soloCierre = args.includes('--solo-cierre');
 const elegidos = seleccionar(filtros);
-if (!elegidos.length) {
+if (!elegidos.length && !soloCierre) {
   console.error(`ningún escenario coincide con ${filtros.join(' ')}. Hay: ${listarEscenarios().join(', ')}`);
   process.exit(64);
 }
 
 const dirCorrida = path.join(EVIDENCIA, corrida);
-fs.mkdirSync(dirCorrida, { recursive: true });
+if (!soloCierre) fs.mkdirSync(dirCorrida, { recursive: true });
 const filas = [];
 const gob = gobernador();
 const contraReal = Boolean(process.env.CLOUDCLI_URL);
@@ -69,6 +72,51 @@ async function proyectoReal() {
   const lista = await (await apiReal('/projects?skipSynchronization=1')).json().catch(() => null);
   const proyectos = Array.isArray(lista) ? lista : (lista?.projects ?? lista?.data ?? []);
   return proyectos.find((p) => [p.fullPath, p.path, p.project_path].includes(PROYECTO)) ?? null;
+}
+// Cierre contra :3001: el proyecto de prueba queda archivado y `orquestar.py
+// dormir` no deja entradas e2e-* en el hibernadas.json real (ahí sí escribe:
+// el vigía de :3001 escucha ~/.cache/aos).
+async function cierreReal() {
+  // El server desarchiva un proyecto si su transcript se escribe después de
+  // archivarlo (reactivarSiHayActividadNueva), y el `claude` de un pane recién
+  // cerrado todavía escribe al morir: archivado en caliente, volvía a quedar
+  // activo (9-oct). Se espera a que el proyecto quede sin `claude`, se archiva
+  // y se comprueba que siga archivado unos segundos después.
+  await esperarSinClaude();
+  await new Promise((r) => setTimeout(r, 5000));
+  const nuestro = await proyectoReal();
+  if (nuestro) await apiReal(`/projects/${encodeURIComponent(nuestro.projectId ?? nuestro.id)}`, { method: 'DELETE' });
+  await new Promise((r) => setTimeout(r, 8000));
+  const archivado = (await proyectoReal()) === null;
+  const rutaHib = path.join(os.homedir(), '.cache/aos/hibernadas.json');
+  let sacadas = 0;
+  try {
+    const hib = JSON.parse(fs.readFileSync(rutaHib, 'utf8'));
+    for (const k of Object.keys(hib)) if (k.startsWith(PREFIJO)) { delete hib[k]; sacadas += 1; }
+    if (sacadas) {
+      fs.writeFileSync(`${rutaHib}.tmp`, JSON.stringify(hib, null, 2));
+      fs.renameSync(`${rutaHib}.tmp`, rutaHib);
+    }
+  } catch { /* sin hibernadas.json */ }
+  // Las entradas e2e-* del registro real (`sesiones.json`) sin tmux vivo: una
+  // vieja con el mismo nombre le daba a la corrida siguiente un session_id
+  // ajeno (9-oct). Se sacan con el candado del hook, vía sesiones.py.
+  const py = `import sys, subprocess; sys.path.insert(0, sys.argv[1]); import sesiones as s
+vivas = set(subprocess.run(['tmux', 'list-sessions', '-F', '#{session_name}'], capture_output=True, text=True).stdout.split())
+with s._candado():
+    reg = s.cargar_previo(); fuera = [k for k in reg if k.startswith(sys.argv[2]) and k not in vivas]
+    for k in fuera: del reg[k]
+    if fuera: s._escribir(reg)
+print(len(fuera))`;
+  const r = spawnSync('python3', ['-c', py, path.join(os.homedir(), 'workspace-leandro/.claude/bin'), PREFIJO], { encoding: 'utf8' });
+  const sacadasReg = r.status === 0 ? r.stdout.trim() : `error (${r.stderr.trim().split('\n').at(-1)})`;
+  console.log(`cierre :3001 — proyecto ${archivado ? 'archivado' : 'NO archivado (revisar a mano)'}, ${sacadas} e2e-* sacadas de hibernadas.json, ${sacadasReg} de sesiones.json`);
+}
+
+if (soloCierre) {
+  if (!contraReal) { console.error('--solo-cierre es solo contra :3001 (CLOUDCLI_URL)'); process.exit(64); }
+  await cierreReal();
+  process.exit(0);
 }
 if (contraReal) {
   fs.mkdirSync(PROYECTO, { recursive: true });
@@ -200,36 +248,7 @@ const lectura = path.join(dirCorrida, 'lectura.md');
 if (fs.existsSync(lectura)) md.push('---', '', fs.readFileSync(lectura, 'utf8'));
 fs.writeFileSync(informe, md.join('\n'));
 console.log(`\ninforme: ${path.relative(REPO, informe)}`);
-// Cierre contra :3001: el proyecto de prueba queda archivado y `orquestar.py
-// dormir` no deja entradas e2e-* en el hibernadas.json real (ahí sí escribe:
-// el vigía de :3001 escucha ~/.cache/aos).
-if (contraReal) {
-  const nuestro = await proyectoReal();
-  const archivado = nuestro ? (await apiReal(`/projects/${encodeURIComponent(nuestro.projectId ?? nuestro.id)}`, { method: 'DELETE' })).ok : false;
-  const rutaHib = path.join(os.homedir(), '.cache/aos/hibernadas.json');
-  let sacadas = 0;
-  try {
-    const hib = JSON.parse(fs.readFileSync(rutaHib, 'utf8'));
-    for (const k of Object.keys(hib)) if (k.startsWith(PREFIJO)) { delete hib[k]; sacadas += 1; }
-    if (sacadas) {
-      fs.writeFileSync(`${rutaHib}.tmp`, JSON.stringify(hib, null, 2));
-      fs.renameSync(`${rutaHib}.tmp`, rutaHib);
-    }
-  } catch { /* sin hibernadas.json */ }
-  // Las entradas e2e-* del registro real (`sesiones.json`) sin tmux vivo: una
-  // vieja con el mismo nombre le daba a la corrida siguiente un session_id
-  // ajeno (9-oct). Se sacan con el candado del hook, vía sesiones.py.
-  const py = `import sys, subprocess; sys.path.insert(0, sys.argv[1]); import sesiones as s
-vivas = set(subprocess.run(['tmux', 'list-sessions', '-F', '#{session_name}'], capture_output=True, text=True).stdout.split())
-with s._candado():
-    reg = s.cargar_previo(); fuera = [k for k in reg if k.startswith(sys.argv[2]) and k not in vivas]
-    for k in fuera: del reg[k]
-    if fuera: s._escribir(reg)
-print(len(fuera))`;
-  const r = spawnSync('python3', ['-c', py, path.join(os.homedir(), 'workspace-leandro/.claude/bin'), PREFIJO], { encoding: 'utf8' });
-  const sacadasReg = r.status === 0 ? r.stdout.trim() : `error (${r.stderr.trim().split('\n').at(-1)})`;
-  console.log(`cierre :3001 — proyecto ${archivado ? 'archivado' : 'NO archivado (revisar a mano)'}, ${sacadas} e2e-* sacadas de hibernadas.json, ${sacadasReg} de sesiones.json`);
-}
+if (contraReal) await cierreReal();
 
 const fallas = filas.filter((f) => f.resultado === 'falla').length;
 process.exit(fallas ? 1 : 0);
