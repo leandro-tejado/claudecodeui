@@ -24,35 +24,6 @@
     "ms": 0
   },
   {
-    "escenario": "barra/estado-vivo",
-    "nombre": "con el tmux vivo, la fila NO dice \"dormida\"",
-    "resultado": "pasa",
-    "evidencia": [
-      "barra-estado-vivo/tmux-vivo.png"
-    ],
-    "datos": {
-      "rotuloConVida": "libre"
-    },
-    "ms": 70606
-  },
-  {
-    "escenario": "barra/estado-vivo",
-    "nombre": "al matar el pane, la fila pasa a \"dormida\" sin recargar en ≤ 25000 ms",
-    "resultado": "falla",
-    "evidencia": [
-      "barra-estado-vivo/antes-dormir.png",
-      "barra-estado-vivo/despues-dormir.png"
-    ],
-    "datos": {
-      "msHastaDormida": null,
-      "topeMs": 25000,
-      "dormidaOk": true,
-      "nombre": "e2e-estado-ejecutora-1",
-      "sid": "8aeefa3f-3df7-4b42-b08e-89b801610d0a"
-    },
-    "ms": 70606
-  },
-  {
     "escenario": "barra/nombres",
     "nombre": "la fila de la barra muestra el título humano, no el prompt crudo ni un id",
     "resultado": "pasa",
@@ -112,16 +83,6 @@
     "ms": 28866
   },
   {
-    "escenario": "barra/orquestador",
-    "nombre": "el escenario corre sin excepción: locator.click: Timeout 30000ms exceeded.",
-    "resultado": "falla",
-    "evidencia": [
-      "barra-orquestador/error-0.png"
-    ],
-    "datos": "locator.click: Timeout 30000ms exceeded. | Call log: | \u001b[2m  - waiting for locator('[data-testid=\"sidebar-project-row\"]').filter({ hasText: 'e2e-proyecto' }).first()\u001b[22m | ",
-    "ms": 32569
-  },
-  {
     "escenario": "barra/pestana-oculta",
     "nombre": "(todo el escenario)",
     "resultado": "bloqueado",
@@ -144,16 +105,6 @@
     "evidencia": [],
     "datos": "usa el CLI falso de :3902; :3001 corre el Claude real",
     "ms": 1
-  },
-  {
-    "escenario": "cuota/header",
-    "nombre": "el escenario corre sin excepción: locator.click: Timeout 30000ms exceeded.",
-    "resultado": "falla",
-    "evidencia": [
-      "cuota-header/error-0.png"
-    ],
-    "datos": "locator.click: Timeout 30000ms exceeded. | Call log: | \u001b[2m  - waiting for getByText('e2e-proyecto', { exact: true }).first()\u001b[22m | ",
-    "ms": 33739
   },
   {
     "escenario": "cuota/sin-turnos",
@@ -210,14 +161,6 @@
     "evidencia": [],
     "datos": "usa el CLI falso de :3902; :3001 corre el Claude real",
     "ms": 0
-  },
-  {
-    "escenario": "headless/pensamiento",
-    "nombre": "el escenario corre sin excepción: ENOENT: no such file or directory, open '/tmp/cloudcli-e2e/pid-3901'",
-    "resultado": "falla",
-    "evidencia": [],
-    "datos": "Error: ENOENT: no such file or directory, open '/tmp/cloudcli-e2e/pid-3901' |     at Object.readFileSync (node:fs:440:20) |     at Module.correr (file:///home/leantejado/cloudcli/e2e/escenarios/headless/pensamiento.mjs:16:18) |     at file:///home/leantejado/cloudcli/e2e/correr.mjs:127:17",
-    "ms": 41
   },
   {
     "escenario": "headless/recarga",
@@ -435,104 +378,6 @@
     "ms": 60316
   },
   {
-    "escenario": "tmux/adjunto",
-    "nombre": "el mensaje del usuario aparece una vez en el DOM (una imagen)",
-    "resultado": "pasa",
-    "evidencia": [
-      "tmux-adjunto/dom-1.png"
-    ],
-    "datos": {
-      "filasUser": 1
-    },
-    "ms": 96200
-  },
-  {
-    "escenario": "tmux/adjunto",
-    "nombre": "no aparece el error de \"no apareció\" en el DOM (una imagen)",
-    "resultado": "pasa",
-    "evidencia": [
-      "tmux-adjunto/dom-1.png"
-    ],
-    "datos": {
-      "filasError": 0
-    },
-    "ms": 96200
-  },
-  {
-    "escenario": "tmux/adjunto",
-    "nombre": "el JSONL tiene la fila user con el nonce y un bloque de imagen (una imagen)",
-    "resultado": "pasa",
-    "evidencia": [
-      "tmux-adjunto/frames-0.json"
-    ],
-    "datos": {
-      "filaUser": true,
-      "tieneBloqueImagen": true
-    },
-    "ms": 96200
-  },
-  {
-    "escenario": "tmux/adjunto",
-    "nombre": "Claude contesta (una imagen)",
-    "resultado": "pasa",
-    "evidencia": [
-      "tmux-adjunto/respuesta-1.png"
-    ],
-    "datos": {
-      "finMs": 3691
-    },
-    "ms": 96200
-  },
-  {
-    "escenario": "tmux/adjunto",
-    "nombre": "el mensaje del usuario aparece una vez en el DOM (dos imágenes)",
-    "resultado": "falla",
-    "evidencia": [
-      "tmux-adjunto/dom-2.png"
-    ],
-    "datos": {
-      "filasUser": 0
-    },
-    "ms": 96200
-  },
-  {
-    "escenario": "tmux/adjunto",
-    "nombre": "no aparece el error de \"no apareció\" en el DOM (dos imágenes)",
-    "resultado": "pasa",
-    "evidencia": [
-      "tmux-adjunto/dom-2.png"
-    ],
-    "datos": {
-      "filasError": 0
-    },
-    "ms": 96200
-  },
-  {
-    "escenario": "tmux/adjunto",
-    "nombre": "el JSONL tiene la fila user con el nonce y un bloque de imagen (dos imágenes)",
-    "resultado": "falla",
-    "evidencia": [
-      "tmux-adjunto/frames-0.json"
-    ],
-    "datos": {
-      "filaUser": false,
-      "tieneBloqueImagen": false
-    },
-    "ms": 96200
-  },
-  {
-    "escenario": "tmux/adjunto",
-    "nombre": "Claude contesta (dos imágenes)",
-    "resultado": "pasa",
-    "evidencia": [
-      "tmux-adjunto/respuesta-2.png"
-    ],
-    "datos": {
-      "finMs": 8788
-    },
-    "ms": 96200
-  },
-  {
     "escenario": "tmux/commits",
     "nombre": "8267cbe1: el mensaje muestra \"Enviado\" una vez que el pane lo recibió",
     "resultado": "pasa",
@@ -679,28 +524,6 @@
       ]
     },
     "ms": 30357
-  },
-  {
-    "escenario": "tmux/recarga",
-    "nombre": "el ack de suscripción dice que está procesando",
-    "resultado": "pasa",
-    "evidencia": [
-      "tmux-recarga/frames-0.json"
-    ],
-    "datos": {
-      "isProcessing": true,
-      "runsInTmux": true
-    },
-    "ms": 16622
-  },
-  {
-    "escenario": "tmux/recarga",
-    "nombre": "tras recargar, el indicador sigue",
-    "resultado": "falla",
-    "evidencia": [
-      "tmux-recarga/tras-recargar.png"
-    ],
-    "ms": 16622
   },
   {
     "escenario": "tmux/turno-corto",
@@ -1019,13 +842,335 @@
     "ms": 0
   },
   {
-    "escenario": "visual/salidas",
-    "nombre": "el escenario corre sin excepción: locator.click: Timeout 30000ms exceeded.",
+    "escenario": "barra/estado-vivo",
+    "nombre": "con el tmux vivo, la fila NO dice \"dormida\"",
     "resultado": "falla",
     "evidencia": [
-      "visual-salidas/error-0.png"
+      "barra-estado-vivo/tmux-vivo.png"
     ],
-    "datos": "locator.click: Timeout 30000ms exceeded. | Call log: | \u001b[2m  - waiting for getByText('e2e-proyecto', { exact: true }).first()\u001b[22m | ",
-    "ms": 33520
+    "datos": {
+      "rotuloConVida": null
+    },
+    "ms": 49254
+  },
+  {
+    "escenario": "barra/estado-vivo",
+    "nombre": "al matar el pane, la fila pasa a \"dormida\" sin recargar en ≤ 25000 ms",
+    "resultado": "falla",
+    "evidencia": [
+      "barra-estado-vivo/antes-dormir.png",
+      "barra-estado-vivo/despues-dormir.png"
+    ],
+    "datos": {
+      "msHastaDormida": null,
+      "topeMs": 25000,
+      "dormidaOk": true,
+      "nombre": "e2e-estado-ejecutora-1",
+      "sid": "e5108569-f4ce-4610-95db-5e7c0e9b6a1e"
+    },
+    "ms": 49254
+  },
+  {
+    "escenario": "barra/orquestador",
+    "nombre": "orquestar.py crear aparece en la barra abierta en ≤ 3 s, 5 de 5",
+    "resultado": "pasa",
+    "evidencia": [
+      "barra-orquestador/cinco-creaciones.png"
+    ],
+    "datos": {
+      "exitos": 5,
+      "intentos": [
+        {
+          "intento": 0,
+          "nombre": "e2e-orq-0-ejecutora-1",
+          "sid": "26573ec4-ea9b-46f8-8bd7-267a2f52ff10",
+          "tFilaMs": 1436,
+          "tBajaMs": 315
+        },
+        {
+          "intento": 1,
+          "nombre": "e2e-orq-1-ejecutora-1",
+          "sid": "10a28001-c437-44f6-95b9-c5a524708c41",
+          "tFilaMs": 1773,
+          "tBajaMs": 321
+        },
+        {
+          "intento": 2,
+          "nombre": "e2e-orq-2-ejecutora-1",
+          "sid": "c7eda369-bc32-49c8-85ad-5442f34fde9b",
+          "tFilaMs": 1609,
+          "tBajaMs": 313
+        },
+        {
+          "intento": 3,
+          "nombre": "e2e-orq-3-ejecutora-1",
+          "sid": "ac0d7617-394e-4976-91b7-3e87198437aa",
+          "tFilaMs": 1590,
+          "tBajaMs": 318
+        },
+        {
+          "intento": 4,
+          "nombre": "e2e-orq-4-ejecutora-1",
+          "sid": "0ff49c39-a61e-4208-9ab9-b935cd7c6ccb",
+          "tFilaMs": 1431
+        }
+      ]
+    },
+    "ms": 17596
+  },
+  {
+    "escenario": "barra/orquestador",
+    "nombre": "orquestar.py dormir cambia el estado en vivo (la fila sale de la barra sin recargar)",
+    "resultado": "pasa",
+    "evidencia": [
+      "barra-orquestador/antes-dormir.png",
+      "barra-orquestador/despues-dormir.png"
+    ],
+    "datos": {
+      "antesDormir": 21,
+      "tBajaMs": 324,
+      "nombre": "e2e-orq-4-ejecutora-1",
+      "sid": "0ff49c39-a61e-4208-9ab9-b935cd7c6ccb",
+      "dormidaOk": true
+    },
+    "ms": 17596
+  },
+  {
+    "escenario": "cuota/header",
+    "nombre": "5 h coincide con ~/.cache/aos/cuota.json",
+    "resultado": "pasa",
+    "evidencia": [
+      "cuota-header/real.png"
+    ],
+    "datos": {
+      "archivo": 3,
+      "etiqueta": "Cuenta Optimum · Ventana de 5 horas: 3% real, se renueva a las 07:00 PM · Semanal: 82% real, se renueva a las 06:00 PM"
+    },
+    "ms": 4789
+  },
+  {
+    "escenario": "cuota/header",
+    "nombre": "la semanal tiene %",
+    "resultado": "pasa",
+    "evidencia": [
+      "cuota-header/frames-0.json"
+    ],
+    "datos": {
+      "etiqueta": "Cuenta Optimum · Ventana de 5 horas: 3% real, se renueva a las 07:00 PM · Semanal: 82% real, se renueva a las 06:00 PM"
+    },
+    "ms": 4789
+  },
+  {
+    "escenario": "headless/pensamiento",
+    "nombre": "llegan deltas de pensamiento con texto",
+    "resultado": "pasa",
+    "evidencia": [
+      "headless-pensamiento/frames-0.json"
+    ],
+    "datos": {
+      "deltas": 16
+    },
+    "ms": 15608
+  },
+  {
+    "escenario": "headless/pensamiento",
+    "nombre": "el razonamiento se ve antes de la respuesta",
+    "resultado": "pasa",
+    "evidencia": [
+      "headless-pensamiento/final.png"
+    ],
+    "datos": {
+      "tRazon": 55,
+      "tResp": 10663
+    },
+    "ms": 15608
+  },
+  {
+    "escenario": "tmux/adjunto",
+    "nombre": "el mensaje del usuario aparece una vez en el DOM (una imagen)",
+    "resultado": "pasa",
+    "evidencia": [
+      "tmux-adjunto/dom-1.png"
+    ],
+    "datos": {
+      "filasUser": 1
+    },
+    "ms": 61685
+  },
+  {
+    "escenario": "tmux/adjunto",
+    "nombre": "no aparece el error de \"no apareció\" en el DOM (una imagen)",
+    "resultado": "pasa",
+    "evidencia": [
+      "tmux-adjunto/dom-1.png"
+    ],
+    "datos": {
+      "filasError": 0
+    },
+    "ms": 61685
+  },
+  {
+    "escenario": "tmux/adjunto",
+    "nombre": "el JSONL tiene la fila user con el nonce y un bloque de imagen (una imagen)",
+    "resultado": "pasa",
+    "evidencia": [
+      "tmux-adjunto/frames-0.json"
+    ],
+    "datos": {
+      "filaUser": true,
+      "tieneBloqueImagen": true
+    },
+    "ms": 61685
+  },
+  {
+    "escenario": "tmux/adjunto",
+    "nombre": "Claude contesta (una imagen)",
+    "resultado": "pasa",
+    "evidencia": [
+      "tmux-adjunto/respuesta-1.png"
+    ],
+    "datos": {
+      "finMs": 18891
+    },
+    "ms": 61685
+  },
+  {
+    "escenario": "tmux/adjunto",
+    "nombre": "el mensaje del usuario aparece una vez en el DOM (dos imágenes)",
+    "resultado": "pasa",
+    "evidencia": [
+      "tmux-adjunto/dom-2.png"
+    ],
+    "datos": {
+      "filasUser": 1
+    },
+    "ms": 61685
+  },
+  {
+    "escenario": "tmux/adjunto",
+    "nombre": "no aparece el error de \"no apareció\" en el DOM (dos imágenes)",
+    "resultado": "pasa",
+    "evidencia": [
+      "tmux-adjunto/dom-2.png"
+    ],
+    "datos": {
+      "filasError": 0
+    },
+    "ms": 61685
+  },
+  {
+    "escenario": "tmux/adjunto",
+    "nombre": "el JSONL tiene la fila user con el nonce y un bloque de imagen (dos imágenes)",
+    "resultado": "pasa",
+    "evidencia": [
+      "tmux-adjunto/frames-0.json"
+    ],
+    "datos": {
+      "filaUser": true,
+      "tieneBloqueImagen": true
+    },
+    "ms": 61685
+  },
+  {
+    "escenario": "tmux/adjunto",
+    "nombre": "Claude contesta (dos imágenes)",
+    "resultado": "pasa",
+    "evidencia": [
+      "tmux-adjunto/respuesta-2.png"
+    ],
+    "datos": {
+      "finMs": 2496
+    },
+    "ms": 61685
+  },
+  {
+    "escenario": "tmux/recarga",
+    "nombre": "el ack de suscripción dice que está procesando",
+    "resultado": "falla",
+    "evidencia": [
+      "tmux-recarga/frames-0.json"
+    ],
+    "datos": {
+      "isProcessing": false,
+      "runsInTmux": true
+    },
+    "ms": 190249
+  },
+  {
+    "escenario": "tmux/recarga",
+    "nombre": "tras recargar, el indicador sigue",
+    "resultado": "falla",
+    "evidencia": [
+      "tmux-recarga/tras-recargar.png"
+    ],
+    "ms": 190249
+  },
+  {
+    "escenario": "visual/salidas",
+    "nombre": "arrastrar el borde izquierdo agranda el panel de Salidas",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-salidas/antes-de-arrastrar.png",
+      "visual-salidas/panel-agrandado.png"
+    ],
+    "datos": {
+      "panelAntes": 320,
+      "panelDespues": 620
+    },
+    "ms": 7626
+  },
+  {
+    "escenario": "visual/salidas",
+    "nombre": "arrastrar la manija entre lista y vista previa agranda la lista",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-salidas/lista-agrandada.png"
+    ],
+    "datos": {
+      "listaAntes": 144,
+      "listaDespues": 264
+    },
+    "ms": 7626
+  },
+  {
+    "escenario": "visual/salidas",
+    "nombre": "los dos anchos sobreviven a recargar la página",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-salidas/despues-de-recargar.png"
+    ],
+    "datos": {
+      "panelDespues": 620,
+      "panelRecarga": 620,
+      "listaDespues": 264,
+      "listaRecarga": 264
+    },
+    "ms": 7626
+  },
+  {
+    "escenario": "visual/salidas",
+    "nombre": "\"Pestaña nueva\" abre la salida HTML renderizada en otra pestaña",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-salidas/pestana-nueva.png"
+    ],
+    "datos": {
+      "url": "blob:http://127.0.0.1:3001/2d972530-49eb",
+      "titulo": "Salida de prueba tvpe4w"
+    },
+    "ms": 7626
+  },
+  {
+    "escenario": "visual/salidas",
+    "nombre": "el HTML abierto en la pestaña nueva no puede leer el localStorage de la app",
+    "resultado": "pasa",
+    "evidencia": [
+      "visual-salidas/pestana-nueva.png"
+    ],
+    "datos": {
+      "origen": "BLOQUEADO",
+      "sandbox": "allow-scripts allow-popups"
+    },
+    "ms": 7626
   }
 ]

@@ -25,3 +25,15 @@ Correr solo los 7 escenarios en rojo, con el arnés ya arreglado:
 ```
 cd ~/cloudcli && read -rp 'usuario: ' U && read -rsp 'contraseña: ' P && echo && CLOUDCLI_USER="$U" CLOUDCLI_PASS="$P" CLOUDCLI_URL=http://127.0.0.1:3001 node e2e/correr.mjs barra/orquestador barra/estado-vivo cuota/header visual/salidas headless/pensamiento tmux/adjunto tmux/recarga --con-cuota --corrida final-3001; unset U P
 ```
+
+### Repetición de los 7 en rojo (9-oct, 15:39)
+
+Con el arnés arreglado: **71 bien, 4 mal y 26 bloqueados.** Pasan ahora `barra/orquestador`, `cuota/header`, `visual/salidas`, `headless/pensamiento` (en `:3001` el servicio sí tiene token) y `tmux/adjunto` 8/8: lo de las dos imágenes fue intermitente.
+
+Siguen en rojo, y fallan en las dos corridas:
+- `barra/estado-vivo`: esta vez ni siquiera encuentra el rótulo con el pane vivo (`rotuloConVida: null`), y no pasa a "dormida".
+- `tmux/recarga`: el ack de suscripción ahora dice `isProcessing: false` con `runsInTmux: true`, y tras recargar no vuelve el indicador.
+
+Los dos pasan en `:3901`. Lo que cambia en `:3001` es el registro de sesiones real, el socket por defecto y los hooks de Leandro. Hay que diagnosticarlos en una sesión nueva.
+
+Limpieza: 0 `e2e-*` vivas, 0 JWT en la carpeta.

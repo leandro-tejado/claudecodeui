@@ -1,6 +1,6 @@
 [
   {
-    "t": 1791550344971,
+    "t": 1791553013078,
     "sentido": "out",
     "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
     "datos": {
@@ -8,7 +8,7 @@
     }
   },
   {
-    "t": 1791550345235,
+    "t": 1791553013301,
     "sentido": "out",
     "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
     "datos": {
@@ -16,7 +16,7 @@
     }
   },
   {
-    "t": 1791550345235,
+    "t": 1791553013303,
     "sentido": "out",
     "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
     "datos": {
@@ -24,126 +24,62 @@
     }
   },
   {
-    "t": 1791550345251,
+    "t": 1791553013383,
     "sentido": "in",
     "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
     "datos": {
       "kind": "tmux_prompts",
       "prompts": [],
-      "timestamp": "2026-10-09T12:52:25.247Z"
+      "timestamp": "2026-10-09T13:36:53.374Z"
     }
   },
   {
-    "t": 1791550345255,
+    "t": 1791553013383,
     "sentido": "in",
     "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
     "datos": {
       "kind": "tmux_prompts",
       "prompts": [],
-      "timestamp": "2026-10-09T12:52:25.247Z"
+      "timestamp": "2026-10-09T13:36:53.375Z"
     }
   },
   {
-    "t": 1791550345625,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "session_upserted",
-      "sessionId": "8315bbb4-57d2-46ed-abf5-e90a27a7a1ee",
-      "providerSessionId": "8315bbb4-57d2-46ed-abf5-e90a27a7a1ee",
-      "provider": "claude",
-      "session": {
-        "id": "8315bbb4-57d2-46ed-abf5-e90a27a7a1ee",
-        "summary": "Conteo 1-40 en palabras",
-        "messageCount": 0,
-        "lastActivity": "2026-10-09T12:52:22.122Z",
-        "tmux": null
-      },
-      "project": {
-        "projectId": "6f20624f-a0db-4b13-ace6-bddcba010843",
-        "path": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
-        "fullPath": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
-        "displayName": "proyecto",
-        "isStarred": false
-      },
-      "timestamp": "2026-10-09T12:52:25.623Z"
-    }
-  },
-  {
-    "t": 1791550346019,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "usage_window",
-      "fiveHour": {
-        "porcentaje": 3,
-        "resetsAt": 1791565200000,
-        "leidoEn": 1791550337000
-      },
-      "sevenDay": {
-        "porcentaje": 82,
-        "resetsAt": 1791734400000,
-        "leidoEn": 1791550337000
-      },
-      "cuenta": "optimum"
-    }
-  },
-  {
-    "t": 1791550346019,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "usage_window",
-      "fiveHour": {
-        "porcentaje": 0,
-        "resetsAt": 1791567000000,
-        "leidoEn": 1791549828000
-      },
-      "sevenDay": {
-        "porcentaje": 91,
-        "resetsAt": 1791925200000,
-        "leidoEn": 1791549828000
-      },
-      "cuenta": "personal"
-    }
-  },
-  {
-    "t": 1791550346666,
+    "t": 1791553015031,
     "sentido": "out",
     "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
     "datos": {
       "type": "chat.subscribe",
       "sessions": [
         {
-          "sessionId": "55bc7f53-374f-470a-91c1-c6df80e3aecf",
+          "sessionId": "d74695ba-a78f-448d-a0d4-e796784d0ebd",
           "lastSeq": 0
         }
       ]
     }
   },
   {
-    "t": 1791550346689,
+    "t": 1791553015042,
     "sentido": "in",
     "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
     "datos": {
       "kind": "chat_subscribed",
-      "sessionId": "55bc7f53-374f-470a-91c1-c6df80e3aecf",
+      "sessionId": "d74695ba-a78f-448d-a0d4-e796784d0ebd",
       "isProcessing": false,
       "lastSeq": 0,
       "pendingPermissions": [],
       "runsInTmux": true,
-      "timestamp": "2026-10-09T12:52:26.665Z"
+      "timestamp": "2026-10-09T13:36:55.026Z"
     }
   },
   {
-    "t": 1791550347476,
+    "t": 1791553015860,
     "sentido": "out",
     "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
     "datos": {
       "type": "chat.send-tmux",
-      "sessionId": "55bc7f53-374f-470a-91c1-c6df80e3aecf",
-      "content": "Escribí un párrafo de 120 palabras sobre trenes. Terminá con 1ekw1k.",
-      "clientMessageId": "local_1791550347453_rkqqej",
+      "sessionId": "d74695ba-a78f-448d-a0d4-e796784d0ebd",
+      "content": "Escribí un párrafo de 120 palabras sobre trenes. Terminá con xf5725.",
+      "clientMessageId": "local_1791553015842_6qem93",
       "options": {
         "model": "default",
         "effort": "default",
@@ -168,116 +104,31 @@
     }
   },
   {
-    "t": 1791550347928,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "activity",
-      "sessionId": "55bc7f53-374f-470a-91c1-c6df80e3aecf",
-      "activityKind": "thinking",
-      "texto": "Moseying… (running UserPromptSubmit hooks… 1/2 · 0s)",
-      "timestamp": "2026-10-09T12:52:27.921Z"
-    }
-  },
-  {
-    "t": 1791550347935,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "stream_delta",
-      "sessionId": "55bc7f53-374f-470a-91c1-c6df80e3aecf",
-      "messageId": "tmux-borrador:55bc7f53-374f-470a-91c1-c6df80e3aecf",
-      "blockIndex": 0,
-      "content": "5h ?",
-      "timestamp": "2026-10-09T12:52:27.921Z"
-    }
-  },
-  {
-    "t": 1791550348097,
+    "t": 1791553016491,
     "sentido": "in",
     "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
     "datos": {
       "kind": "message_status",
-      "sessionId": "55bc7f53-374f-470a-91c1-c6df80e3aecf",
-      "clientMessageId": "local_1791550347453_rkqqej",
+      "sessionId": "d74695ba-a78f-448d-a0d4-e796784d0ebd",
+      "clientMessageId": "local_1791553015842_6qem93",
       "status": "sent",
-      "timestamp": "2026-10-09T12:52:28.092Z"
+      "timestamp": "2026-10-09T13:36:56.479Z"
     }
   },
   {
-    "t": 1791550348100,
+    "t": 1791553016509,
     "sentido": "in",
     "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
     "datos": {
       "kind": "status",
-      "sessionId": "55bc7f53-374f-470a-91c1-c6df80e3aecf",
+      "sessionId": "d74695ba-a78f-448d-a0d4-e796784d0ebd",
       "text": null,
       "canInterrupt": false,
-      "timestamp": "2026-10-09T12:52:28.093Z"
+      "timestamp": "2026-10-09T13:36:56.487Z"
     }
   },
   {
-    "t": 1791550348322,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "stream_reemplazo",
-      "sessionId": "55bc7f53-374f-470a-91c1-c6df80e3aecf",
-      "messageId": "tmux-borrador:55bc7f53-374f-470a-91c1-c6df80e3aecf",
-      "blockIndex": 0,
-      "timestamp": "2026-10-09T12:52:28.316Z"
-    }
-  },
-  {
-    "t": 1791550348323,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "activity",
-      "sessionId": "55bc7f53-374f-470a-91c1-c6df80e3aecf",
-      "idle": true,
-      "timestamp": "2026-10-09T12:52:28.316Z"
-    }
-  },
-  {
-    "t": 1791550349929,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "activity",
-      "sessionId": "55bc7f53-374f-470a-91c1-c6df80e3aecf",
-      "activityKind": "thinking",
-      "texto": "Symbioting… (2s · thinking with high effort)",
-      "timestamp": "2026-10-09T12:52:29.924Z"
-    }
-  },
-  {
-    "t": 1791550349929,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "stream_delta",
-      "sessionId": "55bc7f53-374f-470a-91c1-c6df80e3aecf",
-      "messageId": "tmux-borrador:55bc7f53-374f-470a-91c1-c6df80e3aecf",
-      "blockIndex": 0,
-      "content": "5h ?",
-      "timestamp": "2026-10-09T12:52:29.924Z"
-    }
-  },
-  {
-    "t": 1791550350326,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "activity",
-      "sessionId": "55bc7f53-374f-470a-91c1-c6df80e3aecf",
-      "activityKind": "thinking",
-      "texto": "Symbioting… (2s · thinking with high effort)",
-      "timestamp": "2026-10-09T12:52:30.324Z"
-    }
-  },
-  {
-    "t": 1791550350726,
+    "t": 1791553045802,
     "sentido": "out",
     "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
     "datos": {
@@ -285,115 +136,65 @@
     }
   },
   {
-    "t": 1791550350807,
+    "t": 1791553045870,
     "sentido": "in",
     "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
     "datos": {
       "kind": "tmux_prompts",
       "prompts": [],
-      "timestamp": "2026-10-09T12:52:30.798Z"
+      "timestamp": "2026-10-09T13:37:25.863Z"
     }
   },
   {
-    "t": 1791550351144,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "id": "9b273304-1161-4344-a29f-1188312feded",
-      "sessionId": "55bc7f53-374f-470a-91c1-c6df80e3aecf",
-      "timestamp": "2026-10-09T12:52:27.852Z",
-      "provider": "claude",
-      "kind": "text",
-      "role": "user",
-      "content": "Escribí un párrafo de 120 palabras sobre trenes. Terminá con 1ekw1k.",
-      "transcriptAnchorId": "9b273304-1161-4344-a29f-1188312feded"
-    }
-  },
-  {
-    "t": 1791550351499,
+    "t": 1791553046498,
     "sentido": "out",
     "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
     "datos": {
       "type": "chat.subscribe",
       "sessions": [
         {
-          "sessionId": "55bc7f53-374f-470a-91c1-c6df80e3aecf",
+          "sessionId": "d74695ba-a78f-448d-a0d4-e796784d0ebd",
           "lastSeq": 0
         }
       ]
     }
   },
   {
-    "t": 1791550351519,
+    "t": 1791553046513,
     "sentido": "in",
     "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
     "datos": {
       "kind": "chat_subscribed",
-      "sessionId": "55bc7f53-374f-470a-91c1-c6df80e3aecf",
-      "isProcessing": true,
+      "sessionId": "d74695ba-a78f-448d-a0d4-e796784d0ebd",
+      "isProcessing": false,
       "lastSeq": 0,
       "pendingPermissions": [],
       "runsInTmux": true,
-      "timestamp": "2026-10-09T12:52:31.518Z"
+      "timestamp": "2026-10-09T13:37:26.507Z"
     }
   },
   {
-    "t": 1791550351613,
+    "t": 1791553061154,
     "sentido": "in",
     "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
     "datos": {
-      "kind": "session_upserted",
-      "sessionId": "55bc7f53-374f-470a-91c1-c6df80e3aecf",
-      "providerSessionId": "55bc7f53-374f-470a-91c1-c6df80e3aecf",
-      "provider": "claude",
-      "session": {
-        "id": "55bc7f53-374f-470a-91c1-c6df80e3aecf",
-        "summary": "Párrafo sobre trenes",
-        "messageCount": 0,
-        "lastActivity": "2026-10-09T12:52:28.840Z",
-        "tmux": {
-          "nombre": "e2e-recarga-ejecutora-1",
-          "vivo": true
-        },
-        "cuenta": "optimum"
+      "kind": "recursos",
+      "ram": {
+        "porcentajePct": 65.50509999291667,
+        "usadaGb": 5.079963684082031,
+        "totalGb": 7.75506591796875
       },
-      "project": {
-        "projectId": "6f20624f-a0db-4b13-ace6-bddcba010843",
-        "path": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
-        "fullPath": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
-        "displayName": "proyecto",
-        "isStarred": false
+      "disco": {
+        "usadoPct": 43.19869084815084,
+        "usadoGb": 41.39385223388672,
+        "totalGb": 95.82200622558594
       },
-      "timestamp": "2026-10-09T12:52:31.603Z"
+      "sesionesTmux": 11,
+      "techoRam": 90
     }
   },
   {
-    "t": 1791550351931,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "activity",
-      "sessionId": "55bc7f53-374f-470a-91c1-c6df80e3aecf",
-      "activityKind": "thinking",
-      "texto": "Symbioting… (3s · thinking with high effort)",
-      "timestamp": "2026-10-09T12:52:31.929Z"
-    }
-  },
-  {
-    "t": 1791550351936,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "stream_delta",
-      "sessionId": "55bc7f53-374f-470a-91c1-c6df80e3aecf",
-      "messageId": "tmux-borrador:55bc7f53-374f-470a-91c1-c6df80e3aecf",
-      "blockIndex": 0,
-      "content": "5h ?",
-      "timestamp": "2026-10-09T12:52:31.929Z"
-    }
-  },
-  {
-    "t": 1791550352002,
+    "t": 1791553061455,
     "sentido": "in",
     "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
     "datos": {
@@ -401,308 +202,104 @@
       "fiveHour": {
         "porcentaje": 3,
         "resetsAt": 1791565200000,
-        "leidoEn": 1791550337000
+        "leidoEn": 1791553023000
       },
       "sevenDay": {
         "porcentaje": 82,
         "resetsAt": 1791734400000,
-        "leidoEn": 1791550337000
+        "leidoEn": 1791553023000
       },
       "cuenta": "optimum"
     }
   },
   {
-    "t": 1791550352004,
+    "t": 1791553061459,
     "sentido": "in",
     "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
     "datos": {
       "kind": "usage_window",
       "fiveHour": {
-        "porcentaje": 0,
+        "porcentaje": 100,
         "resetsAt": 1791567000000,
-        "leidoEn": 1791549828000
+        "leidoEn": 1791552858000
       },
       "sevenDay": {
         "porcentaje": 91,
         "resetsAt": 1791925200000,
-        "leidoEn": 1791549828000
+        "leidoEn": 1791552858000
       },
       "cuenta": "personal"
     }
   },
   {
-    "t": 1791550352334,
+    "t": 1791553070797,
     "sentido": "in",
     "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
     "datos": {
-      "kind": "activity",
-      "sessionId": "55bc7f53-374f-470a-91c1-c6df80e3aecf",
-      "activityKind": "thinking",
-      "texto": "Symbioting… (4s · thinking with high effort)",
-      "timestamp": "2026-10-09T12:52:32.332Z"
+      "kind": "heartbeat",
+      "timestamp": 1791553070795
     }
   },
   {
-    "t": 1791550352732,
+    "t": 1791553091153,
     "sentido": "in",
     "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
     "datos": {
-      "kind": "activity",
-      "sessionId": "55bc7f53-374f-470a-91c1-c6df80e3aecf",
-      "activityKind": "thinking",
-      "texto": "Symbioting… (4s · thinking with high effort)",
-      "timestamp": "2026-10-09T12:52:32.730Z"
+      "kind": "recursos",
+      "ram": {
+        "porcentajePct": 65.66354016637939,
+        "usadaGb": 5.092250823974609,
+        "totalGb": 7.75506591796875
+      },
+      "disco": {
+        "usadoPct": 43.19868288610242,
+        "usadoGb": 41.39384460449219,
+        "totalGb": 95.82200622558594
+      },
+      "sesionesTmux": 11,
+      "techoRam": 90
     }
   },
   {
-    "t": 1791550353143,
+    "t": 1791553095799,
     "sentido": "in",
     "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
     "datos": {
-      "kind": "activity",
-      "sessionId": "55bc7f53-374f-470a-91c1-c6df80e3aecf",
-      "activityKind": "thinking",
-      "texto": "Symbioting… (5s · thinking with high effort)",
-      "timestamp": "2026-10-09T12:52:33.140Z"
+      "kind": "heartbeat",
+      "timestamp": 1791553095796
     }
   },
   {
-    "t": 1791550353532,
+    "t": 1791553120802,
     "sentido": "in",
     "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
     "datos": {
-      "kind": "activity",
-      "sessionId": "55bc7f53-374f-470a-91c1-c6df80e3aecf",
-      "activityKind": "thinking",
-      "texto": "Symbioting… (5s · thinking with high effort)",
-      "timestamp": "2026-10-09T12:52:33.530Z"
+      "kind": "heartbeat",
+      "timestamp": 1791553120797
     }
   },
   {
-    "t": 1791550353934,
+    "t": 1791553121155,
     "sentido": "in",
     "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
     "datos": {
-      "kind": "activity",
-      "sessionId": "55bc7f53-374f-470a-91c1-c6df80e3aecf",
-      "activityKind": "thinking",
-      "texto": "Symbioting… (6s · thinking with high effort)",
-      "timestamp": "2026-10-09T12:52:33.932Z"
+      "kind": "recursos",
+      "ram": {
+        "porcentajePct": 65.39461982228728,
+        "usadaGb": 5.0713958740234375,
+        "totalGb": 7.75506591796875
+      },
+      "disco": {
+        "usadoPct": 43.19867890507821,
+        "usadoGb": 41.39384078979492,
+        "totalGb": 95.82200622558594
+      },
+      "sesionesTmux": 11,
+      "techoRam": 90
     }
   },
   {
-    "t": 1791550354335,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "activity",
-      "sessionId": "55bc7f53-374f-470a-91c1-c6df80e3aecf",
-      "activityKind": "thinking",
-      "texto": "Symbioting… (6s · thinking with high effort)",
-      "timestamp": "2026-10-09T12:52:34.332Z"
-    }
-  },
-  {
-    "t": 1791550354737,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "activity",
-      "sessionId": "55bc7f53-374f-470a-91c1-c6df80e3aecf",
-      "activityKind": "thinking",
-      "texto": "Symbioting… (6s · thinking with high effort)",
-      "timestamp": "2026-10-09T12:52:34.731Z"
-    }
-  },
-  {
-    "t": 1791550355133,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "activity",
-      "sessionId": "55bc7f53-374f-470a-91c1-c6df80e3aecf",
-      "activityKind": "thinking",
-      "texto": "Symbioting… (7s · thinking with high effort)",
-      "timestamp": "2026-10-09T12:52:35.131Z"
-    }
-  },
-  {
-    "t": 1791550355534,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "activity",
-      "sessionId": "55bc7f53-374f-470a-91c1-c6df80e3aecf",
-      "activityKind": "thinking",
-      "texto": "Symbioting… (7s · thinking with high effort)",
-      "timestamp": "2026-10-09T12:52:35.532Z"
-    }
-  },
-  {
-    "t": 1791550355936,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "activity",
-      "sessionId": "55bc7f53-374f-470a-91c1-c6df80e3aecf",
-      "activityKind": "thinking",
-      "texto": "Symbioting… (8s · thinking with high effort)",
-      "timestamp": "2026-10-09T12:52:35.932Z"
-    }
-  },
-  {
-    "t": 1791550356334,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "activity",
-      "sessionId": "55bc7f53-374f-470a-91c1-c6df80e3aecf",
-      "activityKind": "thinking",
-      "texto": "Symbioting… (8s · thinking with high effort)",
-      "timestamp": "2026-10-09T12:52:36.332Z"
-    }
-  },
-  {
-    "t": 1791550356750,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "activity",
-      "sessionId": "55bc7f53-374f-470a-91c1-c6df80e3aecf",
-      "activityKind": "thinking",
-      "texto": "Symbioting… (8s · thinking with high effort)",
-      "timestamp": "2026-10-09T12:52:36.747Z"
-    }
-  },
-  {
-    "t": 1791550357137,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "activity",
-      "sessionId": "55bc7f53-374f-470a-91c1-c6df80e3aecf",
-      "activityKind": "thinking",
-      "texto": "Symbioting… (9s · ↓ 1.1k tokens · thought for 7s)",
-      "timestamp": "2026-10-09T12:52:37.133Z"
-    }
-  },
-  {
-    "t": 1791550357138,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "stream_delta",
-      "sessionId": "55bc7f53-374f-470a-91c1-c6df80e3aecf",
-      "messageId": "tmux-borrador:55bc7f53-374f-470a-91c1-c6df80e3aecf",
-      "blockIndex": 0,
-      "content": "El tren es una de las invenciones que más transformó la forma de habitar el\n  mundo. Nacido en el siglo diecinueve, con locomotoras de vapor que escupían\n  5h ?",
-      "timestamp": "2026-10-09T12:52:37.133Z"
-    }
-  },
-  {
-    "t": 1791550357539,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "activity",
-      "sessionId": "55bc7f53-374f-470a-91c1-c6df80e3aecf",
-      "activityKind": "thinking",
-      "texto": "Symbioting… (9s · ↓ 1.1k tokens · thought for 7s)",
-      "timestamp": "2026-10-09T12:52:37.533Z"
-    }
-  },
-  {
-    "t": 1791550357542,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "stream_delta",
-      "sessionId": "55bc7f53-374f-470a-91c1-c6df80e3aecf",
-      "messageId": "tmux-borrador:55bc7f53-374f-470a-91c1-c6df80e3aecf",
-      "blockIndex": 0,
-      "content": "El tren es una de las invenciones que más transformó la forma de habitar el\n  mundo. Nacido en el siglo diecinueve, con locomotoras de vapor que escupían\n  humo y hollín, acortó distancias que antes llevaban semanas y convirtió aldeas\n  aisladas en nodos de comercio. Las vías de hierro atravesaron montañas,\n  desiertos y ríos, y con ellas viajaron personas, cartas, alimentos y",
-      "timestamp": "2026-10-09T12:52:37.533Z"
-    }
-  },
-  {
-    "t": 1791550357944,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "activity",
-      "sessionId": "55bc7f53-374f-470a-91c1-c6df80e3aecf",
-      "activityKind": "thinking",
-      "texto": "Symbioting… (10s · ↓ 1.1k tokens · thought for 7s)",
-      "timestamp": "2026-10-09T12:52:37.940Z"
-    }
-  },
-  {
-    "t": 1791550357947,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "stream_delta",
-      "sessionId": "55bc7f53-374f-470a-91c1-c6df80e3aecf",
-      "messageId": "tmux-borrador:55bc7f53-374f-470a-91c1-c6df80e3aecf",
-      "blockIndex": 0,
-      "content": "El tren es una de las invenciones que más transformó la forma de habitar el\n  mundo. Nacido en el siglo diecinueve, con locomotoras de vapor que escupían\n  humo y hollín, acortó distancias que antes llevaban semanas y convirtió aldeas\n  aisladas en nodos de comercio. Las vías de hierro atravesaron montañas,\n  desiertos y ríos, y con ellas viajaron personas, cartas, alimentos y\n  esperanzas de una vida mejor. Hoy los trenes eléctricos y de alta velocidad\n  superan los trescientos kilómetros por hora, consumen menos energía por\n  pasajero que casi cualquier otro transporte y ofrecen algo que el avión no da:",
-      "timestamp": "2026-10-09T12:52:37.940Z"
-    }
-  },
-  {
-    "t": 1791550358334,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "stream_reemplazo",
-      "sessionId": "55bc7f53-374f-470a-91c1-c6df80e3aecf",
-      "messageId": "tmux-borrador:55bc7f53-374f-470a-91c1-c6df80e3aecf",
-      "blockIndex": 0,
-      "timestamp": "2026-10-09T12:52:38.332Z"
-    }
-  },
-  {
-    "t": 1791550358339,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "activity",
-      "sessionId": "55bc7f53-374f-470a-91c1-c6df80e3aecf",
-      "idle": true,
-      "timestamp": "2026-10-09T12:52:38.332Z"
-    }
-  },
-  {
-    "t": 1791550358364,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "id": "c7aad118-d032-4920-bfe3-768fd195670f_0",
-      "sessionId": "55bc7f53-374f-470a-91c1-c6df80e3aecf",
-      "timestamp": "2026-10-09T12:52:37.992Z",
-      "provider": "claude",
-      "kind": "text",
-      "role": "assistant",
-      "content": "El tren es una de las invenciones que más transformó la forma de habitar el mundo. Nacido en el siglo diecinueve, con locomotoras de vapor que escupían humo y hollín, acortó distancias que antes llevaban semanas y convirtió aldeas aisladas en nodos de comercio. Las vías de hierro atravesaron montañas, desiertos y ríos, y con ellas viajaron personas, cartas, alimentos y esperanzas de una vida mejor. Hoy los trenes eléctricos y de alta velocidad superan los trescientos kilómetros por hora, consumen menos energía por pasajero que casi cualquier otro transporte y ofrecen algo que el avión no da: la calma de mirar el paisaje deslizarse tras la ventanilla, mientras el ritmo constante de las ruedas invita a pensar y soñar. 1ekw1k",
-      "messageId": "msg_011CfrhFyiFBv8BBdwiRtdis",
-      "blockIndex": 0
-    }
-  },
-  {
-    "t": 1791550358405,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "id": "tmux_complete_55bc7f53-374f-470a-91c1-c6df80e3aecf_1791550358364",
-      "sessionId": "55bc7f53-374f-470a-91c1-c6df80e3aecf",
-      "provider": "claude",
-      "timestamp": "2026-10-09T12:52:38.364Z",
-      "kind": "complete",
-      "success": true
-    }
-  },
-  {
-    "t": 1791550358426,
+    "t": 1791553121456,
     "sentido": "in",
     "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
     "datos": {
@@ -710,33 +307,62 @@
       "fiveHour": {
         "porcentaje": 3,
         "resetsAt": 1791565200000,
-        "leidoEn": 1791550357000
+        "leidoEn": 1791553023000
       },
       "sevenDay": {
         "porcentaje": 82,
         "resetsAt": 1791734400000,
-        "leidoEn": 1791550357000
+        "leidoEn": 1791553023000
       },
       "cuenta": "optimum"
     }
   },
   {
-    "t": 1791550358436,
+    "t": 1791553121459,
     "sentido": "in",
     "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
     "datos": {
       "kind": "usage_window",
       "fiveHour": {
-        "porcentaje": 0,
+        "porcentaje": 100,
         "resetsAt": 1791567000000,
-        "leidoEn": 1791549828000
+        "leidoEn": 1791552858000
       },
       "sevenDay": {
         "porcentaje": 91,
         "resetsAt": 1791925200000,
-        "leidoEn": 1791549828000
+        "leidoEn": 1791552858000
       },
       "cuenta": "personal"
+    }
+  },
+  {
+    "t": 1791553145799,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "heartbeat",
+      "timestamp": 1791553145797
+    }
+  },
+  {
+    "t": 1791553151155,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "recursos",
+      "ram": {
+        "porcentajePct": 65.25792151677567,
+        "usadaGb": 5.060794830322266,
+        "totalGb": 7.75506591796875
+      },
+      "disco": {
+        "usadoPct": 43.19869084815084,
+        "usadoGb": 41.39385223388672,
+        "totalGb": 95.82200622558594
+      },
+      "sesionesTmux": 11,
+      "techoRam": 90
     }
   }
 ]

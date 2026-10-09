@@ -1,6 +1,6 @@
 [
   {
-    "t": 1791550388832,
+    "t": 1791553167962,
     "sentido": "out",
     "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
     "datos": {
@@ -8,17 +8,17 @@
     }
   },
   {
-    "t": 1791550388896,
+    "t": 1791553168019,
     "sentido": "in",
     "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
     "datos": {
       "kind": "tmux_prompts",
       "prompts": [],
-      "timestamp": "2026-10-09T12:53:08.890Z"
+      "timestamp": "2026-10-09T13:39:28.014Z"
     }
   },
   {
-    "t": 1791550388966,
+    "t": 1791553168122,
     "sentido": "out",
     "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
     "datos": {
@@ -26,7 +26,7 @@
     }
   },
   {
-    "t": 1791550388966,
+    "t": 1791553168122,
     "sentido": "out",
     "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
     "datos": {
@@ -34,27 +34,53 @@
     }
   },
   {
-    "t": 1791550389045,
+    "t": 1791553168163,
     "sentido": "in",
     "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
     "datos": {
       "kind": "tmux_prompts",
       "prompts": [],
-      "timestamp": "2026-10-09T12:53:09.020Z"
+      "timestamp": "2026-10-09T13:39:28.159Z"
     }
   },
   {
-    "t": 1791550389046,
+    "t": 1791553168163,
     "sentido": "in",
     "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
     "datos": {
       "kind": "tmux_prompts",
       "prompts": [],
-      "timestamp": "2026-10-09T12:53:09.020Z"
+      "timestamp": "2026-10-09T13:39:28.159Z"
     }
   },
   {
-    "t": 1791550390910,
+    "t": 1791553168269,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "session_upserted",
+      "sessionId": "d74695ba-a78f-448d-a0d4-e796784d0ebd",
+      "providerSessionId": "d74695ba-a78f-448d-a0d4-e796784d0ebd",
+      "provider": "claude",
+      "session": {
+        "id": "d74695ba-a78f-448d-a0d4-e796784d0ebd",
+        "summary": "Párrafo sobre trenes",
+        "messageCount": 0,
+        "lastActivity": "2026-10-09T13:37:03.631Z",
+        "tmux": null
+      },
+      "project": {
+        "projectId": "6f20624f-a0db-4b13-ace6-bddcba010843",
+        "path": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
+        "fullPath": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
+        "displayName": "e2e-proyecto",
+        "isStarred": false
+      },
+      "timestamp": "2026-10-09T13:39:28.260Z"
+    }
+  },
+  {
+    "t": 1791553170123,
     "sentido": "out",
     "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
     "datos": {
@@ -62,66 +88,61 @@
     }
   },
   {
-    "t": 1791550390978,
+    "t": 1791553170170,
     "sentido": "in",
     "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
     "datos": {
       "kind": "tmux_prompts",
       "prompts": [],
-      "timestamp": "2026-10-09T12:53:10.965Z"
+      "timestamp": "2026-10-09T13:39:30.167Z"
     }
   },
   {
-    "t": 1791550391072,
+    "t": 1791553172054,
     "sentido": "in",
     "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
     "datos": {
-      "kind": "recursos",
-      "ram": {
-        "porcentajePct": 63.695999496297,
-        "usadaGb": 4.939666748046875,
-        "totalGb": 7.75506591796875
+      "kind": "session_upserted",
+      "sessionId": "d74695ba-a78f-448d-a0d4-e796784d0ebd",
+      "providerSessionId": "d74695ba-a78f-448d-a0d4-e796784d0ebd",
+      "provider": "claude",
+      "session": {
+        "id": "d74695ba-a78f-448d-a0d4-e796784d0ebd",
+        "summary": "Párrafo sobre trenes",
+        "messageCount": 0,
+        "lastActivity": "2026-10-09T13:39:27.442Z",
+        "tmux": null
       },
-      "disco": {
-        "usadoPct": 43.194849159788916,
-        "usadoGb": 41.39017105102539,
-        "totalGb": 95.82200622558594
+      "project": {
+        "projectId": "6f20624f-a0db-4b13-ace6-bddcba010843",
+        "path": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
+        "fullPath": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
+        "displayName": "e2e-proyecto",
+        "isStarred": false
       },
-      "sesionesTmux": 4,
-      "techoRam": 90
+      "timestamp": "2026-10-09T13:39:32.050Z"
     }
   },
   {
-    "t": 1791550415906,
+    "t": 1791553172393,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "type": "chat.tmux-prompts"
+    }
+  },
+  {
+    "t": 1791553172452,
     "sentido": "in",
     "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
     "datos": {
-      "kind": "heartbeat",
-      "timestamp": 1791550415904
+      "kind": "tmux_prompts",
+      "prompts": [],
+      "timestamp": "2026-10-09T13:39:32.446Z"
     }
   },
   {
-    "t": 1791550421079,
-    "sentido": "in",
-    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
-    "datos": {
-      "kind": "recursos",
-      "ram": {
-        "porcentajePct": 63.39446635027822,
-        "usadaGb": 4.916282653808594,
-        "totalGb": 7.75506591796875
-      },
-      "disco": {
-        "usadoPct": 43.18208201514987,
-        "usadoGb": 41.37793731689453,
-        "totalGb": 95.82200622558594
-      },
-      "sesionesTmux": 4,
-      "techoRam": 90
-    }
-  },
-  {
-    "t": 1791550421421,
+    "t": 1791553172534,
     "sentido": "in",
     "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
     "datos": {
@@ -129,33 +150,51 @@
       "fiveHour": {
         "porcentaje": 3,
         "resetsAt": 1791565200000,
-        "leidoEn": 1791550383000
+        "leidoEn": 1791553023000
       },
       "sevenDay": {
         "porcentaje": 82,
         "resetsAt": 1791734400000,
-        "leidoEn": 1791550383000
+        "leidoEn": 1791553023000
       },
       "cuenta": "optimum"
     }
   },
   {
-    "t": 1791550421421,
+    "t": 1791553172534,
     "sentido": "in",
     "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
     "datos": {
       "kind": "usage_window",
       "fiveHour": {
-        "porcentaje": 0,
+        "porcentaje": 100,
         "resetsAt": 1791567000000,
-        "leidoEn": 1791549828000
+        "leidoEn": 1791552858000
       },
       "sevenDay": {
         "porcentaje": 91,
         "resetsAt": 1791925200000,
-        "leidoEn": 1791549828000
+        "leidoEn": 1791552858000
       },
       "cuenta": "personal"
+    }
+  },
+  {
+    "t": 1791553173461,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "type": "chat.tmux-prompts"
+    }
+  },
+  {
+    "t": 1791553173506,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "tmux_prompts",
+      "prompts": [],
+      "timestamp": "2026-10-09T13:39:33.501Z"
     }
   }
 ]

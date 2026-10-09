@@ -1,11 +1,11 @@
 # Evidencia E2E — final-3001
 
-Fecha: 2026-10-09T12:53:41.890Z · Escenarios: 42 · Gobernador: verde (pace 14%)
+Actualizado: 2026-10-09T13:39:35.110Z · Gobernador: verde
 
 | Resultado | Cantidad |
 |---|---|
-| ✅ pasa | 60 |
-| ❌ falla | 8 |
+| ✅ pasa | 71 |
+| ❌ falla | 4 |
 | ⏸ bloqueado | 26 |
 
 | Escenario | Check | Resultado | Evidencia | Datos |
@@ -13,17 +13,13 @@ Fecha: 2026-10-09T12:53:41.890Z · Escenarios: 42 · Gobernador: verde (pace 14%
 | `a11y/chat` | (todo el escenario) | ⏸ bloqueado | — | usa el CLI falso de :3902; :3001 corre el Claude real |
 | `barra/archivar` | (todo el escenario) | ⏸ bloqueado | — | usa el CLI falso de :3902; :3001 corre el Claude real |
 | `barra/componentes` | (todo el escenario) | ⏸ bloqueado | — | usa el CLI falso de :3902; :3001 corre el Claude real |
-| `barra/estado-vivo` | con el tmux vivo, la fila NO dice "dormida" | ✅ pasa | [tmux-vivo.png](barra-estado-vivo/tmux-vivo.png) | {"rotuloConVida":"libre"} |
-| `barra/estado-vivo` | al matar el pane, la fila pasa a "dormida" sin recargar en ≤ 25000 ms | ❌ falla | [antes-dormir.png](barra-estado-vivo/antes-dormir.png) [despues-dormir.png](barra-estado-vivo/despues-dormir.png) | {"msHastaDormida":null,"topeMs":25000,"dormidaOk":true,"nombre":"e2e-estado-ejecutora-1","sid":"8aeefa3f-3df7-4b42-b08e-89b801610d0a"} |
 | `barra/nombres` | la fila de la barra muestra el título humano, no el prompt crudo ni un id | ✅ pasa | [barra-prosa.png](barra-nombres/barra-prosa.png) | {"tituloProsa":"Psicrómetro: definición","derivado":"Explicame en una frase qué es un psicrómetro","aiTitles":["Psicrómetro: definición"],"mensaje":"Explicame en una frase qué es un psicrómetro."} |
 | `barra/nombres` | tmux show-options -v @titulo devuelve ese mismo título | ✅ pasa | [frames-0.json](barra-nombres/frames-0.json) | {"tituloTmuxProsa":"Psicrómetro: definición","enLaBarra":"Psicrómetro: definición","nombre":"e2e-nombre-prosa-ejecutora-1"} |
 | `barra/nombres` | un mensaje en modo bash (<bash-input>) no deja un título crudo con etiquetas en la barra | ✅ pasa | [barra-bash.png](barra-nombres/barra-bash.png) | {"tituloBash":"Comando: echo hola-57a7gb","esperado":"Comando: echo hola-57a7gb","sinEtiquetasCrudas":true} |
 | `barra/nombres` | tmux show-options -v @titulo del modo bash tampoco queda crudo | ✅ pasa | [frames-0.json](barra-nombres/frames-0.json) | {"tituloTmuxBash":"Comando: echo hola-57a7gb","esperado":"Comando: echo hola-57a7gb","nombre":"e2e-nombre-bash-ejecutora-1"} |
-| `barra/orquestador` | el escenario corre sin excepción: locator.click: Timeout 30000ms exceeded. | ❌ falla | [error-0.png](barra-orquestador/error-0.png) | locator.click: Timeout 30000ms exceeded. \| Call log: \| [2m  - waiting for locator('[data-testid="sidebar-project-row"]').filter({ hasText: 'e2e-proyecto' }).first()[22m \|  |
 | `barra/pestana-oculta` | (todo el escenario) | ⏸ bloqueado | — | usa el CLI falso de :3902; :3001 corre el Claude real |
 | `cola/headless` | (todo el escenario) | ⏸ bloqueado | — | usa el CLI falso de :3902; :3001 corre el Claude real |
 | `cuota/en-vivo` | (todo el escenario) | ⏸ bloqueado | — | usa el CLI falso de :3902; :3001 corre el Claude real |
-| `cuota/header` | el escenario corre sin excepción: locator.click: Timeout 30000ms exceeded. | ❌ falla | [error-0.png](cuota-header/error-0.png) | locator.click: Timeout 30000ms exceeded. \| Call log: \| [2m  - waiting for getByText('e2e-proyecto', { exact: true }).first()[22m \|  |
 | `cuota/sin-turnos` | (todo el escenario) | ⏸ bloqueado | — | usa el CLI falso de :3902; :3001 corre el Claude real |
 | `cuota/vieja` | (todo el escenario) | ⏸ bloqueado | — | usa el CLI falso de :3902; :3001 corre el Claude real |
 | `diseno/capturas` | (todo el escenario) | ⏸ bloqueado | — | usa el CLI falso de :3902; :3001 corre el Claude real |
@@ -31,7 +27,6 @@ Fecha: 2026-10-09T12:53:41.890Z · Escenarios: 42 · Gobernador: verde (pace 14%
 | `falso/humo` | (todo el escenario) | ⏸ bloqueado | — | usa el CLI falso de :3902; :3001 corre el Claude real |
 | `falso/intercalados` | (todo el escenario) | ⏸ bloqueado | — | usa el CLI falso de :3902; :3001 corre el Claude real |
 | `headless/actividad` | (todo el escenario) | ⏸ bloqueado | — | usa el CLI falso de :3902; :3001 corre el Claude real |
-| `headless/pensamiento` | el escenario corre sin excepción: ENOENT: no such file or directory, open '/tmp/cloudcli-e2e/pid-3901' | ❌ falla | — | Error: ENOENT: no such file or directory, open '/tmp/cloudcli-e2e/pid-3901' \|     at Object.readFileSync (node:fs:440:20) \|     at Module.correr (file:///home/leantejado/cloudcli/e2e/escenarios/headless/pensamiento.mjs |
 | `headless/recarga` | (todo el escenario) | ⏸ bloqueado | — | usa el CLI falso de :3902; :3001 corre el Claude real |
 | `headless/subagente` | (todo el escenario) | ⏸ bloqueado | — | usa el CLI falso de :3902; :3001 corre el Claude real |
 | `headless/tipeo` | (todo el escenario) | ⏸ bloqueado | — | usa el CLI falso de :3902; :3001 corre el Claude real |
@@ -54,14 +49,6 @@ Fecha: 2026-10-09T12:53:41.890Z · Escenarios: 42 · Gobernador: verde (pace 14%
 | `pregunta/tmux` | simple: llega la elegida | ✅ pasa | [frames-0.json](pregunta-tmux/frames-0.json) | {"ultima":"ELEGISTE Pera\nMD"} |
 | `pregunta/tmux` | múltiple: llegan las 3 tildadas | ✅ pasa | [multi-pregunta.png](pregunta-tmux/multi-pregunta.png) | {"ultima":"COLORES Rojo, Azul, Negro\nCuota: 7d va en 82% con 70% de la semana transcurrida, así que proyecta 118% al reset (en 51 h"} |
 | `pregunta/tmux` | la pregunta y la respuesta se ven una vez | ✅ pasa | [final.png](pregunta-tmux/final.png) | {"pregunta":1} |
-| `tmux/adjunto` | el mensaje del usuario aparece una vez en el DOM (una imagen) | ✅ pasa | [dom-1.png](tmux-adjunto/dom-1.png) | {"filasUser":1} |
-| `tmux/adjunto` | no aparece el error de "no apareció" en el DOM (una imagen) | ✅ pasa | [dom-1.png](tmux-adjunto/dom-1.png) | {"filasError":0} |
-| `tmux/adjunto` | el JSONL tiene la fila user con el nonce y un bloque de imagen (una imagen) | ✅ pasa | [frames-0.json](tmux-adjunto/frames-0.json) | {"filaUser":true,"tieneBloqueImagen":true} |
-| `tmux/adjunto` | Claude contesta (una imagen) | ✅ pasa | [respuesta-1.png](tmux-adjunto/respuesta-1.png) | {"finMs":3691} |
-| `tmux/adjunto` | el mensaje del usuario aparece una vez en el DOM (dos imágenes) | ❌ falla | [dom-2.png](tmux-adjunto/dom-2.png) | {"filasUser":0} |
-| `tmux/adjunto` | no aparece el error de "no apareció" en el DOM (dos imágenes) | ✅ pasa | [dom-2.png](tmux-adjunto/dom-2.png) | {"filasError":0} |
-| `tmux/adjunto` | el JSONL tiene la fila user con el nonce y un bloque de imagen (dos imágenes) | ❌ falla | [frames-0.json](tmux-adjunto/frames-0.json) | {"filaUser":false,"tieneBloqueImagen":false} |
-| `tmux/adjunto` | Claude contesta (dos imágenes) | ✅ pasa | [respuesta-2.png](tmux-adjunto/respuesta-2.png) | {"finMs":8788} |
 | `tmux/commits` | 8267cbe1: el mensaje muestra "Enviado" una vez que el pane lo recibió | ✅ pasa | [enviado.png](tmux-commits/enviado.png) | {"enviadoMs":847} |
 | `tmux/commits` | 62d63c69: con la sugerencia visible, el mensaje sale y se contesta | ✅ pasa | [final.png](tmux-commits/final.png) | {"sugerencia":"Respondé solo: p9u4ax","finMs":2319,"respuestaVisible":true} |
 | `tmux/en-vivo` | "pensando" visible ≤ 2 s después de enviar | ✅ pasa | [indicador.png](tmux-en-vivo/indicador.png) | {"tInd":735} |
@@ -72,8 +59,6 @@ Fecha: 2026-10-09T12:53:41.890Z · Escenarios: 42 · Gobernador: verde (pace 14%
 | `tmux/rafaga` | cada mensaje 1 vez en el DOM | ✅ pasa | [final.png](tmux-rafaga/final.png) | {"enDom":[1,1,1,1,1]} |
 | `tmux/rafaga` | un solo proceso claude en el proyecto | ✅ pasa | [frames-0.json](tmux-rafaga/frames-0.json) | {"durante":["4012822"],"despues":["4012822"]} |
 | `tmux/rafaga` | todos contestados | ✅ pasa | [frames-0.json](tmux-rafaga/frames-0.json) | {"respondidos":[1,1,1,1,1]} |
-| `tmux/recarga` | el ack de suscripción dice que está procesando | ✅ pasa | [frames-0.json](tmux-recarga/frames-0.json) | {"isProcessing":true,"runsInTmux":true} |
-| `tmux/recarga` | tras recargar, el indicador sigue | ❌ falla | [tras-recargar.png](tmux-recarga/tras-recargar.png) |  |
 | `tmux/turno-corto` | cada turno pasa a libre ≤ 3 s después de que se ve la respuesta | ✅ pasa | [final.png](tmux-turno-corto/final.png) | [-34,-91,-132] |
 | `tmux/turno-corto` | cada respuesta aparece una vez | ✅ pasa | [frames-0.json](tmux-turno-corto/frames-0.json) | [1,1,1] |
 | `visual/bocetos` | chat: movil/light sin scroll horizontal | ✅ pasa | [chat-movil-light.png](visual-bocetos/chat-movil-light.png) | {"desborde":0} |
@@ -103,7 +88,30 @@ Fecha: 2026-10-09T12:53:41.890Z · Escenarios: 42 · Gobernador: verde (pace 14%
 | `visual/chat` | (todo el escenario) | ⏸ bloqueado | — | usa el CLI falso de :3902; :3001 corre el Claude real |
 | `visual/cuestionario` | (todo el escenario) | ⏸ bloqueado | — | usa el CLI falso de :3902; :3001 corre el Claude real |
 | `visual/header-barra` | (todo el escenario) | ⏸ bloqueado | — | usa el CLI falso de :3902; :3001 corre el Claude real |
-| `visual/salidas` | el escenario corre sin excepción: locator.click: Timeout 30000ms exceeded. | ❌ falla | [error-0.png](visual-salidas/error-0.png) | locator.click: Timeout 30000ms exceeded. \| Call log: \| [2m  - waiting for getByText('e2e-proyecto', { exact: true }).first()[22m \|  |
+| `barra/estado-vivo` | con el tmux vivo, la fila NO dice "dormida" | ❌ falla | [tmux-vivo.png](barra-estado-vivo/tmux-vivo.png) | {"rotuloConVida":null} |
+| `barra/estado-vivo` | al matar el pane, la fila pasa a "dormida" sin recargar en ≤ 25000 ms | ❌ falla | [antes-dormir.png](barra-estado-vivo/antes-dormir.png) [despues-dormir.png](barra-estado-vivo/despues-dormir.png) | {"msHastaDormida":null,"topeMs":25000,"dormidaOk":true,"nombre":"e2e-estado-ejecutora-1","sid":"e5108569-f4ce-4610-95db-5e7c0e9b6a1e"} |
+| `barra/orquestador` | orquestar.py crear aparece en la barra abierta en ≤ 3 s, 5 de 5 | ✅ pasa | [cinco-creaciones.png](barra-orquestador/cinco-creaciones.png) | {"exitos":5,"intentos":[{"intento":0,"nombre":"e2e-orq-0-ejecutora-1","sid":"26573ec4-ea9b-46f8-8bd7-267a2f52ff10","tFilaMs":1436,"tBajaMs":315},{"intento":1,"nombre":"e2e-orq-1-ejecutora-1","sid":"10a28001-c437-44f6-95b |
+| `barra/orquestador` | orquestar.py dormir cambia el estado en vivo (la fila sale de la barra sin recargar) | ✅ pasa | [antes-dormir.png](barra-orquestador/antes-dormir.png) [despues-dormir.png](barra-orquestador/despues-dormir.png) | {"antesDormir":21,"tBajaMs":324,"nombre":"e2e-orq-4-ejecutora-1","sid":"0ff49c39-a61e-4208-9ab9-b935cd7c6ccb","dormidaOk":true} |
+| `cuota/header` | 5 h coincide con ~/.cache/aos/cuota.json | ✅ pasa | [real.png](cuota-header/real.png) | {"archivo":3,"etiqueta":"Cuenta Optimum · Ventana de 5 horas: 3% real, se renueva a las 07:00 PM · Semanal: 82% real, se renueva a las 06:00 PM"} |
+| `cuota/header` | la semanal tiene % | ✅ pasa | [frames-0.json](cuota-header/frames-0.json) | {"etiqueta":"Cuenta Optimum · Ventana de 5 horas: 3% real, se renueva a las 07:00 PM · Semanal: 82% real, se renueva a las 06:00 PM"} |
+| `headless/pensamiento` | llegan deltas de pensamiento con texto | ✅ pasa | [frames-0.json](headless-pensamiento/frames-0.json) | {"deltas":16} |
+| `headless/pensamiento` | el razonamiento se ve antes de la respuesta | ✅ pasa | [final.png](headless-pensamiento/final.png) | {"tRazon":55,"tResp":10663} |
+| `tmux/adjunto` | el mensaje del usuario aparece una vez en el DOM (una imagen) | ✅ pasa | [dom-1.png](tmux-adjunto/dom-1.png) | {"filasUser":1} |
+| `tmux/adjunto` | no aparece el error de "no apareció" en el DOM (una imagen) | ✅ pasa | [dom-1.png](tmux-adjunto/dom-1.png) | {"filasError":0} |
+| `tmux/adjunto` | el JSONL tiene la fila user con el nonce y un bloque de imagen (una imagen) | ✅ pasa | [frames-0.json](tmux-adjunto/frames-0.json) | {"filaUser":true,"tieneBloqueImagen":true} |
+| `tmux/adjunto` | Claude contesta (una imagen) | ✅ pasa | [respuesta-1.png](tmux-adjunto/respuesta-1.png) | {"finMs":18891} |
+| `tmux/adjunto` | el mensaje del usuario aparece una vez en el DOM (dos imágenes) | ✅ pasa | [dom-2.png](tmux-adjunto/dom-2.png) | {"filasUser":1} |
+| `tmux/adjunto` | no aparece el error de "no apareció" en el DOM (dos imágenes) | ✅ pasa | [dom-2.png](tmux-adjunto/dom-2.png) | {"filasError":0} |
+| `tmux/adjunto` | el JSONL tiene la fila user con el nonce y un bloque de imagen (dos imágenes) | ✅ pasa | [frames-0.json](tmux-adjunto/frames-0.json) | {"filaUser":true,"tieneBloqueImagen":true} |
+| `tmux/adjunto` | Claude contesta (dos imágenes) | ✅ pasa | [respuesta-2.png](tmux-adjunto/respuesta-2.png) | {"finMs":2496} |
+| `tmux/recarga` | el ack de suscripción dice que está procesando | ❌ falla | [frames-0.json](tmux-recarga/frames-0.json) | {"isProcessing":false,"runsInTmux":true} |
+| `tmux/recarga` | tras recargar, el indicador sigue | ❌ falla | [tras-recargar.png](tmux-recarga/tras-recargar.png) |  |
+| `visual/salidas` | arrastrar el borde izquierdo agranda el panel de Salidas | ✅ pasa | [antes-de-arrastrar.png](visual-salidas/antes-de-arrastrar.png) [panel-agrandado.png](visual-salidas/panel-agrandado.png) | {"panelAntes":320,"panelDespues":620} |
+| `visual/salidas` | arrastrar la manija entre lista y vista previa agranda la lista | ✅ pasa | [lista-agrandada.png](visual-salidas/lista-agrandada.png) | {"listaAntes":144,"listaDespues":264} |
+| `visual/salidas` | los dos anchos sobreviven a recargar la página | ✅ pasa | [despues-de-recargar.png](visual-salidas/despues-de-recargar.png) | {"panelDespues":620,"panelRecarga":620,"listaDespues":264,"listaRecarga":264} |
+| `visual/salidas` | "Pestaña nueva" abre la salida HTML renderizada en otra pestaña | ✅ pasa | [pestana-nueva.png](visual-salidas/pestana-nueva.png) | {"url":"blob:http://127.0.0.1:3001/2d972530-49eb","titulo":"Salida de prueba tvpe4w"} |
+| `visual/salidas` | el HTML abierto en la pestaña nueva no puede leer el localStorage de la app | ✅ pasa | [pestana-nueva.png](visual-salidas/pestana-nueva.png) | {"origen":"BLOQUEADO","sandbox":"allow-scripts allow-popups"} |
+
 ---
 
 ## Lectura — Fase 12, paso 4: pasada contra `:3001` (9-oct-2026, 14:43–14:53)
@@ -133,3 +141,15 @@ Correr solo los 7 escenarios en rojo, con el arnés ya arreglado:
 ```
 cd ~/cloudcli && read -rp 'usuario: ' U && read -rsp 'contraseña: ' P && echo && CLOUDCLI_USER="$U" CLOUDCLI_PASS="$P" CLOUDCLI_URL=http://127.0.0.1:3001 node e2e/correr.mjs barra/orquestador barra/estado-vivo cuota/header visual/salidas headless/pensamiento tmux/adjunto tmux/recarga --con-cuota --corrida final-3001; unset U P
 ```
+
+### Repetición de los 7 en rojo (9-oct, 15:39)
+
+Con el arnés arreglado: **71 bien, 4 mal y 26 bloqueados.** Pasan ahora `barra/orquestador`, `cuota/header`, `visual/salidas`, `headless/pensamiento` (en `:3001` el servicio sí tiene token) y `tmux/adjunto` 8/8: lo de las dos imágenes fue intermitente.
+
+Siguen en rojo, y fallan en las dos corridas:
+- `barra/estado-vivo`: esta vez ni siquiera encuentra el rótulo con el pane vivo (`rotuloConVida: null`), y no pasa a "dormida".
+- `tmux/recarga`: el ack de suscripción ahora dice `isProcessing: false` con `runsInTmux: true`, y tras recargar no vuelve el indicador.
+
+Los dos pasan en `:3901`. Lo que cambia en `:3001` es el registro de sesiones real, el socket por defecto y los hooks de Leandro. Hay que diagnosticarlos en una sesión nueva.
+
+Limpieza: 0 `e2e-*` vivas, 0 JWT en la carpeta.

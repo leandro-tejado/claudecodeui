@@ -1,0 +1,876 @@
+[
+  {
+    "t": 1791552901047,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "type": "chat.tmux-prompts"
+    }
+  },
+  {
+    "t": 1791552901152,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "tmux_prompts",
+      "prompts": [],
+      "timestamp": "2026-10-09T13:35:01.144Z"
+    }
+  },
+  {
+    "t": 1791552901301,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "type": "chat.tmux-prompts"
+    }
+  },
+  {
+    "t": 1791552901318,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "type": "chat.tmux-prompts"
+    }
+  },
+  {
+    "t": 1791552901368,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "tmux_prompts",
+      "prompts": [],
+      "timestamp": "2026-10-09T13:35:01.365Z"
+    }
+  },
+  {
+    "t": 1791552901402,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "tmux_prompts",
+      "prompts": [],
+      "timestamp": "2026-10-09T13:35:01.366Z"
+    }
+  },
+  {
+    "t": 1791552902052,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "session_upserted",
+      "sessionId": "c61c1e7b-b90d-475b-8d91-358782dd26aa",
+      "providerSessionId": "c61c1e7b-b90d-475b-8d91-358782dd26aa",
+      "provider": "claude",
+      "session": {
+        "id": "c61c1e7b-b90d-475b-8d91-358782dd26aa",
+        "summary": "Guion humo pensamiento",
+        "messageCount": 0,
+        "lastActivity": "2026-10-09T13:35:00.438Z",
+        "tmux": null
+      },
+      "project": {
+        "projectId": "6f20624f-a0db-4b13-ace6-bddcba010843",
+        "path": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
+        "fullPath": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
+        "displayName": "e2e-proyecto",
+        "isStarred": false
+      },
+      "timestamp": "2026-10-09T13:35:02.046Z"
+    }
+  },
+  {
+    "t": 1791552902505,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": {
+        "porcentaje": 3,
+        "resetsAt": 1791565200000,
+        "leidoEn": 1791552839000
+      },
+      "sevenDay": {
+        "porcentaje": 82,
+        "resetsAt": 1791734400000,
+        "leidoEn": 1791552839000
+      },
+      "cuenta": "optimum"
+    }
+  },
+  {
+    "t": 1791552902505,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": {
+        "porcentaje": 100,
+        "resetsAt": 1791567000000,
+        "leidoEn": 1791552858000
+      },
+      "sevenDay": {
+        "porcentaje": 91,
+        "resetsAt": 1791925200000,
+        "leidoEn": 1791552858000
+      },
+      "cuenta": "personal"
+    }
+  },
+  {
+    "t": 1791552903664,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "type": "chat.subscribe",
+      "sessions": [
+        {
+          "sessionId": "c61c1e7b-b90d-475b-8d91-358782dd26aa",
+          "lastSeq": 0
+        }
+      ]
+    }
+  },
+  {
+    "t": 1791552903676,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "chat_subscribed",
+      "sessionId": "c61c1e7b-b90d-475b-8d91-358782dd26aa",
+      "isProcessing": false,
+      "lastSeq": 0,
+      "pendingPermissions": [],
+      "runsInTmux": false,
+      "timestamp": "2026-10-09T13:35:03.650Z"
+    }
+  },
+  {
+    "t": 1791552904537,
+    "sentido": "out",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "type": "chat.send",
+      "sessionId": "c61c1e7b-b90d-475b-8d91-358782dd26aa",
+      "content": "¿Cuántos números primos hay entre 100 y 150? Respondé solo con el número.",
+      "clientMessageId": "local_1791552904518_hj88iw",
+      "options": {
+        "model": "sonnet",
+        "effort": "default",
+        "permissionMode": "default",
+        "toolsSettings": {
+          "allowedTools": [
+            "Edit",
+            "Bash(cd:*)",
+            "Bash(echo:*)",
+            "Bash(export:*)",
+            "Bash(which:*)",
+            "Bash(ps:*)",
+            "Bash(tmux:*)"
+          ],
+          "disallowedTools": [],
+          "skipPermissions": true
+        },
+        "skipPermissions": true,
+        "sessionSummary": "Guion humo pensamiento",
+        "attachments": []
+      }
+    }
+  },
+  {
+    "t": 1791552904567,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "message_status",
+      "sessionId": "c61c1e7b-b90d-475b-8d91-358782dd26aa",
+      "clientMessageId": "local_1791552904518_hj88iw",
+      "status": "sent",
+      "timestamp": "2026-10-09T13:35:04.541Z"
+    }
+  },
+  {
+    "t": 1791552911153,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "recursos",
+      "ram": {
+        "porcentajePct": 68.76603585735761,
+        "usadaGb": 5.332851409912109,
+        "totalGb": 7.75506591796875
+      },
+      "disco": {
+        "usadoPct": 43.19890582345814,
+        "usadoGb": 41.39405822753906,
+        "totalGb": 95.82200622558594
+      },
+      "sesionesTmux": 10,
+      "techoRam": 90
+    }
+  },
+  {
+    "t": 1791552912037,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "activity",
+      "sessionId": "c61c1e7b-b90d-475b-8d91-358782dd26aa",
+      "provider": "claude",
+      "activityKind": "thinking",
+      "messageId": "msg_011CfrkWsKnSb3193sgVvyiV",
+      "blockIndex": 0,
+      "id": "activity_22493891-c79f-4a75-ae3f-b62bec8406ee",
+      "timestamp": "2026-10-09T13:35:12.034Z",
+      "seq": 1
+    }
+  },
+  {
+    "t": 1791552914039,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "session_upserted",
+      "sessionId": "c61c1e7b-b90d-475b-8d91-358782dd26aa",
+      "providerSessionId": "c61c1e7b-b90d-475b-8d91-358782dd26aa",
+      "provider": "claude",
+      "session": {
+        "id": "c61c1e7b-b90d-475b-8d91-358782dd26aa",
+        "summary": "Guion humo pensamiento",
+        "messageCount": 0,
+        "lastActivity": "2026-10-09T13:35:10.595Z",
+        "tmux": null
+      },
+      "project": {
+        "projectId": "6f20624f-a0db-4b13-ace6-bddcba010843",
+        "path": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
+        "fullPath": "/home/leantejado/.cache/cloudcli-e2e/proyecto",
+        "displayName": "e2e-proyecto",
+        "isStarred": false
+      },
+      "timestamp": "2026-10-09T13:35:14.037Z"
+    }
+  },
+  {
+    "t": 1791552914506,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": {
+        "porcentaje": 3,
+        "resetsAt": 1791565200000,
+        "leidoEn": 1791552839000
+      },
+      "sevenDay": {
+        "porcentaje": 82,
+        "resetsAt": 1791734400000,
+        "leidoEn": 1791552839000
+      },
+      "cuenta": "optimum"
+    }
+  },
+  {
+    "t": 1791552914509,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "usage_window",
+      "fiveHour": {
+        "porcentaje": 100,
+        "resetsAt": 1791567000000,
+        "leidoEn": 1791552858000
+      },
+      "sevenDay": {
+        "porcentaje": 91,
+        "resetsAt": 1791925200000,
+        "leidoEn": 1791552858000
+      },
+      "cuenta": "personal"
+    }
+  },
+  {
+    "t": 1791552915031,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "thinking_delta",
+      "content": "Counting prim",
+      "sessionId": "c61c1e7b-b90d-475b-8d91-358782dd26aa",
+      "provider": "claude",
+      "messageId": "msg_011CfrkWsKnSb3193sgVvyiV",
+      "blockIndex": 0,
+      "id": "thinking_delta_f3d0a9df-f580-4570-81df-feff754030a6",
+      "timestamp": "2026-10-09T13:35:15.027Z",
+      "seq": 2
+    }
+  },
+  {
+    "t": 1791552915031,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "thinking_delta",
+      "content": "es between 100",
+      "sessionId": "c61c1e7b-b90d-475b-8d91-358782dd26aa",
+      "provider": "claude",
+      "messageId": "msg_011CfrkWsKnSb3193sgVvyiV",
+      "blockIndex": 0,
+      "id": "thinking_delta_4917abad-bd89-4ce5-9fa8-39fa4fd728a5",
+      "timestamp": "2026-10-09T13:35:15.028Z",
+      "seq": 3
+    }
+  },
+  {
+    "t": 1791552915031,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "thinking_delta",
+      "content": " and 150",
+      "sessionId": "c61c1e7b-b90d-475b-8d91-358782dd26aa",
+      "provider": "claude",
+      "messageId": "msg_011CfrkWsKnSb3193sgVvyiV",
+      "blockIndex": 0,
+      "id": "thinking_delta_dc6e85f2-8921-464a-b454-6382506b5688",
+      "timestamp": "2026-10-09T13:35:15.028Z",
+      "seq": 4
+    }
+  },
+  {
+    "t": 1791552915031,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "thinking_delta",
+      "content": ",",
+      "sessionId": "c61c1e7b-b90d-475b-8d91-358782dd26aa",
+      "provider": "claude",
+      "messageId": "msg_011CfrkWsKnSb3193sgVvyiV",
+      "blockIndex": 0,
+      "id": "thinking_delta_98edf2c2-a1ba-4d18-9dc0-67c09d8344e9",
+      "timestamp": "2026-10-09T13:35:15.028Z",
+      "seq": 5
+    }
+  },
+  {
+    "t": 1791552915031,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "thinking_delta",
+      "content": " I get 101, 103,",
+      "sessionId": "c61c1e7b-b90d-475b-8d91-358782dd26aa",
+      "provider": "claude",
+      "messageId": "msg_011CfrkWsKnSb3193sgVvyiV",
+      "blockIndex": 0,
+      "id": "thinking_delta_3e734c40-8223-43a7-aed0-da872b9788af",
+      "timestamp": "2026-10-09T13:35:15.028Z",
+      "seq": 6
+    }
+  },
+  {
+    "t": 1791552915033,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "thinking_delta",
+      "content": " 107, 109, 113",
+      "sessionId": "c61c1e7b-b90d-475b-8d91-358782dd26aa",
+      "provider": "claude",
+      "messageId": "msg_011CfrkWsKnSb3193sgVvyiV",
+      "blockIndex": 0,
+      "id": "thinking_delta_05513f0d-77f3-4da9-8586-fcb852a205a0",
+      "timestamp": "2026-10-09T13:35:15.028Z",
+      "seq": 7
+    }
+  },
+  {
+    "t": 1791552915035,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "thinking_delta",
+      "content": ", 127, 131, ",
+      "sessionId": "c61c1e7b-b90d-475b-8d91-358782dd26aa",
+      "provider": "claude",
+      "messageId": "msg_011CfrkWsKnSb3193sgVvyiV",
+      "blockIndex": 0,
+      "id": "thinking_delta_746c5509-4c43-4110-a273-1a4a49d432e1",
+      "timestamp": "2026-10-09T13:35:15.031Z",
+      "seq": 8
+    }
+  },
+  {
+    "t": 1791552915039,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "thinking_delta",
+      "content": "137, 139, and",
+      "sessionId": "c61c1e7b-b90d-475b-8d91-358782dd26aa",
+      "provider": "claude",
+      "messageId": "msg_011CfrkWsKnSb3193sgVvyiV",
+      "blockIndex": 0,
+      "id": "thinking_delta_4316d6be-5f0f-456e-a533-e7dd705f804b",
+      "timestamp": "2026-10-09T13:35:15.033Z",
+      "seq": 9
+    }
+  },
+  {
+    "t": 1791552915043,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "thinking_delta",
+      "content": " 149 — ",
+      "sessionId": "c61c1e7b-b90d-475b-8d91-358782dd26aa",
+      "provider": "claude",
+      "messageId": "msg_011CfrkWsKnSb3193sgVvyiV",
+      "blockIndex": 0,
+      "id": "thinking_delta_7d9650db-9095-4f8a-9afa-edc43baac9c6",
+      "timestamp": "2026-10-09T13:35:15.037Z",
+      "seq": 10
+    }
+  },
+  {
+    "t": 1791552915043,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "thinking_delta",
+      "content": "ten primes total",
+      "sessionId": "c61c1e7b-b90d-475b-8d91-358782dd26aa",
+      "provider": "claude",
+      "messageId": "msg_011CfrkWsKnSb3193sgVvyiV",
+      "blockIndex": 0,
+      "id": "thinking_delta_b2217b82-5296-48ca-ad04-5d9dcb376d08",
+      "timestamp": "2026-10-09T13:35:15.037Z",
+      "seq": 11
+    }
+  },
+  {
+    "t": 1791552915043,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "thinking_delta",
+      "content": ". I also need to add a br",
+      "sessionId": "c61c1e7b-b90d-475b-8d91-358782dd26aa",
+      "provider": "claude",
+      "messageId": "msg_011CfrkWsKnSb3193sgVvyiV",
+      "blockIndex": 0,
+      "id": "thinking_delta_08958db9-2c53-43f1-9988-711dd5d9a39e",
+      "timestamp": "2026-10-09T13:35:15.037Z",
+      "seq": 12
+    }
+  },
+  {
+    "t": 1791552915043,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "thinking_delta",
+      "content": "ief note",
+      "sessionId": "c61c1e7b-b90d-475b-8d91-358782dd26aa",
+      "provider": "claude",
+      "messageId": "msg_011CfrkWsKnSb3193sgVvyiV",
+      "blockIndex": 0,
+      "id": "thinking_delta_3cb2dc3d-50c5-4b9d-aa9f-814cb8c79e1f",
+      "timestamp": "2026-10-09T13:35:15.037Z",
+      "seq": 13
+    }
+  },
+  {
+    "t": 1791552915043,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "thinking_delta",
+      "content": " at the end about the quota,",
+      "sessionId": "c61c1e7b-b90d-475b-8d91-358782dd26aa",
+      "provider": "claude",
+      "messageId": "msg_011CfrkWsKnSb3193sgVvyiV",
+      "blockIndex": 0,
+      "id": "thinking_delta_742cb9b0-3573-4b4b-acf0-aa1b451115fa",
+      "timestamp": "2026-10-09T13:35:15.038Z",
+      "seq": 14
+    }
+  },
+  {
+    "t": 1791552915043,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "thinking_delta",
+      "content": " as",
+      "sessionId": "c61c1e7b-b90d-475b-8d91-358782dd26aa",
+      "provider": "claude",
+      "messageId": "msg_011CfrkWsKnSb3193sgVvyiV",
+      "blockIndex": 0,
+      "id": "thinking_delta_fa0dff13-e3f7-4c92-905c-272b141f13e6",
+      "timestamp": "2026-10-09T13:35:15.038Z",
+      "seq": 15
+    }
+  },
+  {
+    "t": 1791552915043,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "thinking_delta",
+      "content": " instructed.",
+      "sessionId": "c61c1e7b-b90d-475b-8d91-358782dd26aa",
+      "provider": "claude",
+      "messageId": "msg_011CfrkWsKnSb3193sgVvyiV",
+      "blockIndex": 0,
+      "id": "thinking_delta_95db9df5-c4a6-474a-9bf5-cad480b297e6",
+      "timestamp": "2026-10-09T13:35:15.038Z",
+      "seq": 16
+    }
+  },
+  {
+    "t": 1791552915043,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "thinking_delta",
+      "content": "\n\n",
+      "sessionId": "c61c1e7b-b90d-475b-8d91-358782dd26aa",
+      "provider": "claude",
+      "messageId": "msg_011CfrkWsKnSb3193sgVvyiV",
+      "blockIndex": 0,
+      "id": "thinking_delta_6dec0ed4-b16e-4891-b212-3b84c7169e40",
+      "timestamp": "2026-10-09T13:35:15.038Z",
+      "seq": 17
+    }
+  },
+  {
+    "t": 1791552915045,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "id": "45bcac99-3577-42e8-b0ee-8c797e611fe2_0",
+      "sessionId": "c61c1e7b-b90d-475b-8d91-358782dd26aa",
+      "timestamp": "2026-10-09T13:35:15.035Z",
+      "provider": "claude",
+      "kind": "thinking",
+      "content": "Counting primes between 100 and 150, I get 101, 103, 107, 109, 113, 127, 131, 137, 139, and 149 — ten primes total. I also need to add a brief note at the end about the quota, as instructed.\n\n",
+      "messageId": "msg_011CfrkWsKnSb3193sgVvyiV",
+      "blockIndex": 0,
+      "seq": 18
+    }
+  },
+  {
+    "t": 1791552915071,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "status",
+      "text": "token_budget",
+      "tokenBudget": {
+        "used": 33999,
+        "total": null,
+        "inputTokens": 33995,
+        "outputTokens": 4,
+        "cacheReadTokens": 12348,
+        "cacheCreationTokens": 21645,
+        "cacheTokens": 33993,
+        "breakdown": {
+          "input": 33995,
+          "output": 4
+        },
+        "compactAt": 245000
+      },
+      "sessionId": "c61c1e7b-b90d-475b-8d91-358782dd26aa",
+      "provider": "claude",
+      "id": "status_964b1a6a-902a-45ae-a449-548397a4de84",
+      "timestamp": "2026-10-09T13:35:15.044Z",
+      "seq": 19
+    }
+  },
+  {
+    "t": 1791552915081,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "stream_end",
+      "sessionId": "c61c1e7b-b90d-475b-8d91-358782dd26aa",
+      "provider": "claude",
+      "messageId": "msg_011CfrkWsKnSb3193sgVvyiV",
+      "blockIndex": 0,
+      "id": "stream_end_0357edbd-282c-4c40-b5da-25cfc0db2093",
+      "timestamp": "2026-10-09T13:35:15.046Z",
+      "seq": 20
+    }
+  },
+  {
+    "t": 1791552915086,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "stream_delta",
+      "content": "10",
+      "sessionId": "c61c1e7b-b90d-475b-8d91-358782dd26aa",
+      "provider": "claude",
+      "messageId": "msg_011CfrkWsKnSb3193sgVvyiV",
+      "blockIndex": 1,
+      "id": "stream_delta_044b071a-98ae-4dbd-a593-87c3803d6beb",
+      "timestamp": "2026-10-09T13:35:15.064Z",
+      "seq": 21
+    }
+  },
+  {
+    "t": 1791552915087,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "stream_delta",
+      "content": "\n\nCuota:",
+      "sessionId": "c61c1e7b-b90d-475b-8d91-358782dd26aa",
+      "provider": "claude",
+      "messageId": "msg_011CfrkWsKnSb3193sgVvyiV",
+      "blockIndex": 1,
+      "id": "stream_delta_23a1a230-42ab-4cc1-9ad3-98907d3c310f",
+      "timestamp": "2026-10-09T13:35:15.064Z",
+      "seq": 22
+    }
+  },
+  {
+    "t": 1791552915088,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "stream_delta",
+      "content": " 7d al",
+      "sessionId": "c61c1e7b-b90d-475b-8d91-358782dd26aa",
+      "provider": "claude",
+      "messageId": "msg_011CfrkWsKnSb3193sgVvyiV",
+      "blockIndex": 1,
+      "id": "stream_delta_8d3069de-ba8d-4a65-b873-6c7e7b21fa5b",
+      "timestamp": "2026-10-09T13:35:15.064Z",
+      "seq": 23
+    }
+  },
+  {
+    "t": 1791552915088,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "stream_delta",
+      "content": " 82% con 70% de",
+      "sessionId": "c61c1e7b-b90d-475b-8d91-358782dd26aa",
+      "provider": "claude",
+      "messageId": "msg_011CfrkWsKnSb3193sgVvyiV",
+      "blockIndex": 1,
+      "id": "stream_delta_727a2efb-779e-448e-ba64-68da1d6b7a61",
+      "timestamp": "2026-10-09T13:35:15.064Z",
+      "seq": 24
+    }
+  },
+  {
+    "t": 1791552915088,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "stream_delta",
+      "content": " la semana transcurrida",
+      "sessionId": "c61c1e7b-b90d-475b-8d91-358782dd26aa",
+      "provider": "claude",
+      "messageId": "msg_011CfrkWsKnSb3193sgVvyiV",
+      "blockIndex": 1,
+      "id": "stream_delta_f5ba2e6e-db28-4eb5-9a51-d3efad7af926",
+      "timestamp": "2026-10-09T13:35:15.064Z",
+      "seq": 25
+    }
+  },
+  {
+    "t": 1791552915088,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "stream_delta",
+      "content": ", proyecta 117%",
+      "sessionId": "c61c1e7b-b90d-475b-8d91-358782dd26aa",
+      "provider": "claude",
+      "messageId": "msg_011CfrkWsKnSb3193sgVvyiV",
+      "blockIndex": 1,
+      "id": "stream_delta_5c99707a-85ed-40dd-9c8d-0fee315442b1",
+      "timestamp": "2026-10-09T13:35:15.064Z",
+      "seq": 26
+    }
+  },
+  {
+    "t": 1791552915089,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "stream_delta",
+      "content": " al reset en",
+      "sessionId": "c61c1e7b-b90d-475b-8d91-358782dd26aa",
+      "provider": "claude",
+      "messageId": "msg_011CfrkWsKnSb3193sgVvyiV",
+      "blockIndex": 1,
+      "id": "stream_delta_532869f5-9c6d-4ec0-a4c6-7d31fccb14ae",
+      "timestamp": "2026-10-09T13:35:15.064Z",
+      "seq": 27
+    }
+  },
+  {
+    "t": 1791552915089,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "stream_delta",
+      "content": " 50 h.",
+      "sessionId": "c61c1e7b-b90d-475b-8d91-358782dd26aa",
+      "provider": "claude",
+      "messageId": "msg_011CfrkWsKnSb3193sgVvyiV",
+      "blockIndex": 1,
+      "id": "stream_delta_a327bc3e-200a-4a92-8d1b-a206795ca934",
+      "timestamp": "2026-10-09T13:35:15.065Z",
+      "seq": 28
+    }
+  },
+  {
+    "t": 1791552915089,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "stream_delta",
+      "content": " Con",
+      "sessionId": "c61c1e7b-b90d-475b-8d91-358782dd26aa",
+      "provider": "claude",
+      "messageId": "msg_011CfrkWsKnSb3193sgVvyiV",
+      "blockIndex": 1,
+      "id": "stream_delta_c5437a01-a739-4d34-a50d-e90555172c16",
+      "timestamp": "2026-10-09T13:35:15.065Z",
+      "seq": 29
+    }
+  },
+  {
+    "t": 1791552915089,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "stream_delta",
+      "content": "viene bajar el rit",
+      "sessionId": "c61c1e7b-b90d-475b-8d91-358782dd26aa",
+      "provider": "claude",
+      "messageId": "msg_011CfrkWsKnSb3193sgVvyiV",
+      "blockIndex": 1,
+      "id": "stream_delta_3d9c9265-c527-4cf2-a452-14d2a9baafa8",
+      "timestamp": "2026-10-09T13:35:15.065Z",
+      "seq": 30
+    }
+  },
+  {
+    "t": 1791552915089,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "stream_delta",
+      "content": "mo o decidir el",
+      "sessionId": "c61c1e7b-b90d-475b-8d91-358782dd26aa",
+      "provider": "claude",
+      "messageId": "msg_011CfrkWsKnSb3193sgVvyiV",
+      "blockIndex": 1,
+      "id": "stream_delta_42513d87-1a90-48cd-b73c-0af74f8df306",
+      "timestamp": "2026-10-09T13:35:15.065Z",
+      "seq": 31
+    }
+  },
+  {
+    "t": 1791552915089,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "stream_delta",
+      "content": " uso extra.",
+      "sessionId": "c61c1e7b-b90d-475b-8d91-358782dd26aa",
+      "provider": "claude",
+      "messageId": "msg_011CfrkWsKnSb3193sgVvyiV",
+      "blockIndex": 1,
+      "id": "stream_delta_01d83296-206c-4e4a-a7a3-c0f963f70f70",
+      "timestamp": "2026-10-09T13:35:15.065Z",
+      "seq": 32
+    }
+  },
+  {
+    "t": 1791552915089,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "id": "6324cd5c-ce3c-4f71-ad89-149b7bdc6f94_0",
+      "sessionId": "c61c1e7b-b90d-475b-8d91-358782dd26aa",
+      "timestamp": "2026-10-09T13:35:15.048Z",
+      "provider": "claude",
+      "kind": "text",
+      "role": "assistant",
+      "content": "10\n\nCuota: 7d al 82% con 70% de la semana transcurrida, proyecta 117% al reset en 50 h. Conviene bajar el ritmo o decidir el uso extra.",
+      "messageId": "msg_011CfrkWsKnSb3193sgVvyiV",
+      "blockIndex": 0,
+      "seq": 33
+    }
+  },
+  {
+    "t": 1791552915089,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "status",
+      "text": "token_budget",
+      "tokenBudget": {
+        "used": 33999,
+        "total": null,
+        "inputTokens": 33995,
+        "outputTokens": 4,
+        "cacheReadTokens": 12348,
+        "cacheCreationTokens": 21645,
+        "cacheTokens": 33993,
+        "breakdown": {
+          "input": 33995,
+          "output": 4
+        },
+        "compactAt": 245000
+      },
+      "sessionId": "c61c1e7b-b90d-475b-8d91-358782dd26aa",
+      "provider": "claude",
+      "id": "status_b2b5190d-419a-4bd0-9069-77499eb58989",
+      "timestamp": "2026-10-09T13:35:15.065Z",
+      "seq": 34
+    }
+  },
+  {
+    "t": 1791552915089,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "stream_end",
+      "sessionId": "c61c1e7b-b90d-475b-8d91-358782dd26aa",
+      "provider": "claude",
+      "messageId": "msg_011CfrkWsKnSb3193sgVvyiV",
+      "blockIndex": 1,
+      "id": "stream_end_edc732df-4120-4a04-95a3-c1baa1b89671",
+      "timestamp": "2026-10-09T13:35:15.065Z",
+      "seq": 35
+    }
+  },
+  {
+    "t": 1791552915152,
+    "sentido": "in",
+    "url": "ws://127.0.0.1:3001/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "complete",
+      "provider": "claude",
+      "sessionId": "c61c1e7b-b90d-475b-8d91-358782dd26aa",
+      "actualSessionId": "c61c1e7b-b90d-475b-8d91-358782dd26aa",
+      "exitCode": 0,
+      "success": true,
+      "aborted": false,
+      "id": "complete_f79f68f3-64f1-4edf-b3d2-6a5715aa61e8",
+      "timestamp": "2026-10-09T13:35:15.097Z",
+      "seq": 36
+    }
+  }
+]

@@ -634,8 +634,8 @@ Fase 1 (arnés) → Fase 2 (línea base)
 **Fases completadas:** 1 a 11. De la Fase 12: pasos 1 a 3. El paso 4 está a medias.
 **Fase actual:** 12, paso 4 (`:3001`).
 **Próximo paso exacto (sesión nueva):**
-1. Leandro vuelve a correr en `:3001` los 7 escenarios en rojo, con el comando que está al pie de `e2e/evidencia/final-3001/lectura.md`. Cuatro eran del arnés, ya arreglado.
-2. Si `barra/estado-vivo`, `tmux/adjunto` (dos imágenes) o `tmux/recarga` siguen en rojo, diagnosticarlos contra `:3001`. En `:3901` pasan. Lo que distingue a `:3001`: el registro de sesiones real, el socket por defecto, los hooks de Leandro y su base de datos.
+1. ~~Repetir en `:3001` los 7 en rojo~~ hecho el 09-oct a las 15:39: 71 bien, 4 mal. Pasan los cuatro del arnés y `tmux/adjunto`, que había sido intermitente.
+2. Diagnosticar contra `:3001` los dos que fallan en las dos corridas: `barra/estado-vivo` y `tmux/recarga` (detalle en `e2e/evidencia/final-3001/lectura.md`). En `:3901` pasan. Lo que distingue a `:3001`: el registro de sesiones real, el socket por defecto, los hooks de Leandro y su base de datos.
 3. Checklist de los 8 puntos en el celular, por AskUserQuestion.
 4. Commit, push y plan en `completado`.
 
