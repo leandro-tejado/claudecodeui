@@ -515,7 +515,7 @@ Las sesiones nuevas del orquestador llegan por polling de 3 s sobre `~/.cache/ao
 - [pass] Unitarios verdes | valida: `NODE_ENV=test npx vitest run && NODE_ENV=test npm test` — 09-oct: cliente 813/813 (con `tmuxActivityPoll`); 08-oct: server 934 bien, 0 mal y 1 omitido
 - [pass] Suite completa verde en `:3001` | valida: `CLOUDCLI_URL=http://127.0.0.1:3001 node e2e/correr.mjs todo` (:3001 escucha solo en local) — 09-oct: 75 bien, 0 mal y 26 bloqueados (los del CLI falso, verdes en `:3902`), tras tres repeticiones. Las fallas eran del arnés salvo una de producto, el indicador de tmux que el sondeo sacaba a los 10 s (`fd54e6b8`). Ver `e2e/evidencia/final-3001/lectura.md`
 - [pass] Ningún token ni contraseña en disco después de la corrida en `:3001` — 09-oct: 0 JWT en `final-3001/`, ningún archivo de token del 3001 en `/tmp/cloudcli-e2e`; el arnés lee el login del entorno y lo borra al importar (`c215ade5`). Revalidado al terminar la corrida: | valida: `grep -rn "$CLOUDCLI_USER" /tmp/cloudcli-e2e e2e/ || true` vacío, y sin archivos de token del 3001
-- [fail] Cero `e2e-*` vivas y el proyecto de prueba archivado — 09-oct: 0 vivas en los dos sockets; el archivado en `:3001` NO quedaba: el server lo desarchivaba porque el `claude` del pane escribía al morir. Cierre arreglado (`1e85c167`, verificado en `:3901`); falta `--solo-cierre` en `:3001` | valida: `tmux ls | grep -c '^e2e-'` = 0
+- [pass] Cero `e2e-*` vivas y el proyecto de prueba archivado — 09-oct: 0 vivas en los dos sockets. En `:3001` el server lo desarchivaba porque el `claude` del pane escribía al morir; con el cierre arreglado (`1e85c167`), `--solo-cierre` lo dejó en `isArchived = 1` (14:58:25 UTC) y seguía así un minuto después | valida: `tmux ls | grep -c '^e2e-'` = 0 y `isArchived` en `~/.cloudcli/auth.db`
 - [fail] Leandro confirma los 8 puntos en el celular | valida: AskUserQuestion
 - [fail] Push hecho | valida: `git fetch && git status -sb` sin `ahead` — lo de `:3901` está pusheado; falta lo de `:3001`
 
@@ -634,7 +634,7 @@ Fase 1 (arnés) → Fase 2 (línea base)
 **Fases completadas:** 1 a 11. De la Fase 12: pasos 1 a 4 (suite de `:3001` en verde el 09-oct, 75/0/26).
 **Fase actual:** 12, cierre.
 **Próximo paso exacto (sesión nueva):**
-1. Leandro corre en ttyd el cierre solo: `CLOUDCLI_URL=http://127.0.0.1:3001 node e2e/correr.mjs --solo-cierre` (con el login como en las pasadas). Tiene que imprimir `proyecto archivado`; confirmarlo con `isArchived = 1` en `~/.cloudcli/auth.db` (solo lectura).
+1. ~~Archivado en `:3001`~~ hecho el 09-oct (`--solo-cierre`, `isArchived = 1`).
 2. Checklist de los 8 puntos en el celular, por AskUserQuestion.
 3. Commit, push y plan en `completado`; `wt rm` de los worktrees mergeados.
 
