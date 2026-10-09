@@ -135,6 +135,62 @@
   @media (prefers-reduced-transparency:reduce){
     .cab,.menu-aj{background:var(--surface);backdrop-filter:none;-webkit-backdrop-filter:none}
   }
+
+  /* 7. proyectos y sesiones */
+  .proy{padding:4px 0 8px}
+  .proy-cab{display:flex;align-items:center;gap:10px;height:36px;padding:0 14px;font-size:13px;font-weight:600;cursor:pointer}
+  .proy-cab:hover{background:var(--surface-3)}
+  .mono{width:22px;height:22px;border-radius:6px;display:grid;place-items:center;font-size:11px;font-weight:700;background:var(--surface-3);color:var(--muted);flex:none}
+  .proy.activo .mono{background:var(--primary);color:#fff}
+  .cuenta{margin-left:auto;font-size:10px;font-weight:700;color:var(--faint);letter-spacing:.04em}
+  .cnt{margin-left:auto;display:flex;align-items:center;gap:6px;font-size:11px;color:var(--faint);font-weight:400}
+  .ses{display:flex;align-items:center;gap:10px;height:32px;padding:0 14px 0 46px;font-size:13px;color:var(--ink);cursor:pointer;position:relative}
+  .ses:hover{background:var(--surface-3)}
+  .ses.sel{background:var(--primary-tint)}
+  .ses .t{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .ses.hija{padding-left:70px;height:28px;font-size:12px;color:var(--muted)}
+  .ses.hija::before{content:"";position:absolute;left:53px;top:0;bottom:50%;width:11px;border-left:1px solid var(--line-2);border-bottom:1px solid var(--line-2);border-bottom-left-radius:6px}
+  .ses.hija.ult::after{display:none}
+  .ses.hija:not(.ult)::after{content:"";position:absolute;left:53px;top:50%;bottom:-0px;border-left:1px solid var(--line-2)}
+  .ses.madre .t{font-weight:600}
+  .ses .rol{font-size:10px;color:var(--faint);text-transform:uppercase;letter-spacing:.06em}
+  :root{--line-2:#C7D0DE}:root[data-theme="dark"]{--line-2:#38435F}
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--line-2:#38435F}}
+  .giro{width:8px;height:8px;border-radius:50%;border:1.5px solid var(--primary);border-top-color:transparent;animation:girar 1s linear infinite;flex:none}
+  @keyframes girar{to{transform:rotate(360deg)}}
+  @media (prefers-reduced-motion:reduce){.giro{animation:none;border-top-color:var(--primary)}}
+  .leyenda{display:flex;gap:16px;flex-wrap:wrap;margin-top:12px;font-size:12px;color:var(--muted)}
+  .leyenda span{display:flex;align-items:center;gap:6px}
+
+  /* 8. servicios */
+  .serv{padding:18px 22px;overflow:auto;flex:1}
+  .grp{display:flex;align-items:center;gap:8px;margin:14px 0 6px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+  .grp:first-child{margin-top:0}
+  .srv{display:grid;grid-template-columns:10px minmax(110px,1.3fr) 70px minmax(120px,1.6fr) auto;align-items:center;gap:12px;min-height:40px;padding:0 10px;border-radius:8px;font-size:13px}
+  .srv:hover{background:var(--surface-2)}
+  .srv .p{font-variant-numeric:tabular-nums;color:var(--muted)}
+  .srv .a{color:var(--faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .pill{font-size:11px;padding:2px 8px;border-radius:10px;background:var(--surface-3);color:var(--muted);white-space:nowrap}
+  .pill.pub{background:color-mix(in srgb,var(--warn) 18%,transparent);color:var(--warn)}
+  .srv .mem{font-variant-numeric:tabular-nums;color:var(--faint);font-size:12px;text-align:right}
+  @media (max-width:760px){.srv{grid-template-columns:10px 1fr auto}.srv .a,.srv .p{display:none}}
+
+  /* 9. medidor completo */
+  .medidor{width:340px;max-width:calc(100% - 24px);padding:14px 16px;border-radius:14px;background:var(--chrome);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border:1px solid var(--line);box-shadow:var(--shadow);position:absolute;right:12px;top:54px;z-index:5}
+  .medidor h4{margin:14px 0 8px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+  .medidor h4:first-child{margin-top:0}
+  .m{display:grid;grid-template-columns:72px 1fr 58px;align-items:center;gap:10px;height:24px;font-size:12px;color:var(--muted)}
+  .m b{white-space:nowrap;font-weight:600;color:var(--ink);text-align:right;font-variant-numeric:tabular-nums}
+  .bar{height:5px;border-radius:3px;background:var(--surface-3);position:relative;overflow:hidden}
+  .bar::after{content:"";position:absolute;inset:0 auto 0 0;width:calc(var(--p)*1%);background:var(--c,var(--good));border-radius:3px}
+  .bar.w{--c:var(--warn)}.bar.b{--c:var(--bad)}
+  .m small{grid-column:2/4;color:var(--faint);font-size:11px;margin-top:-6px}
+  .rec{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-top:14px}
+  .rec div{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:13px}
+  .rec h5{margin:0 0 6px;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+  .rec ul{margin:0;padding-left:16px;color:var(--ink)}
+  .ctx{width:18px;height:18px;border-radius:50%;--p:46;background:conic-gradient(var(--primary) calc(var(--p)*1%),var(--surface-3) 0);position:relative;flex:none}
+  .ctx::after{content:"";position:absolute;inset:3px;border-radius:50%;background:var(--surface)}
 </style>
 </head>
 <body>
@@ -154,6 +210,7 @@
     <symbol id="i-enviar" viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></symbol>
     <symbol id="i-clip" viewBox="0 0 24 24"><path d="M21 11.5l-8.6 8.6a5 5 0 01-7-7l8.6-8.6a3.4 3.4 0 014.9 4.9l-8.6 8.6a1.7 1.7 0 01-2.4-2.4l7.9-7.9"/></symbol>
     <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></symbol>
+    <symbol id="i-red" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="7" rx="2"/><rect x="3" y="14" width="18" height="7" rx="2"/><path d="M7 6.5h.01M7 17.5h.01"/></symbol>
     <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
     <symbol id="i-mas3" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></symbol>
   </defs>
@@ -328,6 +385,109 @@
       </aside>
       <div style="position:absolute;inset:0;background:rgb(0 0 0/.35);z-index:1"></div>
     </div>
+  </div>
+</section>
+
+
+<!-- 7. PROYECTOS Y SESIONES -->
+<section data-escena="7">
+  <p class="rotulo">7 · Proyectos, sesiones y agentes hijos <span class="info" tabindex="0" data-tip="Cada proyecto es un grupo con su monograma y su carpeta. Las sesiones cuelgan de él. Los agentes que lanza una sesión cuelgan de ella, con una línea.">i</span></p>
+  <div class="marco" style="height:560px">
+    <aside class="barra abierta" style="width:300px">
+      <div class="fila"><svg><use href="#i-logo"/></svg><span class="txt">Consola</span></div>
+      <div class="fila"><svg><use href="#i-buscar"/></svg><span class="txt">Buscar</span></div>
+      <div class="grupo" style="overflow:auto">
+        <div class="proy activo">
+          <div class="proy-cab"><span class="mono">C</span>cloudcli<span class="cnt">4</span></div>
+          <div class="ses madre sel"><span class="giro"></span><span class="t">ejecutar rediseño</span><span class="rol">hace 3 min</span></div>
+          <div class="ses hija"><span class="giro"></span><span class="t">fase 2 · cabecera y cuota</span></div>
+          <div class="ses hija"><span class="giro"></span><span class="t">fase 3 · barra lateral</span></div>
+          <div class="ses hija ult"><span class="estado est-libre"></span><span class="t">fase 4 · compositor</span></div>
+          <div class="ses"><span class="estado est-espera"></span><span class="t">tmux en vivo</span></div>
+          <div class="ses"><span class="estado est-libre"></span><span class="t">cuota</span></div>
+        </div>
+        <div class="proy">
+          <div class="proy-cab"><span class="mono">O</span>optimum<span class="cnt"><span class="estado est-pensando" style="opacity:1"></span>3</span></div>
+        </div>
+        <div class="proy">
+          <div class="proy-cab"><span class="mono">N</span>app-norte<span class="cnt">1</span></div>
+        </div>
+        <div class="proy">
+          <div class="proy-cab"><span class="mono">F</span>fiesta-music<span class="cnt">2</span></div>
+        </div>
+        <div class="proy">
+          <div class="proy-cab"><span class="mono">S</span>servidor-code<span class="cnt">0</span></div>
+        </div>
+      </div>
+      <div class="pie"><div class="fila"><svg><use href="#i-mas"/></svg><span class="txt">Nuevo proyecto</span></div><div class="fila"><svg><use href="#i-aj"/></svg><span class="txt">Ajustes</span></div></div>
+    </aside>
+    <div class="col">
+      <div class="cab"><div class="titulo">ejecutar rediseño<small>cloudcli · 3 agentes</small></div><span class="chip">P</span><div class="anillo" style="--p:83;--c:var(--warn)"></div><button class="btn-ico" aria-label="Archivos"><svg><use href="#i-panel"/></svg></button></div>
+      <div class="cuerpo"><div class="chat"><div class="hilo"><div class="msg-c">Lancé tres agentes en paralelo<span class="cursor"></span></div></div><div class="comp"><span class="campo">Escribe…</span><button class="enviar" aria-label="Enviar"><svg><use href="#i-enviar"/></svg></button></div></div></div>
+    </div>
+  </div>
+  <div class="leyenda">
+    <span><span class="mono" style="background:var(--primary);color:#fff">C</span>proyecto abierto</span>
+    <span><span class="mono">O</span>proyecto plegado: cuenta y el peor estado</span>
+    <span><span class="giro"></span>trabajando</span>
+    <span><span class="estado est-espera" style="opacity:1"></span>espera tu respuesta</span>
+    <span><span class="estado est-libre" style="opacity:1"></span>libre</span>
+  </div>
+</section>
+
+<!-- 8. SERVICIOS -->
+<section data-escena="8">
+  <p class="rotulo">8 · Servicios <span class="info" tabindex="0" data-tip="Lo que escucha el VPS: puerto, quién lo atiende y desde dónde se entra. Agrupado por exposición.">i</span></p>
+  <div class="marco" style="height:600px">
+    <aside class="barra"><div class="fila"><svg><use href="#i-logo"/></svg></div><div class="fila"><svg><use href="#i-buscar"/></svg></div><div class="grupo"><div class="fila"><svg><use href="#i-carpeta"/></svg></div><div class="fila sel"><svg><use href="#i-red"/></svg></div></div><div class="pie"><div class="fila"><svg><use href="#i-mas"/></svg></div><div class="fila"><svg><use href="#i-aj"/></svg></div></div></aside>
+    <div class="col">
+      <div class="cab"><div class="titulo">Servicios</div><span class="num" style="color:var(--muted)">RAM 5,2/7,8 GB</span><span class="num" style="color:var(--muted)">Disco 44 %</span></div>
+      <div class="serv">
+        <div class="grp"><span class="estado est-espera" style="opacity:1"></span>Público (internet)</div>
+        <div class="srv"><span class="estado est-libre" style="opacity:1"></span><span>Norte · webhook Fathom</span><span class="p">8443</span><span class="a">/ y /fathom-webhook</span><span class="pill pub">Funnel</span></div>
+        <div class="grp">Tailnet</div>
+        <div class="srv"><span class="estado est-libre" style="opacity:1"></span><span>servidor-code</span><span class="p">443</span><span class="a">→ :3100</span><span class="pill">tailnet</span></div>
+        <div class="srv"><span class="estado est-libre" style="opacity:1"></span><span>Norte</span><span class="p">8444</span><span class="a">→ :3200</span><span class="pill">tailnet</span></div>
+        <div class="srv"><span class="estado est-libre" style="opacity:1"></span><span>Servicio :3300</span><span class="p">8445</span><span class="a">→ :3300</span><span class="pill">tailnet</span></div>
+        <div class="srv"><span class="estado est-libre" style="opacity:1"></span><span>CloudCLI</span><span class="p">8446</span><span class="a">→ :3001</span><span class="pill">tailnet</span></div>
+        <div class="srv"><span class="estado est-libre" style="opacity:1"></span><span>Terminal (ttyd)</span><span class="p">10000</span><span class="a">→ :7681</span><span class="pill">tailnet</span></div>
+        <div class="grp">Solo local</div>
+        <div class="srv"><span class="estado est-libre" style="opacity:1"></span><span>Estudio</span><span class="p">3101</span><span class="a">servidor-code-estudio</span><span class="pill">local</span></div>
+        <div class="srv"><span class="estado est-libre" style="opacity:1"></span><span>Syncthing</span><span class="p">8384</span><span class="a">panel</span><span class="pill">local</span></div>
+        <div class="srv"><span class="estado est-dormida" style="opacity:1"></span><span>Sin nombre</span><span class="p">9000</span><span class="a">sin servicio asociado</span><span class="pill">local</span></div>
+      </div>
+    </div>
+  </div>
+  <p class="hint">Un clic en un servicio abre su puerto; el menú ⋯ reinicia o muestra el log.</p>
+</section>
+
+<!-- 9. MEDIDOR COMPLETO -->
+<section data-escena="9">
+  <p class="rotulo">9 · Medidor completo <span class="info" tabindex="0" data-tip="Todo lo que mide va dentro del anillo de la cabecera. En la cabecera solo queda el anillo del peor valor.">i</span></p>
+  <div class="marco" style="height:520px">
+    <aside class="barra"><div class="fila"><svg><use href="#i-logo"/></svg></div><div class="fila"><svg><use href="#i-buscar"/></svg></div><div class="grupo"><div class="fila sel"><svg><use href="#i-carpeta"/></svg></div></div><div class="pie"><div class="fila"><svg><use href="#i-mas"/></svg></div><div class="fila"><svg><use href="#i-aj"/></svg></div></div></aside>
+    <div class="col">
+      <div class="cab"><div class="titulo">rediseño vista<small>cloudcli</small></div><span class="chip">P</span><div class="anillo" style="--p:83;--c:var(--warn);outline:2px solid var(--primary-tint);outline-offset:2px"></div></div>
+      <div class="cuerpo"><div class="chat"><div class="comp"><button class="btn-ico" aria-label="Adjuntar"><svg><use href="#i-clip"/></svg></button><span class="campo">Escribe…</span><span class="ctx" title="Contexto 46 %"></span><button class="enviar" aria-label="Enviar"><svg><use href="#i-enviar"/></svg></button></div></div></div>
+      <div class="medidor">
+        <h4>Cuenta personal</h4>
+        <div class="m"><span>5 horas</span><div class="bar" style="--p:12"></div><b>12 %</b></div>
+        <div class="m"><span>Semanal</span><div class="bar w" style="--p:83"></div><b>83 %</b></div>
+        <div class="m"><small>Resetea el lun 06:00</small></div>
+        <h4>Cuenta Optimum</h4>
+        <div class="m"><span>5 horas</span><div class="bar" style="--p:31"></div><b>31 %</b></div>
+        <div class="m"><span>Semanal</span><div class="bar" style="--p:44"></div><b>44 %</b></div>
+        <h4>Esta sesión</h4>
+        <div class="m"><span>Contexto</span><div class="bar" style="--p:46"></div><b>46 %</b></div>
+        <h4>Servidor</h4>
+        <div class="m"><span>RAM</span><div class="bar w" style="--p:67"></div><b>5,2 GB</b></div>
+        <div class="m"><span>Disco</span><div class="bar" style="--p:44"></div><b>42 GB</b></div>
+      </div>
+    </div>
+  </div>
+  <div class="rec">
+    <div><h5>Dónde vive cada cosa</h5><ul><li>Cabecera: un anillo, el valor más alto.</li><li>Compositor: anillo chico de contexto.</li><li>Medidor: todo lo demás.</li></ul></div>
+    <div><h5>Qué recomiendo quitar</h5><ul><li>Los dos anillos por cuenta a la vista: queda el chip P/O.</li><li>RAM y disco siempre visibles: solo suben a la cabecera si pasan 85 %.</li><li>«Dato real» y «resetea en»: dentro del medidor.</li></ul></div>
   </div>
 </section>
 
