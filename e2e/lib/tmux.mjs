@@ -10,15 +10,30 @@ import { abrirSesion } from './chat.mjs';
 const REGISTRO = REGISTRO_SESIONES;
 export const TRANSCRIPTS = path.join(os.homedir(), '.claude/projects', PROYECTO.replace(/[^a-zA-Z0-9]/g, '-'));
 
-export function sidDeRegistro(nombre) {
-  try { return JSON.parse(fs.readFileSync(REGISTRO, 'utf8'))[nombre]?.session_id ?? null; } catch { return null; }
+// `#{session_created}` de la sesión de tmux: es lo que el hook guarda como
+// `creada` y lo que distingue esta sesión de otra anterior con el mismo nombre.
+function creadaTmux(nombre) {
+  try { return Number(execFileSync('tmux', ['display-message', '-p', '-t', `=${nombre}:`, '#{session_created}'], { encoding: 'utf8' }).trim()) || null; } catch { return null; }
+}
+
+// Solo vale el sid que escribió el hook de ESTA sesión (o que se leyó de su
+// proceso). Contra :3001 el registro real guarda entradas viejas con el mismo
+// nombre (`e2e-estado-ejecutora-1` de una corrida anterior, 9-oct): sin
+// comparar `creada`, se abría la sesión vieja y el turno iba a la nueva.
+export function sidDeRegistro(nombre, creada = creadaTmux(nombre)) {
+  try {
+    const e = JSON.parse(fs.readFileSync(REGISTRO, 'utf8'))[nombre];
+    if (!e?.session_id || creada === null || e.creada !== creada) return null;
+    return e.hook_ts || e.sid_fuente === 'proceso' ? e.session_id : null;
+  } catch { return null; }
 }
 
 // El hook SessionStart escribe el session_id en el registro unos segundos después de crear.
 export async function esperarSid(nombre, topeMs = 60_000) {
   const t0 = Date.now();
+  const creada = creadaTmux(nombre);
   while (Date.now() - t0 < topeMs) {
-    const sid = sidDeRegistro(nombre);
+    const sid = sidDeRegistro(nombre, creada);
     if (sid) return sid;
     await new Promise((r) => setTimeout(r, 500));
   }

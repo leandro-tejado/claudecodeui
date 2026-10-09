@@ -13,6 +13,7 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { spawnSync } from 'node:child_process';
 import { EVIDENCIA, PREFIJO, PROYECTO, REPO, puertoDeEscenario, taparTokens, tokenDe } from './lib/config.mjs';
 import { abrir } from './lib/navegador.mjs';
 import { gobernador, teardown } from './sesiones.mjs';
@@ -215,7 +216,19 @@ if (contraReal) {
       fs.renameSync(`${rutaHib}.tmp`, rutaHib);
     }
   } catch { /* sin hibernadas.json */ }
-  console.log(`cierre :3001 — proyecto ${archivado ? 'archivado' : 'NO archivado (revisar a mano)'}, ${sacadas} e2e-* sacadas de hibernadas.json`);
+  // Las entradas e2e-* del registro real (`sesiones.json`) sin tmux vivo: una
+  // vieja con el mismo nombre le daba a la corrida siguiente un session_id
+  // ajeno (9-oct). Se sacan con el candado del hook, vía sesiones.py.
+  const py = `import sys, subprocess; sys.path.insert(0, sys.argv[1]); import sesiones as s
+vivas = set(subprocess.run(['tmux', 'list-sessions', '-F', '#{session_name}'], capture_output=True, text=True).stdout.split())
+with s._candado():
+    reg = s.cargar_previo(); fuera = [k for k in reg if k.startswith(sys.argv[2]) and k not in vivas]
+    for k in fuera: del reg[k]
+    if fuera: s._escribir(reg)
+print(len(fuera))`;
+  const r = spawnSync('python3', ['-c', py, path.join(os.homedir(), 'workspace-leandro/.claude/bin'), PREFIJO], { encoding: 'utf8' });
+  const sacadasReg = r.status === 0 ? r.stdout.trim() : `error (${r.stderr.trim().split('\n').at(-1)})`;
+  console.log(`cierre :3001 — proyecto ${archivado ? 'archivado' : 'NO archivado (revisar a mano)'}, ${sacadas} e2e-* sacadas de hibernadas.json, ${sacadasReg} de sesiones.json`);
 }
 
 const fallas = filas.filter((f) => f.resultado === 'falla').length;

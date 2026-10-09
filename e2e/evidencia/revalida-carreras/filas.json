@@ -1,0 +1,55 @@
+[
+  {
+    "escenario": "barra/estado-vivo",
+    "nombre": "con el tmux vivo, la fila NO dice \"dormida\"",
+    "resultado": "pasa",
+    "evidencia": [
+      "barra-estado-vivo/tmux-vivo.png"
+    ],
+    "datos": {
+      "rotuloConVida": "libre"
+    },
+    "ms": 10900
+  },
+  {
+    "escenario": "barra/estado-vivo",
+    "nombre": "al matar el pane, la fila pasa a \"dormida\" sin recargar en ≤ 25000 ms",
+    "resultado": "pasa",
+    "evidencia": [
+      "barra-estado-vivo/antes-dormir.png",
+      "barra-estado-vivo/despues-dormir.png"
+    ],
+    "datos": {
+      "msHastaDormida": 947,
+      "topeMs": 25000,
+      "dormidaOk": true,
+      "nombre": "e2e-estado-ejecutora-1",
+      "sid": "ed361b61-2e25-4f54-b4d2-df181286a57c"
+    },
+    "ms": 10900
+  },
+  {
+    "escenario": "tmux/recarga",
+    "nombre": "el ack de suscripción dice que está procesando",
+    "resultado": "pasa",
+    "evidencia": [
+      "tmux-recarga/frames-0.json"
+    ],
+    "datos": {
+      "isProcessing": true,
+      "runsInTmux": true,
+      "msHastaAck": null,
+      "turnoCerradoAntesDeRecargar": false
+    },
+    "ms": 79051
+  },
+  {
+    "escenario": "tmux/recarga",
+    "nombre": "tras recargar, el indicador sigue",
+    "resultado": "pasa",
+    "evidencia": [
+      "tmux-recarga/tras-recargar.png"
+    ],
+    "ms": 79051
+  }
+]
