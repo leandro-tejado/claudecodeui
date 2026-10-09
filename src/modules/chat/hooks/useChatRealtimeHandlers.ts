@@ -336,6 +336,13 @@ export function useChatRealtimeHandlers({
           if (held) {
             onSessionIdle?.(sid);
           }
+          // A `sent` from a pane says the session runs in tmux, whatever the
+          // last subscribe ack said: an ack resolved before a new session's
+          // pane was up said `false`, and every later message went out as
+          // `chat.send` (9-oct, "bueno dale" refused).
+          if (status === 'sent' && msg.runsInTmux === true) {
+            sessionStore.setRunsInTmux(sid, true);
+          }
           // A tmux send is only `sent` once the pane took it, and that is
           // when its turn starts showing (the composer does not guess it).
           if (status === 'sent' && (msg.fromQueue === true || sessionStore.runsInTmux(sid))) {

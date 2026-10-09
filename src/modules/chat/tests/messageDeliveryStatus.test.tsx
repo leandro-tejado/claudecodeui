@@ -179,6 +179,23 @@ test('un error TMUX_* deja la sesión en tmux y el mensaje como no enviado', () 
   assert.deepEqual(pane.rendered()[0], ['user', 'hola', 'failed']);
 });
 
+/*
+ * 9-oct: el ack de una sesión recién creada dijo `runsInTmux: false` porque su
+ * pane todavía no existía, y "bueno dale" salió por `chat.send`. El server lo
+ * entregó al pane igual; su `sent` trae `runsInTmux: true` y el cliente vuelve
+ * a modo tmux para los mensajes siguientes.
+ */
+test('un "sent" de tmux devuelve la sesión a modo tmux aunque el ack haya dicho que no', () => {
+  const pane = renderPane();
+  pane.setRunsInTmux(false);
+  pane.echo('local_1_a', 'bueno dale');
+  pane.emitEvent({ kind: 'message_status', sessionId: SID, clientMessageId: 'local_1_a', status: 'sent', runsInTmux: true } as ServerEvent);
+
+  assert.equal(pane.runsInTmux(), true);
+  assert.deepEqual(pane.rendered(), [['user', 'bueno dale', 'sent']]);
+  assert.equal(pane.processing.at(-1), SID, 'the pane took it: its turn starts showing');
+});
+
 test('un provider que tmux no soporta sí vuelve a stream-json', () => {
   const pane = renderPane();
   pane.setRunsInTmux(true);

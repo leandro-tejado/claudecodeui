@@ -321,9 +321,6 @@ function readRequiredSessionId(data: AnyRecord): string | null {
 const MENSAJE_TMUX_SESSION_GONE =
   'Esta sesión corría en una terminal tmux que ya se cerró sin llegar a guardar ninguna conversación: no hay nada que retomar. Abrí una sesión nueva.';
 
-const MENSAJE_TMUX_PANE_VIVO =
-  'Esta sesión corre en una terminal tmux viva: el mensaje tiene que ir por ahí (chat.send-tmux), no por un turno nuevo del SDK.';
-
 /**
  * Handles `chat.send`: resolves the session row (provider, project path, and
  * provider-native id all come from the database — never from the client),
@@ -343,16 +340,18 @@ async function handleChatSend(
   // A session with a live pane (propio o externo — `orquestar.py`, `ct`) ya
   // tiene un REPL escribiendo su transcript: un `--resume` del SDK encima
   // sería un segundo proceso sobre el mismo archivo ("doble envío", Fase 7
-  // Paso 5). El camino feliz del cliente ya elige `chat.send-tmux` en vez de
-  // `chat.send` para una sesión así (lee `runsInTmux` del ack de
-  // `chat.subscribe`); llegar hasta aquí con un pane vivo es un cliente con
-  // estado viejo o una carrera, así que se rechaza en vez de reenrutar en
-  // silencio como antes — reenrutar escondía el caso en el que el cliente
-  // SÍ debería estar en modo tmux y no lo está.
+  // Paso 5). El cliente elige `chat.send-tmux` según el `runsInTmux` del ack
+  // de `chat.subscribe`, pero ese ack puede llegar tarde a la verdad: el pane
+  // de una sesión nueva nace con su primer `chat.send-tmux`, y un subscribe
+  // que se resuelve antes de `tmux new-session` dice `false` (9-oct: "bueno
+  // dale" rechazado con TMUX_PANE_VIVO). Antes se rechazaba y el mensaje se
+  // perdía; ahora va al pane, y el `sent` de tmux lleva `runsInTmux: true`
+  // para que el cliente corrija su modo.
   if (resolved.provider === 'claude') {
     const pane = tmuxBridgeService.resolverPaneTmux(resolved.session);
     if (pane) {
-      sendProtocolError(ws, 'TMUX_PANE_VIVO', MENSAJE_TMUX_PANE_VIVO, resolved.sessionId);
+      console.warn('[Chat] chat.send a una sesión con pane vivo: se entrega por tmux', { sessionId: resolved.sessionId });
+      await handleChatSendTmux(ws, data, dependencies);
       return;
     }
     if (esFilaTmuxSinTranscript(resolved.session)) {
@@ -633,7 +632,9 @@ async function teclearEnPane(
   }
 
   if (clientMessageId) {
-    broadcastMessageStatus(sessionId, clientMessageId, 'sent', fromQueue ? { fromQueue: true } : {});
+    // `runsInTmux`: lo que este `sent` prueba — el mensaje entró a un pane —,
+    // para el cliente que todavía creía que la sesión iba por SDK.
+    broadcastMessageStatus(sessionId, clientMessageId, 'sent', { runsInTmux: true, ...(fromQueue ? { fromQueue: true } : {}) });
   }
 
   // Paso 7: el pane queda ocupado desde ya — sin esto, un `chat.subscribe`
