@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Boceto — Vista principal CloudCLI (09-oct)</title>
+<style>
+  :root{
+    --primary:#3156FA; --primary-tint:#EDF1FF;
+    --ink:#141F3D; --muted:#5B6B8C; --faint:#8A97B0;
+    --surface:#FFFFFF; --surface-2:#F4F7FB; --surface-3:#EAEEF4;
+    --line:#DBE2EC; --good:#15803D; --warn:#D97706; --bad:#DC2626;
+    --chrome:rgb(255 255 255/.72); --shadow:0 1px 2px rgb(20 33 61/.05),0 8px 28px rgb(20 33 61/.10);
+    --ease:cubic-bezier(.2,.8,.2,1);
+    color-scheme:light;
+  }
+  :root[data-theme="dark"]{
+    --primary:#7C9BFF; --primary-tint:#1B2440;
+    --ink:#EEF1F8; --muted:#93A0BF; --faint:#68749C;
+    --surface:#0B1220; --surface-2:#121A2B; --surface-3:#1A2338;
+    --line:#27314A; --good:#3DDC84; --warn:#F2B84B; --bad:#FF6B6B;
+    --chrome:rgb(11 18 32/.72); --shadow:0 1px 2px rgb(0 0 0/.3),0 8px 28px rgb(0 0 0/.45);
+    color-scheme:dark;
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --primary:#7C9BFF; --primary-tint:#1B2440;
+      --ink:#EEF1F8; --muted:#93A0BF; --faint:#68749C;
+      --surface:#0B1220; --surface-2:#121A2B; --surface-3:#1A2338;
+      --line:#27314A; --good:#3DDC84; --warn:#F2B84B; --bad:#FF6B6B;
+      --chrome:rgb(11 18 32/.72); --shadow:0 1px 2px rgb(0 0 0/.3),0 8px 28px rgb(0 0 0/.45);
+      color-scheme:dark;
+    }
+  }
+  *{box-sizing:border-box}
+  body{overflow-x:hidden;margin:0;background:var(--surface-3);color:var(--ink);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;padding:0 16px 64px}
+  svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;flex:none}
+  button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+
+  .top{max-width:1180px;margin:0 auto;padding:20px 0 8px;display:flex;align-items:center;gap:12px}
+  .top h1{font-size:17px;letter-spacing:-.01em;margin:0;flex:1}
+  .btn-ico{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;color:var(--muted)}
+  .btn-ico:hover{background:var(--surface);color:var(--ink)}
+  .btn-ico:focus-visible,.info:focus-visible,.fila:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+
+  section{max-width:1180px;margin:28px auto 0}
+  .rotulo{display:flex;align-items:center;gap:8px;margin:0 0 10px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
+  .info{position:relative;display:inline-grid;place-items:center;width:18px;height:18px;border-radius:50%;border:1px solid var(--line);color:var(--faint);font-size:11px;font-weight:700;text-transform:none;letter-spacing:0;cursor:help}
+  .info::after{content:attr(data-tip);position:absolute;left:24px;top:-6px;width:max-content;max-width:280px;padding:8px 10px;border-radius:8px;background:var(--ink);color:var(--surface);font-size:12px;font-weight:400;line-height:1.4;display:none;pointer-events:none;z-index:20}
+  .info:hover::after,.info:focus::after{display:block}
+  @media (max-width:760px){.info::after{left:auto;right:-8px;top:24px;max-width:240px}}
+
+  /* marco de la app */
+  .marco{position:relative;display:flex;height:520px;overflow:hidden;border-radius:14px;background:var(--surface);box-shadow:var(--shadow);border:1px solid var(--line)}
+  .marco.movil{width:390px;max-width:100%;height:640px}
+
+  /* riel + barra: la barra empuja */
+  .barra{flex:none;width:52px;background:var(--surface-2);border-right:1px solid var(--line);display:flex;flex-direction:column;overflow:hidden;transition:width .28s var(--ease)}
+  .barra.abierta,.marco.hoverable .barra:hover{width:264px}
+  .barra .fila{display:flex;align-items:center;gap:12px;height:40px;padding:0 17px;color:var(--muted);white-space:nowrap;cursor:pointer;border-radius:0}
+  .barra .fila:hover{background:var(--surface-3);color:var(--ink)}
+  .barra .fila.sel{background:var(--primary-tint);color:var(--ink);box-shadow:inset 2px 0 0 var(--primary)}
+  .barra .txt{overflow:hidden;text-overflow:ellipsis;font-size:13px;flex:1;opacity:0;transition:opacity .15s}
+  .barra.abierta .txt,.marco.hoverable .barra:hover .txt{opacity:1;transition-delay:.08s}
+  .barra .grupo{flex:1;overflow:hidden;padding-top:6px}
+  .barra .sub{padding-left:0}
+  .barra .estado{width:8px;height:8px;border-radius:50%;flex:none;margin:0 -1px;opacity:0}
+  .barra.abierta .estado,.marco.hoverable .barra:hover .estado{opacity:1}
+  .est-libre{background:var(--good)}.est-pensando{background:var(--primary)}.est-espera{background:var(--warn)}.est-dormida{background:var(--faint)}
+  .pie{border-top:1px solid var(--line);padding:6px 0}
+  .menu-aj{position:absolute;left:58px;bottom:12px;width:220px;padding:6px;border-radius:12px;background:var(--chrome);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border:1px solid var(--line);box-shadow:var(--shadow);z-index:10}
+  .menu-aj .fila{display:flex;align-items:center;gap:12px;color:var(--ink);cursor:pointer;border-radius:8px;height:36px;padding:0 10px;font-size:13px}
+  .menu-aj .fila:hover{background:var(--surface-3)}
+  @media (max-width:760px){.menu-aj{left:auto!important;right:8px;bottom:60px}}
+
+  /* columna principal */
+  .col{flex:1;min-width:0;display:flex;flex-direction:column;position:relative}
+  .cab{height:48px;flex:none;display:flex;align-items:center;gap:10px;padding:0 14px;background:var(--chrome);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border-bottom:1px solid var(--line)}
+  .cab .titulo{font-weight:600;font-size:14px;letter-spacing:-.01em;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .cab .titulo small{color:var(--faint);font-weight:400;margin-left:8px}
+  .chip{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--primary-tint);color:var(--primary);font-size:11px;font-weight:700}
+  .cuerpo{flex:1;display:flex;min-height:0}
+  .chat{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:0 20px 18px}
+  .chat.vacio{justify-content:center;gap:0}
+  .hilo{width:100%;max-width:640px;display:flex;flex-direction:column;gap:14px;margin-bottom:18px;font-size:14px}
+  .msg-u{align-self:flex-end;background:var(--surface-3);padding:8px 12px;border-radius:14px 14px 4px 14px;max-width:80%}
+  .msg-c{color:var(--ink)}
+  .cursor{display:inline-block;width:7px;height:14px;background:var(--primary);vertical-align:-2px;animation:parpadeo 1s steps(2) infinite}
+  @keyframes parpadeo{50%{opacity:0}}
+
+  /* compositor: píldora */
+  .comp{width:100%;max-width:640px;display:flex;align-items:center;gap:6px;padding:6px 6px 6px 8px;border-radius:26px;background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow)}
+  .comp:focus-within{border-color:var(--primary)}
+  .comp .campo{flex:1;color:var(--faint);padding:8px 4px;font-size:14px}
+  .comp .ajustes{white-space:nowrap;display:flex;align-items:center;gap:6px;height:32px;padding:0 10px;border-radius:16px;color:var(--muted);font-size:12px}
+  .comp .ajustes:hover{background:var(--surface-2)}
+  .enviar{width:34px;height:34px;border-radius:50%;background:var(--primary);color:#fff;display:grid;place-items:center}
+  .destino{display:flex;align-items:center;gap:6px;margin-bottom:10px;font-size:12px;color:var(--faint)}
+
+  /* panel de archivos a la derecha */
+  .panel{flex:none;width:0;overflow:hidden;border-left:0 solid var(--line);background:var(--surface-2);transition:width .3s var(--ease)}
+  .panel.abierto{width:260px;border-left-width:1px}
+  .panel .in{width:260px;padding:10px 6px}
+  .panel .fila{display:flex;align-items:center;gap:8px;height:30px;padding:0 10px;font-size:13px;color:var(--muted);border-radius:6px}
+  .panel .fila:hover{background:var(--surface-3)}
+  .panel .n2{padding-left:26px}
+
+  /* cuota: tres variantes */
+  .variantes{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+  .var{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:var(--shadow)}
+  .var h3{margin:0 0 14px;font-size:13px;display:flex;align-items:center;gap:8px}
+  .barra-demo{display:flex;align-items:center;gap:12px;height:48px;padding:0 12px;border-radius:10px;background:var(--chrome);border:1px solid var(--line);justify-content:flex-end}
+  .estados{display:flex;gap:10px;margin-top:14px;font-size:11px;color:var(--faint)}
+  .estados span{display:flex;align-items:center;gap:5px}
+  .anillo{--p:12;--c:var(--good);width:26px;height:26px;border-radius:50%;background:conic-gradient(var(--c) calc(var(--p)*1%),var(--surface-3) 0);display:grid;place-items:center;position:relative}
+  .anillo::after{content:"";position:absolute;inset:3px;border-radius:50%;background:var(--surface)}
+  .anillo.warn{--c:var(--warn)}.anillo.bad{--c:var(--bad)}
+  .num{font-size:12px;font-weight:600;font-variant-numeric:tabular-nums}
+  .hilo-c{width:46px;display:flex;flex-direction:column;gap:5px}
+  .hilo-c i{display:block;height:3px;border-radius:2px;background:var(--surface-3);position:relative;overflow:hidden}
+  .hilo-c i::after{content:"";position:absolute;inset:0 auto 0 0;width:calc(var(--p)*1%);background:var(--c,var(--good));border-radius:2px}
+  .hilo-c i.warn{--c:var(--warn)}.hilo-c i.bad{--c:var(--bad)}
+  .punto{width:10px;height:10px;border-radius:50%;background:var(--good)}
+  .punto.warn{background:var(--warn)}.punto.bad{background:var(--bad)}
+
+  .hint{margin:10px 0 0;font-size:12px;color:var(--faint)}
+  @media (max-width:760px){
+    .marco:not(.movil){height:460px}
+    .marco:not(.movil) .panel.abierto{position:absolute;right:0;top:48px;bottom:0;box-shadow:var(--shadow)}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .barra,.panel{transition:none}.cursor{animation:none}
+    .barra .txt{transition:opacity .15s}
+  }
+  @media (prefers-reduced-transparency:reduce){
+    .cab,.menu-aj{background:var(--surface);backdrop-filter:none;-webkit-backdrop-filter:none}
+  }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-logo" viewBox="0 0 24 24"><path d="M4 17l6-6-6-6M12 19h8"/></symbol>
+    <symbol id="i-buscar" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></symbol>
+    <symbol id="i-carpeta" viewBox="0 0 24 24"><path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></symbol>
+    <symbol id="i-chat" viewBox="0 0 24 24"><path d="M21 12a8 8 0 01-11.6 7.1L4 20l1-4.6A8 8 0 1121 12z"/></symbol>
+    <symbol id="i-mas" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-aj" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 01-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 010-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 014 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9a1.7 1.7 0 001.5 1H21a2 2 0 010 4h-.1a1.7 1.7 0 00-1.5 1z"/></symbol>
+    <symbol id="i-panel" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M15 4v16"/></symbol>
+    <symbol id="i-luna" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></symbol>
+    <symbol id="i-archivo" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8z"/><path d="M14 3v5h5"/></symbol>
+    <symbol id="i-arch" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="4" rx="1"/><path d="M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8M10 12h4"/></symbol>
+    <symbol id="i-enviar" viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></symbol>
+    <symbol id="i-clip" viewBox="0 0 24 24"><path d="M21 11.5l-8.6 8.6a5 5 0 01-7-7l8.6-8.6a3.4 3.4 0 014.9 4.9l-8.6 8.6a1.7 1.7 0 01-2.4-2.4l7.9-7.9"/></symbol>
+    <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+    <symbol id="i-mas3" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></symbol>
+  </defs>
+</svg>
+
+<header class="top">
+  <h1>Vista principal</h1>
+  <span class="info" tabindex="0" data-tip="Boceto de Fase 0. Datos de la captura: 12 % y 83 %.">i</span>
+  <button class="btn-ico" id="tema" aria-label="Tema"><svg><use href="#i-luna"/></svg></button>
+</header>
+
+<!-- 1. REPOSO -->
+<section data-escena="1">
+  <p class="rotulo">1 · Reposo <span class="info" tabindex="0" data-tip="Riel de íconos. Chat vacío: solo el compositor.">i</span></p>
+  <div class="marco">
+    <aside class="barra" aria-label="Barra">
+      <div class="fila"><svg><use href="#i-logo"/></svg></div>
+      <div class="fila"><svg><use href="#i-buscar"/></svg></div>
+      <div class="grupo"><div class="fila sel"><svg><use href="#i-carpeta"/></svg></div></div>
+      <div class="pie"><div class="fila"><svg><use href="#i-mas"/></svg></div><div class="fila"><svg><use href="#i-aj"/></svg></div></div>
+    </aside>
+    <div class="col">
+      <div class="cab">
+        <div class="titulo">cloudcli</div>
+        <span class="chip">P</span>
+        <div class="anillo" style="--p:83;--c:var(--warn)" title="83 %"></div>
+        <button class="btn-ico" aria-label="Archivos"><svg><use href="#i-panel"/></svg></button>
+      </div>
+      <div class="cuerpo"><div class="chat vacio">
+        <div class="destino"><svg><use href="#i-carpeta"/></svg>Sesión nueva en cloudcli · P</div>
+        <div class="comp">
+          <button class="btn-ico" aria-label="Adjuntar"><svg><use href="#i-clip"/></svg></button>
+          <span class="campo">Escribe…</span>
+          <button class="ajustes" aria-label="Modelo"><svg><use href="#i-sliders"/></svg>Opus · Alto</button>
+          <button class="enviar" aria-label="Enviar"><svg><use href="#i-enviar"/></svg></button>
+        </div>
+      </div></div>
+    </div>
+  </div>
+</section>
+
+<!-- 2. BARRA DESPLEGADA -->
+<section data-escena="2">
+  <p class="rotulo">2 · Cursor sobre el riel <span class="info" tabindex="0" data-tip="Pasa el cursor: la barra se abre y empuja el chat. Clic en el logo la ancla.">i</span></p>
+  <div class="marco hoverable" id="m2">
+    <aside class="barra" id="b2" aria-label="Barra">
+      <div class="fila" id="ancla"><svg><use href="#i-logo"/></svg><span class="txt">Consola</span></div>
+      <div class="fila"><svg><use href="#i-buscar"/></svg><span class="txt">Buscar</span></div>
+      <div class="grupo">
+        <div class="fila sel"><svg><use href="#i-carpeta"/></svg><span class="txt">cloudcli</span><span class="estado est-pensando"></span></div>
+        <div class="fila"><svg><use href="#i-chat"/></svg><span class="txt">rediseño vista</span><span class="estado est-pensando"></span></div>
+        <div class="fila"><svg><use href="#i-chat"/></svg><span class="txt">tmux en vivo</span><span class="estado est-espera"></span></div>
+        <div class="fila"><svg><use href="#i-chat"/></svg><span class="txt">cuota</span><span class="estado est-libre"></span></div>
+        <div class="fila"><svg><use href="#i-chat"/></svg><span class="txt">limpieza</span><span class="estado est-dormida"></span></div>
+        <div class="fila"><svg><use href="#i-carpeta"/></svg><span class="txt">app-optimum-mkt</span></div>
+      </div>
+      <div class="pie">
+        <div class="fila"><svg><use href="#i-mas"/></svg><span class="txt">Nuevo proyecto</span></div>
+        <div class="fila"><svg><use href="#i-aj"/></svg><span class="txt">Ajustes</span></div>
+      </div>
+    </aside>
+    <div class="col">
+      <div class="cab">
+        <div class="titulo">rediseño vista<small>cloudcli</small></div>
+        <span class="chip">P</span>
+        <div class="anillo" style="--p:83;--c:var(--warn)"></div>
+        <button class="btn-ico" aria-label="Archivos"><svg><use href="#i-panel"/></svg></button>
+      </div>
+      <div class="cuerpo"><div class="chat">
+        <div class="hilo">
+          <div class="msg-u">Retoma el plan</div>
+          <div class="msg-c">Leo el plan y creo el worktree.</div>
+        </div>
+        <div class="comp"><button class="btn-ico" aria-label="Adjuntar"><svg><use href="#i-clip"/></svg></button><span class="campo">Escribe…</span><button class="enviar" aria-label="Enviar"><svg><use href="#i-enviar"/></svg></button></div>
+      </div></div>
+    </div>
+  </div>
+  <p class="hint">Probalo: entra y sale con el cursor.</p>
+</section>
+
+<!-- 3. CUOTA: TRES VARIANTES -->
+<section data-escena="3">
+  <p class="rotulo">3 · Cuota <span class="info" tabindex="0" data-tip="Elige una. Color por estado: verde &lt; 60, ámbar 60–89, rojo ≥ 90. El detalle sale al pasar el cursor.">i</span></p>
+  <div class="variantes">
+    <div class="var" data-variante-cuota="A">
+      <h3>A · Anillo <span class="info" tabindex="0" data-tip="Un anillo con el % más alto. Semanal 83 % manda sobre 5 h 12 %.">i</span></h3>
+      <div class="barra-demo"><span class="num">83</span><div class="anillo" style="--p:83;--c:var(--warn)"></div></div>
+      <div class="estados"><span><div class="anillo" style="--p:12;width:16px;height:16px"></div>12</span><span><div class="anillo warn" style="--p:70;width:16px;height:16px"></div>70</span><span><div class="anillo bad" style="--p:95;width:16px;height:16px"></div>95</span></div>
+    </div>
+    <div class="var" data-variante-cuota="B">
+      <h3>B · Dos hilos <span class="info" tabindex="0" data-tip="Dos líneas finas: 5 h arriba, semanal abajo. Sin números.">i</span></h3>
+      <div class="barra-demo"><div class="hilo-c"><i style="--p:12"></i><i class="warn" style="--p:83"></i></div></div>
+      <div class="estados"><span>5 h</span><span>sem.</span></div>
+    </div>
+    <div class="var" data-variante-cuota="C">
+      <h3>C · Punto <span class="info" tabindex="0" data-tip="Un punto de color. El valor aparece al pasar el cursor. Lo más discreto.">i</span></h3>
+      <div class="barra-demo"><span class="num" style="color:var(--faint)">83 %</span><span class="punto warn"></span></div>
+      <div class="estados"><span><i class="punto" style="display:inline-block;width:8px;height:8px"></i>ok</span><span><i class="punto warn" style="display:inline-block;width:8px;height:8px"></i>alto</span><span><i class="punto bad" style="display:inline-block;width:8px;height:8px"></i>corte</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- 4. PANEL DE ARCHIVOS -->
+<section data-escena="4">
+  <p class="rotulo">4 · Archivos <span class="info" tabindex="0" data-tip="Panel a la derecha. Sin pestaña. Abre con el ícono o Ctrl+B.">i</span></p>
+  <div class="marco">
+    <aside class="barra"><div class="fila"><svg><use href="#i-logo"/></svg></div><div class="fila"><svg><use href="#i-buscar"/></svg></div><div class="grupo"><div class="fila sel"><svg><use href="#i-carpeta"/></svg></div></div><div class="pie"><div class="fila"><svg><use href="#i-mas"/></svg></div><div class="fila"><svg><use href="#i-aj"/></svg></div></div></aside>
+    <div class="col">
+      <div class="cab"><div class="titulo">rediseño vista<small>cloudcli</small></div><span class="chip">P</span><div class="anillo" style="--p:83;--c:var(--warn)"></div><button class="btn-ico" id="bp" aria-label="Archivos" style="color:var(--primary)"><svg><use href="#i-panel"/></svg></button></div>
+      <div class="cuerpo">
+        <div class="chat">
+          <div class="hilo"><div class="msg-c">Escribo el boceto<span class="cursor"></span></div></div>
+          <div class="comp"><button class="btn-ico" aria-label="Adjuntar"><svg><use href="#i-clip"/></svg></button><span class="campo">Escribe…</span><button class="enviar" aria-label="Enviar"><svg><use href="#i-enviar"/></svg></button></div>
+        </div>
+        <div class="panel abierto" id="p4"><div class="in">
+          <div class="fila"><svg><use href="#i-carpeta"/></svg>src</div>
+          <div class="fila n2"><svg><use href="#i-carpeta"/></svg>modules</div>
+          <div class="fila"><svg><use href="#i-carpeta"/></svg>server</div>
+          <div class="fila"><svg><use href="#i-archivo"/></svg>package.json</div>
+          <div class="fila"><svg><use href="#i-archivo"/></svg>CLAUDE.md</div>
+        </div></div>
+      </div>
+    </div>
+  </div>
+  <p class="hint">Clic en el ícono: abre y cierra.</p>
+</section>
+
+<!-- 5. AJUSTES -->
+<section data-escena="5">
+  <p class="rotulo">5 · Ajustes <span class="info" tabindex="0" data-tip="Archivados, tareas, plugins y tema viven acá. Nuevo proyecto queda al lado, visible.">i</span></p>
+  <div class="marco hoverable" style="height:400px">
+    <aside class="barra abierta">
+      <div class="fila"><svg><use href="#i-logo"/></svg><span class="txt">Consola</span></div>
+      <div class="fila"><svg><use href="#i-buscar"/></svg><span class="txt">Buscar</span></div>
+      <div class="grupo"><div class="fila sel"><svg><use href="#i-carpeta"/></svg><span class="txt">cloudcli</span></div><div class="fila"><svg><use href="#i-carpeta"/></svg><span class="txt">app-optimum-mkt</span></div></div>
+      <div class="pie"><div class="fila"><svg><use href="#i-mas"/></svg><span class="txt">Nuevo proyecto</span></div><div class="fila sel"><svg><use href="#i-aj"/></svg><span class="txt">Ajustes</span></div></div>
+    </aside>
+    <div class="menu-aj" style="left:274px">
+      <div class="fila"><svg><use href="#i-arch"/></svg><span class="txt" style="opacity:1">Archivados</span></div>
+      <div class="fila"><svg><use href="#i-chat"/></svg><span class="txt" style="opacity:1">Tareas</span></div>
+      <div class="fila"><svg><use href="#i-sliders"/></svg><span class="txt" style="opacity:1">Plugins</span></div>
+      <div class="fila"><svg><use href="#i-luna"/></svg><span class="txt" style="opacity:1">Tema</span></div>
+      <div class="fila"><svg><use href="#i-aj"/></svg><span class="txt" style="opacity:1">Ajustes</span></div>
+    </div>
+    <div class="col"></div>
+  </div>
+</section>
+
+<!-- 6. MÓVIL -->
+<section data-escena="6">
+  <p class="rotulo">6 · Móvil 390 px <span class="info" tabindex="0" data-tip="Sin cursor no hay hover. Botón de menú abre el cajón. Archivos abre a pantalla completa.">i</span></p>
+  <div style="display:flex;gap:16px;flex-wrap:wrap">
+    <div class="marco movil">
+      <div class="col">
+        <div class="cab"><button class="btn-ico" aria-label="Menú"><svg><use href="#i-menu"/></svg></button><div class="titulo">rediseño vista</div><span class="chip">P</span><div class="anillo" style="--p:83;--c:var(--warn)"></div></div>
+        <div class="cuerpo"><div class="chat vacio" style="padding:0 12px 14px;justify-content:flex-end">
+          <div class="destino"><svg><use href="#i-carpeta"/></svg>Sesión nueva en cloudcli · P</div>
+          <div class="comp"><button class="btn-ico" aria-label="Adjuntar"><svg><use href="#i-clip"/></svg></button><span class="campo">Escribe…</span><button class="enviar" aria-label="Enviar"><svg><use href="#i-enviar"/></svg></button></div>
+        </div></div>
+      </div>
+    </div>
+    <div class="marco movil">
+      <aside class="barra abierta" style="width:78%;box-shadow:var(--shadow);z-index:2">
+        <div class="fila" style="height:48px"><svg><use href="#i-logo"/></svg><span class="txt">Consola</span></div>
+        <div class="fila" style="height:44px"><svg><use href="#i-buscar"/></svg><span class="txt">Buscar</span></div>
+        <div class="grupo">
+          <div class="fila sel" style="height:44px"><svg><use href="#i-carpeta"/></svg><span class="txt">cloudcli</span></div>
+          <div class="fila" style="height:44px"><svg><use href="#i-chat"/></svg><span class="txt">rediseño vista</span><span class="estado est-pensando"></span></div>
+          <div class="fila" style="height:44px"><svg><use href="#i-chat"/></svg><span class="txt">tmux en vivo</span><span class="estado est-espera"></span></div>
+        </div>
+        <div class="pie"><div class="fila" style="height:44px"><svg><use href="#i-mas"/></svg><span class="txt">Nuevo proyecto</span></div><div class="fila" style="height:44px"><svg><use href="#i-aj"/></svg><span class="txt">Ajustes</span></div></div>
+      </aside>
+      <div style="position:absolute;inset:0;background:rgb(0 0 0/.35);z-index:1"></div>
+    </div>
+  </div>
+</section>
+
+<script>
+  const r=document.documentElement,t=document.getElementById('tema');
+  t.onclick=()=>{const d=(r.dataset.theme||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'))==='dark';r.dataset.theme=d?'light':'dark'};
+  const b=document.getElementById('bp'),p=document.getElementById('p4');
+  b.onclick=()=>p.classList.toggle('abierto');
+  const b2=document.getElementById('b2'),m2=document.getElementById('m2');
+  document.getElementById('ancla').onclick=()=>{const a=b2.classList.toggle('abierta');m2.classList.toggle('hoverable',!a)};
+</script>
+</body>
+</html>
