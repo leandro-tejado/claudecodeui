@@ -62,11 +62,19 @@ export function useSessionProtection() {
   );
   const processingSessionsRef = useRef<SessionActivityMap>(processingSessions);
   processingSessionsRef.current = processingSessions;
+  // When each session last said it is working. A tmux turn is never listed by
+  // the running-sessions poll (it is not a run of the server's registry); the
+  // pane reader re-marks it every ~400 ms instead, and the poll's grace counts
+  // from that signal, not from the turn's start — otherwise every tmux turn
+  // lost its indicator, Stop included, ten seconds in (9-oct). A ref, so a
+  // repeated mark with the same label still costs no render.
+  const lastSignalAtRef = useRef<Map<string, number>>(new Map());
 
   const markSessionProcessing = useCallback<MarkSessionProcessing>((sessionId, activity) => {
     if (!sessionId) {
       return;
     }
+    lastSignalAtRef.current.set(sessionId, Date.now());
 
     setProcessingSessions((prev) => {
       const existing = prev.get(sessionId);
@@ -199,7 +207,8 @@ export function useSessionProtection() {
       }
 
       for (const [sessionId, activity] of prev) {
-        if (!incoming.has(sessionId) && now - activity.startedAt < LOCAL_ACTIVITY_GRACE_MS) {
+        const lastSignalAt = Math.max(activity.startedAt, lastSignalAtRef.current.get(sessionId) ?? 0);
+        if (!incoming.has(sessionId) && now - lastSignalAt < LOCAL_ACTIVITY_GRACE_MS) {
           updated.set(sessionId, activity);
         }
       }
