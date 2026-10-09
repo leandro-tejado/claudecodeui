@@ -1,7 +1,7 @@
 # Rediseño de la vista principal de CloudCLI: cabecera, barra lateral y compositor
 
 **Fecha:** 09 de Octubre 2026
-**Estado:** borrador (boceto de Fase 0 hecho, esperando aprobación; incluye Fase 8 agregada el 9-oct)
+**Estado:** aprobado el boceto (9-oct); en ejecución desde la Fase 1
 
 Se rediseña la vista principal de CloudCLI (cabecera, barra de cuota, barra lateral, estado vacío y compositor) para que se parezca al chat `/claude` de Optimum: minimalista, sin botones que no se usan y con casi nada de texto. **La Fase 0 es un boceto HTML que Leandro aprueba antes de tocar una línea de código.**
 
@@ -154,7 +154,7 @@ Leandro ve la vista principal «fea» y recargada (9-oct, con capturas de `:8446
 - [fail] Muestra las 6 escenas y las 3 variantes de cuota | valida: `grep -c 'data-escena' design-system/visual-refs/09-octubre-vista-principal.html` ≥ 6 y `grep -c 'data-variante-cuota'` = 3
 - [fail] Cumple REGLA 13 (≥ 6 ⓘ, un acento, ícono antes que palabra) | valida: script del paso 7
 - [fail] Se ve bien a 1280 px y 390 px, claro y oscuro | valida: 4 capturas revisadas
-- [fail] Leandro aprobó (y eligió variante) | valida: `grep -n "Boceto aprobado" plans/09-octubre-rediseno-vista-principal.md`
+- [pass] Leandro aprobó (y eligió variante) | valida: `grep -n "Boceto aprobado" plans/09-octubre-rediseno-vista-principal.md`
 
 #### Peligros
 - Dibujar con texto de más «para explicar»: Leandro lo pidió explícitamente sin eso.
@@ -429,3 +429,5 @@ Cuota: 3 fases en paralelo es el máximo razonable (REGLA 7/9). Si `7d >= 60%` n
 **Bloqueantes:** ninguno
 **Micro-tasks pendientes:** 24 de 28 (boceto de las escenas 1-9 listo; falta la aprobación)
 **Decisiones de Leandro (9-oct):** la barra **empuja** el chat al desplegarse; el streaming que falla es el de **tmux**; el resto del pedido está en `## Contexto`. La Fase 7 se agregó a pedido suyo el mismo día: el pedido de este plan llegó a una sesión nueva de optimum en vez de a la orquestadora.
+
+**Boceto aprobado (9-oct):** Leandro aprobó el boceto «tal cual», con las escenas 1-9. Cuota: **variante A (anillo)**, la que usan las escenas 1, 2, 4, 6, 7 y 9; no eligió otra. La barra empuja el chat; Tareas, Plugins, Archivados y Tema viven en Ajustes; Servicios y el medidor completo se agregan como Fase 8.
