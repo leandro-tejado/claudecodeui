@@ -27,7 +27,7 @@ import {
 } from '@/shared/context/SessionProtectionContext';
 import ChatMessagesPane from '@/modules/chat/transcript/ChatMessagesPane';
 import ChatComposer from '@/modules/chat/composer/ChatComposer';
-import { cuentaDeSesion, sugerirCuentaParaProyecto, useCuentasState } from '@/modules/cuentas';
+import { CUENTA_POR_DEFECTO, cuentaDeSesion, nombreDeCuenta, sugerirCuentaParaProyecto, useCuentasState } from '@/modules/cuentas';
 import CommandResultModal from '@/modules/chat/modals/CommandResultModal';
 import PanelSalidas from '@/modules/chat/panel-salidas/PanelSalidas';
 import { SkinSubagentBridge, useTmuxPrompts } from '@/modules/skin';
@@ -549,6 +549,13 @@ function ChatInterface({
           cuenta={provider === 'claude'
             ? { puedeElegir: !viewedSessionId, cuenta: viewedSessionId ? cuentaDeSesion(selectedSession) : cuentaNueva }
             : undefined}
+          destino={!viewedSessionId && selectedProject
+            ? {
+                proyecto: String(selectedProject.displayName || selectedProject.name),
+                ruta: selectedProject.fullPath || selectedProject.path || '',
+                cuenta: nombreDeCuenta(provider === 'claude' ? cuentaNueva : CUENTA_POR_DEFECTO),
+              }
+            : null}
           pendingPermissionRequests={pendingPermissionRequests}
           handlePermissionDecision={handlePermissionDecision}
           handleGrantToolPermission={handleGrantToolPermission}

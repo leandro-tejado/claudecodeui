@@ -28,11 +28,12 @@ const isActionablePermissionRequest = (request: { toolName?: unknown } | null | 
 // Protocol errors that answer a stop request, not a send.
 const NOT_ABOUT_A_SEND = new Set(['NO_ACTIVE_RUN', 'NO_SUCH_TASK', 'TASK_ID_REQUIRED']);
 
-// A tmux pane that refused a message before anything was typed into it (no
-// input box on screen, or one already holding text). Its text goes back to
-// the session's draft: the composer cleared it on send, and the failed echo
-// is gone on the next reload because it never reached the transcript (7-oct).
-const PANE_REFUSED_UNTYPED = new Set(['PANE_NOT_AT_PROMPT', 'PANE_INPUT_NOT_EMPTY']);
+// A refused send goes back to the session's draft: the composer cleared it on
+// send, and the failed echo is gone on the next reload because it never
+// reached the transcript (7-oct, para el pane; 9-oct, para todo rechazo). The
+// exceptions are the refusals that may have left the text typed in the pane:
+// returning it there would invite sending it twice.
+const MAY_HAVE_TYPED = new Set(['PANE_SEND_UNCONFIRMED', 'TMUX_SEND_FAILED']);
 
 const hasActionablePermissionRequests = (requests: Array<{ toolName?: unknown }> | null | undefined): boolean => {
   return Array.isArray(requests) && requests.some((request) => isActionablePermissionRequest(request));
@@ -300,7 +301,7 @@ export function useChatRealtimeHandlers({
                 sessionStore.setDeliveryState(sid, failedId, 'failed');
                 const failed = sessionStore.getMessages(sid).find((message) => message.id === failedId);
                 if (
-                  PANE_REFUSED_UNTYPED.has(String(msg.code))
+                  !MAY_HAVE_TYPED.has(String(msg.code))
                   && typeof failed?.content === 'string'
                   && failed.content.trim()
                   && !readDraftText(sid).trim()

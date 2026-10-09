@@ -240,3 +240,29 @@ test('no pisa lo que ya se empezó a escribir, ni devuelve un texto que pudo hab
   } as ServerEvent);
   assert.equal(readDraftText(SID), '');
 });
+
+/*
+ * 9-oct (Fase 7 del rediseño): cualquier rechazo del servidor que no pudo
+ * haber tecleado nada devuelve el texto al cuadro, no solo los del pane. El
+ * caso que lo motivó fue `TMUX_PANE_VIVO`; `RUN_IN_PROGRESS` y una sesión que
+ * ya no existe tampoco mandaron nada. Siguen afuera los que pudieron dejar
+ * texto en el pane (`PANE_SEND_UNCONFIRMED`, `TMUX_SEND_FAILED`).
+ */
+test('un rechazo del servidor que no tecleó nada devuelve el texto al cuadro vacío', () => {
+  for (const [i, code] of ['TMUX_PANE_VIVO', 'RUN_IN_PROGRESS', 'SESSION_NOT_FOUND'].entries()) {
+    writeDraftText(SID, '');
+    const pane = renderPane();
+    const id = `local_${i}_rechazo`;
+    pane.echo(id, `mensaje ${code}`);
+    pane.emitEvent({ kind: 'protocol_error', code, error: 'rechazado', sessionId: SID, clientMessageId: id } as ServerEvent);
+    assert.equal(readDraftText(SID), `mensaje ${code}`, code);
+  }
+});
+
+test('un fallo de tecleo en tmux no devuelve el texto: pudo haber quedado en el pane', () => {
+  writeDraftText(SID, '');
+  const pane = renderPane();
+  pane.echo('local_9_z', 'a medio teclear');
+  pane.emitEvent({ kind: 'protocol_error', code: 'TMUX_SEND_FAILED', error: 'pane gone', sessionId: SID, clientMessageId: 'local_9_z' } as ServerEvent);
+  assert.equal(readDraftText(SID), '');
+});

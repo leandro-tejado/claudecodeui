@@ -125,6 +125,12 @@ type ChatComposerProps = {
   sendByCtrlEnter?: boolean;
   /** Cuenta de IA del turno: se elige dentro del menú único en sesión nueva y se muestra en su trigger. */
   cuenta?: { puedeElegir: boolean; cuenta: string };
+  /**
+   * A dónde va el próximo mensaje cuando todavía no hay sesión: crea una nueva
+   * en esta carpeta y con esta cuenta. Se lee de lo mismo que usa el envío
+   * (`selectedProject`, la cuenta elegida). Con sesión abierta no va.
+   */
+  destino?: { proyecto: string; ruta: string; cuenta: string } | null;
 };
 
 /**
@@ -134,6 +140,7 @@ type ChatComposerProps = {
  */
 export default function ChatComposer({
   cuenta,
+  destino,
   pendingPermissionRequests,
   tmuxPrompts = EMPTY_TMUX_PROMPTS,
   tmuxPromptErrors = EMPTY_TMUX_PROMPT_ERRORS,
@@ -338,6 +345,16 @@ export default function ChatComposer({
           onEdit={onEditQueuedDraft}
           onDelete={onDeleteQueuedDraft}
         />
+      )}
+
+      {destino && !hasQuestionPanel && (
+        <p
+          data-testid="destino-mensaje"
+          title={destino.ruta}
+          className="mx-auto mb-1.5 max-w-[54.25rem] truncate px-3 text-xs text-muted-foreground"
+        >
+          Sesión nueva en <b className="font-semibold text-foreground">{destino.proyecto}</b> · {destino.cuenta}
+        </p>
       )}
 
       {!hasQuestionPanel && <div className="relative mx-auto max-w-[54.25rem]">

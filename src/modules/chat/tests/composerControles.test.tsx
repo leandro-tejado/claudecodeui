@@ -120,3 +120,21 @@ describe('compositor del rediseño 09-oct', () => {
     expect(screen.getByPlaceholderText('Escribe…')).toBeTruthy();
   });
 });
+
+describe('a dónde va el mensaje (Fase 7)', () => {
+  it('sin sesión dice «Sesión nueva en <proyecto> · <cuenta>» con la ruta en el title', () => {
+    render(
+      <ChatComposer
+        {...(props({ destino: { proyecto: 'optimum', ruta: '/home/x/clientes/optimum', cuenta: 'Optimum' } }) as unknown as Parameters<typeof ChatComposer>[0])}
+      />,
+    );
+    const linea = screen.getByTestId('destino-mensaje');
+    expect(linea.textContent).toBe('Sesión nueva en optimum · Optimum');
+    expect(linea.getAttribute('title')).toBe('/home/x/clientes/optimum');
+  });
+
+  it('con sesión abierta no hay línea', () => {
+    render(<ChatComposer {...(props({ destino: null }) as unknown as Parameters<typeof ChatComposer>[0])} />);
+    expect(screen.queryByTestId('destino-mensaje')).toBeNull();
+  });
+});
