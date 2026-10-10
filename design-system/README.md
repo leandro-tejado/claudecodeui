@@ -1,5 +1,5 @@
 ---
-updated: 2026-10-05
+updated: 2026-10-10
 proyecto: CloudCLI
 stack: React + Tailwind (cliente), TypeScript/Node (server)
 ---
@@ -23,6 +23,21 @@ stack: React + Tailwind (cliente), TypeScript/Node (server)
 | Markdown sin títulos gigantes, cita con barra de acento | `MensajeMarkdown.tsx` | `app-optimum-mkt/src/components/features/analisis/MensajeMarkdown.tsx` |
 | Materiales translúcidos en header/composer, springs `damping 1.0` | Regla 13 de `global-rules.md` + skill `apple-design` | `~/.claude/skills/apple-design/SKILL.md` |
 | Paleta de marca (`primary`/`secondary`/`signal`) | Tokens reales de Optimum, no inventados | `app-optimum-mkt/tailwind.config.ts` |
+
+## Vista principal (plan 09-oct)
+
+Lo que el rediseño fijó, con el boceto aprobado en `e2e/evidencia/09-vista-principal/00-boceto/` y el resultado en `99-despues/` (8 capturas: 1280/390 × claro/oscuro × con y sin `prefers-reduced-motion`).
+
+| Pieza | Regla | Dónde |
+|---|---|---|
+| Cabecera | Una fila (≤ 56 px): título, proyecto, chip de cuenta, un anillo de cuota y Archivos. Sin pestañas | `skin/SkinHeader.tsx` |
+| Cuota | Un anillo; el detalle (las dos ventanas por cuenta, contexto, RAM, disco, ritmo) vive en el medidor que abre el anillo | `usage-window/`, `skin/SkinMedidorExtra.tsx` |
+| RAM y disco | Suben a la cabecera **cada uno por su cuenta** solo desde el 85 % (`UMBRAL_CABECERA`) | `skin/SkinRecursos.tsx` |
+| Barra lateral | Plegada es un riel de 52 px; el cursor la asoma (150 ms entrada, 250 ms salida) y **empuja** el chat; el logo la fija. Proyectos con monograma; al plegar, peor estado y contador | `skin/SkinSidebar.tsx` |
+| Agentes hijos | Los subagentes vivos cuelgan de su sesión, máximo 7 y «+N más» | ídem |
+| Ajustes | Archivados, Tareas, Plugins, Servicios y Tema van en un menú, no en la barra | ídem |
+| Compositor | ≤ 4 controles: adjuntar, un menú con cuenta, modelo, esfuerzo y permisos, y enviar. Placeholder «Escribe…». Sin sesión, una línea dice a dónde va el mensaje | `chat/composer/` |
+| Estado vacío | Sin texto | `chat/transcript/ProviderSelectionEmptyState.tsx` |
 
 ## Qué falta (bloqueado en esta corrida)
 
