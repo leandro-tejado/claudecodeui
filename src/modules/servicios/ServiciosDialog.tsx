@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 
+import { useRecursos } from '@/modules/skin';
 import { authenticatedFetch } from '@/shared/api';
 import { Dialog, DialogContent, DialogTitle } from '@/shared/ui';
 
@@ -17,6 +18,7 @@ export type Servicio = {
   proceso: string | null;
   exposicion: Exposicion;
   entrada: string | null;
+  abrirEn: number | null;
 };
 
 const GRUPOS: { id: Exposicion; titulo: string; nota: string }[] = [
@@ -44,21 +46,57 @@ export function ListaServicios({ servicios }: { servicios: Servicio[] }) {
               <span className="font-normal normal-case tracking-normal text-ds-faint">{grupo.nota}</span>
             </h4>
             <ul className="divide-y divide-border/60 rounded-ds-lg border border-border/60">
-              {delGrupo.map((s) => (
-                <li key={s.puerto} className="flex items-center gap-2.5 px-3 py-1.5 text-sm">
-                  <span className={`h-1.5 w-1.5 flex-none rounded-full ${PUNTO[s.exposicion]}`} aria-hidden="true" />
-                  <span className={s.nombre === 'sin nombre' ? 'min-w-0 flex-1 truncate italic text-ds-faint' : 'min-w-0 flex-1 truncate text-foreground'}>
-                    {s.nombre}
-                  </span>
-                  {s.entrada && <span className="flex-none text-xs text-muted-foreground">{s.entrada}</span>}
-                  <span className="w-14 flex-none text-right font-mono text-xs tabular-nums text-muted-foreground">:{s.puerto}</span>
-                </li>
-              ))}
+              {delGrupo.map((s) => {
+                const fila = (
+                  <>
+                    <span className={`h-1.5 w-1.5 flex-none rounded-full ${PUNTO[s.exposicion]}`} aria-hidden="true" />
+                    <span className={s.nombre === 'sin nombre' ? 'min-w-0 flex-1 truncate italic text-ds-faint' : 'min-w-0 flex-1 truncate text-foreground'}>
+                      {s.nombre}
+                    </span>
+                    {s.entrada && <span className="flex-none text-xs text-muted-foreground">{s.entrada}</span>}
+                    <span className="w-14 flex-none text-right font-mono text-xs tabular-nums text-muted-foreground">:{s.puerto}</span>
+                  </>
+                );
+                // Un clic abre el servicio por su entrada del tailnet (boceto, escena 8).
+                // Lo que es solo local no tiene a dónde ir desde el navegador.
+                return (
+                  <li key={s.puerto}>
+                    {s.abrirEn !== null ? (
+                      <a
+                        href={`https://${window.location.hostname}:${s.abrirEn}/`}
+                        target="_blank"
+                        rel="noreferrer"
+                        data-testid="servicio-enlace"
+                        className="flex items-center gap-2.5 px-3 py-1.5 text-sm hover:bg-muted/60"
+                      >
+                        {fila}
+                      </a>
+                    ) : (
+                      <div className="flex items-center gap-2.5 px-3 py-1.5 text-sm">{fila}</div>
+                    )}
+                  </li>
+                );
+              })}
             </ul>
           </section>
         );
       })}
     </div>
+  );
+}
+
+const gb = new Intl.NumberFormat('es-AR', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+
+/** RAM y disco arriba de la lista, como en el boceto: lo que limita cuántos servicios caben. */
+function LineaRecursos() {
+  const recursos = useRecursos();
+  if (!recursos) return null;
+  const { ram, disco } = recursos;
+  return (
+    <p data-testid="servicios-recursos" className="mb-3 flex gap-4 text-xs text-muted-foreground">
+      <span>RAM <b className="font-semibold text-foreground tabular-nums">{ram.usadaGb === null ? '—' : `${gb.format(ram.usadaGb)}/${gb.format(ram.totalGb ?? 0)} GB`}</b></span>
+      <span>Disco <b className="font-semibold text-foreground tabular-nums">{disco.usadoPct === null ? '—' : `${Math.round(disco.usadoPct)} %`}</b></span>
+    </p>
   );
 }
 
@@ -87,6 +125,7 @@ export default function ServiciosDialog({ open, onOpenChange }: { open: boolean;
       <DialogContent className="max-h-[85dvh] max-w-md overflow-y-auto">
         <DialogTitle>Servicios</DialogTitle>
         <h3 className="mb-3 text-base font-semibold text-foreground">Servicios</h3>
+        {open && <LineaRecursos />}
         {error && <p className="mb-3 text-sm text-ds-signal-bad">{error}</p>}
         {servicios === null && !error && <p className="text-sm text-muted-foreground">Cargando…</p>}
         {servicios && <ListaServicios servicios={servicios} />}

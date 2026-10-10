@@ -21,3 +21,4 @@ export {
   useTmuxPromptsFeed,
 } from '@/modules/skin/tmuxPromptStore';
 export type { TmuxPrompt, TmuxPromptKey, TmuxPromptTab } from '@/modules/skin/tmuxPromptStore';
+export { useRecursos } from '@/modules/skin/useRecursos';

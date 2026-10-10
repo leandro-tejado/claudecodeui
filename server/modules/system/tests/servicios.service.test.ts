@@ -63,6 +63,7 @@ test('clasificar agrupa por exposición y nombra los conocidos', () => {
   assert.equal(por(3200)?.entrada, ':8443 (Funnel), :8444');
   assert.equal(por(3001)?.exposicion, 'tailnet');
   assert.equal(por(3001)?.entrada, ':8446');
+  assert.equal(por(3001)?.abrirEn, 8446);
   assert.equal(por(3100)?.nombre, 'servidor-code');
   assert.equal(por(2222)?.exposicion, 'tailnet');
   assert.equal(por(9000)?.exposicion, 'local');

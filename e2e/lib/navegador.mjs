@@ -8,7 +8,9 @@ export const VIEWPORTS = {
   escritorio: { width: 1280, height: 800 },
 };
 
-export async function abrir({ puerto, viewport = 'escritorio', tema = 'light', token } = {}) {
+// `barra: 'reposo'` deja la barra como la ve alguien sin preferencias (el riel).
+// Por defecto se abre fijada: casi todos los escenarios clickean la lista.
+export async function abrir({ puerto, viewport = 'escritorio', tema = 'light', token, barra = 'fijada' } = {}) {
   const navegador = await chromium.launch({ executablePath: CHROMIUM });
   const contexto = await navegador.newContext({
     viewport: VIEWPORTS[viewport] ?? viewport,
@@ -23,10 +25,11 @@ export async function abrir({ puerto, viewport = 'escritorio', tema = 'light', t
       method: 'PATCH', headers: { Authorization: `Bearer ${tk}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ theme: tema }),
     }).catch(() => {});
   }
-  await contexto.addInitScript(([t, th]) => {
+  await contexto.addInitScript(([t, th, fijada]) => {
     localStorage.setItem('auth-token', t);
     localStorage.setItem('theme', th);
-  }, [tk, tema]);
+    if (fijada && localStorage.getItem('skin:barra-fijada') === null) localStorage.setItem('skin:barra-fijada', '1');
+  }, [tk, tema, barra === 'fijada']);
   const pagina = await contexto.newPage();
   const errores = [];
   pagina.on('console', (m) => { if (m.type() === 'error') errores.push(m.text()); });

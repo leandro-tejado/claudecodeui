@@ -23,6 +23,8 @@ export type Servicio = {
   exposicion: Exposicion;
   /** Por dónde se entra desde afuera (`:8446`), si `tailscale serve` lo publica. */
   entrada: string | null;
+  /** El primer puerto de afuera, para abrir el servicio desde la vista; `null` si es solo local. */
+  abrirEn: number | null;
 };
 
 export type ServiciosSnapshot = { servicios: Servicio[]; error: string | null };
@@ -113,6 +115,7 @@ export function clasificar(escuchas: Escucha[], rutas: RutaServe[]): Servicio[] 
       entrada: ruta.length > 0
         ? ruta.map((r) => `:${r.externo}${r.funnel ? ' (Funnel)' : ''}`).join(', ')
         : null,
+      abrirEn: ruta[0]?.externo ?? null,
     });
   }
 

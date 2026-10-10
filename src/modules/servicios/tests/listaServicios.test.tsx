@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { ListaServicios, type Servicio } from '@/modules/servicios';
 
 const s = (puerto: number, nombre: string, exposicion: Servicio['exposicion'], entrada: string | null = null): Servicio => ({
-  puerto, nombre, proceso: null, exposicion, entrada,
+  puerto, nombre, proceso: null, exposicion, entrada, abrirEn: entrada ? Number(entrada.slice(1)) : null,
 });
 
 describe('vista Servicios', () => {
@@ -22,5 +22,14 @@ describe('vista Servicios', () => {
     render(<ListaServicios servicios={[s(9000, 'sin nombre', 'local')]} />);
     expect(screen.getByText('sin nombre')).toBeTruthy();
     expect(screen.queryByTestId('servicios-publico')).toBeNull();
+  });
+
+  it('lo que tiene entrada en el tailnet abre por ella; lo solo local no es un enlace', () => {
+    render(<ListaServicios servicios={[s(3001, 'CloudCLI', 'tailnet', ':8446'), s(3101, 'Estudio', 'local')]} />);
+
+    const enlaces = screen.getAllByTestId('servicio-enlace');
+    expect(enlaces).toHaveLength(1);
+    expect(enlaces[0].getAttribute('href')).toBe(`https://${window.location.hostname}:8446/`);
+    expect(enlaces[0].textContent).toContain('CloudCLI');
   });
 });

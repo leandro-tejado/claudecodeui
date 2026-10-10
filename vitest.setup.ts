@@ -21,3 +21,12 @@ if (typeof window.matchMedia !== 'function') {
     dispatchEvent: () => false,
   })) as typeof window.matchMedia;
 }
+
+// En reposo la barra del skin es el riel (rediseño 09-oct). Las pruebas de la
+// lista de proyectos y sesiones miran la barra abierta: arrancan con ella
+// fijada, y las del riel la pliegan a propósito.
+try {
+  localStorage.setItem('skin:barra-fijada', '1');
+} catch {
+  // Sin storage el store arranca en el riel; las pruebas que lo necesiten lo fijan.
+}

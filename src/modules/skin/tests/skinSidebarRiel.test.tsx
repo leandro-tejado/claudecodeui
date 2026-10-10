@@ -47,12 +47,14 @@ const renderBarra = (extra: Partial<Parameters<typeof SkinSidebar>[0]> = {}) =>
     </MemoryRouter>,
   );
 
-// El store del skin es de módulo y persiste en localStorage: cada prueba lo deja desplegado.
+// El store del skin es de módulo y persiste en localStorage: en reposo es el
+// riel, así que cada prueba de «barra abierta» la fija antes y después.
 const desplegarSiHaceFalta = () => {
-  if (localStorage.getItem('skin:sidebar-collapsed') === '1') act(() => toggleSidebarCollapsed());
+  if (localStorage.getItem('skin:barra-fijada') !== '1') act(() => toggleSidebarCollapsed());
 };
 
 describe('barra abierta', () => {
+  beforeEach(desplegarSiHaceFalta);
   afterEach(desplegarSiHaceFalta);
 
   it('arriba no quedan Actualizar, el filtro de tmux ni Archivados, ni el título «Consola»', () => {

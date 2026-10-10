@@ -21,7 +21,11 @@ export type SkinUiState = {
   filesPanelWidth: number;
 };
 
-const STORAGE_KEY = 'skin:sidebar-collapsed';
+// Rediseño 09-oct: en reposo la barra es el riel y el cursor la asoma; fijarla
+// abierta es la excepción y se guarda como tal. La clave vieja
+// (`skin:sidebar-collapsed`) se ignora a propósito: guardaba «abierta» como
+// estado por defecto y con ella nadie llegaba a ver el riel.
+const STORAGE_KEY = 'skin:barra-fijada';
 const FILES_OPEN_KEY = 'skin:files-panel-open';
 const FILES_WIDTH_KEY = 'skin:files-panel-width';
 
@@ -37,16 +41,16 @@ const readInitial = (): SkinUiState => {
   try {
     const storedWidth = Number(localStorage.getItem(FILES_WIDTH_KEY));
     return {
-      sidebarCollapsed: localStorage.getItem(STORAGE_KEY) === '1',
+      sidebarCollapsed: localStorage.getItem(STORAGE_KEY) !== '1',
       filesPanelOpen: localStorage.getItem(FILES_OPEN_KEY) === '1',
       filesPanelWidth: Number.isFinite(storedWidth) && storedWidth > 0
         ? clampFilesWidth(storedWidth)
         : FILES_PANEL_DEFAULT_WIDTH,
     };
   } catch {
-    // Storage bloqueado: se arranca desplegado y sin panel, que es el estado útil.
+    // Storage bloqueado: se arranca en el riel y sin panel, como en reposo.
     return {
-      sidebarCollapsed: false,
+      sidebarCollapsed: true,
       filesPanelOpen: false,
       filesPanelWidth: FILES_PANEL_DEFAULT_WIDTH,
     };
@@ -79,7 +83,7 @@ const getSnapshot = () => state;
 
 export const toggleSidebarCollapsed = () => {
   state = { ...state, sidebarCollapsed: !state.sidebarCollapsed };
-  persist(STORAGE_KEY, state.sidebarCollapsed ? '1' : '0');
+  persist(STORAGE_KEY, state.sidebarCollapsed ? '0' : '1');
   emit();
 };
 

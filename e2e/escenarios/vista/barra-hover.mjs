@@ -7,6 +7,7 @@ export const meta = {
   descripcion: 'riel de íconos: asoma con el cursor, empuja el chat y se fija con el logo',
   puerto: 3902,
   checks: [
+    'sin preferencias guardadas, la barra arranca en el riel',
     'plegada queda un riel de 52 px con sus íconos',
     'el cursor la asoma en ≤ 150 ms (+ margen de pintado) y empuja el chat',
     'al salir el cursor vuelve al riel',
@@ -19,6 +20,14 @@ const ancho = async (s) => (await barra(s).boundingBox())?.width ?? 0;
 const xChat = async (s) => (await s.pagina.locator(SEL.composer).first().boundingBox())?.x ?? 0;
 
 export async function correr(ctx) {
+  // En reposo, sin nada guardado, la barra es el riel (el 10-oct arrancaba fija).
+  const r = await ctx.abrir({ barra: 'reposo' });
+  await r.pagina.goto(`${r.base}/`, { waitUntil: 'networkidle' });
+  const enReposo = await r.pagina.getByTestId('barra-lateral').getAttribute('data-plegada');
+  ctx.check('sin preferencias guardadas, la barra arranca en el riel', enReposo === 'true',
+    { evidencia: await ctx.captura(r, 'reposo'), datos: { enReposo, ancho: (await r.pagina.getByTestId('barra-lateral').boundingBox())?.width } });
+  await r.navegador.close();
+
   const s = await ctx.abrir();
   await s.pagina.goto(`${s.base}/`, { waitUntil: 'networkidle' });
   // Con un proyecto elegido, para que haya un compositor que medir.
