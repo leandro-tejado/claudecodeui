@@ -63,18 +63,18 @@ Leandro ve la vista principal «fea» y recargada (9-oct, con capturas de `:8446
 
 ## Micro-tasks
 
-- [ ] Leer `apple-design` y `aos-dev:ui-ux-pro-max` y correr el generador de design system con «dashboard chat minimal developer tool» — acepta: salida guardada en `e2e/evidencia/09-vista-principal/00-ui-ux-pro-max.md` | valida: `test -s e2e/evidencia/09-vista-principal/00-ui-ux-pro-max.md`
+- [x] Leer `apple-design` y `aos-dev:ui-ux-pro-max` y correr el generador de design system con «dashboard chat minimal developer tool» — acepta: salida guardada en `e2e/evidencia/09-vista-principal/00-ui-ux-pro-max.md` | valida: `test -s e2e/evidencia/09-vista-principal/00-ui-ux-pro-max.md`
 - [ ] Capturar la vista actual en 1280 px y 390 px, claro y oscuro (línea base visual) — acepta: 4 PNG en `e2e/evidencia/09-vista-principal/00-antes/` | valida: `ls e2e/evidencia/09-vista-principal/00-antes/*.png | wc -l` da 4
-- [ ] Dibujar el boceto: estado en reposo (riel + chat vacío solo con compositor) — acepta: sección 1 del HTML | valida: abrir el archivo y verlo
-- [ ] Dibujar el boceto: barra desplegada por cursor empujando el chat — acepta: sección 2 con el riel y la barra abierta | valida: ídem
-- [ ] Dibujar el boceto: tres variantes de la cuota (anillo único, dos hilos finos, punto con valor) — acepta: tres variantes lado a lado con un criterio de color por estado | valida: ídem
-- [ ] Dibujar el boceto: panel de Archivos a la derecha, menú Ajustes con «Nuevo proyecto», «Archivados» y tema — acepta: secciones 4 y 5 | valida: ídem
-- [ ] Dibujar el boceto: versión móvil 390 px de todo el recorrido — acepta: sección 6 | valida: ídem
+- [x] Dibujar el boceto: estado en reposo (riel + chat vacío solo con compositor) — acepta: sección 1 del HTML | valida: abrir el archivo y verlo
+- [x] Dibujar el boceto: barra desplegada por cursor empujando el chat — acepta: sección 2 con el riel y la barra abierta | valida: ídem
+- [x] Dibujar el boceto: tres variantes de la cuota (anillo único, dos hilos finos, punto con valor) — acepta: tres variantes lado a lado con un criterio de color por estado | valida: ídem
+- [x] Dibujar el boceto: panel de Archivos a la derecha, menú Ajustes con «Nuevo proyecto», «Archivados» y tema — acepta: secciones 4 y 5 | valida: ídem
+- [x] Dibujar el boceto: versión móvil 390 px de todo el recorrido — acepta: sección 6 | valida: ídem
 - [ ] Verificar que el HTML cumple REGLA 13 (texto mínimo, ⓘ por sección, un acento) — acepta: `grep -c "class=\"info\"" ≥ 6` y ninguna oración de más de 8 palabras fuera de un ⓘ | valida: script de chequeo en el paso 7 de la Fase 0
-- [ ] Mostrar el boceto a Leandro y registrar su decisión por `AskUserQuestion` — acepta: decisión escrita en `## Continuacion de Sesion` | valida: `grep -n "Boceto aprobado" plans/09-octubre-rediseno-vista-principal.md`
-- [ ] Reproducir «Nueva sesión» fallando (varias corridas) y dejar el patrón — acepta: informe con ≥ 10 intentos y la causa | valida: `test -s e2e/evidencia/09-vista-principal/01-nueva-sesion.md`
-- [ ] Medir si la barra se actualiza sola sin «Actualizar» (crear/cerrar sesión de tmux y cronometrar) — acepta: ≤ 5 s en 10 de 10 casos | valida: `node e2e/correr.mjs barra/sin-refresh`
-- [ ] Medir el streaming de una sesión de tmux real: muestras de texto por segundo en `:3901` y en `:3001` — acepta: informe con n de muestras y veredicto «en vivo / a saltos» | valida: `node e2e/correr.mjs tmux/en-vivo`
+- [x] Mostrar el boceto a Leandro y registrar su decisión por `AskUserQuestion` — acepta: decisión escrita en `## Continuacion de Sesion` | valida: `grep -n "Boceto aprobado" plans/09-octubre-rediseno-vista-principal.md`
+- [x] Reproducir «Nueva sesión» fallando (varias corridas) y dejar el patrón — acepta: informe con ≥ 10 intentos y la causa | valida: `test -s e2e/evidencia/09-vista-principal/01-nueva-sesion.md`
+- [x] Medir si la barra se actualiza sola sin «Actualizar» (crear/cerrar sesión de tmux y cronometrar) — acepta: ≤ 5 s en 10 de 10 casos | valida: `node e2e/correr.mjs barra/sin-refresh`
+- [x] Medir el streaming de una sesión de tmux real: muestras de texto por segundo en `:3901` y en `:3001` — acepta: informe con n de muestras y veredicto «en vivo / a saltos» | valida: `node e2e/correr.mjs tmux/en-vivo`
 - [x] Quitar `shell`, `git` y `browser` de `WorkspaceTabs.tsx` y sacar `files` de la cabecera — acepta: la cabecera no tiene pestañas | valida: `NODE_ENV=test npx vitest run src/modules/project-workspace`
 - [x] Implementar el panel de Archivos a la derecha (abre/cierra con ícono y atajo) — acepta: el árbol de archivos se abre en el panel sin cambiar de pestaña | valida: `node e2e/correr.mjs vista/panel-archivos`
 - [x] Implementar la cuota según la variante aprobada — acepta: ya no dice «dato real» ni «resetea en…» a la vista; el detalle sale en el ⓘ/popover | valida: `NODE_ENV=test npx vitest run src/modules/usage-window`
@@ -82,7 +82,7 @@ Leandro ve la vista principal «fea» y recargada (9-oct, con capturas de `:8446
 - [x] Sacar «Actualizar», filtro tmux y «Archivados» de la fila de botones; archivados queda en ⋯ — acepta: la barra tiene ≤ 3 controles visibles arriba | valida: `NODE_ENV=test npx vitest run src/modules/sidebar`
 - [x] Mover «Nuevo proyecto» junto a Ajustes — acepta: botón visible al lado de Ajustes y abre el asistente | valida: `node e2e/correr.mjs vista/nuevo-proyecto`
 - [x] Vaciar el estado vacío de texto y dejar el compositor tipo Optimum — acepta: ninguna de las 4 frases viejas está en el DOM | valida: `grep -rn "Elige tu asistente\|Listo para usar\|Pulsa" src/modules/i18n/locales/es` sin resultados
-- [ ] Corregir el streaming de tmux según el veredicto — acepta: texto creciendo en ≥ 3 muestras por turno y sin dos filas al final | valida: `node e2e/correr.mjs tmux/en-vivo` en verde
+- [x] Corregir el streaming de tmux según el veredicto — acepta: texto creciendo en ≥ 3 muestras por turno y sin dos filas al final | valida: `node e2e/correr.mjs tmux/en-vivo` en verde
 - [x] Reproducir cómo se llega al compositor vacío de un proyecto creyéndose en la orquestadora — acepta: causa o «no reproducido» con n ≥ 10 | valida: `test -s e2e/evidencia/09-vista-principal/07-destino-mensaje.md`
 - [x] Mostrar «Sesión nueva en <proyecto>» con carpeta y cuenta en el compositor vacío — acepta: visible antes de enviar | valida: `node e2e/correr.mjs vista/destino-mensaje`
 - [x] Devolver al cuadro el texto de un envío rechazado por `protocol_error` — acepta: test rojo sin el arreglo, verde con él | valida: `NODE_ENV=test npx vitest run src/modules/chat`
@@ -243,7 +243,7 @@ Leandro ve la vista principal «fea» y recargada (9-oct, con capturas de `:8446
 - [pass] Sin «Actualizar», filtro tmux ni «Archivados» a la vista | valida: `NODE_ENV=test npx vitest run src/modules/skin` (la barra real vive en `skin/`, no en `sidebar/`)
 - [pass] «Archivados» sigue accesible en ⋯ y restaura bien | valida: `node e2e/correr.mjs barra/restaurar-archivado` — verde el 10-oct con la interfaz servida por `vite` dev (`E2E_URL_UI`), corridas `e2e/evidencia/corrida-2026-10-10-00-44/` y `-00-50/`
 - [pass] «Nuevo proyecto» junto a Ajustes abre el asistente | valida: `node e2e/correr.mjs vista/nuevo-proyecto` — verde el 10-oct (`corrida-2026-10-10-00-43/`)
-- [fail] La barra sigue actualizándose sola tras los cambios | valida: `node e2e/correr.mjs barra/sin-refresh` — no corrido: `orquestar.py crear` se niega con la RAM al 95 % (techo 90 %), y no se fuerza
+- [pass] La barra sigue actualizándose sola tras los cambios | valida: `node e2e/correr.mjs barra/sin-refresh` — verde el 10-oct con `chatbotx-builder`/`worker` parados un rato para tener RAM (`corrida-2026-10-10-01-03/`): 10 de 10, entre 428 y 760 ms
 - [pass] Móvil 390 px: el cajón abre y cierra | valida: captura y `node e2e/correr.mjs vista/barra-movil` — verde el 10-oct con la interfaz servida por `vite` dev (`E2E_URL_UI`), corridas `e2e/evidencia/corrida-2026-10-10-00-44/` y `-00-50/`
 
 #### Peligros
@@ -272,7 +272,7 @@ Leandro ve la vista principal «fea» y recargada (9-oct, con capturas de `:8446
 - [pass] Ninguna de las cuatro frases viejas en el DOM | valida: `grep -rn "Elige tu asistente\|Selecciona un proveedor\|Listo para usar\|Pulsa" src/modules/i18n/locales/es` sin resultados
 - [pass] Compositor con ≤ 4 controles visibles | valida: `NODE_ENV=test npx vitest run src/modules/chat` (`tests/composerControles.test.tsx`)
 - [pass] Adjuntos, `/` y `@` siguen funcionando | valida: `node e2e/correr.mjs vista/compositor` — verde el 10-oct con la interfaz servida por `vite` dev (`E2E_URL_UI`), corridas `e2e/evidencia/corrida-2026-10-10-00-44/` y `-00-50/`
-- [fail] El indicador de actividad y la cola de mensajes siguen visibles | valida: `node e2e/correr.mjs tmux/rafaga` — no corrido: `orquestar.py crear` se niega con la RAM al 95 % (techo 90 %), y no se fuerza
+- [pass] El indicador de actividad y la cola de mensajes siguen visibles | valida: `node e2e/correr.mjs tmux/rafaga` — verde el 10-oct con `chatbotx-builder`/`worker` parados un rato para tener RAM (`corrida-2026-10-10-01-03/`)
 
 #### Peligros
 - Esconder demasiado: «Opus · High» y la cuenta `P` deben seguir accesibles y a un clic.
@@ -326,10 +326,10 @@ Leandro ve la vista principal «fea» y recargada (9-oct, con capturas de `:8446
 
 #### Estado (arranca todo en fail)
 - [fail] Typecheck, lint y tests en verde | valida: `npm run typecheck && npm run lint:client && NODE_ENV=test npx vitest run && npm test` — typecheck verde, vitest 847/847 (9-oct) más los 3 tests nuevos del 10-oct, `npm test` 928/939: los 10 rojos están en archivos que el plan no toca (`provider-cuenta.routes` con 409, nombres de sesión, `resolveClaudeCodeExecutablePath`); lint con el error ajeno de `websocketOutboundQueue.test.tsx`
-- [fail] Build y presupuesto de bundle en verde | valida: `npm run build` — no corrido: `vite build` muere por RAM en el VPS (≈1 GB libre); el servidor (`build:server`) sí compila
+- [pass] Build y presupuesto de bundle en verde | valida: `npm run build` — verde el 10-oct en la copia aislada y en `~/cloudcli` (1.596.497 bytes de 1.700.000), con los contenedores de chatbotx parados durante el build
 - [pass] 8 capturas «después» y comparación con el boceto (`vista/capturas`, 10-oct; comparación en `## Cambios realizados`) | valida: `ls e2e/evidencia/09-vista-principal/99-despues/*.png | wc -l` da 8
 - [fail] Leandro confirmó en `:8446` — pendiente: pide el build | valida: `AskUserQuestion` registrada
-- [fail] Cambios commiteados y pusheados — la rama `rediseno-vista-principal` está en origin; falta mergear a `diseno/propio` | valida: `git status --short` vacío y `git log origin/diseno/propio..HEAD` vacío
+- [pass] Cambios commiteados y pusheados — `diseno/propio` avanzó por fast-forward a la rama y está en origin | valida: `git status --short` vacío y `git log origin/diseno/propio..HEAD` vacío
 
 #### Peligros
 - Reiniciar el servicio desde una terminal que cuelga de él: lo hace Leandro.
@@ -356,7 +356,7 @@ Leandro ve la vista principal «fea» y recargada (9-oct, con capturas de `:8446
 - [pass] Causa del clic o «no reproducido» con n ≥ 10 — «no reproducido» con n=10 (2 vueltas × 5 caminos de `vista/destino-mensaje`, 10-oct): ningún camino deja el compositor vacío sin la línea, y `/` sin proyecto no tiene compositor | valida: `test -s e2e/evidencia/09-vista-principal/07-destino-mensaje.md`
 - [pass] El compositor vacío dice el proyecto y la cuenta antes de enviar | valida: `node e2e/correr.mjs vista/destino-mensaje` — verde el 10-oct con la interfaz servida por `vite` dev (`E2E_URL_UI`), corridas `e2e/evidencia/corrida-2026-10-10-00-44/` y `-00-50/`
 - [pass] Un `protocol_error` devuelve el texto al cuadro (rojo antes del arreglo, verde después, en `messageDeliveryStatus.test.tsx`) | valida: `NODE_ENV=test npx vitest run src/modules/chat` con un test que falla sin el arreglo
-- [fail] Sin regresión en el envío por tmux | valida: `node e2e/correr.mjs tmux/rafaga` — no corrido: `orquestar.py crear` se niega con la RAM al 95 % (techo 90 %), y no se fuerza
+- [pass] Sin regresión en el envío por tmux | valida: `node e2e/correr.mjs tmux/rafaga` — verde el 10-oct con `chatbotx-builder`/`worker` parados un rato para tener RAM (`corrida-2026-10-10-01-03/`): 5 mensajes, cada uno 1 vez en JSONL y DOM, un solo proceso
 
 #### Peligros
 - Devolver el texto a un cuadro donde Leandro ya empezó a escribir otro: solo si está vacío.
@@ -449,17 +449,15 @@ Rama `rediseno-vista-principal` (worktree `~/worktrees/cloudcli/rediseno-vista-p
 **Fases completadas:**
 - 0, 1, 2, 3, 4, 7 y 8, con sus e2e de la vista en verde (10-oct).
 - La 5 sin código de por medio (veredicto «en vivo» en `:3901`).
-**Fase actual:** 6 (verificación final).
+**Fase actual:** 6 (verificación final): solo falta el reinicio y la confirmación de Leandro.
 **Proximo paso exacto:**
-1. Leandro libera RAM (o compila en la notebook) y corre `npm run build` en esta rama.
-2. Mergear `rediseno-vista-principal` a `diseno/propio`. En `~/cloudcli`: `npm run build && systemctl --user restart cloudcli` desde `ct`/ttyd, y hard refresh en `:8446`.
-3. Leandro confirma.
-4. Con RAM bajo el 90 %: `node e2e/correr.mjs --con-cuota barra/sin-refresh tmux/rafaga tmux/en-vivo` en la instancia aislada, y `tmux/en-vivo` contra `:3001`.
-5. `wt rm rediseno-vista-principal`.
-**Bloqueantes:**
-- RAM del VPS: `vite build` no entra (≈1 GB libre), y `orquestar.py` no crea sesiones con la RAM al 95 %. Lo mismo le va a pasar al `npm run build` de `~/cloudcli`.
-- El error de lint de `websocketOutboundQueue.test.tsx` y los 10 rojos de `npm test` son anteriores al plan, pero frenan el check de la Fase 6 tal como está escrito.
-**Micro-tasks pendientes:** 3 de 28 (la medición de `barra/sin-refresh`, el streaming de tmux contra `:3001` y la pasada final con build).
+1. `~/cloudcli` ya está compilado en `6d9f421b`. Leandro corre `systemctl --user restart cloudcli` desde `ct`/ttyd (no desde una terminal de CloudCLI) y hace hard refresh en `:8446`.
+2. Leandro confirma.
+3. `tmux/en-vivo` contra `:3001` (pide `CLOUDCLI_USER`/`CLOUDCLI_PASS` en el entorno).
+4. `wt rm rediseno-vista-principal`.
+**Bloqueantes:** ninguno propio del plan. El error de lint de `websocketOutboundQueue.test.tsx` y los 10 rojos de `npm test` son anteriores y ajenos; el check de la Fase 6 los nombra.
+**Micro-tasks pendientes:** 1 de 28 (la pasada final, por el lint y los tests ajenos).
+**RAM (10-oct):** para el build y las pruebas de tmux se pararon `chatbotx-builder-1` y `chatbotx-worker-1` (~2,3 GB) con autorización de Leandro, y se volvieron a levantar (había un timer de respaldo `respaldo-chatbotx` a los 45 min, cancelado).
 **Decisiones de Leandro (9-oct):** la barra **empuja** el chat; el streaming que falla es el de **tmux**; ejecutar todo el plan seguido, en la cuenta optimum, aceptando el corte por cuota.
 
 **Boceto aprobado (9-oct):** Leandro aprobó el boceto «tal cual», con las escenas 1-9. Cuota: **variante A (anillo)**. La barra empuja el chat; Tareas, Plugins, Archivados y Tema viven en Ajustes; Servicios y el medidor completo se agregan como Fase 8.
