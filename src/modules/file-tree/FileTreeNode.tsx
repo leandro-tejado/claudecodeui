@@ -56,7 +56,7 @@ function TreeItemIcon({ item, isOpen, renderFileIcon }: TreeItemIconProps) {
       <span className="flex flex-shrink-0 items-center gap-0.5">
         <TreeChevron open={isOpen} className="h-3.5 w-3.5 text-muted-foreground/70" />
         {isOpen ? (
-          <FolderOpen className="h-4 w-4 flex-shrink-0 text-blue-500" />
+          <FolderOpen className="h-4 w-4 flex-shrink-0 text-ds-primary" />
         ) : (
           <Folder className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
         )}
@@ -104,21 +104,19 @@ export default function FileTreeNode({
   const isDropTarget = isDirectory && dropTarget === item.path;
 
   const nameClassName = cn(
-    'text-[13px] leading-tight truncate',
+    'text-[13.5px] leading-tight truncate',
     isDirectory ? 'font-medium text-foreground' : 'text-foreground/90',
   );
 
   // View mode only changes the row layout; selection, expansion, and recursion stay shared.
   const rowClassName = cn(
     viewMode === 'detailed'
-      ? 'group grid grid-cols-12 gap-2 py-[3px] pr-2 hover:bg-accent/60 cursor-pointer items-center rounded-sm transition-colors duration-100'
+      ? 'group grid grid-cols-12 gap-2 py-[3px] pr-2 hover:bg-accent cursor-pointer items-center rounded-md transition-colors duration-100'
       : viewMode === 'compact'
-      ? 'group flex items-center justify-between py-[3px] pr-2 hover:bg-accent/60 cursor-pointer rounded-sm transition-colors duration-100'
-      : 'group flex items-center gap-1.5 py-[3px] pr-2 cursor-pointer rounded-sm hover:bg-accent/60 transition-colors duration-100',
-    isDirectory && isOpen && 'border-l-2 border-primary/30',
-    (isDirectory && !isOpen) || !isDirectory ? 'border-l-2 border-transparent' : '',
+      ? 'group flex items-center justify-between py-[3px] pr-2 hover:bg-accent cursor-pointer rounded-md transition-colors duration-100'
+      : 'group flex items-center gap-1.5 py-[3px] pr-2 cursor-pointer rounded-md hover:bg-accent transition-colors duration-100',
     'relative',
-    isDropTarget && 'bg-blue-500/10 ring-1 ring-inset ring-blue-500/40',
+    isDropTarget && 'bg-ds-primary-tint ring-1 ring-inset ring-ds-primary',
   );
 
   // Render rename input if this item is being renamed

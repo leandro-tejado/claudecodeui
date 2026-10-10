@@ -60,7 +60,7 @@ export default function FileTreeHeader({
     <div className="space-y-2 border-b border-border px-3 pb-2 pt-3">
       {/* Title and Toolbar */}
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium text-foreground">{t('fileTree.files')}</h3>
+        <h3 className="font-medium text-foreground" style={{ fontSize: 'var(--skin-text-sm)' }}>{t('fileTree.files')}</h3>
         <div className="flex items-center gap-0.5">
           {/* Action buttons */}
           {onUploadFiles && (
@@ -208,7 +208,8 @@ export default function FileTreeHeader({
           placeholder={t('fileTree.searchPlaceholder')}
           value={searchQuery}
           onChange={(event) => onSearchQueryChange(event.target.value)}
-          className="h-8 pl-8 pr-8 text-sm"
+          className="h-8 rounded-md border-border bg-background pl-8 pr-8 shadow-none focus-visible:border-primary focus-visible:ring-0"
+          style={{ fontSize: 'var(--skin-text-sm)' }}
         />
         {searchQuery && (
           <Button

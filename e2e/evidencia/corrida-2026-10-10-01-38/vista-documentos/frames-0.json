@@ -1,0 +1,102 @@
+[
+  {
+    "t": 1791596330260,
+    "sentido": "in",
+    "url": "ws://localhost:3920/?token=Pif9S_N-UiiL",
+    "datos": {
+      "type": "connected"
+    }
+  },
+  {
+    "t": 1791596331497,
+    "sentido": "out",
+    "url": "ws://localhost:3920/ws?token=<jwt tapado>",
+    "datos": {
+      "type": "chat.tmux-prompts"
+    }
+  },
+  {
+    "t": 1791596331497,
+    "sentido": "out",
+    "url": "ws://localhost:3920/ws?token=<jwt tapado>",
+    "datos": {
+      "type": "chat.tmux-prompts"
+    }
+  },
+  {
+    "t": 1791596331531,
+    "sentido": "in",
+    "url": "ws://localhost:3920/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "tmux_prompts",
+      "prompts": [],
+      "timestamp": "2026-10-10T01:38:51.518Z"
+    }
+  },
+  {
+    "t": 1791596331541,
+    "sentido": "in",
+    "url": "ws://localhost:3920/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "tmux_prompts",
+      "prompts": [],
+      "timestamp": "2026-10-10T01:38:51.522Z"
+    }
+  },
+  {
+    "t": 1791596332909,
+    "sentido": "out",
+    "url": "ws://localhost:3920/ws?token=<jwt tapado>",
+    "datos": {
+      "type": "chat.subscribe",
+      "sessions": [
+        {
+          "sessionId": "88e7f6cc-5d98-41fb-a862-ff9a9471fdbb",
+          "lastSeq": 0
+        }
+      ]
+    }
+  },
+  {
+    "t": 1791596332913,
+    "sentido": "out",
+    "url": "ws://localhost:3920/ws?token=<jwt tapado>",
+    "datos": {
+      "type": "chat.subscribe",
+      "sessions": [
+        {
+          "sessionId": "88e7f6cc-5d98-41fb-a862-ff9a9471fdbb",
+          "lastSeq": 0
+        }
+      ]
+    }
+  },
+  {
+    "t": 1791596332926,
+    "sentido": "in",
+    "url": "ws://localhost:3920/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "chat_subscribed",
+      "sessionId": "88e7f6cc-5d98-41fb-a862-ff9a9471fdbb",
+      "isProcessing": false,
+      "lastSeq": 0,
+      "pendingPermissions": [],
+      "runsInTmux": false,
+      "timestamp": "2026-10-10T01:38:52.845Z"
+    }
+  },
+  {
+    "t": 1791596332935,
+    "sentido": "in",
+    "url": "ws://localhost:3920/ws?token=<jwt tapado>",
+    "datos": {
+      "kind": "chat_subscribed",
+      "sessionId": "88e7f6cc-5d98-41fb-a862-ff9a9471fdbb",
+      "isProcessing": false,
+      "lastSeq": 0,
+      "pendingPermissions": [],
+      "runsInTmux": false,
+      "timestamp": "2026-10-10T01:38:52.911Z"
+    }
+  }
+]

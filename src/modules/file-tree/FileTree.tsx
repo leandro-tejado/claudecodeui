@@ -157,8 +157,10 @@ export default function FileTree({ selectedProject, onFileOpen, narrow, refreshS
   }, [operations.renamingItem]);
 
   const renderFileIcon = useCallback((filename: string) => {
-    const { icon: Icon, color } = getFileIconData(filename);
-    return <Icon className={cn(ICON_SIZE_CLASS, color)} />;
+    // Monocromos, como los íconos de la barra: la forma distingue el tipo y el
+    // color queda para lo que pide atención (design-system/branding.md).
+    const { icon: Icon } = getFileIconData(filename);
+    return <Icon className={cn(ICON_SIZE_CLASS, 'text-muted-foreground')} />;
   }, []);
 
   // Centralized click behavior keeps file actions identical across all presentation modes.
@@ -198,7 +200,7 @@ export default function FileTree({ selectedProject, onFileOpen, narrow, refreshS
   return (
     <div
       ref={treeRef}
-      className="relative flex h-full flex-col bg-background"
+      className="relative flex h-full flex-col bg-inherit"
       onDragEnter={upload.handleDragEnter}
       onDragOver={upload.handleDragOver}
       onDragLeave={upload.handleDragLeave}
@@ -217,9 +219,9 @@ export default function FileTree({ selectedProject, onFileOpen, narrow, refreshS
 
       {/* Drag overlay; pointer-events-none keeps folder rows reachable as drop targets */}
       {upload.isDragOver && (
-        <div className="pointer-events-none absolute inset-0 z-50 flex items-center justify-center border-2 border-dashed border-blue-500 bg-blue-500/10">
+        <div className="pointer-events-none absolute inset-0 z-50 flex items-center justify-center border-2 border-dashed border-ds-primary bg-ds-primary-tint">
           <div className="flex items-center gap-3 rounded-lg bg-background/95 px-6 py-4 shadow-lg">
-            <Upload className="h-6 w-6 text-blue-500" />
+            <Upload className="h-6 w-6 text-ds-primary" />
             <span className="text-sm font-medium">
               {upload.dropTarget
                 ? t('fileTree.dropToUploadTo', 'Drop files to upload to "{{folder}}"', {
@@ -260,7 +262,7 @@ export default function FileTree({ selectedProject, onFileOpen, narrow, refreshS
             style={{ paddingLeft: `${(operations.newItemParent.split('/').length - 1) * 16 + 4}px` }}
           >
             {operations.newItemType === 'directory' ? (
-              <Folder className={cn(ICON_SIZE_CLASS, 'text-blue-500')} />
+              <Folder className={cn(ICON_SIZE_CLASS, 'text-ds-primary')} />
             ) : (
               <span className="ml-[18px]">{renderFileIcon(operations.newItemName)}</span>
             )}

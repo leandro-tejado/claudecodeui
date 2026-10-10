@@ -13,6 +13,7 @@ import {
   FolderPlus,
   Loader2,
   Moon,
+  PanelLeftClose,
   Pencil,
   Pin,
   PinOff,
@@ -316,6 +317,11 @@ export function SkinSidebar({
   const [width, setWidth] = useState(readStoredWidth);
   const [starOverride, setStarOverride] = useState<Map<string, boolean>>(new Map());
   const dragStateRef = useRef<{ startX: number; startWidth: number } | null>(null);
+  /* Mientras se arrastra, el ancho sigue al puntero sin transición y la barra
+     asomada no se esconde aunque el cursor salga de ella. */
+  const [arrastrando, setArrastrando] = useState(false);
+  const barraRef = useRef<HTMLDivElement | null>(null);
+  const alSoltarFueraRef = useRef<() => void>(() => {});
   const { sidebarCollapsed } = useSkinUi();
 
   /* Renombrar una sesión, en el lugar. `titleOverride` evita esperar a que el
@@ -426,6 +432,7 @@ export function SkinSidebar({
     (event: ReactMouseEvent<HTMLDivElement>) => {
       event.preventDefault();
       dragStateRef.current = { startX: event.clientX, startWidth: width };
+      setArrastrando(true);
 
       const onMove = (moveEvent: MouseEvent) => {
         const drag = dragStateRef.current;
@@ -434,8 +441,11 @@ export function SkinSidebar({
         setWidth(next);
       };
 
-      const onUp = () => {
+      const onUp = (upEvent: MouseEvent) => {
         dragStateRef.current = null;
+        setArrastrando(false);
+        // Soltar fuera de una barra asomada es salir de ella: el mouseleave ya pasó.
+        if (!barraRef.current?.contains(upEvent.target as Node)) alSoltarFueraRef.current();
         window.removeEventListener('mousemove', onMove);
         window.removeEventListener('mouseup', onUp);
         document.body.style.cursor = '';
@@ -892,6 +902,15 @@ export function SkinSidebar({
 
   const plegada = !isMobile && sidebarCollapsed;
   const enRiel = plegada && !asomada;
+  alSoltarFueraRef.current = () => {
+    if (plegada) programarAsomo(false, SALIDA_MS);
+  };
+
+  const fijarOPlegar = () => {
+    if (isMobile) return;
+    toggleSidebarCollapsed();
+    setAsomada(false);
+  };
 
   const botonIcono =
     'grid h-8 w-8 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground';
@@ -900,11 +919,7 @@ export function SkinSidebar({
     <button
       type="button"
       data-testid="barra-logo"
-      onClick={() => {
-        if (isMobile) return;
-        toggleSidebarCollapsed();
-        setAsomada(false);
-      }}
+      onClick={fijarOPlegar}
       title={plegada ? 'Dejar la barra abierta' : 'Plegar la barra'}
       aria-label={plegada ? 'Dejar la barra abierta' : 'Plegar la barra'}
       aria-pressed={!plegada}
@@ -922,10 +937,11 @@ export function SkinSidebar({
        09-oct): entra en 150 ms y sale en 250, con su retardo cada una para
        que pasar el mouse de camino a otra cosa no la mueva. */
     <div
+      ref={barraRef}
       className="relative h-full flex-none overflow-hidden bg-card transition-[width] ease-out"
       style={{
         width: isMobile ? '100%' : enRiel ? RIEL_ANCHO : width,
-        transitionDuration: `${enRiel ? SALIDA_MS : ENTRADA_MS}ms`,
+        transitionDuration: arrastrando ? '0ms' : `${enRiel ? SALIDA_MS : ENTRADA_MS}ms`,
         fontSize: 'var(--skin-text)',
       }}
       data-testid="barra-lateral"
@@ -936,7 +952,7 @@ export function SkinSidebar({
         programarAsomo(true, ENTRADA_MS);
       }}
       onMouseLeave={() => {
-        if (!plegada) return;
+        if (!plegada || dragStateRef.current) return;
         programarAsomo(false, SALIDA_MS);
       }}
     >
@@ -990,16 +1006,22 @@ export function SkinSidebar({
         className="flex h-full flex-col"
         style={{ width: isMobile ? '100%' : width }}
       >
-      {/* Manija de ancho. En mobile el sidebar es un cajón: no aplica. */}
-      {!isMobile && !plegada && (
+      {/* Manija de ancho, también con la barra asomada. En mobile el sidebar es un cajón: no aplica. */}
+      {!isMobile && (
         <div
           onMouseDown={handleDragStart}
-          className="group absolute right-0 top-0 z-20 h-full w-1.5 cursor-col-resize"
+          data-testid="barra-manija"
+          className="group absolute right-0 top-0 z-20 h-full w-2 cursor-col-resize"
           role="separator"
           aria-orientation="vertical"
           aria-label="Ajustar el ancho del panel"
         >
-          <div className="ml-auto h-full w-px bg-transparent transition-colors group-hover:bg-primary" />
+          <div
+            className={cn(
+              'ml-auto h-full w-px transition-colors group-hover:bg-primary',
+              arrastrando ? 'bg-primary' : 'bg-transparent',
+            )}
+          />
         </div>
       )}
 
@@ -1008,6 +1030,20 @@ export function SkinSidebar({
         {logo}
 
         <div className="ml-auto flex items-center gap-0.5">
+          {!isMobile && (
+            /* Asomada, la barra se puede fijar desde acá; fijada, plegar. El logo
+               hace lo mismo, pero no se adivina. */
+            <button
+              type="button"
+              onClick={fijarOPlegar}
+              data-testid={plegada ? 'barra-fijar' : 'barra-plegar'}
+              title={plegada ? 'Fijar la barra' : 'Plegar la barra'}
+              aria-label={plegada ? 'Fijar la barra' : 'Plegar la barra'}
+              className="grid h-7 w-7 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+            >
+              {plegada ? <Pin className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
+            </button>
+          )}
           <button
             type="button"
             onClick={() => {

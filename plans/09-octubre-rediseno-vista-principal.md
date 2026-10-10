@@ -1,7 +1,7 @@
 # Rediseño de la vista principal de CloudCLI: cabecera, barra lateral y compositor
 
 **Fecha:** 09 de Octubre 2026
-**Estado:** en-ejecucion (Fases 0-4, 7 y 8 cerradas; quedan la verificación de tmux en `:3001`, `npm run build` y la confirmación de Leandro en `:8446`)
+**Estado:** en-ejecucion (Fases 0-4, 7, 8 y 9 cerradas en código; quedan el build de la Fase 9, la verificación de tmux en `:3001` y la confirmación de Leandro en `:8446`)
 
 Se rediseña la vista principal de CloudCLI (cabecera, barra de cuota, barra lateral, estado vacío y compositor) para que se parezca al chat `/claude` de Optimum: minimalista, sin botones que no se usan y con casi nada de texto. **La Fase 0 es un boceto HTML que Leandro aprueba antes de tocar una línea de código.**
 
@@ -390,6 +390,27 @@ Leandro ve la vista principal «fea» y recargada (9-oct, con capturas de `:8446
 - La relacion madre-hija puede no estar registrada hoy: si no existe, el paso 1 abre un pendiente y el arbol espera.
 - Mostrar el endpoint de servicios fuera del tailnet: queda detras del login de CloudCLI.
 
+### Fase 9 - Barra fijable y ancha, compositor a la columna, archivos y documentos con la marca
+**Goal (done-criterion):** asomada, la barra muestra «Fijar la barra» y se puede ensanchar sin esconderse durante el arrastre Y el compositor mide lo mismo que la columna de lectura Y el árbol de Archivos y el documento abierto usan los tokens `ds-*` en los dos temas Y `vista/documentos` pasa.
+**Alcance:** Tocar: `src/modules/skin/SkinSidebar.tsx`, `SkinFilesPanel.tsx`, `src/modules/file-tree/`, `src/modules/code-editor/`, `src/modules/chat/composer/`. Ignorar: el editor de código (CodeMirror) y la lengüeta de Quick Settings.
+**Paralelizable:** No: es la revisión de Leandro del 10-oct sobre `:8446`.
+
+#### Pasos
+1. Botón «Fijar la barra» (pin) en la cabecera asomada; fijada, el mismo lugar la pliega.
+2. La manija de ancho también con la barra asomada. Durante el arrastre: sin transición, y el `mouseleave` no la esconde. Soltar fuera la pliega.
+3. Compositor, cola y programados en `max-w-[46rem]`, que es la columna `max-w-3xl` menos su `px-4`. La franja del compositor sobre `bg-ds-surface`, igual que el chat.
+4. Árbol: fondo de tarjeta como la barra, filas `rounded-md` con `hover:bg-accent`, íconos monocromos y carpeta abierta en `ds-primary`.
+5. Documento: preview de markdown con la cita, las tablas y la tipografía del chat. Cabecera, pie y visores con los tokens `ds-*`.
+
+#### Estado (arranca todo en fail)
+- [pass] Fijar y ensanchar la barra asomada | valida: `NODE_ENV=test npx vitest run src/modules/skin/tests/skinSidebarRiel.test.tsx` (10/10; los dos tests nuevos no pueden pasar sin el código: `barra-fijar` y `barra-manija` no existían)
+- [pass] Compositor a la columna, árbol y documento con la marca | valida: `node e2e/correr.mjs vista/documentos` — 6/6 en claro y oscuro, corrida `e2e/evidencia/corrida-2026-10-10-01-38/`
+- [pass] Sin regresiones en lo tocado | valida: `NODE_ENV=test npx vitest run src/modules/file-tree src/modules/code-editor src/modules/skin src/modules/chat` (566/566), `npx tsc --noEmit -p tsconfig.json`, `npx oxlint` sin errores
+- [fail] Leandro lo ve en `:8446` tras build y reinicio
+
+#### Peligros
+- Los colores `ds-*` son hex dentro de `var()`, así que el modificador de opacidad de Tailwind (`/10`) no funciona: se usa `ds-primary-tint`.
+
 ---
 
 ## Orden de ejecución
@@ -432,6 +453,13 @@ Rama `rediseno-vista-principal` (worktree `~/worktrees/cloudcli/rediseno-vista-p
   - Con la RAM alta, la cabecera subía también el disco al 44 %.
   - Además: `E2E_URL_UI` en el arnés, escenarios corregidos y las 8 capturas en `e2e/evidencia/09-vista-principal/99-despues/`.
 
+- **Fase 9, segunda revisión de Leandro (10-oct)**, a pedido suyo sobre `:8446`:
+  - La barra asomada se puede fijar con un botón (antes solo con el logo, que no se adivina) y ensanchar.
+  - El compositor era más ancho que la columna (`54.25rem` contra `46rem`) y su franja tenía otro fondo.
+  - El árbol de Archivos usaba íconos de colores, el beige de `bg-background` y filas con borde.
+  - El preview de markdown usaba grises y azules sueltos.
+  - Escenario nuevo `vista/documentos`.
+
 **Cómo se corrieron los e2e sin build:** `vite build` no entra en la RAM del VPS. La instancia de prueba corre solo con `build:server`, y la interfaz la sirve `vite` en dev (unidad transitoria `e2e-rvp-vite`, `:3920`, proxy a `:3912`). `E2E_URL_UI=http://localhost:3920` apunta el navegador ahí sin el cambio de modo de `CLOUDCLI_URL`.
 
 **Comparación con el boceto:** coinciden cabecera de una fila con un anillo, riel que empuja el chat, Ajustes con todo lo plegado, compositor de una píldora y estado vacío sin texto. Lo que no estaba en el boceto y aparece en las capturas es la lengüeta de Quick Settings a la derecha (`QuickSettingsHandle`). Es anterior al plan, pero en 390 px se come ~48 px del chat: queda como candidata a un plan aparte.
@@ -452,9 +480,9 @@ Rama `rediseno-vista-principal` (worktree `~/worktrees/cloudcli/rediseno-vista-p
 **Fases completadas:**
 - 0, 1, 2, 3, 4, 7 y 8, con sus e2e de la vista en verde (10-oct).
 - La 5 sin código de por medio (veredicto «en vivo» en `:3901`).
-**Fase actual:** 6 (verificación final): solo falta el reinicio y la confirmación de Leandro.
+**Fase actual:** 9 cerrada en código; 6 (verificación final) espera el build, el reinicio y la confirmación de Leandro.
 **Proximo paso exacto:**
-1. `~/cloudcli` ya está compilado en `662d114b`. Leandro corre `systemctl --user restart cloudcli` desde `ct`/ttyd (no desde una terminal de CloudCLI) y hace hard refresh en `:8446`.
+1. `cd ~/cloudcli && git pull && npm run build` con la Fase 9. Después Leandro corre `systemctl --user restart cloudcli` desde `ct`/ttyd (no desde una terminal de CloudCLI) y hace hard refresh en `:8446`.
 2. Leandro confirma.
 3. `tmux/en-vivo` contra `:3001` (pide `CLOUDCLI_USER`/`CLOUDCLI_PASS` en el entorno).
 4. `wt rm rediseno-vista-principal`.

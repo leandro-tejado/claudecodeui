@@ -15,28 +15,27 @@ const markdownPreviewComponents: Components = {
   // MarkdownCodeBlock renders its own highlighted <pre>; passthrough prevents a
   // second Typography-styled <pre> shell from framing it.
   pre: ({ children }) => <>{children}</>,
+  // Mismo trazo que el markdown del chat (`chat/transcript/Markdown.tsx`): la
+  // cita lleva el acento de marca y las tablas, la tarjeta de borde suave.
   blockquote: ({ children }) => (
-    <blockquote className="my-2 border-l-4 border-gray-300 pl-4 italic text-gray-600 dark:border-gray-600 dark:text-gray-400">
-      {children}
-    </blockquote>
+    <blockquote className="my-3 border-l-2 border-ds-primary pl-4 not-italic text-ds-ink [quotes:none]">{children}</blockquote>
   ),
   a: ({ href, children }) => (
-    <a href={href} className="text-blue-600 hover:underline dark:text-blue-400" target="_blank" rel="noopener noreferrer">
+    <a href={href} className="text-ds-primary hover:underline" target="_blank" rel="noopener noreferrer">
       {children}
     </a>
   ),
   table: ({ children }) => (
-    <div className="my-2 overflow-x-auto">
-      <table className="min-w-full border-collapse border border-gray-200 dark:border-gray-700">{children}</table>
+    <div className="my-3 overflow-x-auto rounded-ds-md border border-ds-line">
+      <table className="my-0 min-w-full border-collapse text-ds-compact">{children}</table>
     </div>
   ),
-  thead: ({ children }) => <thead className="bg-gray-50 dark:bg-gray-800">{children}</thead>,
+  thead: ({ children }) => <thead className="bg-ds-surface-2">{children}</thead>,
+  tr: ({ children }) => <tr className="[&:last-child>td]:border-b-0">{children}</tr>,
   th: ({ children }) => (
-    <th className="border border-gray-200 px-3 py-2 text-left text-sm font-semibold dark:border-gray-700">{children}</th>
+    <th className="border-b border-ds-line px-2 py-1 text-left font-semibold text-ds-ink">{children}</th>
   ),
-  td: ({ children }) => (
-    <td className="border border-gray-200 px-3 py-2 align-top text-sm dark:border-gray-700">{children}</td>
-  ),
+  td: ({ children }) => <td className="border-b border-ds-line px-2 py-1 align-top text-ds-ink">{children}</td>,
 };
 
 /** Used by the prd-editor module, and by CodeEditorSurface inside code-editor, to render markdown source as formatted preview output. */

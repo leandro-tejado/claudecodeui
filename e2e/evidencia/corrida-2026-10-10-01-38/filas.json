@@ -1,0 +1,116 @@
+[
+  {
+    "escenario": "vista/documentos",
+    "nombre": "claro: el compositor mide lo mismo que la columna de lectura",
+    "resultado": "pasa",
+    "evidencia": [
+      "vista-documentos/frames-0.json"
+    ],
+    "datos": {
+      "columna": {
+        "x": 368,
+        "y": 105,
+        "width": 768,
+        "height": 416.78125
+      },
+      "compositor": {
+        "x": 384,
+        "y": 653,
+        "width": 736,
+        "height": 123,
+        "top": 653,
+        "right": 1120,
+        "bottom": 776,
+        "left": 384
+      }
+    },
+    "ms": 15046
+  },
+  {
+    "escenario": "vista/documentos",
+    "nombre": "claro: la carpeta abierta del árbol usa el primario de marca",
+    "resultado": "pasa",
+    "evidencia": [
+      "vista-documentos/arbol-claro.png"
+    ],
+    "datos": {
+      "colorCarpeta": "rgb(49, 86, 250)",
+      "primario": "rgb(49, 86, 250)"
+    },
+    "ms": 15046
+  },
+  {
+    "escenario": "vista/documentos",
+    "nombre": "claro: la cita del documento lleva el acento de marca y el fondo es la superficie",
+    "resultado": "pasa",
+    "evidencia": [
+      "vista-documentos/documento-claro.png"
+    ],
+    "datos": {
+      "estilos": {
+        "borde": "rgb(49, 86, 250)",
+        "fondo": "rgb(255, 255, 255)"
+      },
+      "primario": "rgb(49, 86, 250)",
+      "superficie": "rgb(255, 255, 255)"
+    },
+    "ms": 15046
+  },
+  {
+    "escenario": "vista/documentos",
+    "nombre": "oscuro: el compositor mide lo mismo que la columna de lectura",
+    "resultado": "pasa",
+    "evidencia": [
+      "vista-documentos/frames-0.json"
+    ],
+    "datos": {
+      "columna": {
+        "x": 368,
+        "y": 105,
+        "width": 768,
+        "height": 416.78125
+      },
+      "compositor": {
+        "x": 384,
+        "y": 653,
+        "width": 736,
+        "height": 123,
+        "top": 653,
+        "right": 1120,
+        "bottom": 776,
+        "left": 384
+      }
+    },
+    "ms": 15046
+  },
+  {
+    "escenario": "vista/documentos",
+    "nombre": "oscuro: la carpeta abierta del árbol usa el primario de marca",
+    "resultado": "pasa",
+    "evidencia": [
+      "vista-documentos/arbol-oscuro.png"
+    ],
+    "datos": {
+      "colorCarpeta": "rgb(124, 155, 255)",
+      "primario": "rgb(124, 155, 255)"
+    },
+    "ms": 15046
+  },
+  {
+    "escenario": "vista/documentos",
+    "nombre": "oscuro: la cita del documento lleva el acento de marca y el fondo es la superficie",
+    "resultado": "pasa",
+    "evidencia": [
+      "vista-documentos/documento-oscuro.png"
+    ],
+    "datos": {
+      "estilos": {
+        "borde": "rgb(124, 155, 255)",
+        "fondo": "rgb(11, 18, 32)"
+      },
+      "primario": "rgb(124, 155, 255)",
+      "superficie": "rgb(11, 18, 32)"
+    },
+    "ms": 15046
+  }
+]

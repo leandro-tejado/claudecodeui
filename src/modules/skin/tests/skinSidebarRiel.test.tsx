@@ -167,4 +167,43 @@ describe('barra plegada: el riel', () => {
     act(() => vi.advanceTimersByTime(500));
     expect(screen.queryByTestId('barra-riel')).toBeNull();
   });
+
+  it('asomada muestra «Fijar la barra», que la deja abierta; fijada, el mismo lugar la pliega', () => {
+    renderBarra();
+    fireEvent.click(screen.getByTestId('barra-plegar'));
+    const barra = screen.getByTestId('barra-lateral');
+    expect(screen.getByTestId('barra-riel')).toBeTruthy();
+    fireEvent.mouseEnter(barra);
+    act(() => vi.advanceTimersByTime(200));
+    fireEvent.click(screen.getByTestId('barra-fijar'));
+    expect(barra.getAttribute('data-plegada')).toBe('false');
+    expect(localStorage.getItem('skin:barra-fijada')).toBe('1');
+    fireEvent.mouseLeave(barra);
+    act(() => vi.advanceTimersByTime(500));
+    expect(screen.queryByTestId('barra-riel')).toBeNull();
+    expect(screen.getByTestId('barra-plegar')).toBeTruthy();
+  });
+
+  it('asomada se puede ensanchar, sin esconderse al salir el cursor durante el arrastre', () => {
+    renderBarra();
+    fireEvent.click(screen.getByTestId('barra-logo'));
+    const barra = screen.getByTestId('barra-lateral');
+    fireEvent.mouseEnter(barra);
+    act(() => vi.advanceTimersByTime(200));
+    const antes = parseInt(barra.style.width, 10);
+
+    fireEvent.mouseDown(screen.getByTestId('barra-manija'), { clientX: 300 });
+    fireEvent.mouseLeave(barra);
+    fireEvent.mouseMove(window, { clientX: 360 });
+    act(() => vi.advanceTimersByTime(500));
+    expect(screen.queryByTestId('barra-riel')).toBeNull();
+    expect(parseInt(barra.style.width, 10)).toBe(Math.min(520, antes + 60));
+    expect(barra.style.transitionDuration).toBe('0ms');
+
+    fireEvent.mouseUp(document.body);
+    expect(localStorage.getItem('skin:sidebar-width')).toBe(String(Math.min(520, antes + 60)));
+    act(() => vi.advanceTimersByTime(300));
+    expect(screen.getByTestId('barra-riel')).toBeTruthy();
+    localStorage.removeItem('skin:sidebar-width');
+  });
 });

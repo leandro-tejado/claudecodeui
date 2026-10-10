@@ -59,8 +59,10 @@ export default function CodeEditorSurface({
 
   if (markdownPreview && isMarkdownFile) {
     return (
-      <div className="h-full overflow-y-auto bg-white dark:bg-gray-900">
-        <div className="prose prose-sm mx-auto max-w-4xl px-8 py-6 dark:prose-invert prose-headings:font-semibold prose-a:text-blue-600 prose-code:text-sm prose-pre:bg-gray-900 prose-img:rounded-lg dark:prose-a:text-blue-400">
+      <div className="h-full overflow-y-auto bg-ds-surface">
+        {/* Columna de lectura y tipografía del chat (design-system/tokens.md): los
+            colores de `prose` se apuntan a los tokens ds-*, que ya cambian con el tema. */}
+        <div className="prose mx-auto max-w-3xl px-6 py-6 text-ds-body [--tw-prose-body:var(--ds-ink)] [--tw-prose-bold:var(--ds-ink)] [--tw-prose-bullets:var(--ds-muted)] [--tw-prose-captions:var(--ds-muted)] [--tw-prose-code:var(--ds-ink)] [--tw-prose-counters:var(--ds-muted)] [--tw-prose-headings:var(--ds-ink)] [--tw-prose-hr:var(--ds-line)] [--tw-prose-links:var(--ds-primary)] [--tw-prose-quotes:var(--ds-ink)] prose-h1:text-ds-display prose-h2:text-ds-h2 prose-h3:text-ds-h3 prose-h4:text-ds-h4 prose-img:rounded-ds-md">
           <MarkdownPreview content={content} />
         </div>
       </div>
