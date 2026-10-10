@@ -424,6 +424,9 @@ Rama `rediseno-vista-principal` (worktree `~/worktrees/cloudcli/rediseno-vista-p
 - `33d9d338` **Fase 4:** estado vacío sin texto (solo `NextTaskBanner` si hay tareas). Compositor de cuatro controles: cuenta, permisos, modelo y esfuerzo plegados en un menú. Placeholder «Escribe…».
 - `3d95a800` **Fase 7:** el compositor dice «Sesión nueva en <proyecto> · <cuenta>» antes de enviar. Un rechazo que no pudo tipear (todo lo que no sea `PANE_SEND_UNCONFIRMED`/`TMUX_SEND_FAILED`) devuelve el texto al cuadro.
 - `c2a659aa` **Fase 8:** monograma por proyecto, peor estado y contador al plegar. Subagentes vivos como filas hijas (máx. 7 + «+N más»). Vista Servicios (diálogo desde Ajustes) sobre `GET /api/system/servicios` (`ss -tlnpH` + `tailscale serve status`, detrás de `authenticateToken`).
+- `662d114b` **Tras la revisión de Leandro (10-oct):**
+  - **La barra arrancaba fija:** se notó al mirar `:8446`. El riel y el hover existían, pero `skinUiStore` arrancaba con la barra abierta salvo que alguien la hubiera plegado, así que nunca se veía el riel. Ahora en reposo es el riel, y fijarla con el logo se guarda en `skin:barra-fijada`; la clave vieja se ignora a propósito. Test `skinUiStoreReposo.test.ts`, que falla con el default viejo, y check nuevo en `vista/barra-hover` («sin preferencias guardadas, la barra arranca en el riel»).
+  - **Servicios, contra la escena 8 del boceto:** RAM y disco arriba, y un clic abre el servicio por su entrada del tailnet (`abrirEn`). El menú ⋯ de reiniciar o ver el log queda fuera: la Fase 8 es de solo lectura.
 - `1995ddcf` **Fase 6 (10-oct):** dos bugs que encontraron los e2e:
   - La barra solo leía la tool `Task`, y Claude Code hoy la llama `Agent`: sin el arreglo no aparecía ninguna fila hija.
   - Con la RAM alta, la cabecera subía también el disco al 44 %.
@@ -451,12 +454,13 @@ Rama `rediseno-vista-principal` (worktree `~/worktrees/cloudcli/rediseno-vista-p
 - La 5 sin código de por medio (veredicto «en vivo» en `:3901`).
 **Fase actual:** 6 (verificación final): solo falta el reinicio y la confirmación de Leandro.
 **Proximo paso exacto:**
-1. `~/cloudcli` ya está compilado en `6d9f421b`. Leandro corre `systemctl --user restart cloudcli` desde `ct`/ttyd (no desde una terminal de CloudCLI) y hace hard refresh en `:8446`.
+1. `~/cloudcli` ya está compilado en `662d114b`. Leandro corre `systemctl --user restart cloudcli` desde `ct`/ttyd (no desde una terminal de CloudCLI) y hace hard refresh en `:8446`.
 2. Leandro confirma.
 3. `tmux/en-vivo` contra `:3001` (pide `CLOUDCLI_USER`/`CLOUDCLI_PASS` en el entorno).
 4. `wt rm rediseno-vista-principal`.
 **Bloqueantes:** ninguno propio del plan. El error de lint de `websocketOutboundQueue.test.tsx` y los 10 rojos de `npm test` son anteriores y ajenos; el check de la Fase 6 los nombra.
 **Micro-tasks pendientes:** 1 de 28 (la pasada final, por el lint y los tests ajenos).
+**RAM (10-oct):** se repitió una vez más para el build de `662d114b` (respaldo `respaldo-chatbotx2`, cancelado).
 **RAM (10-oct):** para el build y las pruebas de tmux se pararon `chatbotx-builder-1` y `chatbotx-worker-1` (~2,3 GB) con autorización de Leandro, y se volvieron a levantar (había un timer de respaldo `respaldo-chatbotx` a los 45 min, cancelado).
 **Decisiones de Leandro (9-oct):** la barra **empuja** el chat; el streaming que falla es el de **tmux**; ejecutar todo el plan seguido, en la cuenta optimum, aceptando el corte por cuota.
 
