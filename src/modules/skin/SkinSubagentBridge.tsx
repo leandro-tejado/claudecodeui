@@ -75,7 +75,9 @@ function SkinSubagentBridge({ sessionId, messages }: SkinSubagentBridgeProps) {
       const toolUseId = toToolUseId(message);
       if (!toolUseId) continue;
 
-      if (message.isToolUse && message.toolName === 'Task') {
+      // `Task` es el nombre viejo; Claude Code lo renombró a `Agent` (igual que
+      // lo acepta `useChatMessages`). Mirar solo el viejo dejaba la barra sin hijas.
+      if (message.isToolUse && (message.toolName === 'Task' || message.toolName === 'Agent')) {
         const input = readTaskInput(message.toolInput);
         upsertSubagent({
           toolUseId,

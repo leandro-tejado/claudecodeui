@@ -100,6 +100,10 @@ export default function SkinRecursos({ soloSiAlto = false }: { soloSiAlto?: bool
   const discoColor = colorDisco(discoPct);
 
   if (soloSiAlto && Math.max(ramPct ?? 0, discoPct ?? 0) < UMBRAL_CABECERA) return null;
+  // En la cabecera sube solo el que pasó el umbral: RAM al 94 % no arrastra
+  // al disco al 44 %, que sigue viviendo en el medidor.
+  const verRam = !soloSiAlto || (ramPct ?? 0) >= UMBRAL_CABECERA;
+  const verDisco = !soloSiAlto || (discoPct ?? 0) >= UMBRAL_CABECERA;
 
   // El chip combinado muestra el número del más severo, no un promedio ni el
   // % más alto sin más: RAM=91/Disco=50 tiene que leerse rojo (RAM sobre su
@@ -130,14 +134,18 @@ export default function SkinRecursos({ soloSiAlto = false }: { soloSiAlto?: bool
         </span>
 
         {/* Los dos chips, discretos, a partir de 640px. */}
-        <span className="hidden items-center gap-1 sm:flex">
-          <MemoryStick className="h-3.5 w-3.5 text-muted-foreground" />
-          <ChipContent pct={ramPct} colorClass={ramColor} />
-        </span>
-        <span className="hidden items-center gap-1 sm:flex">
-          <HardDrive className="h-3.5 w-3.5 text-muted-foreground" />
-          <ChipContent pct={discoPct} colorClass={discoColor} />
-        </span>
+        {verRam && (
+          <span className="hidden items-center gap-1 sm:flex" data-testid="recursos-ram">
+            <MemoryStick className="h-3.5 w-3.5 text-muted-foreground" />
+            <ChipContent pct={ramPct} colorClass={ramColor} />
+          </span>
+        )}
+        {verDisco && (
+          <span className="hidden items-center gap-1 sm:flex" data-testid="recursos-disco">
+            <HardDrive className="h-3.5 w-3.5 text-muted-foreground" />
+            <ChipContent pct={discoPct} colorClass={discoColor} />
+          </span>
+        )}
       </button>
 
       {open &&

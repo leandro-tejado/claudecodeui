@@ -1,6 +1,10 @@
 // Plan 09-oct, Fase 4: el compositor quedó en cuatro controles. Adjuntar, `/`
 // para comandos y `@` para archivos tienen que seguir andando igual.
+import fs from 'node:fs';
+import path from 'node:path';
+
 import { abrirProyecto, SEL } from '../../lib/chat.mjs';
+import { PROYECTO } from '../../lib/config.mjs';
 
 export const meta = {
   descripcion: 'compositor de cuatro controles: adjuntos, / y @ siguen funcionando',
@@ -15,6 +19,10 @@ export const meta = {
 };
 
 export async function correr(ctx) {
+  // `@` lista los archivos del proyecto: el de prueba nace vacío y sin esto
+  // la lista no tiene qué mostrar.
+  fs.mkdirSync(path.join(PROYECTO, 'src'), { recursive: true });
+  fs.writeFileSync(path.join(PROYECTO, 'src', 'ejemplo.ts'), 'export const x = 1;\n');
   const s = await ctx.abrir();
   await abrirProyecto(s);
   const form = s.pagina.locator('form').filter({ has: s.pagina.locator(SEL.composer) }).first();

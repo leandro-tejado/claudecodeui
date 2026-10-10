@@ -50,8 +50,11 @@ export async function correr(ctx) {
       await ir().catch((e) => filas.push(`${nombre}: error ${String(e.message).slice(0, 60)}`));
       await s.pagina.waitForTimeout(800);
       const texto = await leer(s);
-      const ok = enSesion(s) ? texto === null : Boolean(texto);
-      filas.push(`${vuelta}/${nombre}: url=${enSesion(s) ? 'sesión' : 'vacía'} línea=${texto ?? '—'} ${ok ? 'ok' : 'SIN AVISO'}`);
+      // Sin compositor (el «elegí un proyecto» de `/` sin proyecto) no hay a
+      // dónde mandar nada: no es un compositor vacío sin aviso.
+      const compositor = (await s.pagina.locator(SEL.composer).count()) > 0;
+      const ok = enSesion(s) ? texto === null : (Boolean(texto) || !compositor);
+      filas.push(`${vuelta}/${nombre}: url=${enSesion(s) ? 'sesión' : 'vacía'} compositor=${compositor ? 'sí' : 'no'} línea=${texto ?? '—'} ${ok ? 'ok' : 'SIN AVISO'}`);
     }
   }
   const malas = filas.filter((f) => !f.endsWith(' ok'));

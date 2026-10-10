@@ -74,4 +74,19 @@ describe('SkinRecursos', () => {
     expect(combinado).toBeTruthy();
     expect(discretos).toHaveLength(2);
   });
+
+  it('en la cabecera (soloSiAlto) sube solo el que pasó el 85 %', () => {
+    useRecursosMock.mockReturnValue(snapshot({ ram: { porcentajePct: 94, usadaGb: 7.4, totalGb: 7.9 }, disco: { usadoPct: 44, usadoGb: 42, totalGb: 96 } }));
+    render(<SkinRecursos soloSiAlto />);
+
+    expect(screen.queryByTestId('recursos-ram')).not.toBeNull();
+    expect(screen.queryByTestId('recursos-disco')).toBeNull();
+  });
+
+  it('en la cabecera (soloSiAlto) no aparece nada si los dos están bajo el 85 %', () => {
+    useRecursosMock.mockReturnValue(snapshot());
+    const { container } = render(<SkinRecursos soloSiAlto />);
+
+    expect(container.innerHTML).toBe('');
+  });
 });

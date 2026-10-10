@@ -34,7 +34,7 @@ export async function correr(ctx) {
   await medidor.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
   const textoMedidor = await medidor.innerText().catch(() => '');
   ctx.check('el clic en el anillo abre el medidor con las dos ventanas',
-    /5 horas/.test(textoMedidor) && /Semanal/.test(textoMedidor) && /Servidor/.test(textoMedidor),
+    /5 horas/i.test(textoMedidor) && /semanal/i.test(textoMedidor) && /servidor/i.test(textoMedidor),
     { evidencia: await ctx.captura(s, 'medidor'), datos: { textoMedidor: textoMedidor.slice(0, 300) } });
 
   const m = await ctx.abrir({ viewport: 'movil' });

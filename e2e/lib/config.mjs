@@ -71,8 +71,12 @@ export const CHROMIUM = path.join(
 
 export const BIN_AOS = path.join(os.homedir(), 'workspace-leandro/.claude/bin');
 
+// E2E_URL_UI apunta solo la interfaz a otro origen (p. ej. `vite` en dev con
+// proxy a la instancia de prueba, cuando el VPS no tiene RAM para `vite build`)
+// sin el cambio de modo de CLOUDCLI_URL: el aislamiento de tmux y el token en
+// disco siguen siendo los de la instancia local.
 export function urlBase(puerto = PUERTO_REAL) {
-  return process.env.CLOUDCLI_URL || `http://127.0.0.1:${puerto}`;
+  return process.env.CLOUDCLI_URL || process.env.E2E_URL_UI || `http://127.0.0.1:${puerto}`;
 }
 
 export function archivoToken(puerto) {

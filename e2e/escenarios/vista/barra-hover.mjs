@@ -1,6 +1,8 @@
 // Plan 09-oct, Fase 3: plegada, la barra es un riel de íconos que el cursor
 // asoma (≤ 150 ms) empujando el chat, se vuelve a plegar al salir y se fija
 // con un clic en el logo.
+import { filaProyecto, SEL } from '../../lib/chat.mjs';
+
 export const meta = {
   descripcion: 'riel de íconos: asoma con el cursor, empuja el chat y se fija con el logo',
   puerto: 3902,
@@ -14,11 +16,15 @@ export const meta = {
 
 const barra = (s) => s.pagina.locator('[data-testid="barra-lateral"]');
 const ancho = async (s) => (await barra(s).boundingBox())?.width ?? 0;
-const xChat = async (s) => (await s.pagina.locator('textarea').first().boundingBox())?.x ?? 0;
+const xChat = async (s) => (await s.pagina.locator(SEL.composer).first().boundingBox())?.x ?? 0;
 
 export async function correr(ctx) {
   const s = await ctx.abrir();
   await s.pagina.goto(`${s.base}/`, { waitUntil: 'networkidle' });
+  // Con un proyecto elegido, para que haya un compositor que medir.
+  if ((await s.pagina.getByTestId('barra-lateral').getAttribute('data-plegada')) === 'true') await s.pagina.getByTestId('barra-logo').first().click();
+  await filaProyecto(s).click();
+  await s.pagina.locator(SEL.composer).first().waitFor({ timeout: 15_000 });
   // Arranca abierta, sea cual sea la preferencia guardada.
   if ((await barra(s).getAttribute('data-plegada')) === 'true') await s.pagina.getByTestId('barra-logo').first().click();
 

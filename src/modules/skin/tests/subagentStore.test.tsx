@@ -64,6 +64,22 @@ test('two simultaneous Task rows give two running entries', () => {
   assert.equal(result.current.get('task-2')?.status, 'running');
 });
 
+test('the tool is called Agent in current Claude Code, and it still gives a row', () => {
+  const { result } = renderHook(() => useSubagents());
+
+  act(() => {
+    render(
+      <SkinSubagentBridge
+        sessionId="session-1"
+        messages={[taskMessage({ toolId: 'agent-1', toolName: 'Agent' })]}
+      />,
+    );
+  });
+
+  assert.equal(result.current.get('agent-1')?.status, 'running');
+  assert.equal(result.current.get('agent-1')?.type, 'Explore');
+});
+
 test('a tool_result moves the row to completed', () => {
   const { result } = renderHook(() => useSubagents());
 
